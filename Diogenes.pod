@@ -321,7 +321,7 @@ applies to the I<TLG>).  This should be set explicitly to B<0> in the config
 files of underpowered computers, since this requires a substantial overhead of
 time and memory.
 
-=item  blacklist_file 
+=item  blacklist_file
 
 This should be the full path to a file that contains a list of
 unwanted authors from various databases.  The four-digit author codes
@@ -336,7 +336,27 @@ to your blacklist -- in Unix:
 	strings authtab.dir > diogenes.blacklist
 -- and remove the authors you *do* wish to see.  It is fine to leave
 extraneous data, such as author names, genre descriptions, etc. in your
-blacklist, but this will degrade performanace even further.                             
+blacklist, but this will degrade performanace even further.
+
+This parameter is ignored for TLG word-list searches.
+
+=item blacklisted_works_file
+
+This should be the full path to a file that contains a list of
+unwanted works of authors from various databases.  The format of the
+blacklist file is a sequence of lines, each of which represents an
+author in a particular canon.  The first thing on each line should be
+an author number preceded by its 3-character canon abbreviation: tlg,
+lat, ddp, ins, chr, cop, or civ.  Then comes a space and the rest of
+the line contains space-separated work numbers.
+
+For example a file that blacklisted Homer's Odyssey and Virgil's
+Eclogues and Aeneid would look like:
+
+    TLG0012 2
+    LAT0690 1 3
+
+This parameter is ignored for TLG word-list searches.
 
 =back
 

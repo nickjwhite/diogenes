@@ -134,6 +134,7 @@ my @tlg_files =
         uppercase_files => 0,
         dump_file => '', 
         blacklist_file => '', 
+        blacklisted_works_file => '', 
         ibycus4 => 0,
         prosody => 0,
         psibycus => 0,
@@ -1100,7 +1101,14 @@ sub print_totals
     my $self = shift;
     my $out = '';
     $out .= '\nrm{}' if $self->{output_format} eq 'latex';
-    $out .= "\n\&Passages found: " . ($self->{hits} || 0) ."\n\n";
+    $out .= "\n\&Passages found: " . ($self->{hits} || 0) ."\n";
+    $out .= '(' . $self->{blacklisted_hits} .
+        " passages suppressed from blacklisted works)\n" 
+        if $self->{blacklisted_hits};
+    $out .= '(' . $self->{blacklisted_files} .
+        " blacklisted authors were not searched at all)\n" 
+        if $self->{blacklisted_files};
+    $out .= "\n";
     $self->print_output(\$out);
 }
 
@@ -1373,6 +1381,8 @@ sub pgrep
     my ($buf, $i);
     $self->{buf} = \$buf;
     $self->read_blacklist if $self->{blacklist_file};
+    $self->read_works_blacklist if $self->{blacklisted_works_file};
+
     if (@ARGV)
     {
         # Do the (full-file) search.  
@@ -1485,6 +1495,7 @@ sub read_blacklist
     }
     print STDERR "Files originally in ARGV: ".scalar @ARGV."\n" if $self->{debug};
     my @files;
+    $self->{blacklisted_files} = 0;
     foreach my $file (@ARGV)
     {
         $file =~ m/($self->{file_prefix}\d\d\d\d)/;
@@ -1492,6 +1503,7 @@ sub read_blacklist
         if ($bl =~ m/$pat/i)
         {
             print STDERR "Removing blacklisted file: $file\n" if $self->{debug};
+            $self->{blacklisted_files}++;
         }
         else
         {
@@ -1501,6 +1513,42 @@ sub read_blacklist
     @ARGV = ();
     @ARGV = @files;
     print STDERR "Files remaining in ARGV: ".scalar @ARGV."\n" if $self->{debug};
+}
+
+sub read_works_blacklist
+{
+    my $self = shift;
+    open BL, "<$self->{blacklisted_works_file}" or 
+        die "Couldn't open blacklisted works file: $self->{blacklisted_works_file}: $!\n";
+    {
+        local $/;
+        $/="\n";
+        
+	while (my $entry = <BL>)
+	{
+            chomp $entry;
+            next if $entry =~ m/^\s*$/;
+            next if $entry =~ m/^#/;
+            my ($auth, @works) = split ' ', $entry;
+            die "Bad blacklisted works auth ($self->{blacklisted_works_file}): $auth\n" 
+                unless $auth =~ m/^\D\D\D\d+$/;
+            my ($type, $auth_num) = $auth =~ m/^(\D\D\D)(\d+)$/;
+            $type = lc $type;             
+            $auth_num = sprintf '%04d', $auth_num;
+            
+            for (@works)
+            {
+                die "Bad blacklisted work ($self->{blacklisted_works_file}): $_\n" 
+                    unless $_ =~ m/^\d+$/;
+                $_ = sprintf '%03d', $_;
+                warn "Blacklisting $type$auth_num: $_\n" if $self->{debug};
+                $self->{blacklisted_works}{$type}{$auth_num}{$_} = 1;
+            }
+        }
+    }
+    $self->{blacklisted_hits} = 0;
+    close BL or 
+        die "Couldn't close blacklisted works file: $self->{blacklist_file}: $!\n";
 }
 
 ######################################################################
@@ -2085,7 +2133,15 @@ sub extract_hits
         $parsed_block = 1;
         
         $self->{hits}++;
-        
+            
+        if (exists $self->{blacklisted_works} 
+            and $self->{blacklisted_works}{$self->{file_prefix}}{$self->{auth_num}}{$self->{work_num}})
+        {
+            warn "Warning: supressing hit in blacklisted work ($self->{auth_num}: $self->{work_num})\n";
+            $self->{blacklisted_hits}++;
+            next HIT;
+        }
+
         # Add spaces to start of line for proper indent
         my $spaces = -1;
         for (my $pre_start = $start; not (ord (substr ($$buf, $pre_start--, 1)) >> 7); 

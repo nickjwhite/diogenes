@@ -201,6 +201,12 @@ browse_lines 39
 
 # blacklist_file  "$cwd/blacklist"
 
+# ... or of individual works you never want to search.
+
+# blacklisted_works_file  "$cwd/blacklist"
+
+
+
 # You may change the input format to "BETA" if you prefer to enter raw
 # Beta code, rather than Perseus-style transliteration.
 
