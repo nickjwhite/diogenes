@@ -27,7 +27,7 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION = '1.1';
+$Diogenes::VERSION = '1.3.1';
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
@@ -1846,8 +1846,7 @@ sub read_phi_biblio
             $info =~ s/[\x80-\xff][\@\s\x80-\xff]*/\n/g;
             $info =~ s/\n+/\n/g;
             $info =~ s/^[\n\s]+//;
-            $info .= ' ('.$auth.': '.$work.')',
-
+            $info .= ' ('.$auth.': '.$work.')';
             $info .="\n" unless $info =~ m/\n$/;
             $self->{phi_biblio}{$auth}{$work} = $info;
         }
@@ -1863,10 +1862,13 @@ sub read_phi_biblio
 sub get_biblio_info
 {
     my ($self, $type, $auth, $work) = @_;
+    
     return $self->get_tlg_biblio_info($auth, $work) if $type =~ m/tlg/i;
-    return $self->{phi_biblio}{$auth}{$work} if $type =~ m/phi/i and exists 
-        $self->{phi_biblio}{$auth}{$work};
-    return '';
+    if (exists $self->{phi_biblio}{$auth}{$work})
+    {
+	return $self->{phi_biblio}{$auth}{$work} if $type =~ m/phi/i ;
+    }
+    return ' ('.$auth.': '.$work.')';
 }
 
 
@@ -1880,8 +1882,8 @@ sub get_tlg_biblio_info
     
     my ($info) = $Diogenes::bibliography =~ 
         m/key $auth $work (.+?)[\x90-\xff]*key/;
-    return $Diogenes::work{$self->{type}}{$self->{auth_num}}{$self->{work_num}}
-        unless $info;
+     return $Diogenes::work{$self->{type}}{$self->{auth_num}}{$self->{work_num}}
+         unless $info;
     my %data;
     my @fields = qw(wrk tit edr pla pub pyr ryr ser pag);
     foreach my $field (@fields)
