@@ -127,10 +127,9 @@ for my $dir ("$init->{cgi_tmp_dir}", "$init->{cgi_img_dir_absolute}",
                 exit;
         }
 }
-
 # See if an instance of the daemon is already running
 use LWP::UserAgent;
-my $ua = LWP::UserAgent->new;
+my $ua = LWP::UserAgent->new( timeout => 5 );
 $ua->agent('Diogenes_probe');
 my $test_request = HTTP::Request->new(GET => 'http://'.$HOST.':'.$PORT);
 my $test_response = $ua->request($test_request);
