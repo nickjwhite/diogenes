@@ -4904,7 +4904,7 @@ sub seek_passage
             # We've gone too far, so use previous chunk
             print STDERR 
                 ">>>@{ $_ }[0] => $target{$top_level} (using block $old_block)\n" if 
-                $self->{debug};
+                    $self->{debug};
             $block = $old_block;
             last SECTION;
         }
@@ -4972,11 +4972,28 @@ sub seek_passage
     $i = $starting_point || 0;
     $i--;
     # seek through first block to the beginning of the work we want
-    while ( 0 + $self->{work_num} != 0 + $work) 
+    while ( 0 + $self->{work_num} < 0 + $work) 
     {
         $code = ord (substr ($buf, ++$i, 1));
         next unless ($code >> 7);
         $self->parse_non_ascii (\$buf, \$i);
+    }
+    if (0 + $self->{work_num} > 0 + $work)
+    {
+        warn "Error in searching for start of work: trying again from the beginning\n"
+            if $self->{debug};
+        $i = 0;
+        while ( 0 + $self->{work_num} != 0 + $work) 
+        {
+            $code = ord (substr ($buf, ++$i, 1));
+            next unless ($code >> 7);
+            $self->parse_non_ascii (\$buf, \$i);
+            print "::" . $self->{work_num} . "\n" if $self->{debug};
+        }
+    }
+    if (0 + $self->{work_num} != 0 + $work)
+    {
+        die "Error: cannot find the start of the work\n";
     }
     print STDERR "Search begins: $i \n" if $self->{debug};
     
