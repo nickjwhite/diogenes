@@ -1,54 +1,13 @@
 
-Modification history:                                                              
-                                                                                   
-v. 0.1: A number of various ad hoc Perl scripts for doing brute force
-   Latin searches put together in one script; support for Greek
-   added. (22.8.99)
-                                                                                   
-v. 0.2: Module and command-line script separated. Automatic generation
-   of regular expressions and transliteration of Greek from Perseus
-   format added.  (14.9.99)                                                                          
-                                                                                   
-v. 0.3: TLG word list parsing and searching added. Imperfect text
-   browser added. Much tweaking of regexps to imitate the (sometimes
-   frustratingly inconsistent) habits of what the word list chooses to
-   consider a word. (18.10.99)
-                                                                                   
-v. 0.5: CGI script and latex/gif output added. Improvements to the text
-   browser and implementation of CGI browser. First public distribution.
-   (11.11.99)
-                                                                                   
-v. 0.7 Major redesign of module (inheritance, documentation).
-   Added: multiple patterns, select_authors, support for the DDP
-   and inscriptions disk. Removed legacy code derived from
-   latex2html and changed license to GPL. Re-entrant code for
-   mod_perl safety. (25.5.00)
-                                                                                   
-v. 0.8 Basic Windows port, mechanism for adding user-defined Greek
-   encodings, Unicode utf8, html entities, WinGreek output. (28.6.00)
-                                                                                   
-v. 0.9 Diogenes daemon web server; cleaned up CGI script. Read
-   documentation on PHI file formats, and fixed browser to take
-   advantage of block-end citation info in .idt files (didn't speed it
-   up, though). Added Setup script and lots of Greek encodings. Improved
-   Windows support (21.7.2001)
+Modification history:
 
-v. 0.91 Added jump to browser in context of search results. Made
-   improvements in the way the word index data is read.
-
-v. 0.92 Fixed big bug introduced in 0.90, where capitalized words were
-   not found.
-
-v. 0.93 Added links to Perseus morphological tools, rudimentary Coptic
-   support. (17.8.2001)
-
-v. 0.95 A few minor bug fixes. 03-Apr-2002.
-
-v. 1.00 Why? It's been about a year since any serious bug has been
-   reported, I haven't had time to do much with it this year, and I am
-   not going to have much time in the near future. So let's call it
-   "stable". Slight redesign of the splash page (suggested by Pablo
-   Rodriguez), and a few minor bug fixes. 17-Sep-02.
+v. 1.3 Long-delayed bug-fix release.  The interface to the Perseus
+   morphological parser must have changed at some point, because words
+   with a chi, xi, or psi had broken.  Fixed handling of browsing of
+   non-numerical targets (eg. biographies).  Fixed encoding of web
+   pages, so cutting and pasting has a better chance of working.  A
+   few other small fixes.  Began using Darcs for source
+   control. (13-Jul-04)
 
 v. 1.1 Fixed bug in handling of "h" in Perseus transliteration for TLG
    word-list input for words beginning with a non-dipthong series of
@@ -60,3 +19,51 @@ v. 1.1 Fixed bug in handling of "h" in Perseus transliteration for TLG
    Fixed a bug in the handling of internal spaces in Latin search
    phrases.
 
+v. 1.00 Why? It's been about a year since any serious bug has been
+   reported, I haven't had time to do much with it this year, and I am
+   not going to have much time in the near future. So let's call it
+   "stable". Slight redesign of the splash page (suggested by Pablo
+   Rodriguez), and a few minor bug fixes. 17-Sep-02.
+
+v. 0.95 A few minor bug fixes. 03-Apr-2002.
+
+v. 0.93 Added links to Perseus morphological tools, rudimentary Coptic
+   support. (17.8.2001)
+
+v. 0.92 Fixed big bug introduced in 0.90, where capitalized words were
+   not found.
+
+v. 0.91 Added jump to browser in context of search results. Made
+   improvements in the way the word index data is read.
+
+v. 0.9 Diogenes daemon web server; cleaned up CGI script. Read
+   documentation on PHI file formats, and fixed browser to take
+   advantage of block-end citation info in .idt files (didn't speed it
+   up, though). Added Setup script and lots of Greek encodings. Improved
+   Windows support (21.7.2001)
+
+v. 0.8 Basic Windows port, mechanism for adding user-defined Greek
+   encodings, Unicode utf8, html entities, WinGreek output. (28.6.00)
+
+v. 0.7 Major redesign of module (inheritance, documentation).
+   Added: multiple patterns, select_authors, support for the DDP
+   and inscriptions disk. Removed legacy code derived from
+   latex2html and changed license to GPL. Re-entrant code for
+   mod_perl safety. (25.5.00)
+
+v. 0.5: CGI script and latex/gif output added. Improvements to the text
+   browser and implementation of CGI browser. First public distribution.
+   (11.11.99)
+
+v. 0.3: TLG word list parsing and searching added. Imperfect text
+   browser added. Much tweaking of regexps to imitate the (sometimes
+   frustratingly inconsistent) habits of what the word list chooses to
+   consider a word. (18.10.99)
+
+v. 0.2: Module and command-line script separated. Automatic generation
+   of regular expressions and transliteration of Greek from Perseus
+   format added.  (14.9.99)      
+
+v. 0.1: A number of various ad hoc Perl scripts for doing brute force
+   Latin searches put together in one script; support for Greek
+   added. (22.8.99) 
