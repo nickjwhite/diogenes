@@ -4,8 +4,8 @@
 # Thesaurus Linguae Graecae and the Packard Humanities Institute.              
 #                                                                              
 # Send your feedback, suggestions, and cases of fine wine to                   
-# P.J.Heslin@durham.ac.uk                                                          
-#                                                                              
+# P.J.Heslin@durham.ac.uk
+#
 #       Copyright (c) 1999-2001 Peter Heslin.  All Rights Reserved.
 #       This module is free software.  It may be used, redistributed,
 #       and/or modified under the terms of the GNU General Public 
@@ -27,8 +27,8 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION        =  1.3.2;
-$Diogenes::VERSION_string = "1.3.2";
+$Diogenes::VERSION        =  1.3.3;
+$Diogenes::VERSION_string = "1.3.3";
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
@@ -5138,14 +5138,15 @@ sub compare
     return -1 if not defined $current_bin and defined $target_bin;
     return  1 if defined $current_bin and not defined $target_bin;
     
-    # If both are not defined or both are defined and equal, we examine the ascii part
+    # If both are not defined or both are defined and equal, we
+    # examine the ascii part
     $current_ascii = lc $current_ascii;
     $target_ascii  = lc $target_ascii;
     return 0 if $current_ascii eq $target_ascii;
     if ((index $target_ascii, ':') == 0)
     {
-        # The INS database sometimes has document 1:300[2], etc. where the second half is
-        # really ordered numerically
+        # The INS database sometimes has document 1:300[2], etc. where
+        # the second half is really ordered numerically
         my ($current_extra_num) = $current_ascii =~ m/^:(\d+)/;
         my ($target_extra_num)  = $target_ascii  =~ m/^:(\d+)/;
         return -1 if defined $current_extra_num and defined $target_extra_num and 
@@ -5159,10 +5160,12 @@ sub compare
         return ord lc $current_ascii <=> ord lc $target_ascii;
     }
     
-    # Match if one is a substring of the other, and don't match otherwise, if
-    # we are dealing with strings (my addition)
-    return 1 if (index $current_ascii, $target_ascii) >= 0;
-    return 1 if (index $target_ascii, $current_ascii) >= 0;
+    # Match if one is a substring of the other, and don't match
+    # otherwise, if we are dealing with strings (my addition) --
+    # comment it out, since it breaks the Suda (searching for "iota",
+    # we hit "t" and then "alpha iota".  return 1 if (index
+    # $current_ascii, $target_ascii) >= 0; return 1 if (index
+    # $target_ascii, $current_ascii) >= 0;
     return -1 unless defined $current_bin or defined $target_bin;
     
     # Is this really necessary?

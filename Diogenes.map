@@ -2786,7 +2786,8 @@ dagger_dbl 		 => '',
 # A mixture of Diomidis Spinellis' monotonic Code page ISO-8859-7
 # encoding and extra polytonic diacritics.  This is for the use of Greek
 # TeX users who use both:
-# \usepackage[polutonikogreek]{babel}
+# \usepackage[greek]{babel}
+# \languageattribute{greek}{polutoniko}
 # \usepackage[iso-8859-7]{inputenc}
 
 $Diogenes::encoding{Babel_7} = {
@@ -3195,7 +3196,8 @@ $Diogenes::encoding{SPIonic}{font_name} = 'SPIonic';
 # package and the cbgreek fonts.  This uses a different polytonic
 # encoding to Ibycus, which is the native format used by Diogenes when
 # generating LaTeX files.  To use this encoding say in your LaTeX file:
-# \usepackage[polutonikogreek]{babel}
+# \usepackage[greek]{babel}
+# \languageattribute{greek}{polutoniko}
 
 $Diogenes::encoding{Babel}{pre_match} = sub
 {

@@ -1,6 +1,11 @@
 
 Modification history:
 
+v. 1.3.3 Fixed Suda browse bug.  This probably breaks browsing on some
+   other text.  May have to use special cases for some texts.
+
+v. 1.3.2 Fixed some minor bugs.
+
 v. 1.3 Long-delayed bug-fix release.  The interface to the Perseus
    morphological parser must have changed at some point, because words
    with a chi, xi, or psi had broken.  Fixed handling of browsing of
