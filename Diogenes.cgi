@@ -36,13 +36,13 @@ my $choice_from_config = quotemeta $init->{cgi_default_corpus};
 for (@choices)
 {
     if ($_ =~ m/$choice_from_config/i)
-	{
-		$default_choice = $_;
-		last;
-	}
+    {
+	$default_choice = $_;
+	last;
+    }
 }
 warn "I don't understand default search type $init->{cgi_default_corpus}\n"
-			unless $default_choice;
+    unless $default_choice;
 
 my $default_encoding = $init->{cgi_default_encoding} || 'UTF-8';
 my %format_choices;
@@ -94,6 +94,9 @@ my $TMP = $tmp_prefix.$session.'_';
 
 my $form = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
+# Workaround for annoying CGI.pm bug/warning
+$ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
+
 # We need to pre-set the encoding for the earlier pages, so that the right
 # header is sent out the first time Greek is displayed
 $form->param('greek_output_format', $default_encoding) unless
@@ -102,6 +105,21 @@ $form->param('greek_output_format', $default_encoding) unless
 my $default_input = $form->param('Input_method');
 $default_input ||= ($init->{cgi_input_format} eq 'BETA code') ? 'Beta' : 'Perseus';
 
+# This works for WinGreek, etc, and any encoding/font that's designed
+# more for cutting and pasting than for proper viewing in a browser.
+my $charset = 'iso-8859-1';
+
+if ($form->param('greek_output_format') and
+    $form->param('greek_output_format') =~ m/UTF-?8|Unicode/i)
+{
+    $charset = 'UTF-8';
+    #$charset = 'iso-10646-1';
+}
+elsif ($form->param('greek_output_format') and
+    $form->param('greek_output_format') =~ m/8859.?7/i)
+{
+    $charset = 'ISO-8859-7';
+}
 
 ########################## NOTA BENE ###################################
 # Processing of the form starts at the end of this file; first we have #
@@ -146,7 +164,6 @@ my $print_error_page = sub
 							-link    =>"#0000ee", 
 							-vlink	 =>"#ff0000", 
 							-alink	 =>"#000099" ),
-	
 		'<center>Sorry. You seem to have made a request that I do not
 		understand.</center>',
 		$form->end_html;
@@ -200,7 +217,7 @@ my $print_title = sub
 END
 
 	}
-	print $form->start_html(-title=>$title,
+	print $form->start_html(-title=>$title, -encoding=>$charset,
 				-script=>$jscript,
 				-bgcolor=>'#FFFFFF', -text=>"#000000", -link=>"#0000ee", 
 				-vlink=>"#ff0000", alink=>"#000099",
@@ -2108,24 +2125,6 @@ my $mod_perl_error = sub
 };
 
 # Here's where the real work gets done
-
-# I don't think most browsers support changing the encoding of a single page
-# in mid-stream, but let's try this anyway.  (Mozilla now does)
-
-#my $charset = 'iso-8859-1';
-my   $charset = 'UTF-8';
-
-if ($form->param('greek_output_format') and
-    $form->param('greek_output_format') =~ m/UTF-?8|Unicode/i)
-{
-    $charset = 'UTF-8';
-    #$charset = 'iso-10646-1';
-}
-elsif ($form->param('greek_output_format') and
-    $form->param('greek_output_format') =~ m/8859.?7/i)
-{
-    $charset = 'ISO-8859-7';
-} 
 
 if ($form->param('greek_output_format') and
     $form->param('greek_output_format') =~ m/PDF/i)
