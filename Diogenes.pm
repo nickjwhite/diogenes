@@ -2624,16 +2624,17 @@ sub perseus_handler
         }
         else
         {
-                my $word  = $1 || '';
-                my $space = $2 || '';
-                my $link = $h_word . $word;
-                $word = $h_word . $h_space . $word;
-				#print STDERR ">>$word\n";
-                if ($word =~ m#~~~\d+~~~\d+~~~\d+~~~#)
-				{	# This is a context/divider
-					$out .= $word;
-					next;
-				}
+            $link =~ s/[$punct\d]//g;
+            # Perseus morph parser takes Beta, but lowercase <- NOT ANYMORE
+            # $link =~ tr/A-Z/a-z/ if $lang eq 'greek'; 
+            # $link =~ s#\\#/#g if $lang eq 'greek';    # normalize barytone
+      
+            # At some point perseus stopped accepting beta code,
+            # particularly for psi, chi and xi, but to avoid future
+            # problems, we go the whole hog here and translate into
+            # Perseus-style.  Note that Perseus still expects r(ei,
+            # rather than rhei.
+            $link = beta_to_perseus($link) if $lang eq 'greek'; 
 
             $link =~ s/~[Hh]it~([^~]*)~/$1/g; 
             # Encode word itself
@@ -2662,6 +2663,26 @@ sub perseus_handler
         }
     }
     $$ref = $out;
+}
+
+sub beta_to_perseus
+{
+    my $word = shift;
+    $word =~ tr/A-Z/a-z/; 
+    $word =~ s/[^a-z(]//g;
+    $word =~ s/^\(/H/g;
+    $word =~ s/^([aeiouhw]+)\(/H$1/g;
+
+    $word =~ s/h/e^/g;
+    $word =~ s/q/th/g;
+    $word =~ s/c/X/g;
+    $word =~ s/f/ph/g;
+    $word =~ s/x/ch/g;
+    $word =~ s/y/ps/g;
+    $word =~ s/w/o^/g;
+
+    $word =~ tr/A-Z/a-z/; 
+    return $word;
 }
 
 ########################################################################
