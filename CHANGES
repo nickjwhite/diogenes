@@ -1,6 +1,10 @@
 
 Modification history:
 
+v. 1.3.4 Fixed bug (reported by A. Griffiths) where a pattern ending
+   in a space would also grab a following asterisk off the next word.
+   Noted missing glyph for iota diaresis in WinGreek.
+
 v. 1.3.3 Fixed Suda browse bug.  This probably breaks browsing on some
    other text.  May have to use special cases for some texts.
 

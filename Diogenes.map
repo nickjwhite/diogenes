@@ -1143,7 +1143,7 @@ iota_lenis_bary => "\x8a",
 iota_asper_bary => "\x89",
 iota_lenis_peri => "\x8d",
 iota_asper_peri => "\x8c",
-iota_diaer      => "\x8e",
+iota_diaer      => "\x8e", # This glyph seems to be missing
 iota_diaer_oxy  => "\x8f",
 iota_diaer_bary => "\x90",
 

@@ -27,8 +27,8 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION        =  1.3.3;
-$Diogenes::VERSION_string = "1.3.3";
+$Diogenes::VERSION        =  1.3.4;
+$Diogenes::VERSION_string = "1.3.4";
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
