@@ -1,0 +1,3449 @@
+# File containing methods of transforming BETA code to other
+# polytonic Greek encodings.
+
+# The nomenclature for the glyphs used in the maps below to 
+# define Greek encodings are not standard Unicode, but something
+# a bit more economical, adapted from the file ibycus4.map 
+# in P. MacKay's Ibycus font.  The scheme should be self-explanatory.
+
+# Give the values to be substituted for each Greek character as
+# Perl strings.  These may be simple ascii chars or they may include 
+# hexadecimal or octal escapes or whatever you like.  
+
+$Diogenes::encoding{Unicode_Entities} = {
+
+# This entry tells us that this particular encoding includes glyphs 
+# compounded from capital letters and leading diacritics. 1 is true.
+# Otherwise, the font uses separate glyphs for diacrits before caps.
+caps_with_diacrits => 1,
+
+# Some styles of Greek encoding cannot be intermixed with Latin
+# letters without confusion -- in other words, they remap the ascii or
+# iso_8859_1 ranges (<255).  It may help some markup formats to give a 
+# font name to be associated with this encoding in order to distinguish
+# it from Latin text.
+
+font_name => '',  # Not relevant 
+
+#
+# Basic alphabet
+#
+alpha	=> "&#945;",
+beta 	=> "&#946;",
+gamma 	=> "&#947;",
+delta 	=> "&#948;",
+epsilon => "&#949;",
+zeta 	=> "&#950;",
+eta 	=> "&#951;",
+theta 	=> "&#952;",
+iota 	=> "&#953;",
+kappa 	=> "&#954;",
+lambda	=> "&#955;",
+mu 		=> "&#956;",
+nu 		=> "&#957;",
+xi 		=> "&#958;",
+omicron => "&#959;",
+pi 		=> "&#960;",
+rho 	=> "&#961;",
+sigma 	=> "&#963;",
+tau 	=> "&#964;",
+upsilon => "&#965;",
+phi 	=> "&#966;",
+chi 	=> "&#967;",
+psi 	=> "&#968;",
+omega 	=> "&#969;",
+
+Alpha 	=> "&#913;",
+Beta 	=> "&#914;",
+Gamma 	=> "&#915;",
+Delta 	=> "&#916;",
+Epsilon => "&#917;",
+Zeta 	=> "&#918;",
+Eta 	=> "&#919;",
+Theta 	=> "&#920;",
+Iota 	=> "&#921;",
+Kappa 	=> "&#922;",
+Lambda 	=> "&#923;",
+Mu 		=> "&#924;",
+Nu 		=> "&#925;",
+Xi 		=> "&#926;",
+Omicron => "&#927;",
+Pi 		=> "&#928;",
+Rho 	=> "&#929;",
+Sigma 	=> "&#931;",
+Tau 	=> "&#932;",
+Upsilon => "&#933;",
+Phi 	=> "&#934;",
+Chi 	=> "&#935;",
+Psi 	=> "&#936;",
+Omega 	=> "&#937;",
+
+#
+# Lone diacritics
+#
+oxy  			=> '&#8189;',   # lone acute
+bary 			=> '&#8175;',   # lone grave    
+peri		  	=> '&#8128;',   # lone circumflex
+lenis 			=> '&#8127;',   # lone smooth breathing 
+asper 			=> '&#8190;',   # lone rough  breathing  
+diaer			=> '&#168;',   # lone diaeresis
+lenis_oxy   	=> '&#8142;',   # combinations of the above             
+lenis_bary  	=> '&#8141;',     
+lenis_peri  	=> '&#8143;',    
+asper_oxy   	=> '&#8158;',    
+asper_bary  	=> '&#8157;',   
+asper_peri  	=> '&#8159;',     
+diaer_oxy  		=> '&#8174;',       
+diaer_bary 		=> '&#8173;',       
+diaer_peri 		=> '&#8129;',       
+
+iota_subscript 	=> '&#8126;',
+longum 			=> '&#175;',
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => '&#962;',
+sigma_lunate => '&#1010;',      
+Sigma_lunate => '&#1010;',
+rho_asper	 => '&#8165;',
+Rho_asper	 => '&#8172;',
+rho_lenis 	 => '&#8164;',
+Rho_lenis 	 => '&#929;', # not defined by Unicode
+digamma 	 => '&#989;', 
+Digamma 	 => '&#988;',
+koppa 		 => '&#991;',
+Koppa 		 => '&#990;',
+sampi 		 => '&#993;',   
+Sampi 		 => '&#992;',   
+
+#
+# alpha with accents
+#
+alpha_oxy        => '&#8049;', 
+alpha_bary       => '&#8048;',
+alpha_peri       => '&#8118;',  
+alpha_lenis      => '&#7936;',       
+alpha_asper      => '&#7937;',       
+alpha_lenis_oxy  => '&#7940;',       
+alpha_asper_oxy  => '&#7941;',
+alpha_lenis_bary => '&#7938;',    
+alpha_asper_bary => '&#7939;',	
+alpha_lenis_peri => '&#7942;',
+alpha_asper_peri => '&#7943;',     
+
+Alpha_oxy        => '&#8123;', 
+Alpha_bary       => '&#8122;',
+Alpha_peri       => "",  
+Alpha_lenis      => '&#7944;',       
+Alpha_asper      => '&#7945;',       
+Alpha_lenis_oxy  => '&#7948;',       
+Alpha_asper_oxy  => '&#7949;',
+Alpha_lenis_bary => '&#7946;',    
+Alpha_asper_bary => '&#7947;',	
+Alpha_lenis_peri => '&#7950;',
+Alpha_asper_peri => '&#7951;',     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => '&#8115;',
+alpha_oxy_isub        => '&#8116;',     
+alpha_bary_isub       => '&#8114;',        
+alpha_peri_isub       => '&#8119;',        
+alpha_lenis_isub      => '&#8064;',     
+alpha_asper_isub      => '&#8065;',     
+alpha_lenis_oxy_isub  => '&#8068;',     
+alpha_asper_oxy_isub  => '&#8069;',   
+alpha_lenis_bary_isub => '&#8066;',   
+alpha_asper_bary_isub => '&#8067;',     
+alpha_lenis_peri_isub => '&#8070;',     
+alpha_asper_peri_isub => '&#8071;',    
+
+Alpha_isub       	  => '&#8124;',
+Alpha_oxy_isub        => "",     
+Alpha_bary_isub       => "",        
+Alpha_peri_isub       => "",        
+Alpha_lenis_isub      => '&#8072;',     
+Alpha_asper_isub      => '&#8073;',     
+Alpha_lenis_oxy_isub  => '&#8076;',     
+Alpha_asper_oxy_isub  => '&#8077;',   
+Alpha_lenis_bary_isub => '&#8074;',   
+Alpha_asper_bary_isub => '&#8075;',     
+Alpha_lenis_peri_isub => '&#8078;',     
+Alpha_asper_peri_isub => '&#8079;',    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => '&#8051;',
+epsilon_bary       => '&#8050;',     
+epsilon_peri 	   => "",    
+epsilon_lenis      => '&#7952;',        
+epsilon_asper      => '&#7953;',        
+epsilon_lenis_oxy  => '&#7956;',        
+epsilon_asper_oxy  => '&#7957;',        
+epsilon_lenis_bary => '&#7954;',        
+epsilon_asper_bary => '&#7955;',	 
+epsilon_asper_peri => "",
+epsilon_lenis_peri => "", 
+
+Epsilon_oxy        => '&#8137;',
+Epsilon_bary       => '&#8136;',     
+Epsilon_peri 	   => "",    
+Epsilon_lenis      => '&#7960;',        
+Epsilon_asper      => '&#7961;',        
+Epsilon_lenis_oxy  => '&#7964;',        
+Epsilon_asper_oxy  => '&#7965;',        
+Epsilon_lenis_bary => '&#7962;',        
+Epsilon_asper_bary => '&#7963;',	 
+Epsilon_asper_peri => "",
+Epsilon_lenis_peri => "", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => '&#8053;',
+eta_bary       => '&#8052;',
+eta_peri       => '&#8134;',
+eta_lenis      => '&#7968;',
+eta_asper      => '&#7969;',
+eta_lenis_oxy  => '&#7972;',
+eta_asper_oxy  => '&#7973;',
+eta_lenis_bary => '&#7970;',
+eta_asper_bary => '&#7971;',
+eta_lenis_peri => '&#7974;',
+eta_asper_peri => '&#7975;',
+
+Eta_oxy        => '&#8139;',
+Eta_bary       => '&#8138;',
+Eta_peri       => "",
+Eta_lenis      => '&#7976;',
+Eta_asper      => '&#7977;',
+Eta_lenis_oxy  => '&#7980;',
+Eta_asper_oxy  => '&#7981;',
+Eta_lenis_bary => '&#7978;',
+Eta_asper_bary => '&#7979;',
+Eta_lenis_peri => '&#7982;',
+Eta_asper_peri => '&#7983;',
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> '&#8131;',      
+eta_oxy_isub        => '&#8132;',  
+eta_bary_isub       => '&#8130;',  
+eta_peri_isub       => '&#8135;',  
+eta_lenis_isub      => '&#8080;',  
+eta_asper_isub      => '&#8081;',  
+eta_lenis_oxy_isub  => '&#8084;',  
+eta_asper_oxy_isub  => '&#8085;',  
+eta_lenis_bary_isub => '&#8082;',  
+eta_asper_bary_isub => '&#8083;',  
+eta_lenis_peri_isub => '&#8086;',  
+eta_asper_peri_isub => '&#8087;',  
+
+Eta_isub      		=> '&#8140;',      
+Eta_oxy_isub        => "",  
+Eta_bary_isub       => "",  
+Eta_peri_isub       => "",  
+Eta_lenis_isub      => '&#8088;',  
+Eta_asper_isub      => '&#8089;',  
+Eta_lenis_oxy_isub  => '&#8092;',  
+Eta_asper_oxy_isub  => '&#8093;',  
+Eta_lenis_bary_isub => '&#8090;',  
+Eta_asper_bary_isub => '&#8091;',  
+Eta_lenis_peri_isub => '&#8094;',  
+Eta_asper_peri_isub => '&#8095;',  
+
+#
+#iota with accents
+#
+iota_oxy        => '&#8055;',
+iota_bary       => '&#8054;',
+iota_peri       => '&#8150;',
+iota_lenis      => '&#7984;',
+iota_asper      => '&#7985;',
+iota_lenis_oxy  => '&#7988;',
+iota_asper_oxy  => '&#7989;',
+iota_lenis_bary => '&#7986;',
+iota_asper_bary => '&#7987;',
+iota_lenis_peri => '&#7990;',
+iota_asper_peri => '&#7991;',
+iota_diaer      => '&#970;',
+iota_diaer_oxy  => '&#8147;',
+iota_diaer_bary => '&#8146;',
+iota_diaer_peri => '&#8151;',
+
+Iota_oxy        => '&#8155;',
+Iota_bary       => '&#8154;',
+Iota_peri       => "",
+Iota_lenis      => '&#7992;',
+Iota_asper      => '&#7993;',
+Iota_lenis_oxy  => '&#7996;',
+Iota_asper_oxy  => '&#7997;',
+Iota_lenis_bary => '&#7994;',
+Iota_asper_bary => '&#7995;',
+Iota_lenis_peri => '&#7998;',
+Iota_asper_peri => '&#7999;',
+Iota_diaer      => '&#938;',
+Iota_diaer_oxy  => "",
+Iota_diaer_bary => "",
+
+#
+# omicron with accents
+#
+omicron_oxy        => '&#8057;',
+omicron_bary       => '&#8056;',
+omicron_peri 	   => "",           
+omicron_lenis      => '&#8000;',
+omicron_asper      => '&#8001;',
+omicron_lenis_oxy  => '&#8004;',
+omicron_asper_oxy  => '&#8005;',
+omicron_lenis_bary => '&#8002;',
+omicron_asper_bary => '&#8003;',
+omicron_asper_peri => "",    
+omicron_lenis_peri => "",        
+
+Omicron_oxy        => '&#8185;',
+Omicron_bary       => '&#8184;',
+Omicron_peri 	   => "",           
+Omicron_lenis      => '&#8008;',
+Omicron_asper      => '&#8009;',
+Omicron_lenis_oxy  => '&#8012;',
+Omicron_asper_oxy  => '&#8013;',
+Omicron_lenis_bary => '&#8010;',
+Omicron_asper_bary => '&#8011;',
+Omicron_asper_peri => "",    
+Omicron_lenis_peri => "",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => '&#8059;',
+upsilon_bary       => '&#8058;',
+upsilon_peri       => '&#8166;',
+upsilon_lenis      => '&#8016;',
+upsilon_asper      => '&#8017;',
+upsilon_lenis_oxy  => '&#8020;',
+upsilon_asper_oxy  => '&#8021;',
+upsilon_lenis_bary => '&#8018;',
+upsilon_asper_bary => '&#8019;',
+upsilon_lenis_peri => '&#8022;',
+upsilon_asper_peri => '&#8023;',
+upsilon_diaer      => '&#971;',
+upsilon_diaer_oxy  => '&#8163;', 
+upsilon_diaer_bary => '&#8162;',
+upsilon_diaer_peri => '&#8167;',
+
+Upsilon_oxy        => '&#8171;',
+Upsilon_bary       => '&#8170;',
+Upsilon_peri       => "",
+Upsilon_lenis      => "",
+Upsilon_asper      => '&#8025;',
+Upsilon_lenis_oxy  => "",
+Upsilon_asper_oxy  => '&#8029;',
+Upsilon_lenis_bary => "",
+Upsilon_asper_bary => '&#8027;',
+Upsilon_lenis_peri => "",
+Upsilon_asper_peri => '&#8031;',
+Upsilon_diaer      => '&#939;',
+Upsilon_diaer_oxy  => "", 
+Upsilon_diaer_bary => "",
+
+#
+# omega with accents
+#
+omega_oxy        => '&#8061;',
+omega_bary       => '&#8060;',
+omega_peri       => '&#8182;',
+omega_lenis      => '&#8032;',
+omega_asper      => '&#8033;',
+omega_lenis_oxy  => '&#8036;',
+omega_asper_oxy  => '&#8037;',
+omega_lenis_bary => '&#8034;',
+omega_asper_bary => '&#8035;',
+omega_lenis_peri => '&#8038;',
+omega_asper_peri => '&#8039;',
+
+Omega_oxy        => '&#8187;',
+Omega_bary       => '&#8186;',
+Omega_peri       => "",
+Omega_lenis      => '&#8040;',
+Omega_asper      => '&#8041;',
+Omega_lenis_oxy  => '&#8044;',
+Omega_asper_oxy  => '&#8045;',
+Omega_lenis_bary => '&#8042;',
+Omega_asper_bary => '&#8043;',
+Omega_lenis_peri => '&#8046;',
+Omega_asper_peri => '&#8047;',
+
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => '&#8179;',     
+omega_oxy_isub        => '&#8180;',
+omega_bary_isub       => '&#8178;', 
+omega_peri_isub       => '&#8183;',
+omega_lenis_isub      => '&#8096;', 
+omega_asper_isub      => '&#8097;',
+omega_lenis_oxy_isub  => '&#8100;',
+omega_asper_oxy_isub  => '&#8101;',
+omega_lenis_bary_isub => '&#8098;', 
+omega_asper_bary_isub => '&#8099;',
+omega_lenis_peri_isub => '&#8102;',  
+omega_asper_peri_isub => '&#8103;',  
+
+Omega_isub      	  => '&#8188;',     
+Omega_oxy_isub        => "",
+Omega_bary_isub       => "", 
+Omega_peri_isub       => "",
+Omega_lenis_isub      => '&#8104;', 
+Omega_asper_isub      => '&#8105;',
+Omega_lenis_oxy_isub  => '&#8108;',
+Omega_asper_oxy_isub  => '&#8109;',
+Omega_lenis_bary_isub => '&#8106;', 
+Omega_asper_bary_isub => '&#8107;',
+Omega_lenis_peri_isub => '&#8110;',  
+Omega_asper_peri_isub => '&#8111;',  
+
+#
+# Punctuation
+#
+space      => ' ',
+prime      => '&#884;', # for numbers
+hyphen     => '&#045;',
+dash       => ' - ',
+period     => '.',
+asterisk   => '*',
+comma	   => ',',
+underscore => '_',
+asteriskos => '*',
+raised_dot => '&#903;',
+semicolon  => '&#894;', # Greek mark of interrogation
+question   => '?', # Latin question mark: `?'
+equals     => '=',
+vertical   => '|', # vertical bar: `|'
+tilde	   => '~',
+apostrophe => '\'',
+
+quote_sngl_left  => '&#145;',    
+quote_sngl_right => '&#146;',    
+guillemot_left 	 => '&#171;',
+guillemot_right  => '&#187;',
+quote_dbl_left 	 => '&#147;',
+quote_dbl_right  => '&#148;',
+parens_left		 => '(',
+parens_right	 => ')',
+bracket_left 	 => '[',
+bracket_right 	 => ']',
+angle_left 		 => '<',  
+angle_right 	 => '>', 
+brace_left 		 => '{',  
+brace_right 	 => '}', 
+dagger 			 => '&#134;',     
+dagger_dbl 		 => '&#135;',  
+
+}; # Keep this line.
+
+
+############ Unicode UTF-8 Encoding ##################
+
+$Diogenes::encoding{'UTF-8'} = {
+
+# This entry tells us that this particular encoding includes glyphs 
+# compounded from capital letters and leading diacritics. 1 is true.
+caps_with_diacrits => 1,
+
+# Some styles of Greek encoding cannot be intermixed with Latin
+# letters without confusion -- in other words, they remap the ascii or
+# iso_8859_1 ranges (<255).  It may help some markup formats to give a 
+# font name to be associated with this encoding in order to distinguish
+# it from Latin text.
+
+font_name => '',  # Not relevant 
+
+#
+# Basic alphabet
+#
+alpha	=> "Œ±",
+beta 	=> "Œ≤",
+gamma 	=> "Œ≥",
+delta 	=> "Œ¥",
+epsilon => "Œµ",
+zeta 	=> "Œ∂",
+eta 	=> "Œ∑",
+theta 	=> "Œ∏",
+iota 	=> "Œπ",
+kappa 	=> "Œ∫",
+lambda	=> "Œª",
+mu 		=> "Œº",
+nu 		=> "ŒΩ",
+xi 		=> "Œæ",
+omicron => "Œø",
+pi 		=> "œÄ",
+rho 	=> "œÅ",
+sigma 	=> "œÉ",
+tau 	=> "œÑ",
+upsilon => "œÖ",
+phi 	=> "œÜ",
+chi 	=> "œá",
+psi 	=> "œà",
+omega 	=> "œâ",
+
+Alpha 	=> "Œë",
+Beta 	=> "Œí",
+Gamma 	=> "Œì",
+Delta 	=> "Œî",
+Epsilon => "Œï",
+Zeta 	=> "Œñ",
+Eta 	=> "Œó",
+Theta 	=> "Œò",
+Iota 	=> "Œô",
+Kappa 	=> "Œö",
+Lambda 	=> "Œõ",
+Mu 		=> "Œú",
+Nu 		=> "Œù",
+Xi 		=> "Œû",
+Omicron => "Œü",
+Pi 		=> "Œ†",
+Rho 	=> "Œ°",
+Sigma 	=> "Œ£",
+Tau 	=> "Œ§",
+Upsilon => "Œ•",
+Phi 	=> "Œ¶",
+Chi 	=> "Œß",
+Psi 	=> "Œ®",
+Omega 	=> "Œ©",
+
+#
+# Lone diacritics
+#
+oxy  			=> "·øΩ",   # lone acute
+bary 			=> "·øØ",   # lone grave    
+peri		  	=> "·øÄ",   # lone circumflex
+lenis 			=> "·æø",   # lone smooth breathing 
+asper 			=> "·øæ",   # lone rough  breathing  
+diaer			=> "¬®",   # lone diaeresis
+lenis_oxy   	=> "·øé",   # combinations of the above             
+lenis_bary  	=> "·øç",     
+lenis_peri  	=> "·øè",    
+asper_oxy   	=> "·øû",    
+asper_bary  	=> "·øù",   
+asper_peri  	=> "·øü",     
+diaer_oxy  		=> "·øÆ",       
+diaer_bary 		=> "·ø≠",       
+diaer_peri 		=> "·øÅ",       
+
+iota_subscript 	=> "·ææ",
+longum 			=> "¬Ø",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "œÇ",
+sigma_lunate => "œ≤",      
+Sigma_lunate => "œ≤",
+rho_asper	 => "·ø•",
+Rho_asper	 => "·ø¨",
+rho_lenis 	 => "·ø§",
+Rho_lenis 	 => "Œ°", # not defined by Unicode
+digamma 	 => "œù", 
+Digamma 	 => "œú",
+koppa 		 => "œü",
+Koppa 		 => "œû",
+sampi 		 => "œ°",   
+Sampi 		 => "œ†",   
+Special		 => "h", # *J is used by Cornell epigraphy database for aspirates
+
+#
+# alpha with accents
+#
+alpha_oxy        => "·Ω±", 
+alpha_bary       => "·Ω∞",
+alpha_peri       => "·æ∂",  
+alpha_lenis      => "·ºÄ",       
+alpha_asper      => "·ºÅ",       
+alpha_lenis_oxy  => "·ºÑ",       
+alpha_asper_oxy  => "·ºÖ",
+alpha_lenis_bary => "·ºÇ",    
+alpha_asper_bary => "·ºÉ",	
+alpha_lenis_peri => "·ºÜ",
+alpha_asper_peri => "·ºá",     
+
+Alpha_oxy        => "·æª", 
+Alpha_bary       => "·æ∫",
+Alpha_peri       => "",  
+Alpha_lenis      => "·ºà",       
+Alpha_asper      => "·ºâ",       
+Alpha_lenis_oxy  => "·ºå",       
+Alpha_asper_oxy  => "·ºç",
+Alpha_lenis_bary => "·ºä",    
+Alpha_asper_bary => "·ºã",	
+Alpha_lenis_peri => "·ºé",
+Alpha_asper_peri => "·ºè",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "·æ≥",
+alpha_oxy_isub        => "·æ¥",     
+alpha_bary_isub       => "·æ≤",        
+alpha_peri_isub       => "·æ∑",        
+alpha_lenis_isub      => "·æÄ",     
+alpha_asper_isub      => "·æÅ",     
+alpha_lenis_oxy_isub  => "·æÑ",     
+alpha_asper_oxy_isub  => "·æÖ",   
+alpha_lenis_bary_isub => "·æÇ",   
+alpha_asper_bary_isub => "·æÉ",     
+alpha_lenis_peri_isub => "·æÜ",     
+alpha_asper_peri_isub => "·æá",    
+
+Alpha_isub       	  => "·æº",
+Alpha_oxy_isub        => "",     
+Alpha_bary_isub       => "",        
+Alpha_peri_isub       => "",        
+Alpha_lenis_isub      => "·æà",     
+Alpha_asper_isub      => "·æâ",     
+Alpha_lenis_oxy_isub  => "·æå",     
+Alpha_asper_oxy_isub  => "·æç",   
+Alpha_lenis_bary_isub => "·æä",   
+Alpha_asper_bary_isub => "·æã",     
+Alpha_lenis_peri_isub => "·æé",     
+Alpha_asper_peri_isub => "·æè",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "·Ω≥",
+epsilon_bary       => "·Ω≤",     
+epsilon_peri 	   => "ŒµÃÑ", # macron for epigraphy    
+epsilon_lenis      => "·ºê",        
+epsilon_asper      => "·ºë",        
+epsilon_lenis_oxy  => "·ºî",        
+epsilon_asper_oxy  => "·ºï",        
+epsilon_lenis_bary => "·ºí",        
+epsilon_asper_bary => "·ºì",	 
+epsilon_asper_peri => "·ºëÃÑ",
+epsilon_lenis_peri => "·ºêÃÑ", 
+
+Epsilon_oxy        => "·øâ",
+Epsilon_bary       => "·øà",     
+Epsilon_peri 	   => "ÃÑŒï", # macron for epigraphy, etc.       
+Epsilon_lenis      => "·ºò",        
+Epsilon_asper      => "·ºô",        
+Epsilon_lenis_oxy  => "·ºú",        
+Epsilon_asper_oxy  => "·ºù",        
+Epsilon_lenis_bary => "·ºö",        
+Epsilon_asper_bary => "·ºõ",	 
+Epsilon_asper_peri => "·ºôÃÑ",
+Epsilon_lenis_peri => "·ºòÃÑ", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "·Ωµ",
+eta_bary       => "·Ω¥",
+eta_peri       => "·øÜ",
+eta_lenis      => "·º†",
+eta_asper      => "·º°",
+eta_lenis_oxy  => "·º§",
+eta_asper_oxy  => "·º•",
+eta_lenis_bary => "·º¢",
+eta_asper_bary => "·º£",
+eta_lenis_peri => "·º¶",
+eta_asper_peri => "·ºß",
+
+Eta_oxy        => "·øã",
+Eta_bary       => "·øä",
+Eta_peri       => "",
+Eta_lenis      => "·º®",
+Eta_asper      => "·º©",
+Eta_lenis_oxy  => "·º¨",
+Eta_asper_oxy  => "·º≠",
+Eta_lenis_bary => "·º™",
+Eta_asper_bary => "·º´",
+Eta_lenis_peri => "·ºÆ",
+Eta_asper_peri => "·ºØ",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "·øÉ",      
+eta_oxy_isub        => "·øÑ",  
+eta_bary_isub       => "·øÇ",  
+eta_peri_isub       => "·øá",  
+eta_lenis_isub      => "·æê",  
+eta_asper_isub      => "·æë",  
+eta_lenis_oxy_isub  => "·æî",  
+eta_asper_oxy_isub  => "·æï",  
+eta_lenis_bary_isub => "·æí",  
+eta_asper_bary_isub => "·æì",  
+eta_lenis_peri_isub => "·æñ",  
+eta_asper_peri_isub => "·æó",  
+
+Eta_isub      		=> "·øå",      
+Eta_oxy_isub        => "",  
+Eta_bary_isub       => "",  
+Eta_peri_isub       => "",  
+Eta_lenis_isub      => "·æò",  
+Eta_asper_isub      => "·æô",  
+Eta_lenis_oxy_isub  => "·æú",  
+Eta_asper_oxy_isub  => "·æù",  
+Eta_lenis_bary_isub => "·æö",  
+Eta_asper_bary_isub => "·æõ",  
+Eta_lenis_peri_isub => "·æû",  
+Eta_asper_peri_isub => "·æü",  
+
+#
+#iota with accents
+#
+iota_oxy        => "·Ω∑",
+iota_bary       => "·Ω∂",
+iota_peri       => "·øñ",
+iota_lenis      => "·º∞",
+iota_asper      => "·º±",
+iota_lenis_oxy  => "·º¥",
+iota_asper_oxy  => "·ºµ",
+iota_lenis_bary => "·º≤",
+iota_asper_bary => "·º≥",
+iota_lenis_peri => "·º∂",
+iota_asper_peri => "·º∑",
+iota_diaer      => "œä",
+iota_diaer_oxy  => "·øì",
+iota_diaer_bary => "·øí",
+iota_diaer_peri => "·øó",
+
+Iota_oxy        => "·øõ",
+Iota_bary       => "·øö",
+Iota_peri       => "",
+Iota_lenis      => "·º∏",
+Iota_asper      => "·ºπ",
+Iota_lenis_oxy  => "·ºº",
+Iota_asper_oxy  => "·ºΩ",
+Iota_lenis_bary => "·º∫",
+Iota_asper_bary => "·ºª",
+Iota_lenis_peri => "·ºæ",
+Iota_asper_peri => "·ºø",
+Iota_diaer      => "Œ™",
+Iota_diaer_oxy  => "",
+Iota_diaer_bary => "",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "·Ωπ",
+omicron_bary       => "·Ω∏",
+omicron_peri 	   => "ŒøÃÑ",  #macron for epigraphy          
+omicron_lenis      => "·ΩÄ",
+omicron_asper      => "·ΩÅ",
+omicron_lenis_oxy  => "·ΩÑ",
+omicron_asper_oxy  => "·ΩÖ",
+omicron_lenis_bary => "·ΩÇ",
+omicron_asper_bary => "·ΩÉ",
+omicron_asper_peri => "·ΩÅÃÑ",    
+omicron_lenis_peri => "·ΩÄÃÑ",        
+
+Omicron_oxy        => "·øπ",
+Omicron_bary       => "·ø∏",
+Omicron_peri 	   => "ŒüÃÑ",           
+Omicron_lenis      => "·Ωà",
+Omicron_asper      => "·Ωâ",
+Omicron_lenis_oxy  => "·Ωå",
+Omicron_asper_oxy  => "·Ωç",
+Omicron_lenis_bary => "·Ωä",
+Omicron_asper_bary => "·Ωã",
+Omicron_asper_peri => "·ΩâÃÑ",    
+Omicron_lenis_peri => "·ΩàÃÑ",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "·Ωª",
+upsilon_bary       => "·Ω∫",
+upsilon_peri       => "·ø¶",
+upsilon_lenis      => "·Ωê",
+upsilon_asper      => "·Ωë",
+upsilon_lenis_oxy  => "·Ωî",
+upsilon_asper_oxy  => "·Ωï",
+upsilon_lenis_bary => "·Ωí",
+upsilon_asper_bary => "·Ωì",
+upsilon_lenis_peri => "·Ωñ",
+upsilon_asper_peri => "·Ωó",
+upsilon_diaer      => "œã",
+upsilon_diaer_oxy  => "·ø£", 
+upsilon_diaer_bary => "·ø¢",
+upsilon_diaer_peri => "·øß",
+
+Upsilon_oxy        => "·ø´",
+Upsilon_bary       => "·ø™",
+Upsilon_peri       => "",
+Upsilon_lenis      => "",
+Upsilon_asper      => "·Ωô",
+Upsilon_lenis_oxy  => "",
+Upsilon_asper_oxy  => "·Ωù",
+Upsilon_lenis_bary => "",
+Upsilon_asper_bary => "·Ωõ",
+Upsilon_lenis_peri => "",
+Upsilon_asper_peri => "·Ωü",
+Upsilon_diaer      => "Œ´",
+Upsilon_diaer_oxy  => "", 
+Upsilon_diaer_bary => "",
+
+#
+# omega with accents
+#
+omega_oxy        => "·ΩΩ",
+omega_bary       => "·Ωº",
+omega_peri       => "·ø∂",
+omega_lenis      => "·Ω†",
+omega_asper      => "·Ω°",
+omega_lenis_oxy  => "·Ω§",
+omega_asper_oxy  => "·Ω•",
+omega_lenis_bary => "·Ω¢",
+omega_asper_bary => "·Ω£",
+omega_lenis_peri => "·Ω¶",
+omega_asper_peri => "·Ωß",
+
+Omega_oxy        => "·øª",
+Omega_bary       => "·ø∫",
+Omega_peri       => "",
+Omega_lenis      => "·Ω®",
+Omega_asper      => "·Ω©",
+Omega_lenis_oxy  => "·Ω¨",
+Omega_asper_oxy  => "·Ω≠",
+Omega_lenis_bary => "·Ω™",
+Omega_asper_bary => "·Ω´",
+Omega_lenis_peri => "·ΩÆ",
+Omega_asper_peri => "·ΩØ",
+
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "·ø≥",     
+omega_oxy_isub        => "·ø¥",
+omega_bary_isub       => "·ø≤", 
+omega_peri_isub       => "·ø∑",
+omega_lenis_isub      => "·æ†", 
+omega_asper_isub      => "·æ°",
+omega_lenis_oxy_isub  => "·æ§",
+omega_asper_oxy_isub  => "·æ•",
+omega_lenis_bary_isub => "·æ¢", 
+omega_asper_bary_isub => "·æ£",
+omega_lenis_peri_isub => "·æ¶",  
+omega_asper_peri_isub => "·æß",  
+
+Omega_isub      	  => "·øº",     
+Omega_oxy_isub        => "",
+Omega_bary_isub       => "", 
+Omega_peri_isub       => "",
+Omega_lenis_isub      => "·æ®", 
+Omega_asper_isub      => "·æ©",
+Omega_lenis_oxy_isub  => "·æ¨",
+Omega_asper_oxy_isub  => "·æ≠",
+Omega_lenis_bary_isub => "·æ™", 
+Omega_asper_bary_isub => "·æ´",
+Omega_lenis_peri_isub => "·æÆ",  
+Omega_asper_peri_isub => "·æØ",  
+
+#
+# Punctuation
+#
+space      => ' ',
+prime      => "Õ¥", # for numbers
+hyphen     => "-",
+dash       => " - ",
+period     => '.',
+asterisk   => '*',
+comma	   => ',',
+underscore => '_',
+asteriskos => '*',
+raised_dot => "Œá",
+semicolon  => "Õæ", # Greek mark of interrogation
+question   => '?', # Latin question mark: `?'
+equals     => '=',
+vertical   => '|', # vertical bar: `|'
+tilde	   => '~',
+apostrophe => '\'',
+
+quote_sngl_left  => "¬ë",    
+quote_sngl_right => "¬í",    
+guillemot_left 	 => "¬´",
+guillemot_right  => "¬ª",
+quote_dbl_left 	 => "¬ì",
+quote_dbl_right  => "¬î",
+parens_left		 => '(',
+parens_right	 => ')',
+bracket_left 	 => '[',
+bracket_right 	 => ']',
+angle_left 		 => '<',  
+angle_right 	 => '>', 
+brace_left 		 => '{',  
+brace_right 	 => '}', 
+dagger 			 => "¬Ü",     
+dagger_dbl 		 => "¬á",  
+
+}; # Keep this line.
+
+# This subroutine is called after the match to add underdots, etc. etc.
+# All the nice characters that Unicode gives us, which otherwise are
+# left up to the formatting layer.
+
+my $UTF_8_post = sub
+{
+	my $ref = shift;
+	$$ref =~ s/\?/Ã£/g;        #underdots
+	$$ref =~ s/\%(?!\d)/‚Ä†/g;  #dagger
+	$$ref =~ s/\%1(?!\d)/?/g;   #roman question mark
+	$$ref =~ s/\%12(?!\d)/‚Äª/g; #asteriskos
+	$$ref =~ s/\%13(?!\d)/‚Ä°/g; #double dagger
+	$$ref =~ s/\%14(?!\d)/¬ß/g; #section sign
+	
+	$$ref =~ s/\%16(?!\d)/¬¶/g; #broken vertical
+	$$ref =~ s/\%17(?!\d)/‚Äñ/g;  #double vertical
+	$$ref =~ s/\%19(?!\d)/-/g;  #hyphen
+	# combining accents
+	$$ref =~ s/\%20(?!\d)/ÃÅ/g;  #acute
+	$$ref =~ s/\%21(?!\d)/ÃÄ/g;  #grave
+	$$ref =~ s/\%22(?!\d)/ÃÇ/g;  #circumflex
+	$$ref =~ s/\%2[38](?!\d)/Ãà/g;  #diaresis
+	$$ref =~ s/\%24(?!\d)/ÃÉ/g;  #tilde
+	$$ref =~ s/\%25(?!\d)/Ãß/g;   #cedilla
+	$$ref =~ s/\%26(?!\d)/ÃÑ/g;  #macron
+	$$ref =~ s/\%27(?!\d)/ÃÜ/g;  #breve
+	$$ref =~ s/\%29(?!\d)/Ã£/g;         #(double) underdot
+	# stand-alone accents
+	$$ref =~ s/\%30(?!\d)/·æΩ/g;         #lenis
+	$$ref =~ s/\%31(?!\d)/·øæ/g;         #asper
+	$$ref =~ s/\%32(?!\d)/·øΩ/g;  #oxy
+	$$ref =~ s/\%33(?!\d)/·øØ/g;  #bary
+	$$ref =~ s/\%34(?!\d)/·øÄ/g; #peri
+	$$ref =~ s/\%35(?!\d)/·øé/g; #lenis_oxy   	
+	$$ref =~ s/\%36(?!\d)/·øû/g; #asper_oxy   	
+	$$ref =~ s/\%37(?!\d)/·øù/g; #asper_bary  	
+	$$ref =~ s/\%38(?!\d)/·øü/g; #asper_peri  	
+	$$ref =~ s/\%39(?!\d)/¬®/g;   #diaer			
+	
+	$$ref =~ s/\!/\./g;   #missing letter dot			
+
+};
+
+$Diogenes::encoding{'UTF-8'}{post_match} = $UTF_8_post;
+
+############ WinGreek Encoding ###############
+
+# To create your own translation table, copy this example (up to
+# the line beginning with };), give it a name other than 
+# wingreek, and append it to this file.
+
+# This info comes from the file ansiset.wri in the WinGreek package.
+# My copy of this package is the old 16-bit version; I am assuming 
+# that they have not changed the basic encoding in later versions.
+
+# Here is the name of the encoding:
+
+$Diogenes::encoding{WinGreek} = {
+
+# Some styles of Greek encoding cannot be intermixed with Latin
+# letters without confusion -- in other words, they remap the ascii or
+# iso_8859_1 ranges (<255).  It may help some markup formats to give a 
+# font name to be associated with this encoding in order to distinguish
+# it from Latin text.
+
+# Since this encoding remaps the ascii range, it is not safe to parse
+# the output as BETA code, so you will not get any nice formatting.
+
+remap_ascii => 'true',
+font_name => 'Greek',  # The usual name under MSWindows 
+
+#
+# Basic alphabet
+#
+alpha	=> "a",
+beta 	=> "b",
+gamma 	=> "g",
+delta 	=> "d",
+epsilon => "e",
+zeta 	=> "z",
+eta 	=> "h",
+theta 	=> "q",
+iota 	=> "i",
+kappa 	=> "k",
+lambda	=> "l",
+mu 		=> "m",
+nu 		=> "n",
+xi 		=> "x",
+omicron => "o",
+pi 		=> "p",
+rho 	=> "r",
+sigma 	=> "s",
+tau 	=> "t",
+upsilon => "u",
+phi 	=> "f",
+chi 	=> "c",
+psi 	=> "y",
+omega 	=> "w",
+
+Alpha 	=> "A",
+Beta 	=> "B",
+Gamma 	=> "G",
+Delta 	=> "D",
+Epsilon => "E",
+Zeta 	=> "Z",
+Eta 	=> "H",
+Theta 	=> "Q",
+Iota 	=> "I",
+Kappa 	=> "K",
+Lambda 	=> "L",
+Mu 		=> "M",
+Nu 		=> "N",
+Xi 		=> "X",
+Omicron => "O",
+Pi 		=> "P",
+Rho 	=> "R",
+Sigma 	=> "S",
+Tau 	=> "T",
+Upsilon => "U",
+Phi 	=> "F",
+Chi 	=> "C",
+Psi 	=> "Y",
+Omega 	=> "W",
+
+#
+# Lone diacritics
+#
+oxy  			=> "\x2f",   # lone acute
+bary 			=> "\x5c",   # lone grave    
+peri		  	=> "\x5e",   # lone circumflex
+lenis 			=> "\x27",   # lone smooth breathing 
+asper 			=> "\x60",   # lone rough  breathing  
+diaer			=> "\x40",   # lone diaeresis
+lenis_oxy   	=> "\x94",   # combinations of the above             
+lenis_bary  	=> "\x96",     
+lenis_peri  	=> "\x92",    
+asper_oxy   	=> "\x93",    
+asper_bary  	=> "\x95",   
+asper_peri  	=> "\x91",     
+diaer_oxy  		=> "\x97",       
+diaer_bary 		=> "\xa0",       
+
+iota_subscript 	=> "\xc4",
+longum 			=> "",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "j",
+sigma_lunate => "s", 	# n/a      
+Sigma_lunate => "S", 	# n/a
+rho_asper	 => "\xb7",
+rho_lenis 	 => "\xb8",
+Rho_asper	 => "R",	# undefined
+Rho_lenis 	 => "R",	# undefined
+digamma 	 => "\x23", 
+Digamma 	 => "\x24",
+koppa 		 => "\x25",
+Koppa 		 => "\x26",
+sampi 		 => "\x22",   
+
+#
+# alpha with accents
+#
+alpha_oxy        => "\xa3", 
+alpha_bary       => "\xa6",
+alpha_peri       => "\xa9",  
+alpha_lenis      => "\xa2",       
+alpha_asper      => "\xa1",       
+alpha_lenis_oxy  => "\xa5",       
+alpha_asper_oxy  => "\xa4",
+alpha_lenis_bary => "\xa8",    
+alpha_asper_bary => "\xa7",	
+alpha_lenis_peri => "\xab",
+alpha_asper_peri => "\xaa",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "v",
+alpha_oxy_isub        => "\xae",     
+alpha_bary_isub       => "\xb1",        
+alpha_peri_isub       => "\xb4",        
+alpha_lenis_isub      => "\xad",     
+alpha_asper_isub      => "\xac",     
+alpha_lenis_oxy_isub  => "\xb0",     
+alpha_asper_oxy_isub  => "\xaf",   
+alpha_lenis_bary_isub => "\xb3",   
+alpha_asper_bary_isub => "\xb2",     
+alpha_lenis_peri_isub => "\xb6",     
+alpha_asper_peri_isub => "\xb5",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "\x9a",     
+epsilon_bary       => "\x9d",     
+epsilon_peri 	   => "\xfc",    
+epsilon_lenis      => "\x99",        
+epsilon_asper      => "\x98",        
+epsilon_lenis_oxy  => "\x9c",        
+epsilon_asper_oxy  => "\x9b",        
+epsilon_lenis_bary => "\x9f",        
+epsilon_asper_bary => "\x9e",	 
+epsilon_asper_peri => "",
+epsilon_lenis_peri => "", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "\xbb",
+eta_bary       => "\xbe",
+eta_peri       => "\xc1",
+eta_lenis      => "\xba",
+eta_asper      => "\xb9",
+eta_lenis_oxy  => "\xbd",
+eta_asper_oxy  => "\xbc",
+eta_lenis_bary => "\xc0",
+eta_asper_bary => "\xbf",
+eta_lenis_peri => "\xc3",
+eta_asper_peri => "\xc2",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "V",      
+eta_oxy_isub        => "\xc7",  
+eta_bary_isub       => "\xca",  
+eta_peri_isub       => "\xcd",  
+eta_lenis_isub      => "\xc6",  
+eta_asper_isub      => "\xc5",  
+eta_lenis_oxy_isub  => "\xc9",  
+eta_asper_oxy_isub  => "\xc8",  
+eta_lenis_bary_isub => "\xcc",  
+eta_asper_bary_isub => "\xcb",  
+eta_lenis_peri_isub => "\xcf",  
+eta_asper_peri_isub => "\xce",  
+
+#
+#iota with accents
+#
+iota_oxy        => "\x85",
+iota_bary       => "\x88",
+iota_peri       => "\x8b",
+iota_lenis      => "\x84",
+iota_asper      => "\x83",
+iota_lenis_oxy  => "\x87",
+iota_asper_oxy  => "\x86",
+iota_lenis_bary => "\x8a",
+iota_asper_bary => "\x89",
+iota_lenis_peri => "\x8d",
+iota_asper_peri => "\x8c",
+iota_diaer      => "\x8e",
+iota_diaer_oxy  => "\x8f",
+iota_diaer_bary => "\x90",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "\xd2",
+omicron_bary       => "\xd5",
+omicron_peri 	   => "\xfd",           
+omicron_lenis      => "\xd1",
+omicron_asper      => "\xd0",
+omicron_lenis_oxy  => "\xd4",
+omicron_asper_oxy  => "\xd3",
+omicron_lenis_bary => "\xd7",
+omicron_asper_bary => "\xd6",
+omicron_asper_peri => "",    
+omicron_lenis_peri => "",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "\xda",
+upsilon_bary       => "\xdd",
+upsilon_peri       => "\xe0",
+upsilon_lenis      => "\xd9",
+upsilon_asper      => "\xd8",
+upsilon_lenis_oxy  => "\xdc",
+upsilon_asper_oxy  => "\xdb",
+upsilon_lenis_bary => "\xdf",
+upsilon_asper_bary => "\xde",
+upsilon_lenis_peri => "\xe2",
+upsilon_asper_peri => "\xe1",
+upsilon_diaer      => "\xe3",
+upsilon_diaer_oxy  => "\xe4", 
+upsilon_diaer_bary => "\xe5",
+
+#
+# omega with accents
+#
+omega_oxy        => "\xe8",
+omega_bary       => "\xeb",
+omega_peri       => "\xee",
+omega_lenis      => "\xe7",
+omega_asper      => "\xe6",
+omega_lenis_oxy  => "\xea",
+omega_asper_oxy  => "\xe9",
+omega_lenis_bary => "\xed",
+omega_asper_bary => "\xec",
+omega_lenis_peri => "\xf0",
+omega_asper_peri => "\xef",
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "J",     
+omega_oxy_isub        => "\xf3",
+omega_bary_isub       => "\xf6", 
+omega_peri_isub       => "\xf9",
+omega_lenis_isub      => "\xf2", 
+omega_asper_isub      => "\xf1",
+omega_lenis_oxy_isub  => "\xf5",
+omega_asper_oxy_isub  => "\xf4",
+omega_lenis_bary_isub => "\xf8", 
+omega_asper_bary_isub => "\xf7",
+omega_lenis_peri_isub => "\xfb",  
+omega_asper_peri_isub => "\xfa",  
+
+#
+# Punctuation
+#
+space      => "\x20",
+prime      => "\x2f", # for numbers
+hyphen     => "\x2d",
+dash       => " \x2d\x2d ",
+period     => "\x2e",
+asterisk   => "\x2a",
+comma	   => "\x2c",
+underscore => "\x5f",
+asteriskos => "\x2b",
+raised_dot	   => "\x3a",
+semicolon  => "\x3b", # Greek mark of interrogation
+question   => "\x3f", # Latin question mark: `?'
+equals     => "\x3d",
+vertical   => "\x7c", # vertical bar: `|'
+tilde	   => "\x7e",
+apostrophe => "\x27",  
+
+quote            => "\x40",
+
+quote_sngl_left  => "\x5c",    
+quote_sngl_right => "\x2f",    
+guillemot_left 	 => "\x7b",
+guillemot_right  => "\x7d",
+quote_dbl_left 	 => "",
+quote_dbl_right  => "",
+parens_left		 => "(",
+parens_right	 => ")",
+bracket_left 	 => "[",
+bracket_right 	 => "]",
+angle_left 		 => "<",  
+angle_right 	 => ">", 
+brace_left 		 => "{",  
+brace_right 	 => "}", 
+dagger 			 => "",     
+dagger_dbl 		 => "",  
+aspirate 		 => "",        
+
+}; # Keep this line.
+
+$Diogenes::encoding{WinGreek}{pre_match} = sub
+{
+	my $ref = shift;
+	$$ref =~ s/"\d*/\x40/;
+
+};
+
+
+
+# From the font Athenian, for use with the Greek Keys fonts.
+
+$Diogenes::encoding{SMK_GreekKeys} = {
+
+# Some styles of Greek encoding cannot be intermixed with Latin
+# letters without confusion -- in other words, they remap the ascii or
+# iso_8859_1 ranges (<255).  It may help some markup formats to give a 
+# font name to be associated with this encoding in order to distinguish
+# it from Latin text.
+
+# Since this encoding remaps the ascii range, it is not safe to parse
+# the output as BETA code, so you will not get any nice formatting.
+
+remap_ascii => 'true',
+font_name => 'Athenian',  
+
+# Basic alphabet
+#
+alpha	=> "\x61",
+beta 	=> "\x62",
+gamma 	=> "\x67",
+delta 	=> "\x64",
+epsilon => "\x65",
+zeta 	=> "\x7a",
+eta 	=> "\x68",
+theta 	=> "\x79",
+iota 	=> "\x69",
+kappa 	=> "\x6b",
+lambda	=> "\x6c",
+mu 		=> "\x6d",
+nu 		=> "\x6e",
+xi 		=> "\x6a",
+omicron => "\x6f",
+pi 		=> "\x70",
+rho 	=> "\x72",
+sigma 	=> "\x73",
+tau 	=> "\x74",
+upsilon => "\x75",
+phi 	=> "\x66",
+chi 	=> "\x78",
+psi 	=> "\x63",
+omega 	=> "\x76",
+
+Alpha 	=> "\x41",
+Beta 	=> "\x42",
+Gamma 	=> "\x47",
+Delta 	=> "\x44",
+Epsilon => "\x45",
+Zeta 	=> "\x5a",
+Eta 	=> "\x48",
+Theta 	=> "\x59",
+Iota 	=> "\x49",
+Kappa 	=> "\x4b",
+Lambda 	=> "\x4c",
+Mu 		=> "\x4d",
+Nu 		=> "\x4e",
+Xi 		=> "\x4a",
+Omicron => "\x4f",
+Pi 		=> "\x50",
+Rho 	=> "\x52",
+Sigma 	=> "\x53",
+Tau 	=> "\x54",
+Upsilon => "\x55",
+Phi 	=> "\x46",
+Chi 	=> "\x58",
+Psi 	=> "\x43",
+Omega 	=> "\x56",
+
+#
+# Lone diacritics
+#
+oxy  			=> "\x80",   # lone acute
+bary 			=> "\x81",   # lone grave    
+peri		  	=> "\x82",   # lone circumflex
+lenis 			=> "\x83",   # lone smooth breathing 
+asper 			=> "\x84",   # lone rough  breathing  
+diaer			=> "",   # lone diaeresis
+lenis_oxy   	=> "\x85",   # combinations of the above             
+lenis_bary  	=> "\x87",     
+lenis_peri  	=> "\x89",    
+asper_oxy   	=> "\x86",    
+asper_bary  	=> "\x88",   
+asper_peri  	=> "\x8a",     
+diaer_oxy  		=> "",       
+diaer_bary 		=> "",       
+diaer_peri 		=> "",       
+
+iota_subscript 	=> "\x2b",
+longum 			=> "\x2d",  # really a hyphen
+breve 			=> "\xad",
+
+#
+# Funny letters
+#
+sigma_final	 => "\x77",
+sigma_lunate => "\x21",      
+Sigma_lunate => "\x25",
+rho_asper	 => "\x3d", # only this one is really defined
+Rho_asper	 => "\x52",
+rho_lenis 	 => "\x72",
+Rho_lenis 	 => "\x52", 
+digamma 	 => "\x57", 
+Digamma 	 => "\x57",
+koppa 		 => "\x71",
+Koppa 		 => "\x71",
+sampi 		 => "\x51",   
+Sampi 		 => "\x51",   
+
+#
+# alpha with accents
+#
+alpha_oxy        => "\x8b", 
+alpha_bary       => "\x8c",
+alpha_peri       => "\x8d",  
+alpha_lenis      => "\x8e",       
+alpha_asper      => "\x8f",       
+alpha_lenis_oxy  => "\x90",       
+alpha_asper_oxy  => "\x91",
+alpha_lenis_bary => "\x92",    
+alpha_asper_bary => "\x93",	
+alpha_lenis_peri => "\x94",
+alpha_asper_peri => "\x95",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "\x26",
+alpha_oxy_isub        => "\x96",     
+alpha_bary_isub       => "\x97",        
+alpha_peri_isub       => "\x98",        
+alpha_lenis_isub      => "\x99",     
+alpha_asper_isub      => "\x9a",     
+alpha_lenis_oxy_isub  => "\x9b",     
+alpha_asper_oxy_isub  => "\x9c",   
+alpha_lenis_bary_isub => "\x9d",   
+alpha_asper_bary_isub => "\x9e",     
+alpha_lenis_peri_isub => "\x9f",     
+alpha_asper_peri_isub => "\xaa",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "\xa1",
+epsilon_bary       => "\xa2",     
+epsilon_peri 	   => "",    
+epsilon_lenis      => "\xa4",        
+epsilon_asper      => "\xa5",        
+epsilon_lenis_oxy  => "\xa6",        
+epsilon_asper_oxy  => "\xa7",        
+epsilon_lenis_bary => "\xa8",        
+epsilon_asper_bary => "\xa9",	 
+epsilon_asper_peri => "",
+epsilon_lenis_peri => "", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "\xae",
+eta_bary       => "\xaf",
+eta_peri       => "\xb0",
+eta_lenis      => "\xb1",
+eta_asper      => "\xb2",
+eta_lenis_oxy  => "\xb3",
+eta_asper_oxy  => "\xb4",
+eta_lenis_bary => "\xb5",
+eta_asper_bary => "\xb6",
+eta_lenis_peri => "\xb7",
+eta_asper_peri => "\xb8",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "\xfa",      
+eta_oxy_isub        => "\xb9",  
+eta_bary_isub       => "\xba",  
+eta_peri_isub       => "\xbb",  
+eta_lenis_isub      => "\xbc",  
+eta_asper_isub      => "\xbd",  
+eta_lenis_oxy_isub  => "\xbe",  
+eta_asper_oxy_isub  => "\xbf",  
+eta_lenis_bary_isub => "\xc0",  
+eta_asper_bary_isub => "\xc1",  
+eta_lenis_peri_isub => "\xc2",  
+eta_asper_peri_isub => "\xc3",  
+
+#
+#iota with accents
+#
+iota_oxy        => "\xdb",
+iota_bary       => "\xdc",
+iota_peri       => "\xdd",
+iota_lenis      => "\xde",
+iota_asper      => "\xdf",
+iota_lenis_oxy  => "\xe0",
+iota_asper_oxy  => "\xe1",
+iota_lenis_bary => "\xe2",
+iota_asper_bary => "\xe3",
+iota_lenis_peri => "\xe4",
+iota_asper_peri => "\xe5",
+iota_diaer      => "\xf3",
+iota_diaer_oxy  => "\xfd",
+iota_diaer_bary => "\xfe",
+iota_diaer_peri => "",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "\xf1",
+omicron_bary       => "\xf2",
+omicron_peri 	   => "",           
+omicron_lenis      => "\xf4",
+omicron_asper      => "\xf5",
+omicron_lenis_oxy  => "\xf6",
+omicron_asper_oxy  => "\xf7",
+omicron_lenis_bary => "\xf8",
+omicron_asper_bary => "\xf9",
+omicron_asper_peri => "",    
+omicron_lenis_peri => "",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "\xe6",
+upsilon_bary       => "\xe7",
+upsilon_peri       => "\xe8",
+upsilon_lenis      => "\xe9",
+upsilon_asper      => "\xea",
+upsilon_lenis_oxy  => "\xeb",
+upsilon_asper_oxy  => "\xec",
+upsilon_lenis_bary => "\xed",
+upsilon_asper_bary => "\xee",
+upsilon_lenis_peri => "\xef",
+upsilon_asper_peri => "\xf0",
+upsilon_diaer      => "\x23",
+upsilon_diaer_oxy  => "\x40", 
+upsilon_diaer_bary => "",
+upsilon_diaer_peri => "",
+
+#
+# omega with accents
+#
+omega_oxy        => "\xc5",
+omega_bary       => "\xc6",
+omega_peri       => "\xc7",
+omega_lenis      => "\xc8",
+omega_asper      => "\xc9",
+omega_lenis_oxy  => "\xca",
+omega_asper_oxy  => "\xcb",
+omega_lenis_bary => "\xcc",
+omega_asper_bary => "\xcd",
+omega_lenis_peri => "\xce",
+omega_asper_peri => "\xcf",
+
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "\xc4",     
+omega_oxy_isub        => "\xd0",
+omega_bary_isub       => "\xd1", 
+omega_peri_isub       => "\xd2",
+omega_lenis_isub      => "\xd3", 
+omega_asper_isub      => "\xd4",
+omega_lenis_oxy_isub  => "\xd5",
+omega_asper_oxy_isub  => "\xd6",
+omega_lenis_bary_isub => "\xd7", 
+omega_asper_bary_isub => "\xd8",
+omega_lenis_peri_isub => "\xd9",  
+omega_asper_peri_isub => "\xda",  
+
+#
+# Punctuation
+#
+space      => "\x20",
+prime      => "\x80", # for numbers -- really an acute
+hyphen     => "\x2d",
+dash       => "\x2d\x2d",
+period     => "\x2e",
+asterisk   => "\x7e", # really a dagger
+comma	   => "\x2c",
+underscore => "",
+asteriskos => "\x7e",
+raised_dot => "\x3a",
+semicolon  => "\x3b", # Greek mark of interrogation
+question   => "",
+equals     => "",
+vertical   => "\x7c",
+tilde	   => "",
+apostrophe => "\x83", 
+
+quote	 	 	 => "\x22",
+
+quote_sngl_left  => "\x84",    
+quote_sngl_right => "\x83",    
+guillemot_left 	 => "\x3c",
+guillemot_right  => "\x3e",
+quote_dbl_left 	 => "\x22",
+quote_dbl_right  => "\x22",
+parens_left		 => "\x28",
+parens_right	 => "\x29",
+bracket_left 	 => "\x5b",
+bracket_right 	 => "\x5d",
+angle_left 		 => "\x3c",  
+angle_right 	 => "\x3e", 
+brace_left 		 => "\x7b",  
+brace_right 	 => "\x7d", 
+dagger 			 => "\x7e",     
+dagger_dbl 		 => "\x7e",  
+
+}; # Keep this line.
+
+
+# Code page ISO-8859-7 and Windows code page 1253 monotonic encoding.
+# In this case they are the same since there Diogenes does not output a
+# separate code for Alpha with a stress
+#
+# Diomidis Spinellis, January 2001.  
+# 
+# For modern Greek encoding information see
+# ftp://ftp.rfc-editor.org/in-notes/rfc1947.txt
+#
+# Author comment: I am aware that this conversion can be considered 
+# sacrilegious, but it works without additional software in many
+# environments.  I consider this ease more important than the loss
+# of the various stress symbols.
+#
+
+$Diogenes::encoding{ISO_8859_7} = {
+
+#
+# Basic alphabet
+#
+alpha	=> "·",
+beta 	=> "‚",
+gamma 	=> "„",
+delta 	=> "‰",
+epsilon => "Â",
+zeta 	=> "Ê",
+eta 	=> "Á",
+theta 	=> "Ë",
+iota 	=> "È",
+kappa 	=> "Í",
+lambda	=> "Î",
+mu 		=> "Ï",
+nu 		=> "Ì",
+xi 		=> "Ó",
+omicron => "Ô",
+pi 		=> "",
+rho 	=> "Ò",
+sigma 	=> "Û",
+tau 	=> "Ù",
+upsilon => "ı",
+phi 	=> "ˆ",
+chi 	=> "˜",
+psi 	=> "¯",
+omega 	=> "˘",
+
+Alpha 	=> "¡",
+Beta 	=> "¬",
+Gamma 	=> "√",
+Delta 	=> "ƒ",
+Epsilon => "≈",
+Zeta 	=> "∆",
+Eta 	=> "«",
+Theta 	=> "»",
+Iota 	=> "…",
+Kappa 	=> " ",
+Lambda 	=> "À",
+Mu 		=> "Ã",
+Nu 		=> "Õ",
+Xi 		=> "Œ",
+Omicron => "œ",
+Pi 		=> "–",
+Rho 	=> "—",
+Sigma 	=> "”",
+Tau 	=> "‘",
+Upsilon => "’",
+Phi 	=> "÷",
+Chi 	=> "◊",
+Psi 	=> "ÿ",
+Omega 	=> "Ÿ",
+
+#
+# Lone diacritics
+#
+oxy  			=> "'",   # lone acute
+bary 			=> "`",   # lone grave    
+peri		  	=> "~",   # lone circumflex
+lenis 			=> "'",   # lone smooth breathing 
+asper 			=> "`",   # lone rough  breathing  
+diaer			=> "®",   # lone diaeresis
+lenis_oxy   	=> "''",   # combinations of the above             
+lenis_bary  	=> "'`",     
+lenis_peri  	=> "'~",    
+asper_oxy   	=> "''",    
+asper_bary  	=> "'`",   
+asper_peri  	=> "'~",     
+diaer_oxy  		=> "®'",       
+diaer_bary 		=> "®¥",       
+
+iota_subscript 	=> "È",
+longum 			=> "",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "Ú",
+sigma_lunate => "Û", 	# n/a      
+Sigma_lunate => "”", 	# n/a
+rho_asper	 => "Ò",
+rho_lenis 	 => "Ò",
+Rho_asper	 => "—",	# undefined
+Rho_lenis 	 => "—",	# undefined
+digamma 	 => "f", 
+Digamma 	 => "F",
+koppa 		 => "k",
+Koppa 		 => "K",
+sampi 		 => "",   
+
+#
+# alpha with accents
+#
+alpha_oxy        => "‹", 
+alpha_bary       => "‹",
+alpha_peri       => "‹",  
+alpha_lenis      => "·",       
+alpha_asper      => "·",       
+alpha_lenis_oxy  => "‹",       
+alpha_asper_oxy  => "‹",
+alpha_lenis_bary => "‹",    
+alpha_asper_bary => "‹",	
+alpha_lenis_peri => "‹",
+alpha_asper_peri => "‹",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "·",
+alpha_oxy_isub        => "‹",     
+alpha_bary_isub       => "‹",        
+alpha_peri_isub       => "‹",        
+alpha_lenis_isub      => "·",     
+alpha_asper_isub      => "·",     
+alpha_lenis_oxy_isub  => "‹",     
+alpha_asper_oxy_isub  => "‹",   
+alpha_lenis_bary_isub => "‹",   
+alpha_asper_bary_isub => "‹",     
+alpha_lenis_peri_isub => "‹",     
+alpha_asper_peri_isub => "‹",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "›",     
+epsilon_bary       => "›",     
+epsilon_peri 	   => "›",    
+epsilon_lenis      => "Â",        
+epsilon_asper      => "Â",        
+epsilon_lenis_oxy  => "›",        
+epsilon_asper_oxy  => "›",        
+epsilon_lenis_bary => "›",        
+epsilon_asper_bary => "›",	 
+epsilon_asper_peri => "›",
+epsilon_lenis_peri => "›", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "ﬁ",
+eta_bary       => "ﬁ",
+eta_peri       => "ﬁ",
+eta_lenis      => "Á",
+eta_asper      => "Á",
+eta_lenis_oxy  => "ﬁ",
+eta_asper_oxy  => "ﬁ",
+eta_lenis_bary => "ﬁ",
+eta_asper_bary => "ﬁ",
+eta_lenis_peri => "ﬁ",
+eta_asper_peri => "ﬁ",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "Á",      
+eta_oxy_isub        => "ﬁ",  
+eta_bary_isub       => "ﬁ",  
+eta_peri_isub       => "ﬁ",  
+eta_lenis_isub      => "Á",  
+eta_asper_isub      => "Á",  
+eta_lenis_oxy_isub  => "ﬁ",  
+eta_asper_oxy_isub  => "ﬁ",  
+eta_lenis_bary_isub => "ﬁ",  
+eta_asper_bary_isub => "ﬁ",  
+eta_lenis_peri_isub => "ﬁ",  
+eta_asper_peri_isub => "ﬁ",  
+
+#
+#iota with accents
+#
+iota_oxy        => "ﬂ",
+iota_bary       => "ﬂ",
+iota_peri       => "ﬂ",
+iota_lenis      => "È",
+iota_asper      => "È",
+iota_lenis_oxy  => "ﬂ",
+iota_asper_oxy  => "ﬂ",
+iota_lenis_bary => "ﬂ",
+iota_asper_bary => "ﬂ",
+iota_lenis_peri => "ﬂ",
+iota_asper_peri => "ﬂ",
+iota_diaer      => "˙",
+iota_diaer_oxy  => "¿",
+iota_diaer_bary => "¿",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "¸",
+omicron_bary       => "¸",
+omicron_peri 	   => "¸",           
+omicron_lenis      => "Ô",
+omicron_asper      => "Ô",
+omicron_lenis_oxy  => "¸",
+omicron_asper_oxy  => "¸",
+omicron_lenis_bary => "¸",
+omicron_asper_bary => "¸",
+omicron_asper_peri => "¸",    
+omicron_lenis_peri => "¸",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "˝",
+upsilon_bary       => "˝",
+upsilon_peri       => "˝",
+upsilon_lenis      => "ı",
+upsilon_asper      => "ı",
+upsilon_lenis_oxy  => "˝",
+upsilon_asper_oxy  => "˝",
+upsilon_lenis_bary => "˝",
+upsilon_asper_bary => "˝",
+upsilon_lenis_peri => "˝",
+upsilon_asper_peri => "˝",
+upsilon_diaer      => "˚",
+upsilon_diaer_oxy  => "‡", 
+upsilon_diaer_bary => "‡",
+
+#
+# omega with accents
+#
+omega_oxy        => "˛",
+omega_bary       => "˛",
+omega_peri       => "˛",
+omega_lenis      => "˘",
+omega_asper      => "˘",
+omega_lenis_oxy  => "˛",
+omega_asper_oxy  => "˛",
+omega_lenis_bary => "˛",
+omega_asper_bary => "˛",
+omega_lenis_peri => "˛",
+omega_asper_peri => "˛",
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "˘",     
+omega_oxy_isub        => "˛",
+omega_bary_isub       => "˛", 
+omega_peri_isub       => "˛",
+omega_lenis_isub      => "˘", 
+omega_asper_isub      => "˘",
+omega_lenis_oxy_isub  => "˛",
+omega_asper_oxy_isub  => "˛",
+omega_lenis_bary_isub => "˛", 
+omega_asper_bary_isub => "˛",
+omega_lenis_peri_isub => "˛",  
+omega_asper_peri_isub => "˛",  
+
+#
+# Punctuation
+#
+space      => "\x20",
+prime      => "\x2f", # for numbers
+hyphen     => "\x2d",
+dash       => " \x2d\x2d ",
+period     => "\x2e",
+asterisk   => "\x2a",
+comma	   => "\x2c",
+underscore => "\x5f",
+asteriskos => "\x2b",
+raised_dot	   => "\x3a",
+semicolon  => "\x3b", # Greek mark of interrogation
+question   => "\x3f", # Latin question mark: `?'
+equals     => "\x3d",
+vertical   => "\x7c", # vertical bar: `|'
+tilde	   => "\x7e",
+apostrophe => '\'',
+
+quote_sngl_left  => "\x5c",    
+quote_sngl_right => "\x2f",    
+guillemot_left 	 => "",
+guillemot_right  => "",
+quote_dbl_left 	 => "",
+quote_dbl_right  => "",
+parens_left		 => "(",
+parens_right	 => ")",
+bracket_left 	 => "[",
+bracket_right 	 => "]",
+angle_left 		 => "<",  
+angle_right 	 => ">", 
+brace_left 		 => "{",  
+brace_right 	 => "}", 
+dagger 			 => "",     
+dagger_dbl 		 => "",  
+aspirate 		 => "",        
+
+}; # Keep this line.
+
+# DOS (and Windows console) code page 737 monotonic encoding
+# Diomidis Spinellis, January 2001.  
+# Please read the note for ISO-8859-7.
+
+$Diogenes::encoding{DOS_CP_737} = {
+
+#
+# Basic alphabet
+#
+alpha	=> "ò",
+beta 	=> "ô",
+gamma 	=> "ö",
+delta 	=> "õ",
+epsilon => "ú",
+zeta 	=> "ù",
+eta 	=> "û",
+theta 	=> "ü",
+iota 	=> "†",
+kappa 	=> "µ",
+lambda	=> "∂",
+mu 		=> "£",
+nu 		=> "§",
+xi 		=> "•",
+omicron => "¶",
+pi 		=> "ß",
+rho 	=> "®",
+sigma 	=> "©",
+tau 	=> "´",
+upsilon => "¨",
+phi 	=> "≠",
+chi 	=> "Æ",
+psi 	=> "Ø",
+omega 	=> "‡",
+
+Alpha 	=> "Ä",
+Beta 	=> "Å",
+Gamma 	=> "Ç",
+Delta 	=> "É",
+Epsilon => "Ñ",
+Zeta 	=> "Ö",
+Eta 	=> "Ü",
+Theta 	=> "á",
+Iota 	=> "à",
+Kappa 	=> "â",
+Lambda 	=> "ä",
+Mu 		=> "ã",
+Nu 		=> "å",
+Xi 		=> "ç",
+Omicron => "é",
+Pi 		=> "è",
+Rho 	=> "ê",
+Sigma 	=> "ë",
+Tau 	=> "í",
+Upsilon => "ì",
+Phi 	=> "î",
+Chi 	=> "ï",
+Psi 	=> "ñ",
+Omega 	=> "ó",
+
+#
+# Lone diacritics
+#
+oxy  			=> "'",   # lone acute
+bary 			=> "`",   # lone grave    
+peri		  	=> "~",   # lone circumflex
+lenis 			=> "'",   # lone smooth breathing 
+asper 			=> "`",   # lone rough  breathing  
+diaer			=> " ",   # lone diaeresis
+lenis_oxy   	=> "''",   # combinations of the above             
+lenis_bary  	=> "'`",     
+lenis_peri  	=> "'~",    
+asper_oxy   	=> "''",    
+asper_bary  	=> "'`",   
+asper_peri  	=> "'~",     
+diaer_oxy  		=> "'",       
+diaer_bary 		=> "`",       
+
+iota_subscript 	=> "†",
+longum 			=> "",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "™",
+sigma_lunate => "™", 	# n/a      
+Sigma_lunate => "ë", 	# n/a
+rho_asper	 => "®",
+rho_lenis 	 => "®",
+Rho_asper	 => "ê",	# undefined
+Rho_lenis 	 => "ê",	# undefined
+digamma 	 => "f", 
+Digamma 	 => "F",
+koppa 		 => "k",
+Koppa 		 => "K",
+sampi 		 => "ß",   
+
+#
+# alpha with accents
+#
+alpha_oxy        => "·", 
+alpha_bary       => "·",
+alpha_peri       => "·",  
+alpha_lenis      => "ò",       
+alpha_asper      => "ò",       
+alpha_lenis_oxy  => "·",       
+alpha_asper_oxy  => "·",
+alpha_lenis_bary => "·",    
+alpha_asper_bary => "·",	
+alpha_lenis_peri => "·",
+alpha_asper_peri => "·",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "ò",
+alpha_oxy_isub        => "·",     
+alpha_bary_isub       => "·",        
+alpha_peri_isub       => "·",        
+alpha_lenis_isub      => "ò",     
+alpha_asper_isub      => "ò",     
+alpha_lenis_oxy_isub  => "·",     
+alpha_asper_oxy_isub  => "·",   
+alpha_lenis_bary_isub => "·",   
+alpha_asper_bary_isub => "·",     
+alpha_lenis_peri_isub => "·",     
+alpha_asper_peri_isub => "·",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "‚",     
+epsilon_bary       => "‚",     
+epsilon_peri 	   => "‚",    
+epsilon_lenis      => "ú",        
+epsilon_asper      => "ú",        
+epsilon_lenis_oxy  => "‚",        
+epsilon_asper_oxy  => "‚",        
+epsilon_lenis_bary => "‚",        
+epsilon_asper_bary => "‚",	 
+epsilon_asper_peri => "‚",
+epsilon_lenis_peri => "‚", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "„",
+eta_bary       => "„",
+eta_peri       => "„",
+eta_lenis      => "û",
+eta_asper      => "û",
+eta_lenis_oxy  => "„",
+eta_asper_oxy  => "„",
+eta_lenis_bary => "„",
+eta_asper_bary => "„",
+eta_lenis_peri => "„",
+eta_asper_peri => "„",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "û",      
+eta_oxy_isub        => "„",  
+eta_bary_isub       => "„",  
+eta_peri_isub       => "„",  
+eta_lenis_isub      => "û",  
+eta_asper_isub      => "û",  
+eta_lenis_oxy_isub  => "„",  
+eta_asper_oxy_isub  => "„",  
+eta_lenis_bary_isub => "„",  
+eta_asper_bary_isub => "„",  
+eta_lenis_peri_isub => "„",  
+eta_asper_peri_isub => "„",  
+
+#
+#iota with accents
+#
+iota_oxy        => "Â",
+iota_bary       => "Â",
+iota_peri       => "Â",
+iota_lenis      => "†",
+iota_asper      => "†",
+iota_lenis_oxy  => "Â",
+iota_asper_oxy  => "Â",
+iota_lenis_bary => "Â",
+iota_asper_bary => "Â",
+iota_lenis_peri => "Â",
+iota_asper_peri => "Â",
+iota_diaer      => "‰",
+iota_diaer_oxy  => "‰",
+iota_diaer_bary => "‰",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "Ê",
+omicron_bary       => "Ê",
+omicron_peri 	   => "Ê",           
+omicron_lenis      => "¶",
+omicron_asper      => "¶",
+omicron_lenis_oxy  => "Ê",
+omicron_asper_oxy  => "Ê",
+omicron_lenis_bary => "Ê",
+omicron_asper_bary => "Ê",
+omicron_asper_peri => "Ê",    
+omicron_lenis_peri => "Ê",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "Á",
+upsilon_bary       => "Á",
+upsilon_peri       => "Á",
+upsilon_lenis      => "¨",
+upsilon_asper      => "¨",
+upsilon_lenis_oxy  => "Á",
+upsilon_asper_oxy  => "Á",
+upsilon_lenis_bary => "Á",
+upsilon_asper_bary => "Á",
+upsilon_lenis_peri => "Á",
+upsilon_asper_peri => "Á",
+upsilon_diaer      => "Ë",
+upsilon_diaer_oxy  => "Ë", 
+upsilon_diaer_bary => "Ë",
+
+#
+# omega with accents
+#
+omega_oxy        => "È",
+omega_bary       => "È",
+omega_peri       => "È",
+omega_lenis      => "‡",
+omega_asper      => "‡",
+omega_lenis_oxy  => "È",
+omega_asper_oxy  => "È",
+omega_lenis_bary => "È",
+omega_asper_bary => "È",
+omega_lenis_peri => "È",
+omega_asper_peri => "È",
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "‡",     
+omega_oxy_isub        => "È",
+omega_bary_isub       => "È", 
+omega_peri_isub       => "È",
+omega_lenis_isub      => "‡", 
+omega_asper_isub      => "‡",
+omega_lenis_oxy_isub  => "È",
+omega_asper_oxy_isub  => "È",
+omega_lenis_bary_isub => "È", 
+omega_asper_bary_isub => "È",
+omega_lenis_peri_isub => "È",  
+omega_asper_peri_isub => "È",  
+
+#
+# Punctuation
+#
+space      => "\x20",
+prime      => "\x2f", # for numbers
+hyphen     => "\x2d",
+dash       => " \x2d\x2d ",
+period     => "\x2e",
+asterisk   => "\x2a",
+comma	   => "\x2c",
+underscore => "\x5f",
+asteriskos => "\x2b",
+raised_dot	   => "\x3a",
+semicolon  => "\x3b", # Greek mark of interrogation
+question   => "\x3f", # Latin question mark: `?'
+equals     => "\x3d",
+vertical   => "\x7c", # vertical bar: `|'
+tilde	   => "\x7e",
+apostrophe => '\'',
+
+quote_sngl_left  => "\x5c",    
+quote_sngl_right => "\x2f",    
+guillemot_left 	 => "",
+guillemot_right  => "",
+quote_dbl_left 	 => "",
+quote_dbl_right  => "",
+parens_left		 => "(",
+parens_right	 => ")",
+bracket_left 	 => "[",
+bracket_right 	 => "]",
+angle_left 		 => "<",  
+angle_right 	 => ">", 
+brace_left 		 => "{",  
+brace_right 	 => "}", 
+dagger 			 => "",     
+dagger_dbl 		 => "",  
+aspirate 		 => "",        
+
+}; # Keep this line.
+
+
+$Diogenes::encoding{SuperGreek} = {
+
+# Since this encoding remaps the ascii range, it is not safe to parse
+# the output as BETA code, so you will not get any nice formatting.
+
+remap_ascii => 'true',
+font_name => 'SuperGreek',  
+
+#
+# Basic alphabet
+#
+alpha	=> "a",
+beta 	=> "b",
+gamma 	=> "g",
+delta 	=> "d",
+epsilon => "e",
+zeta 	=> "z",
+eta 	=> "h",
+theta 	=> "q",
+iota 	=> "i",
+kappa 	=> "k",
+lambda	=> "l",
+mu 		=> "m",
+nu 		=> "n",
+xi 		=> "x",
+omicron => "o",
+pi 		=> "p",
+rho 	=> "r",
+sigma 	=> "s",
+tau 	=> "t",
+upsilon => "u",
+phi 	=> "f",
+chi 	=> "c",
+psi 	=> "y",
+omega 	=> "w",
+
+Alpha 	=> "A",
+Beta 	=> "B",
+Gamma 	=> "G",
+Delta 	=> "D",
+Epsilon => "E",
+Zeta 	=> "Z",
+Eta 	=> "H",
+Theta 	=> "Q",
+Iota 	=> "I",
+Kappa 	=> "K",
+Lambda 	=> "L",
+Mu 		=> "M",
+Nu 		=> "N",
+Xi 		=> "X",
+Omicron => "O",
+Pi 		=> "P",
+Rho 	=> "R",
+Sigma 	=> "S",
+Tau 	=> "T",
+Upsilon => "U",
+Phi 	=> "F",
+Chi 	=> "C",
+Psi 	=> "Y",
+Omega 	=> "W",
+
+#
+# Lone diacritics
+#
+oxy  			=> "v",   # lone acute
+bary 			=> ";",   # lone grave    
+peri		  	=> "'",   # lone circumflex
+lenis 			=> "j",   # lone smooth breathing (or apostrophe) 
+asper 			=> "J",   # lone rough  breathing  
+diaer			=> ">",   # lone diaeresis
+lenis_oxy   	=> "[",   # combinations of the above             
+lenis_bary  	=> "]",     
+lenis_peri  	=> "\\",    
+asper_oxy   	=> "{",    
+asper_bary  	=> "}",   
+asper_peri  	=> "|",     
+diaer_oxy  		=> "?",       
+diaer_bary 		=> "\xd6",       
+diaer_peri 		=> "",       
+
+iota_subscript 	=> "/",
+longum 			=> "\x2d",
+breve 			=> "\x2b",
+
+#
+# Funny letters
+#
+sigma_final	 => "\x22",
+sigma_lunate => "\x8d",      
+Sigma_lunate => "\x82",
+rho_asper	 => "rJ",
+Rho_asper	 => "JR",
+rho_lenis 	 => "rj",
+Rho_lenis 	 => "jR", 
+digamma 	 => "\xf3", 
+Digamma 	 => "\xf3",
+koppa 		 => "\xf0",
+Koppa 		 => "\xf0",
+sampi 		 => "\xf4",   
+Sampi 		 => "\xf4",   
+
+#
+# alpha with accents
+#
+alpha_oxy        => "av", 
+alpha_bary       => "a;",
+alpha_peri       => "a'",  
+alpha_lenis      => "aj",       
+alpha_asper      => "aJ",       
+alpha_lenis_oxy  => "a[",       
+alpha_asper_oxy  => "a{",
+alpha_lenis_bary => "a]",    
+alpha_asper_bary => "a}",	
+alpha_lenis_peri => "a\\",
+alpha_asper_peri => "a|",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "a/",
+alpha_oxy_isub        => "av/",     
+alpha_bary_isub       => "a;/",        
+alpha_peri_isub       => "a'/",        
+alpha_lenis_isub      => "aj/",     
+alpha_asper_isub      => "aJ/",     
+alpha_lenis_oxy_isub  => "a[/",     
+alpha_asper_oxy_isub  => "a{/",   
+alpha_lenis_bary_isub => "a]/",   
+alpha_asper_bary_isub => "a}/",     
+alpha_lenis_peri_isub => "a\\/",     
+alpha_asper_peri_isub => "a|/",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "ev", 
+epsilon_bary       => "e;",     
+epsilon_peri 	   => "e'",     
+epsilon_lenis      => "ej",         
+epsilon_asper      => "eJ",         
+epsilon_lenis_oxy  => "e[",         
+epsilon_asper_oxy  => "e{",        
+epsilon_lenis_bary => "e]",         
+epsilon_asper_bary => "e}",  	 
+epsilon_lenis_peri => "e\\",  
+epsilon_asper_peri => "e|",
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "hv", 
+eta_bary       => "h;", 
+eta_peri       => "h'", 
+eta_lenis      => "hj", 
+eta_asper      => "hJ", 
+eta_lenis_oxy  => "h[", 
+eta_asper_oxy  => "h{", 
+eta_lenis_bary => "h]", 
+eta_asper_bary => "h}", 
+eta_lenis_peri => "h\\",
+eta_asper_peri => "h|",
+
+#
+# eta with accents and iota subscript
+#
+eta_isub      		=> "h/",      
+eta_oxy_isub        => "hv/",   
+eta_bary_isub       => "h;/",   
+eta_peri_isub       => "h'/",   
+eta_lenis_isub      => "hj/",   
+eta_asper_isub      => "hJ/",   
+eta_lenis_oxy_isub  => "h[/",   
+eta_asper_oxy_isub  => "h{/",   
+eta_lenis_bary_isub => "h]/",   
+eta_asper_bary_isub => "h}/",   
+eta_lenis_peri_isub => "h\\/",  
+eta_asper_peri_isub => "h|/",  
+
+#
+#iota with accents
+#
+iota_oxy        => "iv", 
+iota_bary       => "i;", 
+iota_peri       => "i'", 
+iota_lenis      => "ij", 
+iota_asper      => "iJ", 
+iota_lenis_oxy  => "i[", 
+iota_asper_oxy  => "i{", 
+iota_lenis_bary => "i]", 
+iota_asper_bary => "i}", 
+iota_lenis_peri => "i\\",
+iota_asper_peri => "i|",
+iota_diaer      => "i>",
+iota_diaer_oxy  => "i?",
+iota_diaer_bary => "i\xd6",
+iota_diaer_peri => "i\xc0",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "ov", 
+omicron_bary       => "o;", 
+omicron_peri 	   => "o'",           
+omicron_lenis      => "oj", 
+omicron_asper      => "oJ", 
+omicron_lenis_oxy  => "o[", 
+omicron_asper_oxy  => "o{", 
+omicron_lenis_bary => "o]", 
+omicron_asper_bary => "o}", 
+omicron_lenis_peri => "o\\",      
+omicron_asper_peri => "o|",   
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "uv", 
+upsilon_bary       => "u;", 
+upsilon_peri       => "u'", 
+upsilon_lenis      => "uj", 
+upsilon_asper      => "uJ", 
+upsilon_lenis_oxy  => "u[", 
+upsilon_asper_oxy  => "u{", 
+upsilon_lenis_bary => "u]", 
+upsilon_asper_bary => "u}", 
+upsilon_lenis_peri => "u\\",
+upsilon_asper_peri => "u|",
+upsilon_diaer      => "u>",
+upsilon_diaer_oxy  => "u?",
+upsilon_diaer_bary => "u\xd6",
+upsilon_diaer_peri => "u\xc0",
+
+#
+# omega with accents
+#
+omega_oxy        => "wv", 
+omega_bary       => "w;", 
+omega_peri       => "w'", 
+omega_lenis      => "wj", 
+omega_asper      => "wJ", 
+omega_lenis_oxy  => "w[", 
+omega_asper_oxy  => "w{", 
+omega_lenis_bary => "w]", 
+omega_asper_bary => "w}", 
+omega_lenis_peri => "w\\",
+omega_asper_peri => "w|",
+
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "w/",     
+omega_oxy_isub        => "wv/", 
+omega_bary_isub       => "w;/",  
+omega_peri_isub       => "w'/", 
+omega_lenis_isub      => "wj/",  
+omega_asper_isub      => "wJ/", 
+omega_lenis_oxy_isub  => "w[/", 
+omega_asper_oxy_isub  => "w{/", 
+omega_lenis_bary_isub => "w]/",  
+omega_asper_bary_isub => "w}/", 
+omega_lenis_peri_isub => "w\\/",  
+omega_asper_peri_isub => "w|/",  
+
+#
+# Punctuation
+#
+space      => ' ',
+prime      => "V", # for numbers
+hyphen     => "-",
+dash       => ' - ',
+period     => '.',
+asterisk   => '*',
+asteriskos => "\x93",
+comma	   => ',',
+underscore => '_',
+raised_dot => ":",
+semicolon  => "\xc9", # Greek mark of interrogation
+question   => "\x94", # Latin question mark: `?'
+equals     => '=',
+vertical   => "\xda", # vertical bar: `|'
+tilde	   => '~',
+apostrophe => "\xc6",
+
+quote		 	 => "\xae",
+
+quote_sngl_left  => "\xbe",  
+quote_sngl_right => "\xbe",    
+guillemot_left 	 => "\xae",
+guillemot_right  => "\xae",
+quote_dbl_left 	 => "\xae",
+quote_dbl_right  => "\xae",
+parens_left		 => "\x28",
+parens_right	 => "\x29",
+bracket_left 	 => "\xbb",
+bracket_right 	 => "\xbc",
+angle_left 		 => "\x8b",  
+angle_right 	 => "\xcc", 
+brace_left 		 => "\xe1",  
+brace_right 	 => "\xe2", 
+dagger 			 => "\xe6",     
+dagger_dbl 		 => "\xe6",  
+
+}; # Keep this line.
+
+
+$Diogenes::encoding{SIL_Composite} = {
+
+font_name => 'Galatia',   
+
+#
+# Basic alphabet
+#
+alpha	=> "\x61",
+beta 	=> "\x62",
+gamma 	=> "\x67",
+delta 	=> "\x64",
+epsilon => "\x65",
+zeta 	=> "\x7a",
+eta 	=> "\x6a",
+theta 	=> "\x71",
+iota 	=> "\x69",
+kappa 	=> "\x6b",
+lambda	=> "\x6c",
+mu 		=> "\x6d",
+nu 		=> "\x6e",
+xi 		=> "\x78",
+omicron => "\x6f",
+pi 		=> "\x70",
+rho 	=> "\x72",
+sigma 	=> "\x73",
+tau 	=> "\x74",
+upsilon => "\x75",
+phi 	=> "\x66",
+chi 	=> "\x63",
+psi 	=> "\x79",
+omega 	=> "\x77",
+
+Alpha 	=> "\x41",
+Beta 	=> "\x42",
+Gamma 	=> "\x47",
+Delta 	=> "\x44",
+Epsilon => "\x45",
+Zeta 	=> "\x5a",
+Eta 	=> "\x4a",
+Theta 	=> "\x51",
+Iota 	=> "\x49",
+Kappa 	=> "\x4b",
+Lambda 	=> "\x4c",
+Mu 		=> "\x4d",
+Nu 		=> "\x4e",
+Xi 		=> "\x58",
+Omicron => "\x4f",
+Pi 		=> "\x50",
+Rho 	=> "\x52",
+Sigma 	=> "\x53",
+Tau 	=> "\x54",
+Upsilon => "\x55",
+Phi 	=> "\x46",
+Chi 	=> "\x43",
+Psi 	=> "\x59",
+Omega 	=> "\x57",
+
+#
+# Lone diacritics
+#
+oxy  			=> "\x27",   # lone acute
+bary 			=> "\x60",   # lone grave    
+peri		  	=> "\x5e",   # lone circumflex
+lenis 			=> "\x48",   # lone smooth breathing (or apostrophe) 
+asper 			=> "\x68",   # lone rough  breathing  
+diaer			=> "\x22",   # lone diaeresis
+lenis_oxy   	=> "\xad",   # combinations of the above             
+lenis_bary  	=> "\xae",     
+lenis_peri  	=> "\xaf",    
+asper_oxy   	=> "\xa9",    
+asper_bary  	=> "\xaa",   
+asper_peri  	=> "\xab",     
+diaer_oxy  		=> "\xee",       
+diaer_bary 		=> "\xef",       
+diaer_peri 		=> "",       
+
+iota_subscript 	=> "\x5f",
+longum 			=> "",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "\x76",
+sigma_lunate => "\x73",      
+Sigma_lunate => "\x53",
+rho_asper	 => "\xbf",		
+Rho_asper	 => "\x68\x52",
+rho_lenis 	 => "\xcf",
+Rho_lenis 	 => "\x48\x52", 
+digamma 	 => "", 
+Digamma 	 => "",
+koppa 		 => "",
+Koppa 		 => "",
+sampi 		 => "",   
+Sampi 		 => "",   
+
+#
+# alpha with accents
+#
+alpha_oxy        => "\x80", 
+alpha_bary       => "\x81",
+alpha_peri       => "\x82",  
+alpha_lenis      => "\x87",       
+alpha_asper      => "\x83",       
+alpha_lenis_oxy  => "\x88",       
+alpha_asper_oxy  => "\x84",
+alpha_lenis_bary => "\x89",    
+alpha_asper_bary => "\x85",	
+alpha_lenis_peri => "\x8a",
+alpha_asper_peri => "\x86",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "\x8b",
+alpha_oxy_isub        => "\x8c",     
+alpha_bary_isub       => "\x8d",        
+alpha_peri_isub       => "\x8e",        
+alpha_lenis_isub      => "\x93",     
+alpha_asper_isub      => "\x8f",     
+alpha_lenis_oxy_isub  => "\x94",     
+alpha_asper_oxy_isub  => "\x90",   
+alpha_lenis_bary_isub => "\x95",   
+alpha_asper_bary_isub => "\x91",     
+alpha_lenis_peri_isub => "\x98",     
+alpha_asper_peri_isub => "\x92",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "\x99",
+epsilon_bary       => "\x9a",  
+epsilon_peri 	   => "",    
+epsilon_lenis      => "\x9d",        
+epsilon_asper      => "\x9b",        
+epsilon_lenis_oxy  => "\x9e",        
+epsilon_asper_oxy  => "\x9c",        
+epsilon_lenis_bary => "",        
+epsilon_asper_bary => "\x9f",	 
+epsilon_asper_peri => "",
+epsilon_lenis_peri => "", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "\xd0",
+eta_bary       => "\xd1",
+eta_peri       => "\xd2",
+eta_lenis      => "\xd7",
+eta_asper      => "\xd3",
+eta_lenis_oxy  => "\xd8",
+eta_asper_oxy  => "\xd4",
+eta_lenis_bary => "\xd9",
+eta_asper_bary => "\xd5",
+eta_lenis_peri => "\xda",
+eta_asper_peri => "\xd6",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "\xdb",      
+eta_oxy_isub        => "\xdc",  
+eta_bary_isub       => "\xdd",  
+eta_peri_isub       => "\xde",  
+eta_lenis_isub      => "\xe3",  
+eta_asper_isub      => "\xdf",  
+eta_lenis_oxy_isub  => "\xe4",  
+eta_asper_oxy_isub  => "\xe0",  
+eta_lenis_bary_isub => "\xe5",  
+eta_asper_bary_isub => "\xe1",  
+eta_lenis_peri_isub => "\xe6",  
+eta_asper_peri_isub => "\xe2",  
+
+#
+#iota with accents
+#
+iota_oxy        => "\xb0",
+iota_bary       => "\xb1",
+iota_peri       => "\xb2",
+iota_lenis      => "\xb8",
+iota_asper      => "\xb3",
+iota_lenis_oxy  => "\xb9",
+iota_asper_oxy  => "\xb4",
+iota_lenis_bary => "",
+iota_asper_bary => "\xbe",
+iota_lenis_peri => "\xba",
+iota_asper_peri => "\xb5",
+iota_diaer      => "\xbb",
+iota_diaer_oxy  => "\xbc",
+iota_diaer_bary => "\xbd",
+iota_diaer_peri => "",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "\xe7",
+omicron_bary       => "\xe8",
+omicron_peri 	   => "",           
+omicron_lenis      => "\xec",
+omicron_asper      => "\xe9",
+omicron_lenis_oxy  => "\xed",
+omicron_asper_oxy  => "\xea",
+omicron_lenis_bary => "\xce",
+omicron_asper_bary => "\xeb",
+omicron_asper_peri => "",    
+omicron_lenis_peri => "",        
+
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "\xc0",
+upsilon_bary       => "\xc1",
+upsilon_peri       => "\xc2",
+upsilon_lenis      => "\xc7",
+upsilon_asper      => "\xc3",
+upsilon_lenis_oxy  => "\xc8",
+upsilon_asper_oxy  => "\xc4",
+upsilon_lenis_bary => "\xc9",
+upsilon_asper_bary => "\xc5",
+upsilon_lenis_peri => "\xca",
+upsilon_asper_peri => "\xc6",
+upsilon_diaer      => "\xcb",
+upsilon_diaer_oxy  => "\xcc", 
+upsilon_diaer_bary => "\xcd",
+upsilon_diaer_peri => "",
+
+#
+# omega with accents
+#
+omega_oxy        => "\xf0",
+omega_bary       => "\xf1",
+omega_peri       => "\xf2",
+omega_lenis      => "\xf7",
+omega_asper      => "\xf3",
+omega_lenis_oxy  => "\xf8",
+omega_asper_oxy  => "\xf4",
+omega_lenis_bary => "\xf9",
+omega_asper_bary => "\xf5",
+omega_lenis_peri => "\xfa",
+omega_asper_peri => "\xf6",
+
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "\xfb",     
+omega_oxy_isub        => "\xfc",
+omega_bary_isub       => "\xfd", 
+omega_peri_isub       => "\xfe",
+omega_lenis_isub      => "\xa5", 
+omega_asper_isub      => "\xff",
+omega_lenis_oxy_isub  => "\xa6",
+omega_asper_oxy_isub  => "\xa1",
+omega_lenis_bary_isub => "\xa7", 
+omega_asper_bary_isub => "\xa2",
+omega_lenis_peri_isub => "\xa8",  
+omega_asper_peri_isub => "\xa3",  
+
+#
+# Punctuation
+#
+space      => "\x20",
+prime      => "\x27", # for numbers
+hyphen     => "\x2d",
+dash       => "\x97",
+period     => "\x2e",
+asterisk   => "\x2a",
+asteriskos => "\x2a",
+comma	   => "\x2c",
+underscore => "\x7e",
+raised_dot => "\x3b",
+semicolon  => "\x3f", # Greek mark of interrogation
+question   => "", # Latin question mark: `?'
+equals     => "\x3d",
+vertical   => "", # vertical bar: `|'
+tilde	   => "",
+apostrophe => "\x40",
+
+quote 			 => "\x22",
+
+quote_sngl_left  => "\x68",    
+quote_sngl_right => "\x48",    
+guillemot_left 	 => "\x24",
+guillemot_right  => "\x25",
+quote_dbl_left 	 => "\x24",
+quote_dbl_right  => "\x25",
+parens_left		 => "\x28",
+parens_right	 => "\x29",
+bracket_left 	 => "\x5b",
+bracket_right 	 => "\x5d",
+angle_left 		 => "\x3c",  
+angle_right 	 => "\x3e", 
+brace_left 		 => "\x7b",  
+brace_right 	 => "\x7d", 
+dagger 			 => '',     
+dagger_dbl 		 => '',  
+
+}; # Keep this line.
+
+
+# A mixture of Diomidis Spinellis' monotonic Code page ISO-8859-7
+# encoding and extra polytonic diacritics.  This is for the use of Greek
+# TeX users who use both:
+# \usepackage[polutonikogreek]{babel}
+# \usepackage[iso-8859-7]{inputenc}
+
+$Diogenes::encoding{Babel_7} = {
+
+#
+# Basic alphabet
+#
+alpha	=> "·",
+beta 	=> "‚",
+gamma 	=> "„",
+delta 	=> "‰",
+epsilon => "Â",
+zeta 	=> "Ê",
+eta 	=> "Á",
+theta 	=> "Ë",
+iota 	=> "È",
+kappa 	=> "Í",
+lambda	=> "Î",
+mu 		=> "Ï",
+nu 		=> "Ì",
+xi 		=> "Ó",
+omicron => "Ô",
+pi 		=> "",
+rho 	=> "Ò",
+sigma 	=> "Û",
+tau 	=> "Ù",
+upsilon => "ı",
+phi 	=> "ˆ",
+chi 	=> "˜",
+psi 	=> "¯",
+omega 	=> "˘",
+
+Alpha 	=> "¡",
+Beta 	=> "¬",
+Gamma 	=> "√",
+Delta 	=> "ƒ",
+Epsilon => "≈",
+Zeta 	=> "∆",
+Eta 	=> "«",
+Theta 	=> "»",
+Iota 	=> "…",
+Kappa 	=> " ",
+Lambda 	=> "À",
+Mu 		=> "Ã",
+Nu 		=> "Õ",
+Xi 		=> "Œ",
+Omicron => "œ",
+Pi 		=> "–",
+Rho 	=> "—",
+Sigma 	=> "”",
+Tau 	=> "‘",
+Upsilon => "’",
+Phi 	=> "÷",
+Chi 	=> "◊",
+Psi 	=> "ÿ",
+Omega 	=> "Ÿ",
+
+#
+# Lone diacritics
+#
+oxy  			=> "'",   # lone acute
+bary 			=> "`",   # lone grave    
+peri		  	=> "~",   # lone circumflex
+lenis 			=> ">",   # lone smooth breathing 
+asper 			=> "<",   # lone rough  breathing  
+diaer			=> "\"",   # lone diaeresis
+lenis_oxy   	=> ">'",   # combinations of the above             
+lenis_bary  	=> ">`",     
+lenis_peri  	=> ">~",    
+asper_oxy   	=> "<'",    
+asper_bary  	=> "<`",   
+asper_peri  	=> "<~",     
+diaer_oxy  		=> "\"'",       
+diaer_bary 		=> "\"¥",       
+
+iota_subscript 	=> "|",
+longum 			=> "",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "Ú",
+sigma_lunate => "Û", 	# n/a      
+Sigma_lunate => "”", 	# n/a
+rho_asper	 => "<Ò",
+rho_lenis 	 => ">Ò",
+Rho_asper	 => "<—",	
+Rho_lenis 	 => ">—",	
+digamma 	 => "f", 
+Digamma 	 => "F",
+koppa 		 => "k",
+Koppa 		 => "K",
+sampi 		 => "",   
+
+#
+# alpha with accents
+#
+alpha_oxy        => "‹", 
+alpha_bary       => "`·",
+alpha_peri       => "~·",  
+alpha_lenis      => ">·",       
+alpha_asper      => "<·",       
+alpha_lenis_oxy  => ">‹",       
+alpha_asper_oxy  => "<‹",
+alpha_lenis_bary => ">`·",    
+alpha_asper_bary => "<`·",	
+alpha_lenis_peri => ">~·",
+alpha_asper_peri => "<~·",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "·|",
+alpha_oxy_isub        => "‹|",     
+alpha_bary_isub       => "`·|",        
+alpha_peri_isub       => "~·|",        
+alpha_lenis_isub      => ">·|",     
+alpha_asper_isub      => "<·|",     
+alpha_lenis_oxy_isub  => ">‹|",     
+alpha_asper_oxy_isub  => "<‹|",   
+alpha_lenis_bary_isub => ">`·|",   
+alpha_asper_bary_isub => "<`·|",     
+alpha_lenis_peri_isub => ">~·|",     
+alpha_asper_peri_isub => "<~·|",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "›",     
+epsilon_bary       => "`Â",     
+epsilon_peri 	   => "~Â",    
+epsilon_lenis      => ">Â",        
+epsilon_asper      => "<Â",        
+epsilon_lenis_oxy  => ">›",        
+epsilon_asper_oxy  => "<›",        
+epsilon_lenis_bary => ">`Â",        
+epsilon_asper_bary => "<`Â",	 
+epsilon_lenis_peri => ">~Â", 
+epsilon_asper_peri => "<~Â",
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "ﬁ",
+eta_bary       => "`Á",
+eta_peri       => "~Á",
+eta_lenis      => ">Á",
+eta_asper      => "<Á",
+eta_lenis_oxy  => ">ﬁ",
+eta_asper_oxy  => "<ﬁ",
+eta_lenis_bary => ">`Á",
+eta_asper_bary => "<`Á",
+eta_lenis_peri => ">~Á",
+eta_asper_peri => "<~Á",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "Á|",      
+eta_oxy_isub        => "ﬁ|",  
+eta_bary_isub       => "`Á|",  
+eta_peri_isub       => "~Á|",  
+eta_lenis_isub      => ">Á",  
+eta_asper_isub      => "<Á",  
+eta_lenis_oxy_isub  => ">ﬁ|",  
+eta_asper_oxy_isub  => "<ﬁ|",  
+eta_lenis_bary_isub => ">`Á|",  
+eta_asper_bary_isub => "<`Á|",  
+eta_lenis_peri_isub => ">~Á|",  
+eta_asper_peri_isub => "<~Á|",  
+
+#
+#iota with accents
+#
+iota_oxy        => "ﬂ",
+iota_bary       => "`È",
+iota_peri       => "~È",
+iota_lenis      => ">È",
+iota_asper      => "<È",
+iota_lenis_oxy  => ">ﬂ",
+iota_asper_oxy  => "<ﬂ",
+iota_lenis_bary => ">`È",
+iota_asper_bary => "<`È",
+iota_lenis_peri => ">~È",
+iota_asper_peri => "<~È",
+iota_diaer      => "˙",
+iota_diaer_oxy  => "¿",
+iota_diaer_bary => "\"`È",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "¸",
+omicron_bary       => "`Ô",
+omicron_peri 	   => "~Ô",           
+omicron_lenis      => ">Ô",
+omicron_asper      => "<Ô",
+omicron_lenis_oxy  => ">¸",
+omicron_asper_oxy  => "<¸",
+omicron_lenis_bary => ">`Ô",
+omicron_asper_bary => "<`Ô",
+omicron_lenis_peri => ">~Ô",        
+omicron_asper_peri => "<~Ô",    
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "˝",
+upsilon_bary       => "`ı",
+upsilon_peri       => "~ı",
+upsilon_lenis      => ">ı",
+upsilon_asper      => "<ı",
+upsilon_lenis_oxy  => ">˝",
+upsilon_asper_oxy  => "<˝",
+upsilon_lenis_bary => ">`ı",
+upsilon_asper_bary => "<`ı",
+upsilon_lenis_peri => ">~ı",
+upsilon_asper_peri => "<~ı",
+upsilon_diaer      => "˚",
+upsilon_diaer_oxy  => "‡", 
+upsilon_diaer_bary => "\"`ı",
+
+#
+# omega with accents
+#
+omega_oxy        => "˛",
+omega_bary       => "`˘",
+omega_peri       => "~˘",
+omega_lenis      => ">˘",
+omega_asper      => "<˘",
+omega_lenis_oxy  => ">˛",
+omega_asper_oxy  => "<˛",
+omega_lenis_bary => ">`˘",
+omega_asper_bary => "<`˘",
+omega_lenis_peri => ">~˘",
+omega_asper_peri => "<~˘",
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "˘|",     
+omega_oxy_isub        => "˛|",
+omega_bary_isub       => "`˘|", 
+omega_peri_isub       => "~˘|",
+omega_lenis_isub      => ">˘|", 
+omega_asper_isub      => "<˘|",
+omega_lenis_oxy_isub  => ">˛|",
+omega_asper_oxy_isub  => "<˛|",
+omega_lenis_bary_isub => ">`˘|", 
+omega_asper_bary_isub => "<`˘|",
+omega_lenis_peri_isub => ">~˘|",  
+omega_asper_peri_isub => "<~˘|",  
+
+#
+# Punctuation
+#
+space      => " ",
+prime      => "\x2f", # for numbers
+hyphen     => "-",
+dash       => " -- ",
+period     => ".",
+asterisk   => "*",
+comma	   => ",",
+underscore => "_",
+asteriskos => "*",
+raised_dot	   => ";",
+semicolon  => "?", # Greek mark of interrogation
+question   => "¨¨textlatin{?}", # Latin question mark: `?'
+equals     => "=",
+vertical   => "|", # vertical bar: `|'
+tilde	   => "~",
+apostrophe => '\'\'',
+
+quote_sngl_left  => "",    
+quote_sngl_right => "",    
+guillemot_left 	 => "((",
+guillemot_right  => "))",
+quote_dbl_left 	 => "",
+quote_dbl_right  => "",
+parens_left		 => "(",
+parens_right	 => ")",
+bracket_left 	 => "[",
+bracket_right 	 => "]",
+angle_left 		 => "",  
+angle_right 	 => "", 
+brace_left 		 => "{",  
+brace_right 	 => "}", 
+dagger 			 => "",     
+dagger_dbl 		 => "",  
+aspirate 		 => "",        
+
+}; # Keep this line.
+
+my $babel_latex = sub
+{
+	my $ref = shift; 	
+	$$ref =~ s/{\d*/</g;
+	$$ref =~ s/}\d*/>/g;
+	$$ref =~ s/\[1/(/g;
+	$$ref =~ s/\]1/)/g;
+	$$ref =~ s/\[[23]/¨¨textless{}/g;
+	$$ref =~ s/\][23]/¨¨textgreater{}/g;
+	$$ref =~ s/\[\d*/{[}/g;
+	$$ref =~ s/\]\d*/{]}/g;
+	$$ref =~ s/\<\d*/¨¨textless{}/g;
+	$$ref =~ s/\>\d*/¨¨textgreater{}/g;
+	$$ref =~ s/"1/¨¨quotedblbase{}/g;
+	$$ref =~ s/"2/¨¨textquotedblleft{}/g;
+	$$ref =~ s/"4/¨¨quotesinglbase{}/g;
+	$$ref =~ s/"5/¨¨textquoteleft{}/g;
+	$$ref =~ s#([\s\n~])\"6#$1¨¨guillemotleft{}#g;
+	$$ref =~ s#\"6#¨¨guillemotright{}#g;
+	$$ref =~ s#([\s\n~])\"7#$1¨¨guilsinglleft{}#g;
+	$$ref =~ s#\"7#¨¨guilsinglright{}#g;
+	#$$ref =~ s/"/¨¨"{}/g;
+	$$ref =~ s#([\s\n~])\"3?(\"3)?#$1¨¨textquoteleft{}#g;
+	$$ref =~ s#\"3?(\"3)?#¨¨textquoteright{}#g;
+	$$ref =~ s#`##g;
+	$$ref =~ s#([a-zA-Z][123/\\|+)(=]*)\?#¨¨d{$1}#g;
+	$$ref =~ s#([/\\|+)(=]+)\?#¨¨d{$1}#g;
+	$$ref =~ s/\?/¨¨textlatin{?}/g;
+	$$ref =~ s/!/./g;
+	$$ref =~ s/#\d*/*/g;
+	$$ref =~ s/%13(?!\d)/¨¨ddag{}/g;
+	$$ref =~ s/%14(?!\d)/¨¨P{}/g;
+	$$ref =~ s/%18(?!\d)/\'\'/g;
+	$$ref =~ s/%19(?!\d)/-/g;
+	$$ref =~ s/%1(?!\d)/¨¨textlatin{?}/g;
+	$$ref =~ s/%3(?!\d)/\//g;
+	$$ref =~ s/%4(?!\d)/!/g;
+	$$ref =~ s/%5(?!\d)/|/g;
+	$$ref =~ s/%6(?!\d)/=/g;
+	$$ref =~ s/%7(?!\d)/+/g;
+	$$ref =~ s/%8(?!\d)/%/g;
+	$$ref =~ s/%9(?!\d)/&/g;
+	$$ref =~ s/%\d*/*/g;
+	$$ref =~ s/%/¨¨dag{}/g;
+	$$ref =~ s/@[12]/\n/g;
+#	produces spurious latin text in a modern greek environment
+#	$$ref =~ s/\$(?!\d)/¨¨latintext{}/g;
+	$$ref =~ s/\$\d?[16](?!\d)/¨¨bf{}/g;
+	$$ref =~ s/\$\d?3(?!\d)/¨¨it{}/g;
+#	$$ref =~ s/\$9(?!\d)/¨¨latintext{}/g;
+
+	$$ref =~ s#@\d+#\n#g; 
+	$$ref =~ s#@# #g;
+	$$ref =~ s/(\ \ +)/my $l=length($1);'{'.('¨¨ 'x$l) .'}'/ge; #only multiple spaces
+
+};
+$Diogenes::encoding{Babel_7}{pre_match} = $babel_latex;
+
+my $babel_latex_post = sub 
+{
+	my $ref = shift; 	
+	$$ref =~ s/¨¨/\\/g; # Unescape the backslashes
+	$$ref =~ s/\n/\\ \\\\\n/g; # Line-breaks
+	$$ref = "\\selectlanguage{polutonikogreek}\n" . $$ref . "\n\\latintext";
+
+};
+$Diogenes::encoding{Babel_7}{post_match} = $babel_latex_post; 
+
+##################################################################
+
+# Another option is to define an encoding by passing a reference
+# to Perl code that will do the translation directly.  This will
+# be much quicker than using a character map, as the other examples
+# in this file do, but it is only appropriate for very simple
+# transformations.
+
+##################################################################
+
+
+
+# SPIonic is a public domain TrueType font that keeps very close
+# to the BETA encoding.  This code does not take advantage of its
+# distinction between wide and narrow letters.
+
+$Diogenes::encoding{SPIonic}{sub} = sub 
+{
+	my $ref = shift; 		# The text is passed as a reference to a string
+							# (Note double $$ in subsequent lines)
+
+	$$ref =~ tr/A-Z/a-z/;   # Make everything lower case
+	$$ref =~ s/s1/s/g;		# Normal sigma
+	$$ref =~ s/s2/j/g;		# Final sigma is `j' in this encoding
+	$$ref =~ s/s3/s/g;      # Lunate sigma is unsupported, so use normal sigma
+	$$ref =~ s#`#ß#g;		# The ` char in BETA is a null separator -- ascii output 
+							# format will not remove these, since they are
+							# relevant to the Ibycus encoding -- so we change them
+							# to something that will get removed.
+							
+	$$ref =~ s/\*(\W*)(\w)/$1\u$2/g;	# Remove *, uppercasing following letter;
+
+};							# Note trailing semicolon.
+
+# Some styles of Greek encoding cannot be intermixed with Latin
+# letters without confusion -- in other words, they remap the ascii or
+# iso_8859_1 ranges (<255).  It may help some markup formats to give a 
+# font name to be associated with this encoding in order to distinguish
+# it from Latin text.
+$Diogenes::encoding{SPIonic}{font_name} = 'SPIonic';
+
+
+# Standard installations of TeX such as teTeX come with the LaTeX Babel
+# package and the cbgreek fonts.  This uses a different polytonic
+# encoding to Ibycus, which is the native format used by Diogenes when
+# generating LaTeX files.  To use this encoding say in your LaTeX file:
+# \usepackage[polutonikogreek]{babel}
+
+$Diogenes::encoding{Babel}{pre_match} = sub
+{
+	my $ref = shift;
+	$$ref =~ tr/A-Z/a-z/;
+	$$ref =~ s/q/j/g;
+	$$ref =~ s/x/q/g;
+	$$ref =~ s/c/x/g;
+	$$ref =~ s/s1/s/g;
+	$$ref =~ s/s2/c/g;
+	$$ref =~ s/\*(\W*)(\w)/$1\u$2/g; # Upper-case
+
+};
+$Diogenes::encoding{Babel}{sub} = $babel_latex;
+$Diogenes::encoding{Babel}{post_match} = sub
+{
+	my $ref = shift;
+	$$ref =~ s/\'/''/g;   # coronis is ''
+	$$ref =~ s/(\w)\)/>$1/g;
+	$$ref =~ s/(\w)\(/<$1/g;
+	$$ref =~ s#(\w)\/#'$1#g;  # Accent comes before the letter!
+	$$ref =~ s#(\w)\\#\`$1#g;
+	$$ref =~ s/(\w)\=/~$1/g;
+	$$ref =~ s/(\w)\+/"$1/g;
+	$$ref =~ s/\+/"/g;  # Accents before upper-case
+	$$ref =~ s/\)/>/g;
+	$$ref =~ s/\(/</g;
+	$$ref =~ s/\//'/g;  
+	$$ref =~ s/\\/`/g;
+	$$ref =~ s/\=/~/g;
+	$$ref =~ s/\;/?/g;
+	$$ref =~ s/\:/;/g;
+	$babel_latex_post->($ref);
+};
+
+
+$Diogenes::encoding{SGreek}{sub} = sub 
+{
+	my $ref = shift;
+	$$ref =~ tr/A-Z/a-z/;
+	$$ref =~ s/s[123]/s/g;
+	$$ref =~ s#(?<!\*)s(?![a-z)(|/\\=+])#j#g;	# Final sigma
+	$$ref =~ s/\*(\W*)(\w)/$1\u$2/g;
+};
+
+$Diogenes::encoding{SGreek}{font_name} = 'Sgreek Fixed';
+
+################ Coptic encodings ###################
+
+$Diogenes::coptic_encoding{'UTF-8'} = {
+
+#
+# Basic alphabet
+#
+alpha	=> "Œ±",
+beta 	=> "Œ≤",
+gamma 	=> "Œ≥",
+delta 	=> "Œ¥",
+epsilon => "Œµ",
+zeta 	=> "Œ∂",
+eta 	=> "Œ∑",
+theta 	=> "Œ∏",
+iota 	=> "Œπ",
+kappa 	=> "Œ∫",
+lambda	=> "Œª",
+mu 		=> "Œº",
+nu 		=> "ŒΩ",
+xi 		=> "Œæ",
+omicron => "Œø",
+pi 		=> "œÄ",
+rho 	=> "œÅ",
+#sigma 	=> "œÉ",
+sigma 	=> "œ≤", #lunate
+tau 	=> "œÑ",
+#upsilon => "œÖ",
+upsilon => "œí", # with hook
+phi 	=> "œÜ",
+chi 	=> "œá",
+psi 	=> "œà",
+omega 	=> "œâ",
+
+# combining diacrits
+
+iota_diaer 	=> "œä",
+upsilon_diaer => "œã",
+alpha_peri	=> "Œ±ÕÇ",
+eta_peri    => "Œ∑ÕÇ", 
+omicron_peri => "ŒøÕÇ",
+omega_peri  => "œâÕÇ",
+shei_peri   => "œ£ÕÇ",
+
+# NB. Caps not used in PHI texts
+
+#
+# Coptic letters
+#
+shei    => "œ£",
+fei     => "œ•",
+khei    => "œß",
+hori    => "œ©",
+gangia  => "œ´",
+shima   => "œ≠",
+dei     => "œØ",
+
+Shei    => "œ¢",
+Fei     => "œ§",
+Khei    => "œ¶",
+Hori    => "œ®",
+Gangia  => "œ™",
+Shima   => "œ¨",
+Dei     => "œÆ",
+
+#
+# Punctuation
+#
+space      => ' ',
+prime      => "Õ¥", # for numbers
+hyphen     => "-",
+dash       => " - ",
+period     => '.',
+asterisk   => '*',
+comma	   => ',',
+underscore => '_',
+asteriskos => '*',
+raised_dot => "Œá",
+semicolon  => "Õæ", # Greek mark of interrogation
+question   => '?', # Latin question mark: `?'
+equals     => '=',
+vertical   => '|', # vertical bar: `|'
+tilde	   => '~',
+apostrophe => '\'',
+forward_slash => '\'', # a convention of the PHI texts
+
+quote_sngl_left  => "¬ë",    
+quote_sngl_right => "¬í",    
+guillemot_left 	 => "¬´",
+guillemot_right  => "¬ª",
+quote_dbl_left 	 => "¬ì",
+quote_dbl_right  => "¬î",
+parens_left		 => '(',
+parens_right	 => ')',
+bracket_left 	 => '[',
+bracket_right 	 => ']',
+angle_left 		 => '<',  
+angle_right 	 => '>', 
+brace_left 		 => '{',  
+brace_right 	 => '}', 
+dagger 			 => "¬Ü",     
+dagger_dbl 		 => "¬á",  
+
+}; # Keep this line.
+
+$Diogenes::coptic_encoding{'UTF-8'}{post_match} = $UTF_8_post;
+
+$Diogenes::coptic_encoding{Koptos} = {
+
+font_name => 'Koptos',  # The usual name under MSWindows 
+remap_ascii => 1,
+
+#
+# Basic alphabet
+#
+alpha	=> "a",
+beta 	=> "b",
+gamma 	=> "g",
+delta 	=> "d",
+epsilon => "e",
+zeta 	=> "z",
+eta 	=> "h",
+theta 	=> "q",
+iota 	=> "i",
+kappa 	=> "k",
+lambda	=> "l",
+mu 		=> "m",
+nu 		=> "n",
+xi 		=> "c",
+omicron => "o",
+pi 		=> "p",
+rho 	=> "r",
+sigma 	=> "s",
+tau 	=> "t",
+upsilon => "u",
+phi 	=> "f",
+chi 	=> "x",
+psi 	=> "y",
+omega 	=> "w",
+
+# combining diacrits
+
+iota_diaer 	=> "\xcd",
+upsilon_diaer => "\x55",
+alpha_peri	=> "a",
+eta_peri    => "h", 
+omicron_peri => "o",
+omega_peri  => "w",
+shei_peri   => "\x53",
+
+#
+# Coptic letters
+#
+shei    => "\x53",
+fei     => "\x46",
+khei    => "\x4b",
+hori    => "\x48",
+gangia  => "\x4a",
+shima   => "\x47",
+dei     => "\x54",
+
+#
+# Punctuation
+#
+space      => "\x20",
+prime      => "\x2f", # for numbers
+hyphen     => "\x2d",
+dash       => " \x2d\x2d ",
+period     => "\x2e",
+asterisk   => "",
+comma	   => "\x2c",
+underscore => "",
+asteriskos => "",
+raised_dot	   => "\x3a",
+semicolon  => "\x3b", # Greek mark of interrogation
+question   => "", # Latin question mark: `?'
+equals     => "",
+vertical   => "\x7c", # vertical bar: `|'
+tilde	   => "",
+apostrophe => "\x27",  
+
+quote            => "\x23", #not really
+
+quote_sngl_left  => "\x3c",    
+quote_sngl_right => "\x3e",    
+guillemot_left 	 => "\x3c",
+guillemot_right  => "\x3e",
+quote_dbl_left 	 => "\x3c",
+quote_dbl_right  => "\x3e",
+parens_left		 => "(",
+parens_right	 => ")",
+bracket_left 	 => "\x7b",
+bracket_right 	 => "\x7d",
+angle_left 		 => "\x3c",  
+angle_right 	 => "\x3e", 
+brace_left 		 => "\x7b",  
+brace_right 	 => "\x7d", 
+dagger 			 => "",     
+dagger_dbl 		 => "",  
+aspirate 		 => "",        
+
+}; # Keep this line.
+
+
