@@ -27,7 +27,8 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION = '1.3.1';
+$Diogenes::VERSION        =  1.3.2;
+$Diogenes::VERSION_string = "1.3.2";
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
@@ -4953,81 +4954,89 @@ sub seek_passage
     # First, we look in the table of contents for starting point
     $top_level = (keys %{ $Diogenes::level_label{$self->{type}}{$auth}{$work} }) - 1;
     my ($block, $old_block);
-    # We have to iterate through these levels, since for alphabetic entries, they
-    # may not be in any order.
-  SECTION:
-    for (@{ $Diogenes::top_levels{$self->{type}}{$auth}{$work} })
-    {
-        $block = @{ $_ }[1];
-        my $comp = compare(@{ $_ }[0], $target{$top_level});
-        if ($comp >= 0)
-        {
-            # We've gone too far, so use previous chunk
-            print STDERR 
-                ">>>@{ $_ }[0] => $target{$top_level} (using block $old_block)\n" if 
-                    $self->{debug};
-            $block = $old_block;
-            last SECTION;
-        }
-        $old_block = $block;
-    }
-    # No match, so we try another trick
-    print STDERR "No match in table of contents.\n" if 
-        $self->{debug} and not defined $block;
-    
-    # We now look in the table of last citations per block
-    my $cite_block = $block || 0;
-  CITE_BLOCK:
-    while ($cite_block <= $end_block)
-    {
-        my $level = $Diogenes::last_citation{$self->{type}}{$auth}{$work}{$cite_block};
 
-        unless (defined $level)
+    if ($self->{type}.$auth =~ /tlg5034|phi1348|phi0588/m )
+    {
+        print STDERR "Skipping ToC for this wierd author.\n" if $self->{debug};
+    }
+    else
+    {
+        # We have to iterate through these levels, since for alphabetic entries, they
+        # may not be in any order.
+      SECTION:
+        for (@{ $Diogenes::top_levels{$self->{type}}{$auth}{$work} })
         {
-            # In case we are in an earlier work
-            $cite_block++;
-            next CITE_BLOCK;
-        }
-      LEVEL:
-        foreach $lev (reverse sort numerically keys 
-                      %{ $Diogenes::level_label{$self->{type}}{$auth}{$work} }) 
-        {   
-            # See below
-            next LEVEL if 
-                $Diogenes::level_label{$self->{type}}{$auth}{$work}{$lev} =~ m#^\*#;
-            next LEVEL unless $target{$lev};
-            my $result = compare($level->{$lev}, $target{$lev});
-            print STDERR 
-                "¬¬¬$level->{$lev} <=> $target{$lev}: res = $result ($lev, $cite_block)\n"
-                if $self->{debug};
-            if ($result == 0)
+            $block = @{ $_ }[1];
+            my $comp = compare(@{ $_ }[0], $target{$top_level});
+            if ($comp >= 0)
             {
-                next LEVEL;
+                # We've gone too far, so use previous chunk
+                print STDERR 
+                    ">>>@{ $_ }[0] => $target{$top_level} (using block $old_block)\n" if 
+                    $self->{debug};
+                $block = $old_block;
+                last SECTION;
             }
-            elsif ($result == -1)
+            $old_block = $block;
+        }
+        # No match, so we try another trick
+        print STDERR "No match in table of contents.\n" if 
+            $self->{debug} and not defined $block;
+    
+        # We now look in the table of last citations per block
+        my $cite_block = $block || 0;
+      CITE_BLOCK:
+        while ($cite_block <= $end_block)
+        {
+            my $level = $Diogenes::last_citation{$self->{type}}{$auth}{$work}{$cite_block};
+            
+            unless (defined $level)
             {
+                # In case we are in an earlier work
                 $cite_block++;
                 next CITE_BLOCK;
             }
-            else
-            {
-                $block = $cite_block;
-                last CITE_BLOCK;
+          LEVEL:
+            foreach $lev (reverse sort numerically keys 
+                          %{ $Diogenes::level_label{$self->{type}}{$auth}{$work} }) 
+            {   
+                # See below
+                next LEVEL if 
+                    $Diogenes::level_label{$self->{type}}{$auth}{$work}{$lev} =~ m#^\*#;
+                next LEVEL unless $target{$lev};
+                my $result = compare($level->{$lev}, $target{$lev});
+                print STDERR 
+                    "¬¬¬$level->{$lev} <=> $target{$lev}: res = $result ($lev, $cite_block)\n"
+                    if $self->{debug};
+                if ($result == 0)
+                {
+                    next LEVEL;
+                }
+                elsif ($result == -1)
+                {
+                    $cite_block++;
+                    next CITE_BLOCK;
+                }
+                else
+                {
+                    $block = $cite_block;
+                    last CITE_BLOCK;
+                }
             }
+            $block = $cite_block;
+            last CITE_BLOCK;
         }
-        $block = $cite_block;
-        last CITE_BLOCK;
+    
+        my $next_work = sprintf '%03d', $work + 1;
+        $cite_block--; # went one too far
+        print STDERR "nw: $next_work, cb: $cite_block\n" if $self->{debug};
+        # Next block contains the end of our work but ends in the next work.
+        $block = $cite_block if exists 
+            $Diogenes::last_citation{$self->{type}}{$auth}{$next_work} and exists
+            $Diogenes::last_citation{$self->{type}}{$auth}{$next_work}{$cite_block};
+    
+        print STDERR "Searching entire work!\n" if $self->{debug} and not defined $block;
     }
-    
-    my $next_work = sprintf '%03d', $work + 1;
-    $cite_block--; # went one too far
-    print STDERR "nw: $next_work, cb: $cite_block\n" if $self->{debug};
-    # Next block contains the end of our work but ends in the next work.
-    $block = $cite_block if exists 
-        $Diogenes::last_citation{$self->{type}}{$auth}{$next_work} and exists
-        $Diogenes::last_citation{$self->{type}}{$auth}{$next_work}{$cite_block};
-    
-    print STDERR "Searching entire work!\n" if $self->{debug} and not defined $block;
     $block ||= 0;
     my $starting_point = ($block - $start_block) << 13 if $block;
     $i = $starting_point || 0;
@@ -5112,8 +5121,8 @@ sub compare
     my ($current, $target) = @_;
     $current ||= 0;
 
-    # Match if we have no target
-    return 1 if $target eq '';
+    # Match if we have no target or is zero
+    return 1 unless $target;
     $target  ||= 0;
 
     my ($current_bin, $current_ascii) = $current =~ m/^(\d+)?(.*)$/;

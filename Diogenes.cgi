@@ -129,6 +129,8 @@ elsif ($form->param('greek_output_format') and
 
 my %handler; my $query;
 
+my $version = $Diogenes::VERSION_string;
+
 my $my_footer = sub
 {							
 	print <<"END";
@@ -138,7 +140,7 @@ my $my_footer = sub
 Graecae</em>, the Packard Humanities Institute and others.<br>The information in
 these databases is subject to restrictions on access and use; consult your license.
 <br><a href="http://www.durham.ac.uk/p.j.heslin/diogenes">Diogenes</a>
-(version $Diogenes::VERSION) is 
+(version $version) is
 <a
 href="http://www.durham.ac.uk/p.j.heslin/diogenes/license.html">&copy;</a>
 1999-2001 P.J. Heslin. 
@@ -347,6 +349,7 @@ my $print_page_2 = sub
 	print $form->hidden('current_page'),
 		 $form->hidden('Type'),
 		 $form->hidden('Filter'),
+		 $form->hidden('Input_method'),
 		 $form->hidden('Multiple'),
 		'<center><TABLE BORDER=0><TR><TD>';
 	
