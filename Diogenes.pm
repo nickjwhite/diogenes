@@ -4898,7 +4898,8 @@ sub seek_passage
     for (@{ $Diogenes::top_levels{$self->{type}}{$auth}{$work} })
     {
         $block = @{ $_ }[1];
-        if (compare(@{ $_ }[0], $target{$top_level}) > 0)
+        my $comp = compare(@{ $_ }[0], $target{$top_level});
+        if ($comp >= 0)
         {
             # We've gone too far, so use previous chunk
             print STDERR 
@@ -5032,16 +5033,21 @@ sub compare
     # Returns 0 for =, -1 for < and 1 for >
     my ($current, $target) = @_;
     $current ||= 0;
+
+    # Match if we have no target
+    return 1 if $target eq '';
     $target  ||= 0;
 
     my ($current_bin, $current_ascii) = $current =~ m/^(\d+)?(.*)$/;
     my ($target_bin,  $target_ascii ) = $target  =~ m/^(\d+)?(.*)$/;
     
-    ##print "|$current_bin|$current_ascii|$target_bin|$target_ascii|\n";
+    #print "|$current_bin|$current_ascii|$target_bin|$target_ascii|\n";
     
     # Match if leading binary part greater than or equal to target
-    return -1 if defined $current_bin and defined $target_bin and $current_bin < $target_bin;
-    return  1 if defined $current_bin and defined $target_bin and $current_bin > $target_bin;
+    return -1 if defined $current_bin and defined $target_bin and 
+        $current_bin < $target_bin;
+    return  1 if defined $current_bin and defined $target_bin and 
+        $current_bin > $target_bin;
     return -1 if not defined $current_bin and defined $target_bin;
     return  1 if defined $current_bin and not defined $target_bin;
     
@@ -5051,12 +5057,14 @@ sub compare
     return 0 if $current_ascii eq $target_ascii;
     if ((index $target_ascii, ':') == 0)
     {
-                # The INS database sometimes has document 1:300[2], etc. where the second half is
-                # really ordered numerically
-                my ($current_extra_num) = $current_ascii =~ m/^:(\d+)/;
-                my ($target_extra_num)  = $target_ascii  =~ m/^:(\d+)/;
-        return -1 if defined $current_extra_num and defined $target_extra_num and $current_extra_num < $target_extra_num;
-        return  1 if defined $current_extra_num and defined $target_extra_num and $current_extra_num > $target_extra_num;
+        # The INS database sometimes has document 1:300[2], etc. where the second half is
+        # really ordered numerically
+        my ($current_extra_num) = $current_ascii =~ m/^:(\d+)/;
+        my ($target_extra_num)  = $target_ascii  =~ m/^:(\d+)/;
+        return -1 if defined $current_extra_num and defined $target_extra_num and 
+            $current_extra_num < $target_extra_num;
+        return  1 if defined $current_extra_num and defined $target_extra_num and 
+            $current_extra_num > $target_extra_num;
     }
     # If both are single letters, match alphabetically (important for Plato)
     if ($current_ascii =~ m/^[a-zA-Z]$/ and $target_ascii =~ m/^[a-zA-Z]$/)
@@ -5067,6 +5075,7 @@ sub compare
     # Match if one is a substring of the other, and don't match otherwise, if
     # we are dealing with strings (my addition)
     return 1 if (index $current_ascii, $target_ascii) >= 0;
+    return 1 if (index $target_ascii, $current_ascii) >= 0;
     return -1 unless defined $current_bin or defined $target_bin;
     
     # Is this really necessary?
@@ -5077,9 +5086,9 @@ sub compare
     {
         return  1 unless defined $target[$n];
         return  1 if $current[$n] =~ m/^\d+$/ and $target[$n] =~ m/^\d+$/ 
-                        and $current[$n] > $target[$n];
+            and $current[$n] > $target[$n];
         return -1 if $current[$n] =~ m/^\d+$/ and $target[$n] =~ m/^\d+$/
-                        and $current[$n] < $target[$n];
+            and $current[$n] < $target[$n];
         return  0 if $current[$n] =~ m/^\d+$/ and $target[$n] =~ m/^\d+$/;
         
         # We can't match on alphabetic sorting, because most texts don't work that way
