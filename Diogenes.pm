@@ -2789,6 +2789,7 @@ sub beta_encoding_to_transliteration
     $$ref =~ s/s1/s\|/g;
     $$ref =~ s/s2/j/g;
     $$ref =~ s/s3/c+/g;
+    $$ref =~ s/'/$self->{ibycus4} ? '{\'}' : '\'\''/ge;
     $$ref =~ s/\//'/g;
     $$ref =~ s/\\/`/g;
     $$ref =~ s/\*(\W*)(\w)/$1\u$2/g;
