@@ -1,0 +1,143 @@
+# The configuration file for Diogenes, the Perl and html interface to the 
+# CD-Rom databases from the Thesaurus Linguae Graecae and the Packard
+# Humanities Institute.
+
+# Comments begin with `#' and blank lines are ignored. Each
+# keyword/value pair must be on a separate line.  If a value contains
+# spaces, enclose it in double quotes ("").  Keyword and value may
+# optionally be separated by an equals sign. 
+
+# The crucial values here are tlg_dir, phi_dir and ddp_dir -- they
+# tell the program where to find the datbases. 
+
+# This file should be put in place as /etc/diogenesrc for system-wide
+# defaults or ~/.diogenesrc for user-specific defaults, which override the
+# system-wide settings.
+
+# For a full list of the settings available to be set here, see the
+# documentation of the Diogenes module (perldoc Diogenes).
+
+# Here are the settings most likely to be changed on a system-wide or
+# user-by-user basis:
+
+tlg_dir    /mnt/cdrom/
+phi_dir    /mnt/cdrom/
+
+# On some newer disks, the prefix used by the PHI disks is not `phi'
+# but `lat'.  Change this if you need to.
+
+phi_file_prefix	 lat
+
+# Some other configuration items:
+
+# browse_lines            number of lines for the browser to show at a time
+# dump_file               a file (full path) to dump debugging info into on error
+
+browse_lines 39
+dump_file /tmp/Diogenes_dump.txt
+
+# Set these to true (1) or false (0)
+# ibycus4	If you have v.4 or later of the Ibycus font
+# prosody   If you have the Hephaistio prosody font installed
+
+ibycus4 1
+prosody 1
+
+# blacklist_file is a file that contains a list of four-digit author
+# codes preceeded by the standard file prefix (TLG, PHI, etc).  These
+# files are ignored in seraches.  
+
+# blacklist_file /home/joe_user/diogenes.blacklist
+
+#-----------------------------------------------------#
+# Here are the settings for the CGI user interface    #
+#-----------------------------------------------------#
+
+# User input as Latin transliteration or Beta code
+#cgi_input_format BETA
+cgi_input_format Latin
+
+# Default corpus on splash page
+cgi_default_corpus = Latin
+
+# Enable Latex
+cgi_enable_latex 1
+
+# And for TLG word-list, too
+# cgi_latex_word_list 1
+
+cgi_default_encoding UTF-8
+
+unicode_font  "Arial Unicode MS, Titus Cyberbit, Athena Unicode, Athena Roman"
+										
+##### These are the system settings for an Apache CGI server ####
+
+################################################################
+#                                                              #
+# Make sure that the following is an OK directory and prefix   #
+# to use for the temp files we generate.                       #
+
+cgi_tmp_dir = /tmp
+cgi_prefix = diogenes.
+
+#####################################################################
+#                                                                   #
+# For Apache servers, cgi_img_dir_absolute must be a                #
+# directory owned by the username under which                       #
+# the CGI server runs (such as nobody or www-data).                 #
+# Must be a directory unique to Diogenes, since all files that      #
+# do not begin with `Diogenes_' and that have not been accessed     #
+# within one day are periodically cleaned out.                      #
+#                                                                   #
+# The gif images are put here in order to be served to browsers.    #
+# This must be an absolute pathname and should end in a /.          #
+
+cgi_img_dir_absolute = /var/www/html/diogenes/
+
+#####################################################################
+#                                                                   #
+# cgi_img_dir_relative should point to the SAME directory           #
+# as Img_dir above, except that it gives the path                   #
+# relative to DocumentRoot -- it is the path we give to browsers    #
+# to look for the images (also should end in a /).                  #
+
+cgi_img_dir_relative = /diogenes/
+
+#####################################################################
+#                                                                   #
+# Make sure that the following variables point to the               #
+# right path for these programs on your system.                     #
+#                                                                   #
+# This is ghostscript
+cgi_gs = /usr/bin/gs
+
+# This is ppmtogif
+cgi_p2g = /usr/bin/ppmtogif
+
+# This is latex
+cgi_latex = /usr/bin/latex
+
+# This is dvips
+cgi_dvips = /usr/bin/dvips
+
+####################################################################
+
+# Give this a false value unless you have mod_perl installed
+# and want to make sure you are using it --
+# this will check to make sure the server is actually using it and 
+# throw an error otherwise.
+
+cgi_check_mod_perl = 0
+
+# latex_pointsize 10
+# latex_baseskip 12
+
+#####################################################################
+#                                                                   #
+# If all of the above variables are set correctly, you should be    #
+# finished.  Remember to create the directory $Img_dir in a place   #
+# your server will use to serve images from, and then chown the     #
+# directory to the server's username so that it will have           #
+# permission to write to it.                                        #
+#                                                                   #
+#####################################################################

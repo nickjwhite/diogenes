@@ -1,0 +1,105 @@
+To-do list: 
+
+ * I have tried to keep the translation of Greek encoding separate from
+   the translation of page mark-up, but this has proven to be folly;
+   they are forced to be incestuous, since they use each others
+   control and escape characters constantly, and the border between the
+   two varies with each combination of encoding and mark-up scheme.
+   This is still a nightmare.  The easiest thing to do would have been
+   to mandate one mark-up scheme for each encoding: thus UTF-8 implies
+   HTML only; Ibycus or Babel implies (La)TeX only.  But some people
+   want to be able to cut and paste from their web browser into their
+   LaTeX or WinGreek document.  Go figure.
+
+   The best approach, therefore has proven to be the most flexible one:
+   providing the ability to apply a set of transformations before the
+   and after the encoding translations are done.  In this way, the first
+   pass can protect any Beta formatting escapes that are also used by
+   the Greek encoding, and then the second pass can translate those
+   protected escapes into the implied mark-up scheme, or leave them to
+   be dealt with later by the appropriate formatting code; see the Babel
+   and Babel_7 encodings for examples.  The second pass can also grab
+   some formatting information and express it at the level of the
+   encoding (see UTF-8).
+
+   So I should go back and redo WinGreek, SMK GreekKeys, and all of the
+   encodings that remap the ASCII range in this way.  Ideally, the full
+   LaTeX mark-up would be usable with Babel as well as Ibycus.
+
+ * Now that the TLG formatting codes are better documented, go back
+   through the LaTeX and HTML formatting routines to fix the guesswork
+   about what symbol is what.  The Beta to HTML routine was an
+   afterthought to the LaTeX one, and it should be rewritten to use
+   CSS. 
+
+ * The CGI script is still a mess.  The flow control should be made
+   clearer and the HTML should be generated exclusively by using CGI.pm
+   shortcuts, which would help avoid syntax errors.
+
+   Keeping state by means of hidden fields has turned into a nightmare.
+   Would be better to keep state server-side, with only a session ID
+   embedded in the web page.
+
+ * Fix the Coptic stuff; there is quite a bit of guesswork in it, even
+   for the basic transliteration.
+
+ * Rationalize the decoding and output of descriptor ID levels, now that
+   I know what's going on there.
+
+ * We should just figure out what prefix is used by the files in the phi dir,
+   rather than forcing the user to specify it.
+   
+ * Fix WordPerfect Greek symbol font output
+
+ * Figure out why Acrobat Reader is sometimes so picky about reading the PDF
+   output.
+
+ * Antonis Tsolomitis suggests:
+   
+        I think that it would be helpfull to be able to search using
+        Greek (iso88597). Do you think that this is possible (and
+        usefull)? I understand that there will be some problems but a
+        simple scheme could be as follows:
+
+        The user enters a word in Greek. Of course the problem of
+        accents and special characters is difficult to handle. So one
+        possibility would be for the program first to strip the search
+        word from any accents (for example to map
+        iotatonos-pi-pi-omicron-sigma to iota-pi-pi-omicron-sigma. Then
+        to map this to BetaCode. Finally a match would be searched
+        without paying attention to any accents or special characters in
+        the database. So starting with iotatonos-pi-pi-omicron-sigma
+        would end up looking for IPPOS and this will match HI/PPOS or
+        (I/PPOS in BetaCode.
+
+ * John Muccigrosso suggests:
+
+         It'd be nice if the browser put the desired line in the middle
+         of the passage it returns, instead of at the beginning. And if
+         the go back/forward commands left some overlap.
+
+    This really means rewriting the browser code, which should be done
+    anyway, in order to make it possible to step through a text one
+    sentence at a time or one section at a time, for example.
+
+ * Jose Gonzalez suggests:
+          
+         The only behavior I miss and can't reproduce is choosing a
+         specific work by a given author for searching.  E.g., if I put
+         "plato" as author, the perl server only offers "Plato Phil.:
+         All texts" etc. (the "All texts" accompanies every hit). 
+
+ * Add style-sheet so that all text is not blue when words are all
+   Perseus links.
+ 
+ * Make Daemon optionally run in the background, and provide init.d
+   script
+
+ * Report time elapsed
+
+ * Pablo Rodriguez suggests on the web page "Here are the various
+   criteria by which the texts  contained in the TLG are classified.",
+   the field 6 (date range) should be up alongside 5 (name of authors)
+   to make the whole page easier to view at once.
+
+ * Test the hostname option for Daemon.pl under Windows

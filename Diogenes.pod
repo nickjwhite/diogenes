@@ -1,0 +1,742 @@
+=head1 NAME
+
+Diogenes - access databases of texts in Latin and ancient Greek.
+
+=head1 VERSION
+
+This document refers to version 0.9 of Diogenes (April 20, 2001).
+
+=head1 SYNOPSIS
+
+	use Diogenes; 
+	
+  # Diogenes: brute-force search of any of the databases
+  # Look for Caesar (all cases) in Cicero (PHI Latin texts):
+
+	my $query = new Diogenes( -type => 'phi', -pattern => ' Caesar'); 
+	$query->select_authors(-author_regex => 'Cicero'); 
+	$query->do_search;
+
+  # Diogenes_Indexed: use the TLG word list
+  # Look for nom., gen., acc. sg. of Athena in epic
+	
+	my $query = new Diogenes_indexed;
+	$query->select_authors(genre => ['Epica']); 
+	my ($ref, @words) = $query->read_index('Athe^ne^');
+	$query->do_search('A)QH/NH','A)QH/NHS','A)QH/NHN');
+
+  # Diogenes_Browser: look for a specific passage in any work
+  # Look for a quote in Diogenes Laertius' life of Diogenes of Sinope
+  # (Author num. 4, Work num. 1, Book 6, section 41, line 0)
+
+	my $query  = new Diogenes_browser( type => 'tlg' ); 
+	my %target = (2 => 6, 1 => 41, 0 => 0); 
+	$query->seek_passage (4, 1, %target); 
+	$query->browse_forward;
+
+=head1 DESCRIPTION
+
+The Diogenes, Diogenes_Indexed, and Diogenes_Browser classes provide
+access to data in the I<TLG> and compatible databases (PHI, DDP, etc.).
+
+There are scripts distributed with this module that provide a
+command-line and a CGI interface to its functionality.
+
+=head2 Overview
+
+The Packard Humanities Institute, the I<Thesaurus Linguae Graecae> and others
+have published in CD-Rom format a large number of texts in several ancient
+languages.  The encoding used for ancient Greek and the page markup codes used
+for all of the compatible databases do not conform to any external standard,
+because these projects for the most part long predate initiatives such as
+Unicode and XML.  Both this markup and the Greek encoding are called Beta code.
+The page markup codes and the Greek encoding are helpfully documented on the
+web-pages of the I<TLG>.
+
+=begin html
+
+http://www.tlg.uci.edu/BetaCode.html
+
+=end html
+
+Prior to version 0.90, I had not seen any documentation, however, of
+the encodings by which the texts are indexed on the CD-Roms; I have
+now seen a copy of the "PHI CD ROM Format" specification, dated 19 April
+1992.  Nevertheless, the non-ascii data which records book, chapter,
+line numbers and so forth, and the various indices of the I<TLG> have
+largely been reverse engineered from inspecting the files themselves.
+It must be stressed that I have certainly  failed to implement some
+aspects of these encodings correctly.  You should therefore not treat
+the results produced by this program as authoritative; take any such
+results with a grain of salt, and compare them with the output of
+another search program (this is probably a good idea in any case, since
+the other tools for searching these corpora are not without bugs).
+
+Diogenes is an attempt to provide a portable and flexible interface for
+those who wish to work with data in these formats; it allows the power
+and flexibility of Perl regular expressions as input, and it provides
+a number of output formats, including LaTeX and HTML.
+
+The original tool for searching these CD-Rom disks was a dedicated machine
+designed by David Packard and called Ibycus, which dated from the days before
+CD-Rom drives (or even personal computers) were commonly available.  I am told
+that this machine, while it was based on a Motorola 68008 processor, in fact
+processed the data largely in dedicated hardware that was built from
+medium-scale integrated circuits.  Given the constraints on memory at that time,
+the data were designed to be stored in highly economical fashion, and to be
+processed in small, 8K chunks.  With the advent of more powerful personal
+computers fitted with more memory, it is now possible to slurp the entire
+contents of a 30MB file into memory and to apply a high-level pattern-matching
+engine to it, rather than to parse each 8KB chunk with a purpose-built
+finite-state machine built in hardware or written in C or assembler that
+searches for matches as it goes. (At any rate, that is how I assume
+earlier programs worked.)
+
+Therefore the (given this history, perverse) manner Diogenes performs
+searches is to slurp into memory a whole file, or those blocks known to contain
+a desired work, and to search it quickly with a regular expression.  The
+location of each hit is then determined by parsing the 8K block in which it
+lies, examining all of the bookmarks from the start of that block up to the
+offset in the file of each hit.  This procedure only parses the non-ascii
+(>127) bookmarks that indicate location, not the formatting codes, so the
+visual markup of any given chunk of text may not be completely accurate if it
+includes the tail end of some section of specially-formatted text (see
+the L<"BUGS"> section below).  The program then reports the location and
+context of each match (to the currently selected filehandle).  
+
+The most complex part of this procedure is not the parsing of non-ascii data
+in the files, but the construction of a suitable regular expression to do the
+searching in the first place.  It is necessary to compensate for hyphenated
+words, indexing and markup codes intervening in the middle of a word, and so
+forth, while keeping the search times low and without making the patterns so
+general that spurious hits are generated.  This is particularly difficult when
+trying to take a I<TLG> word list entry and transform it into a regular
+expression that will match precisely the same things in the texts themselves.
+Degenerate word-list entries are still not handled perfectly; see L<"BUGS">
+below.
+
+There is a GUI interface to this module implemented as a CGI script and
+a mini web-server to run the CGI script is provided as a convenience.
+The CGI script will run also run under Apache, and even mod_perl, if you
+wish.  There is also a command line program, which provides access to
+all of its functionality; for documentation on how to use that program,
+type C<./diogenes -?>.  
+
+Instructions follow for those who wish to use the Diogenes module
+in their own programs.
+
+=head2 Constructor and initialization
+
+You should create a query that is an object of one of the
+following classes: C<Diogenes>, C<Diogenes_indexed>, C<Diogenes_browser>, or
+C<Diogenes_browser_stateless>, and then perform the search by invoking the
+appropriate methods as described in the following sections. 
+
+The C<new> method returns an object of the requested class or, a simple
+error string if the authtab.dir file (the index of files in the
+databse) was not found in the location specified for the requested
+database -- for example, the CD-Rom drive may not be ready or mounted
+yet.  So you should check to make sure that you have been returned an
+object; if you have been returned an error string, this will contain
+the location where the database was sought in vain, and can be used to
+generate an error message.  If you don't want this check to be made,
+specify C<-type> as C<'none'>.
+
+The base class of this hierarchy is C<Diogenes>, which is used for ordinary
+(i.e.  brute-force) searches of any of the supported databases; the other
+classes inherit from it.
+
+	use Diogenes;
+	my %args = (-type => 'phi', -pattern => 'foo' ... );
+	my $query = new Diogenes(%args);
+
+There are many options that may be passed as key => value pairs to the
+constructor method (called C<new>), but it is usually only necessary to 
+stipulate a few of these on an object-by-object basis.  The
+names of the options are passed as keys in the hash; they are case-insensitive,
+and may optionally be prefixed with a hyphen, e.g. like so: -type, -Type, type
+or TYPE.
+
+Any option that may be passed to the constructor in the object
+initialization hash may also be specified in any of the configuration
+files.  Most system-wide options that will be the same for each query,
+such as the location of the CD-Rom mount point, should be specified
+there.  The hash named C<%defaults> near the beginning of the
+Diogenes.pm module defines all of the legal options and their defaults,
+many of which will never need to be changed.  These defaults may be
+overridden by any relevant entries in the configuration files.  On Unix,
+these are: a system-wide F</etc/diogenesrc> file, which may be
+overridden by a user's F<~/.diogenesrc> file in her home directory,
+which may in turn be overridden by a F<.diogenesrc> file in the current
+working directory.  On windows the only configuration file is
+F<diogenes.ini> in the current working directory.  Finally, all of these
+options may themselves be overridden by any options passed to the
+constructor.  See the comments in the F<diogenesrc> files for
+system-wide options that might need to be set when installing Diogenes.  
+
+The options that are most likely to be set on a search-by-search basis (and thus
+passed as arguments to the constructor) are as follows (many are irrelevant
+to objects of the C<Diogenes_browser> class):
+
+=over 4
+
+=item type
+
+Defines the corpus in which to search; can be any of: B<phi> (Latin texts
+from the Packard Humanities Institute), B<tlg> (the I<Thesaurus Linguae Greacae>), 
+B<ddp> (Duke Documentary Papyri), B<ins> (Classical inscriptions), 
+B<chr> (Christian inscriptions), B<cop> (Coptic texts), B<civ> (Miscellaneous texts, such
+as the Latin Vulgate and Milton from the PHI), B<bib> (I<TLG>
+bibliographical info), B<none> (a dummy object, not used to search any
+database, but for some other purpose, such as to reformat already-ouput
+Greek).
+
+=item pattern
+
+The pattern to search for.  If no other options are defined, this will 
+be transformed into a regular expression that allows hyphenation and so forth to
+intervene after each letter.  This transformation is not guaranteed to work
+nicely with all Perl regular expressions metacharacters in the input, but
+character classes, alternation and grouping by parentheses should be OK.  
+
+=item pattern_list
+
+Contains a reference to a list of patterns to be matched.  The number of
+patterns that must match in a given context in order to consider the passage a
+successful match should be specified by the C<min_matches> option.  Provided
+that the search has a lexically scoped C<context>, e.g. one sentence,
+paragraph, etc., the order of the patterns is significant, since only the first
+B<n> patterns are searched for globally, where B<n> =  (the number of patterns)
+- (C<min_matches> + 1).  Within that context all patterns are examined. If on
+the other hand the C<context> is a number of lines, then you get a more
+traditional (but slower) type of search: all patterns are searched for in turn,
+since the scope of the context changes with the position of each word.
+
+=item min_matches
+
+The number of patterns in the pattern list (see previous item) that
+must match for a hit to be reported.  For the purposes of I<TLG> indexed
+searches, substitute `word lists' for `patterns' and `list of word
+lists' for `pattern list' in the foregoing statement.  The value can be
+a number, 'any' or 'all'.  A word that matches one pattern is not
+counted again to match another.  
+
+=item reject_pattern
+
+If the context of a hit matches against the given pattern, then the hit
+is not reported.  For Greek searches, should be a simple Perseus-style
+transliterated pattern, and for all searches, it is transformed into a
+regular expression that ignores hyphenation, etc.
+
+=item input_lang
+
+If B<g>, interpret the C<pattern> as a Greek word.  This is the default
+when searching the I<TLG>, but it may be necessary to specify it when
+searching for Greek text in certain corpora (such as the inscriptions)
+that contain mixed languages.  
+
+=item input_beta
+
+The norm for Greek input is Perseus-style transliteration, but if this
+option is true, then the I<TLG>'s own Beta transliteration scheme may
+be used.  For Perseus-style, you should not specify accents, as these will
+be allowed for automatically, but you should specify rough breathings
+before initial vowels with an "h".  If you would rather input strict Beta
+code with accents, then set this option to a true value.  The same
+transformation will be applied to your input as is applied to the words
+in the TLG word-list, so ideally, your input should be normalized to the
+same standard: no case distinction, one accent per word, full diacritics
+otherwise.  
+
+In order to input a raw Perl regexp, then you may set the C<input_raw>
+or C<input_pure> options to true -- but beware that you will have to
+take care of the possibility of hypenated words, etc.  yourself.
+
+=item output_format
+
+Can be any of: B<latex>, B<html>, B<ascii> or B<beta>.  This generates
+a complete LaTeX or HTML document or ascii output accordingly; use
+B<beta> to get the raw, completely unmodified output from the CD-Rom.
+The default is B<ascii>.  This operates at a higher level than
+C<encoding> (below).  For example, a value of B<latex> here already
+implies the Ibycus font encoding, and none need be specified here.
+Furthermore, the LaTeX output can be modified by the following values:
+B<ibycus4> (set a true value to use the more recent version of the
+Ibycus encoding), B<psibycus> (set true to use the Type 1 font, suitable
+for PDF output), and B<prosody> (set true to use the Hephaistio prosody
+font for prosodical symbols).
+
+Note that an C<encoding> of B<Babel> or B<Babel_7> will include a
+lesser amount of LaTeX markup, but in this case B<output_format> may be
+set to B<html> or B<ascii> for further processing.
+
+=item encoding
+
+This determines the encoding to be used for polytonic Greek output.
+The default is B<Ibycus> (a slightly modified, and yet much more
+readable, form of Beta that is also useful as a TeX encoding).    There
+are many encodings called "external" in that they are defined in a file
+called F<Diogenes.map> that should be placed somewhere Perl can find it.
+This file defines a syntax which makes it extremely easy to add new
+encodings for any Greek font you wish.  Legal values for this option are
+the currently included encodings, plus any further encodings you may
+add.  The method C<get_encodings> will return a list of currently valid
+encodings. A natural combination, for example, would be an
+C<output_format> of B<html> and an C<encoding> of B<UTF-8> or
+B<Unicode_Entities>, which will format the text in HTML, and express the
+Greek glyphs as Unicode HTML entities; this output can be viewed in a
+browser equipped with a Unicode font that includes the Greek and Coptic
+(0370-03ff) and Greek Extended (1f00-1fff) ranges.
+
+=item input_source
+
+For use in generating an object that formats raw data, without
+searching or browsing the input sources.  This can be a filehandle, or
+a reference to a variable contianing the data, or a subroutine that
+returns the data; whatever it is will be used as the input instead of
+one of the databases.  Do not try to search or browse this, since it is
+not really a database; just format the output, using the C<format>
+method described below
+
+=item printer
+
+Used in conjunction with C<output_format> => B<latex>; a true value
+specifies LaTeX output (font, paper sizes, etc.) suitable for printing 
+rather than for conversion to on-screen graphics.
+
+=item context
+
+If a number, define the lines of context to report before and after each 
+hit; the definition of `line' is rudimentary, however.
+Otherwise this should specify a lexical scope, either B<para> (paragraph), 
+B<sent> (sentence), B<clause> or B<phrase>.  These are not always well-defined 
+concepts, such as in fragmentary texts, or texts with very little
+markup.  There is therefore an overflow defined for each, whereby output
+will stop after a given number of lines. 
+
+=item bib_info
+
+Display bibliographical info with the first appearance of every work (only
+applies to the I<TLG>).  This should be set explicitly to B<0> in the config
+files of underpowered computers, since this requires a substantial overhead of
+time and memory.
+
+=item  blacklist_file 
+
+This should be the full path to a file that contains a list of
+unwanted authors from various databases.  The four-digit author codes
+must be preceded by the standard file prefix (TLG, PHI, etc) to indicate
+which database is meant.  All files indicated in this way are ignored
+in seraches; but parsing this file also adds an overhead to all searches.
+
+So if you do not want to be bothered with John Chrysostom,
+just put the string  "TLG2062" in this file, and you won't see him
+again.  For a more extensive blacklist, just copy the authtab.dir file
+to your blacklist -- in Unix: 
+	strings authtab.dir > diogenes.blacklist
+-- and remove the authors you *do* wish to see.  It is fine to leave
+extraneous data, such as author names, genre descriptions, etc. in your
+blacklist, but this will degrade performanace even further.                             
+
+=back
+
+=head2 Narrowing the scope of searches
+
+  # Example: select only the epics of Statius 
+  # (Auth. no. 1020, work nos. 001 and 003).
+  my @texts = $query->select_authors( -author_nums => {1020 => [1,3]} );
+
+You may provide the method C<select_authors> with arguments to select
+specific authors within the particular corpus that was selected with the
+C<type> option passed to the constructor method.  Provided that this method
+is invoked with arguments that actually do restrict the scope of the search,
+its return value is a printable list of the matching authors and works to which
+searching is now limited. 
+
+A call to this method with an empty argument list will unset previous
+selections and return a hash keyed by author numbers whose values are
+all of the author names in that C<type> of corpus.
+
+There are a variety of ways to specify the authors and/or works in which to
+search.  Options may be passed to the C<select_authors> method as a hash of key
+=> value pairs; the allowed keys are:
+
+=over
+
+=item author_regex
+
+Select author names matching the given regular expression.
+
+
+=item author_nums
+
+Select specific authors and/or works by number.  This value should be either
+a reference to a list of author numbers or a reference to a hash whose keys are
+author numbers and whose values are references to lists of that author's work
+numbers (if the hash value is not a reference, then all of that author's works
+are selected).
+
+
+=item select_all
+
+Selects all authors and works in the currently defined corpus; effectively
+cancels previous invocations of this method and returns the same hash as a
+method call with an empty argument list.
+
+=item previous_list
+
+Select a subset of the previous selection.  This should point to a list of
+numbers which are indices of the list returned by the previous invocation
+of this method.  Only those works and/or authors whose indices are included
+are searched.  The list returned by this method call may in turn be used
+to select a subset smaller again.
+
+
+=item criteria
+
+This option tells Diogenes how to interpret multiple options when they are
+passed to this method.  If the value is 'all' then only text matching all
+of the passed parameters will be selected; if it is 'any' than a text matching
+any one of the parameters will be selected; if it is a number, then it
+stipulates the miminum number of criteria a text must meet in order 
+to be selected. 
+
+
+=item get_tlg_categories
+
+If this key has a true value, then no selecting of authors is done, but rather
+this returns the special categories into which the I<TLG> authors and texts are
+divided, along with the legal values for each category.  The return value is a
+reference to a hash that is keyed by the categories listed below, 
+such as 'date' and 'gender'; the values of the hash are references to lists of 
+legal values for each. See under C<date> for an example.
+
+
+=item date (TLG only)
+
+Select authors by date range.  This should point to a list of the form 
+[$start, $end, $varia, $incerta], where $start is the start of the (inclusive) 
+date range, $end is its end, and $varia and $incerta are flags indicating
+whether or not to include texts of various and uncertain date, respectively.
+Only date labels explicitly used by the I<TLG> are legal values for $start and 
+$end.  These may be found by passing an empty argument list to this method, 
+like so:
+
+    my $query = new->Diogenes( type=>'tlg' );
+    print join "\n", @{ $query->select_authors()->{date} };
+
+The legal values for other I<TLG> options may be found by replacing C<date> in
+the line above with C<genre>, C<genre_clx>, C<epithet>, C<gender>, or C<location>.
+
+
+=item genre, genre_clx (TLG only)
+
+Select works by genre; the option C<genre_clx> appears to define a closely
+related but slightly more expansive view of genre.
+
+
+=item epithet (TLG only)
+
+Select authors by epithet.  This is closely related to C<genre>, but applies
+to authors rather than individual works.
+
+
+=item gender (TLG only)
+
+Select authors by gender.  Apparently the only legal value at present is
+'Femina ' (note the trailing space; this awkward surprise is present in a
+number of the values reported by the I<TLG>, so beware: they are significant
+to Diogenes).
+
+
+=item location (TLG only)
+
+Select author by geographical provenance.
+
+=back
+
+=head2 Performing the Search
+
+For brute-force searches, all that is necessary is to call the method
+C<do_search> with no arguments.  Output will go to the currently selected
+filehandle. For searches using the I<TLG> word list, see the next section.
+
+=head2 Re-formatting the output
+
+In addition to the standard output, another output filehandle may also
+have been specified via the constructor option C<aux_out>, which should
+be an open filehandle.  The output will be written there without any
+formatting.  To reformat that output without re-executing the search,
+create a C<new> Diogenes object with the required C<encoding> and
+C<output_format> parameters and call the method C<do_format> instead of
+C<do_search> on that object.
+
+=over
+
+=item do_format 
+
+This method takes the raw data it gets from the constructor parameter
+C<input_source>,  and transforms any Greek text to the given C<encoding>
+and formats all of it according to the given C<format>.  Output is as
+usual, to the currently selected filehandle. 
+
+=item get_encodings
+
+Returns a list of the currently recognized Greek encodings.  Some of
+these are defined internally, but most come from the C<Diogenes.map>
+file.
+
+=item encode_greek($encoding, $ref)
+
+If you have a bit of Greek to convert from Beta code, such as the
+items on the TLG word list, call this method with a valid Greek encoding
+and a reference to the scalar you want to convert.  The string is
+converted in situ; there is no return value.
+
+=back
+
+=head2 The Diogenes_indexed class
+
+This class is for searches that make use of the word index provided
+with the I<TLG>.  This index contains all of the words in the corpus and
+gives the number of times it is found in each work of each author.
+Unfortunately, it does not give the offsets within each file where these
+words may be found, so Diogenes has to go looking for them.  This is an
+imperfect process, especially for odd quasi-word artifacts generated by
+fragmentary texts; see the L<"BUGS"> section for some caveats. 
+
+The C<new> and C<select_authors> methods take the same arguments as for
+a normal I<TLG> brute-force search.  The major difference is that after
+initialization and (optionally) selecting the texts of interest to you,
+you should call C<read_index>.  The argument should be a pattern in
+Perseus-style transliteration to match in the word-list: i.e. the
+beginning of a Greek word.  The method returns a hash reference and list
+of words that matched; the latter are in raw Beta code.  The hash is
+keyed by the words in the list and gives the total number of times each
+word appears in the currently selected texts.  The reason for returning
+both the hash and the list is that the list is sorted as it is found in
+the I<TLG>, by Greek alphabetical order.  This method may be called on
+an object multiple times; it only reads the word-list; it does not
+define the scope of your search.
+
+The method C<do_search> when invoked on objects of other classes 
+does not require any arguments, but for this class you should pass all of the
+words found in the index for which you wish to search.  These words should be
+in raw Beta code, just as they were reported by C<read_index>.
+
+You may pass either a simple list of words or a list of lists of words.  In the
+latter case, you should have set C<min_matches> when initializing the object to
+stipulate how many of the lists must be represented by distinct words in any
+given passage (the length of which is defined by C<context>) in order for the
+passage to match your query.  In other words, you may do multiple pattern
+searches just as with brute-force searches, except that instead of several
+patterns, you give several distinct lists of words.  These multiple lists will
+probably not do what you want if they overlap at all in their contents, since
+when each list is tested in turn on a given passage, it will greedily gobble up
+any matching words, not leaving any to be matched by the same word in another
+list.
+
+=over
+
+=item use_tlgwlinx
+
+Use the index to the TLG word list, which is keyed by the first two
+letters of the word.  If you use this, word list searches are quicker,
+but less comprehensive (eg. agathos does not find KA)GAQO/S).
+
+=back
+
+=head2 The Diogenes_browser class
+
+This is how you print out a passage from one of the corpora when you know its
+location.  You must at minimum call the C<seek_passage> method to find the
+location and then C<browse_forward> to print out the first chunk.  The amount
+of text output in each chunk is set via the C<browse_lines> option when
+initializing the object.  An exception is when C<type> is set to B<ddp>,
+B<ins>, or B<chr>; for these documentary corpora the browser also stops at the
+end of each document to try to avoid running unrelated material together.
+
+There are other methods to help you find the required passage:
+
+	use Diogenes
+	my $query  = new Diogenes_browser( type => 'phi' ); 
+	my %auths  = $query->browse_authors('Statius'); 
+
+This returns a hash whose keys are author numbers and whose values are
+the author names that matched the pattern 'Statius'.
+
+	my %works  = $query->browse_works (1020);
+
+The author number of Statius within the PHI Latin corpus is 1020, so this
+returns a hash of Statius' works keyed by their numbers.
+
+	my @labels = $query->browse_location (1020, 1);
+
+The I<Thebaid> is work 001 for Statius, so this returns a list of the
+labels by which locations in that epic poem are designated ('book',
+'line').  The number of labels varies with the character of the work.
+We pass a list to C<seek_passage> that begins with author and work
+numbers, and then continues with the desired location, given in the same
+order as C<@labels> above:
+
+	$query->seek_passage (1020, 1, 12, 665); 
+	
+This seeks to author 1020, work 002, Book 12, line 665; ie. towards 
+the end of the I<Thebaid>.  Nothing is printed, however, until one of
+the two following methods are invoked:
+
+	$query->browse_forward;
+	$query->browse_backward;
+
+These may be invoked repeatedly to navigate through the text.
+
+It will be necesssary to call:
+
+	$query->begin_boilerplate;
+	$query->end_boilerplate;
+
+at the start and end, if you are generating an HTML or LaTeX file.
+
+=over
+
+=item browser_multiple
+
+The number chunks of text the text browser displays per
+screen.
+
+=item browse_lines
+
+The number of lines given per chunk.
+
+=back
+
+=head2 Diogenes_browser_stateless class
+
+There is also a subclass, C<Diogenes_browser_stateless> that differs slightly
+in its implementation.  It is optimized for non-persistent connections, such as
+the CGI interface, to avoid repeated calls to C<seek_passage> at each
+connection; it also does not keep the whole work in memory.  Each call
+to C<browse_forward> and C<browse_backward> on an object of this call
+returns start and end values that should be passed back on the next
+call, along with the author and work numbers.
+
+
+=head1 ENVIRONMENT
+
+These scripts have been developed on Linux, and should work on any
+Unix-like OS.  As of version 0.9, Diogenes has been tested fairly
+thoroughly under the ActiveState Windows port of Perl and should work.
+There are other search programs available for Mac and Windows; see the
+I<TLG> web page.
+
+=head1 DIAGNOSTICS
+
+You can pass a true value with the C<debug> option in the initialization of 
+any object to spew copious debugging info.
+
+Diogenes strives for bug-for-bug compatibility with the I<TLG> word list, but
+this has proven impossible, because this program is implemented in a manner
+that could never have been foreseen by the designers of the list, because of my
+ignorance of its specification, and because of certain limitations of the
+regular expression engine in Perl 5.005 (no variable-length lookbehind). It has
+not proved possible at present to implement a sufficiently fast way of
+finding I<exactly> the same patterns as the I<TLG> for each word in the list.
+
+My goal, therefore, has been to minimize the number of false positives while
+at the same time eliminating almost all false negatives and keeping the program
+reasonably fast.  When doing an indexed I<TLG> word search, you will sometimes get
+a B<Warning> printed to STDERR to the effect that Diogenes found more instances
+of a given word in a certain work of a certain author than there should be,
+according to the I<TLG> word list.  These are inevitable and may safely be
+ignored; they may be squelched in future versions.
+
+=head1 BUGS
+
+"Exceptions" are defined by the PHI file spec to allow an editor's
+divergence from the traditional citation of a text; these are ignored,
+which is permitted by the spec.
+
+As mentioned above, the search for words (and particularly quasi-word artifacts
+in messy, fragmentary texts) from the I<TLG> word list is far from perfect, and
+is likely to remain so for the foreseeable future. 
+
+There are very few words in the word list that Diogenes cannot
+identify in the texts, but it is possible that there are some such
+cases.  It is very hard to maintain compatibility across changing
+word-specifications from release to release of the TLG, so I can only
+try to fix errors that are generated by the most recent version of the
+TLG.  If you come across such an B<Error> (sent to STDERR, which may be
+a web server error log), saying that Diogenes found I<not enough>
+instances of a word in a certain work, then this is a false negative,
+and I would appreciate a bug report, no matter how obscure you may think
+the word or author to be.  There may or may not be something I can do
+about it.
+
+The implementation of the concept of one `paragraph' of context is inevitably 
+very poor for many texts, since the level of markup is so inconsistent.
+A `paragraph' of Livy is all of I<ab urbe condita> since in some versions of 
+the PHI disk that text lacks indentation or any other paragraph markers.  This
+is why it is important that overflows are defined (one of the many
+options not documented here -- see the source).  The idea of a `sentence' works
+better, but not very well on Greek texts with many Latin abbreviations, such as
+scholia, and not at all on texts with next to no punctuation, such as some fragmentary 
+papyri.
+
+It often happens, particularly when the context is set to `sentence' and the
+parser stops not at a full stop, but at an abbreviation in the midst of a Latin
+interpolation, that the first few words may be reported as Greek, when in
+fact they are Latin.
+
+=head1 FILES
+
+F</etc/diogenesrc> System-wide configuration file
+
+F<~/.diogenesrc> User configuration file
+
+F<./.diogenesrc> Configuration file for current directory
+
+F<diogenes.ini> Windows configuration file (in current folder)
+
+F<Setup.pl> Generates a configuration file in the current directory
+
+F<diogenes> Command-line interface for this module
+
+F<Diogenes.cgi> CGI interface for this module
+
+F<Daemon.pl> A simple HTTP server for simpler installation of the CGI
+interface.
+
+F<Diogenes.map> File which defines encodings for polytonic Greek
+
+=head1 AUTHOR
+
+Peter Heslin <P.J.Heslin at durham.ac.uk>
+
+=head1 ACKNOWLEDGEMENTS
+
+Thanks to Mac Pigman, Pierre MacKay, Paul Barrette, Bruce Hartzler,
+Luc Herren and Alan Griffiths for testing and suggestions.
+
+The maps for the ISO-8859-7 and DOS_CP_737 (DOS and Windows console)
+modern, monotonic Greek encodings were contributed by Diomidis Spinellis.
+
+A patch was contributed by Roman Mueller.
+
+=head1 COPYRIGHT
+
+Copyright (c) 1999-2000 Peter Heslin.  All Rights Reserved.
+This module is free software.  It may be used, redistributed,
+and/or modified under the terms of the GNU General Public 
+License, either version 2 of the license, or (at your option)
+any later version.  For a copy of the license, write to:
+
+	The Free Software Foundation, Inc.
+	675 Massachussets Avenue
+	Cambridge, MA 02139
+	USA
+
+This module and its associated programs are distributed in the
+hope that they will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License for more details.
