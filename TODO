@@ -103,3 +103,27 @@ To-do list:
    to make the whole page easier to view at once.
 
  * Test the hostname option for Daemon.pl under Windows
+
+ * Alan Griffiths points out that many texts use iota adscript rather
+   than subscript, and this yields inconsistent search results.
+
+   Currently the code for searching for Perseus-style transliterated
+   text constructs a regular expression that allows any number of
+   non-letter things (accents, asterisk, iota subscript) to come after
+   any letter.  If I added a "real" iota to the list of things that
+   can freely come after any letter, this will (1) slow things down
+   for patterns that do contain a real iota, since the pattern matcher
+   will have to backtrack out of the other possibility (but I can't
+   know how severe that would be without trying); and (2) it would
+   lead to spurious false positives, where a real (non-adscript) iota
+   in the target text is allowed anywhere.  So when you look for
+   "phobos", you'd also get all the hits for "Phoibos".
+
+   One way of fixing this would be only to add the possibility of an
+   iota adscript only after an alpha, eta or omega.  That might still
+   let in some false positives, but perhaps not too many.
+
+   Even better would be restrict this further to alpha, eta and omega
+   near the end of a word, but I'm not sure how to define "near the
+   end of a word", and for weird compound words, it might be wrong.
+
