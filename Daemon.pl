@@ -25,7 +25,7 @@ $|=1;
 my $CGI_SCRIPT = 'Diogenes.cgi';
 # A pre-forked process?  Set this to 0 if you don't want an extra
 # process hanging around (unix only -- Windows must pre-fork at least
-# one).  
+# one, or it crashes).
 my $PRE_FORK = 1;
 
 

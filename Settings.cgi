@@ -6,6 +6,9 @@ use CGI qw(:standard -nodebug);
 use Data::Dumper;    
 use Cwd;
 
+# Workaround for annoying CGI.pm bug/warning
+$ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
+
 my $param_file = $ARGV[0];
 my $params;
 open PARAMS, $param_file or die "Can't open $param_file: $!\n";

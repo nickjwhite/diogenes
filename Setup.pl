@@ -197,7 +197,7 @@ browse_lines 39
 #browse_lines 4
 
 # If you wish, you may specify a file with the code numbers of texts you
-# never want to search:
+# never want to search ...
 
 # blacklist_file  "$cwd/blacklist"
 

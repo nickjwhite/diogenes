@@ -1798,6 +1798,8 @@ sub read_phi_biblio
             $info =~ s/[\x80-\xff][\@\s\x80-\xff]*/\n/g;
             $info =~ s/\n+/\n/g;
             $info =~ s/^[\n\s]+//;
+            $info .= ' ('.$auth.': '.$work.')',
+
             $info .="\n" unless $info =~ m/\n$/;
             $self->{phi_biblio}{$auth}{$work} = $info;
         }
@@ -1851,6 +1853,7 @@ sub get_tlg_biblio_info
         join '', (
             "$Diogenes::author{$self->{type}}{$self->{auth_num}}, ",
             ($data{wrk}) ? "$data{wrk}\&" : '' ,
+            ' ('.$self->{auth_num}.': '.$self->{work_num}.')',
             ($data{tit}) ? "\n\"$data{tit}\&\"" : '' ,
             ($data{edr}) ? ", Ed. $data{edr}\&" : '' , 
             ($data{pla}) ? "\n$data{pla}\&" : '' ,
