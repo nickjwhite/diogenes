@@ -1273,17 +1273,21 @@ sub latin_to_beta
     tr/a-z/A-Z/;                                            # upcap all other letters
 
     my $non_alpha = '\\x00-\\x1f\\x21-\\x40\\x5b-\\x5e\\x60\\x7b-\\xff';
+    my $non_alpha_nor_asterisk = '\\x00-\\x1f\\x21-\\x29\\x2b-\\x40\\x5b-\\x5e\\x60\\x7b-\\xff';
     # The following allows trailing accents, hyphens, markup, etc. after letters, char classes and rough breathing
 #s/(\[[^\]]*\][*+?]?|\(\?:(?:[^\\)]|\\\)|\\)*\)|[A-Z])/$1\[\\x00-\\x1f\\x21-\\x40\\x5b-\\x60\\x7b-\\xff\]\*/g;
 #s/([^A-Z ]*[A-Z ][^A-Z ]*)/$1\[\\x00-\\x1f\\x21-\\x40\\x5b-\\x60\\x7b-\\xff\]\*/g;
-s/([^A-Z ]*[A-Z ][^A-Z ]*)/$1\[$non_alpha\]\*/g;
-         s/(?<!^)\s+(?!$)/\[^A-Z\]/g;           # other spaces (not at start or end)
+# Put non-alpha after all chars and spaces, except space at the end.
+s/([^A-Z ]*[A-Z][^A-Z ]*)/$1\[$non_alpha\]\*/g;
+s/([^A-Z ]*[ ][^A-Z ]*)(?!$)/$1\[$non_alpha\]\*/g;
+s/([^A-Z ]*[ ][^A-Z ]*)(?=$)/$1\[$non_alpha_nor_asterisk\]\*/g;
+#s/(?<!^)\s+(?!$)/\[^A-Z\]/g;           # other spaces (not at start or end)
     # spaces at the start (the lookbehind tries to reject hyphenation fragments and
     # mid-word matches after accents, but we can't just reject on preceding accents,
     # since capitalized words do have accents preceding, and *must* not be rejected).
         s#^\s+#(?<![A-Z])(?<!\-[\\x80-\\xff])(?<![A-Z][)(\\/|+=])(?<![A-Z][)(\\/|+=][)(\\/|+=])(?<!\-[\\x80-\\xff][\\x80-\\xff])#g; 
 #       s/\s+$/(?=[^A-Z])/g;            # spaces at the end -- this doesn't work -- previous glob backtracks off
-        s/\s+$/[ \\]}&\$\%"#\@>]/g;             # spaces at the end 
+#        s/\s+$/[ \\]}&\$\%"#\@>]/g;     # spaces at the end -- doesn't match
    
     #my $diacrits = '\/\\\\\=\+\?\!\)\(\|\'';
     
