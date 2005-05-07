@@ -1,6 +1,8 @@
 To-do list: 
 
- * I have tried to keep the translation of Greek encoding separate from
+* Rewrite translation of BETA to output encoding/markup
+
+   I have tried to keep the translation of Greek encoding separate from
    the translation of page mark-up, but this has proven to be folly;
    they are forced to be incestuous, since they use each others
    control and escape characters constantly, and the border between the
@@ -26,35 +28,41 @@ To-do list:
    encodings that remap the ASCII range in this way.  Ideally, the full
    LaTeX mark-up would be usable with Babel as well as Ibycus.
 
- * Now that the TLG formatting codes are better documented, go back
+* Rewrite HTML generation to use CSS
+
+   Now that the TLG formatting codes are better documented, go back
    through the LaTeX and HTML formatting routines to fix the guesswork
    about what symbol is what.  The Beta to HTML routine was an
    afterthought to the LaTeX one, and it should be rewritten to use
    CSS. 
 
- * The CGI script is still a mess.  The flow control should be made
-   clearer and the HTML should be generated exclusively by using CGI.pm
-   shortcuts, which would help avoid syntax errors.
+* The CGI script is still a mess.  
+
+   The flow control should be made clearer and the HTML should be
+   generated exclusively by using CGI.pm shortcuts, which would help
+   avoid syntax errors.
 
    Keeping state by means of hidden fields has turned into a nightmare.
-   Would be better to keep state server-side, with only a session ID
-   embedded in the web page.
+   Would it be better to keep state server-side, with only a session ID
+   embedded in the web page?  But that has its own problems.
 
- * Fix the Coptic stuff; there is quite a bit of guesswork in it, even
-   for the basic transliteration.
+* Find someone to check the Coptic stuff.
 
- * Rationalize the decoding and output of descriptor ID levels, now that
-   I know what's going on there.
+   There is quite a bit of guesswork in it, even for the basic
+   transliteration.
 
- * We should just figure out what prefix is used by the files in the phi dir,
+* Rationalize the decoding and output of descriptor ID levels, 
+
+   now that I know what's going on there.
+
+* phi0001 vs. lat0001
+
+   We should just figure out what prefix is used by the files in the phi dir,
    rather than forcing the user to specify it.
    
- * Fix WordPerfect Greek symbol font output
+* Fix WordPerfect Greek symbol font output
 
- * Figure out why Acrobat Reader is sometimes so picky about reading the PDF
-   output.
-
- * Antonis Tsolomitis suggests:
+* Antonis Tsolomitis suggests:
    
         I think that it would be helpfull to be able to search using
         Greek (iso88597). Do you think that this is possible (and
@@ -72,7 +80,7 @@ To-do list:
         would end up looking for IPPOS and this will match HI/PPOS or
         (I/PPOS in BetaCode.
 
- * John Muccigrosso suggests:
+* John Muccigrosso suggests:
 
          It'd be nice if the browser put the desired line in the middle
          of the passage it returns, instead of at the beginning. And if
@@ -82,30 +90,38 @@ To-do list:
     anyway, in order to make it possible to step through a text one
     sentence at a time or one section at a time, for example.
 
- * Jose Gonzalez suggests:
+* Jose Gonzalez suggests:
           
          The only behavior I miss and can't reproduce is choosing a
          specific work by a given author for searching.  E.g., if I put
          "plato" as author, the perl server only offers "Plato Phil.:
          All texts" etc. (the "All texts" accompanies every hit). 
 
- * Add style-sheet so that all text is not blue when words are all
+* Un-blue links (optionally) 
+
+   Add style-sheet so that all text is not blue when words are all
    Perseus links.
  
- * Make Daemon optionally run in the background, and provide init.d
+* Background daemon
+
+   Make Daemon optionally run in the background, and provide init.d
    script
 
- * Report time elapsed
+* Report time elapsed
 
- * Pablo Rodriguez suggests on the web page "Here are the various
-   criteria by which the texts  contained in the TLG are classified.",
-   the field 6 (date range) should be up alongside 5 (name of authors)
-   to make the whole page easier to view at once.
+* Pablo Rodriguez suggests:
 
- * Test the hostname option for Daemon.pl under Windows
+   on the web page "Here are the various criteria by which the texts
+   contained in the TLG are classified.", the field 6 (date range)
+   should be up alongside 5 (name of authors) to make the whole page
+   easier to view at once.
 
- * Alan Griffiths points out that many texts use iota adscript rather
-   than subscript, and this yields inconsistent search results.
+* Test the hostname option for Daemon.pl under Windows
+
+* Alan Griffiths points out:
+
+   Many texts use iota adscript rather than subscript, and this yields
+   inconsistent search results.
 
    Currently the code for searching for Perseus-style transliterated
    text constructs a regular expression that allows any number of
@@ -127,3 +143,21 @@ To-do list:
    near the end of a word, but I'm not sure how to define "near the
    end of a word", and for weird compound words, it might be wrong.
 
+* Per-user defaults:
+
+  At the moment the web interface allows you to change some of your
+  preferences, but if the Daemon is running over a network, this will
+  change the behavior for everyone.  Perhaps we should add
+  cookie-based preferences. 
+
+* Add option to specify input language in web interface.
+
+  Bill Tieman needs to search for strings in the Latin alphabet of the
+  bibliographies of Greek epigraphic corpora.  Can do with the
+  command-line, but not the web interface.
+
+  I think the correct solution would be to change the name of the
+  "Enter more than one search pattern" page to "Advanced Options"
+  (which would be slightly more accurate anyway), and add the option
+  of forcing your patterns to be interpreted as either Latin or Greek
+  regardless of the language of the corpus.
