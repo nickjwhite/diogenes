@@ -328,9 +328,9 @@ Setup again and a new file will be generated.
 
                            * * *
 
-Now you may click on the Daemon file to start Diogenes.
+Now you may execute the Daemon file to start Diogenes.
 
-Press Enter to exit.
+Press Enter to end.
 
 END
 <>;

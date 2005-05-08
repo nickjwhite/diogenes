@@ -28,9 +28,10 @@ my $CGI_SCRIPT = 'Diogenes.cgi';
 # one, or it crashes).
 my $PRE_FORK = 1;
 
+use FindBin qw($Bin);
+use File::Spec::Functions qw(:ALL);
+use lib ($Bin, catdir($Bin,'CPAN') );
 
-use FindBin;
-use lib "$FindBin::Bin";   
 use HTTP::Daemon;  
 use CGI qw(-nodebug -compile :standard);
 use CGI::Carp 'fatalsToBrowser';
@@ -67,6 +68,8 @@ USAGE: Daemon.pl [-dhl] [-p port] [-H host] [-m netmask]
 END
     exit;
 }
+
+print "\@INC: ", join "\n", @INC, "\n" if $opt_d;
 
 # Port to listen at:
 my $PORT = '8888';
