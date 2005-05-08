@@ -161,3 +161,13 @@ To-do list:
   (which would be slightly more accurate anyway), and add the option
   of forcing your patterns to be interpreted as either Latin or Greek
   regardless of the language of the corpus.
+
+* Add option to give running citation info in browser
+
+  HTML output for the browser could be put in the form of a table,
+  with n columns for citation info and the last for the text of each
+  line (one line per row):
+
+  Book Line                           Text
+  1    50     Blah, blah
+
