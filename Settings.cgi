@@ -9,7 +9,9 @@ use Cwd;
 # Workaround for annoying CGI.pm bug/warning
 $ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
 
-my $param_file = $ARGV[0];
+# my $param_file = $ARGV[0];
+# fix for paths with spaces
+my $param_file = join ' ', @ARGV;
 my $params;
 open PARAMS, $param_file or die "Can't open $param_file: $!\n";
 {
