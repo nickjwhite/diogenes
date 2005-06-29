@@ -1,6 +1,20 @@
 
 Modification history:
 
+v. 1.4.1 Perl version 5.8.7 includes CGI.pm 3.10, which now makes
+   xhtml the default, which in turn makes multipart forms the default,
+   which Daemon.pl does not know how to deal with.  The result was 501
+   errors.  Changed xhtml defualt to off and added (older) CGI.pm to
+   CPAN directory in the hope of averting future surprises/
+
+v. 1.4.0 Fixed bug (reported by P. Gainsford) in handling of
+   Settings.cgi under Windows.  Now all cgi script are handled in the
+   same way by daemon.pl.
+
+   Added CPAN subdirectory, which is meant to include all necessary
+   modules that do not come with the core distribution of Perl.  This
+   is primarily intended to ease installation under OS X.
+
 v. 1.3.4 Fixed bug (reported by A. Griffiths) where a pattern ending
    in a space would also grab a following asterisk off the next word.
    Noted missing glyph for iota diaresis in WinGreek.

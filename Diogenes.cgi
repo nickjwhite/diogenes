@@ -92,10 +92,7 @@ my $gs_args = '-sDEVICE=ppmraw -q -dNOPAUSE -dNO_PAUSE -dTextAlphaBits=4 ';
 my $session = unpack ("H*", pack ("Nn", time, $$)); # 12 hex digit session ID
 my $TMP = $tmp_prefix.$session.'_';
 
-my $form = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
-
-# Workaround for annoying CGI.pm bug/warning
-$ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
+my $form = new CGI;
 
 # We need to pre-set the encoding for the earlier pages, so that the right
 # header is sent out the first time Greek is displayed

@@ -2,28 +2,23 @@
 use strict;
 
 use Diogenes;
-use CGI qw(:standard -nodebug);
+use CGI qw(:standard);
+use CGI::Carp 'fatalsToBrowser';
+$| = 1;
+
+my $q = new CGI;
+print $q->header(-type=>"text/html; charset=utf-8");
+
 use Data::Dumper;    
 use Cwd;
 
-# Workaround for annoying CGI.pm bug/warning
-$ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
 
-# my $param_file = $ARGV[0];
-# fix for paths with spaces
-my $param_file = join ' ', @ARGV;
-my $params;
-open PARAMS, $param_file or die "Can't open $param_file: $!\n";
-{
-	local undef $/;
-	$params = <PARAMS>;
-}
-close PARAMS or die "Can't close $param_file: $!\n";
-my $q = new CGI($params);
 my $d = new Diogenes(-type => 'none');
 
 my $cwd = cwd;
 $cwd =~ s#\n##g;
+
+
 
 my $rcfile;
 if ($^O =~ /MSWin|dos/)
@@ -252,3 +247,4 @@ else
 {
 	$display_splash->();
 }
+

@@ -1,5 +1,16 @@
 To-do list: 
 
+* Next major revision? (see below for details)
+** Add per-user web settings
+** These include:
+*** Unicode input
+*** Allow for iota-adscript
+*** Diacritics significant/not
+*** Input alphabet (for non-Unicode input)
+** Better HTML/CSS output
+** In-line citation info
+
+
 * Rewrite translation of BETA to output encoding/markup
 
    I have tried to keep the translation of Greek encoding separate from
@@ -143,6 +154,18 @@ To-do list:
    near the end of a word, but I'm not sure how to define "near the
    end of a word", and for weird compound words, it might be wrong.
 
+   See here:
+   http://www.tlg.uci.edu/help/Help2.html#adscript
+
+   In other words, all instances of I after H and W are treated as
+   adscripts equivalent to iota subscripts; all instances of I after A
+   are treated as adscripts only if the alpha has a diacritic, and the
+   search is sensitive to that diacritic. (So A)I is equivalent to
+   A)|, but AI) is a short diphthong.) When the search is for
+   non-alphabetic characters, and the Beta Code is treated literally,
+   this interpretation is ignored.
+
+
 * Per-user defaults:
 
   At the moment the web interface allows you to change some of your
@@ -170,4 +193,14 @@ To-do list:
 
   Book Line                           Text
   1    50     Blah, blah
+
+* Re-add tick box to toggle Perseus links at the bottom of each page.
+
+  Some browsers include the URLs when you cut and paste text, which is
+  a pain.
+
+* Order TLG search results chronologically
+  See here: http://www.tlg.uci.edu/help/Doc004.html
+
+* Implement unicode input for Greek
 

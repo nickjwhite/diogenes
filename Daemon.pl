@@ -9,6 +9,9 @@
 #
 # Todo: make this a proper, multiply preforking server with locking on
 # the parent socket
+#
+# Handle decoding of multipart forms (which might then need to be
+# re-encoded as URL-escaped query strings).
 
 BEGIN 
 {
@@ -35,6 +38,10 @@ use lib ($Bin, catdir($Bin,'CPAN') );
 use HTTP::Daemon;  
 use CGI qw(-nodebug -compile :standard);
 use CGI::Carp 'fatalsToBrowser';
+# From v. 3.10 XHTML defaults to 1, which turns on multipart forms,
+# which we can't handle.
+$CGI::XHTML =0;
+
 use HTTP::Request;
 use HTTP::Status;
 use HTTP::Headers;
@@ -65,7 +72,7 @@ USAGE: Daemon.pl [-dhl] [-p port] [-H host] [-m netmask]
 
     -d  Turn on debugging output.
 
-    END
+END
     exit;
 }
 
@@ -94,7 +101,7 @@ my $HOST_long = unpack ('N', inet_aton($HOST));
 my $netmask = 0;
 $netmask = unpack ('N', inet_aton($opt_m)) if defined $opt_m;
 
-my $cgi_subroutine;
+my %cgi_subroutine;
 my $DEBUG = 0;
 $DEBUG = 1 if $opt_d;
 $| = 1;
@@ -114,7 +121,6 @@ if ($init->{cgi_root_dir})
     }
 }
 my $root_dir = cwd;
-my $temp_params = "$root_dir/params.tmp";
 print "Server Root: $root_dir\n" if $DEBUG;
 find_os();
 
@@ -146,7 +152,8 @@ if (not $test_response->is_error)
     exit;
 }
 
-make_cgi_subroutine();
+# Pre-compile the main cgi script
+compile_cgi_subroutine("Diogenes.cgi");
 
 my $server = HTTP::Daemon->new(
     LocalAddr => $HOST,
@@ -283,6 +290,7 @@ sub handle_request
 REQUEST:
     {
         warn "Requested URL: ".$request->url->as_string."\n" if $DEBUG;
+#         warn "Full request from browser: ". $request->as_string if $DEBUG;
         
         if (not defined $remote_host 
             or ($opt_l and $remote_host ne $HOST_dot )
@@ -309,14 +317,20 @@ REQUEST:
         $requested_file = $CGI_SCRIPT if $requested_file eq '/';
         # Internet exploder stupidity
         $requested_file =~ s#^\Q$root_dir\E##;  
-            $requested_file =~ s#^[/\\]##;
-            $requested_file = $CGI_SCRIPT if $requested_file =~ m/daemon/i;
+        $requested_file =~ s#^[/\\]##;
+        $requested_file = $CGI_SCRIPT if $requested_file =~ m/daemon/i;
         $requested_file = $CGI_SCRIPT if $requested_file =~ m/Diogenes\.cgi/i;
         warn "Relative file name: $requested_file\n" if $DEBUG;
-        $params = '';
         
         # Deal with the various ways our CGI script might be
-        # requested by a browser. We only serve one script here.
+        # requested by a browser.
+
+        # $params is a global which is accessed by the CGI script and
+        # passed as a parameter to CGI->new in order to instantiate
+        # the CGI object.  We could pass this info via environment
+        # variables, except that for POST methods, CGI.pm wants to
+        # read the query data from STDIN.
+        $params = '';
         if ($requested_file =~ m/\.cgi/i or $requested_file eq $CGI_SCRIPT)
         {
             if ($request -> method eq 'GET')
@@ -324,6 +338,8 @@ REQUEST:
                 $params = $request->url->query_form;        
                 $params ||= '';
                 warn "GET request.".($params ? " Query:$params\n" : "\n") if $DEBUG;
+                $ENV{REQUEST_METHOD} = 'GET';
+                $ENV{QUERY_STRING} = $params;
             }
             else ## eq 'POST'
             { 
@@ -331,51 +347,34 @@ REQUEST:
                 {
                     $params = $request->content;
                     $params ||= '';
+
                     warn "POST request. Content: $params\n" if $DEBUG;
+                    # An utter lie, but this way we don't have to
+                    # stuff the params into our own STDIN, which would
+                    # cost a fork, probably.
+                    $ENV{REQUEST_METHOD} = 'GET';
+                    $ENV{QUERY_STRING} = $params;
                 }
                 elsif ($request->headers->content_type =~ /multipart.*/)
+                # We do not handle multipart submission, since that
+                # would need to be turned into a URL-encoded string.  TODO?
                 {
-                    warn "Multipart form submission is not ",
-                    "supported by the Diogenes Daemon.\n";
+                    warn "Multipart form submission is not supported by the Diogenes Daemon.\n";
                     $client->send_error(RC_NOT_IMPLEMENTED);
                     last REQUEST
                 }
             }
             
-            # Execute the pre-compiled CGI script
+            # Here we compile if necessary and execute any CGI scripts
             $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
-
-            if ($requested_file eq $CGI_SCRIPT)
-            {
-                # Trap those exceptions
-                eval {$cgi_subroutine->()};
-                warn "Diogenes Error: $@" if $@; 
-            }
-            else
-            {
-                # Other cgi scripts just get executed
-                open PARAMS, ">$temp_params" or die "Can't open $temp_params: $!";
-                print PARAMS $params;
-                close PARAMS or die "Can't close $temp_params: $!";
-                warn "Executing file $requested_file in $root_dir\n" if $DEBUG;
-                # Specify Perl, since Win32 doesn't grok the shebang
-                my $out;
-                if ($OS eq 'MS' and     -e 'c:\\perl\\bin\\perl')
-                {       # Some installs don't set the PATH
-                    $out = `c:\\perl\\bin\\perl $requested_file $temp_params`;
-                }
-                else
-                {       
-                    $out = `perl $requested_file $temp_params`;
-                }
-                unlink $temp_params;
-                my $resp = HTTP::Response->new(RC_OK);
-                $resp->push_header('charset' => 'iso-8859-1');
-                $resp->push_header('Content_Type' => 'text/html');
-                $resp->content($out);
-                $client->send_response($resp);
-            }
-            
+            # This tells CGI.pm the name of the script, which goes into
+            # the action parameter of the form element(s)
+            $ENV{SCRIPT_NAME} = $requested_file;
+            compile_cgi_subroutine($requested_file)
+                unless exists $cgi_subroutine{$requested_file}; 
+            # Trap any exceptions
+            eval {$cgi_subroutine{$requested_file}->()};
+            warn "Diogenes Error: $@" if $@; 
         }
         else
         {
@@ -393,10 +392,11 @@ REQUEST:
     undef $client;
 }
 
-sub make_cgi_subroutine
+sub compile_cgi_subroutine
 {
+    my $script_file = shift;
     my $cgi_script;
-    open SCRIPT, "<$CGI_SCRIPT" or warn "Unable to find the file $CGI_SCRIPT.\n", 
+    open SCRIPT, "<$script_file" or warn "Unable to find the file $script_file.\n", 
     "The current configuration says it should be located in $root_dir.\n";
     binmode SCRIPT;
     {
@@ -405,14 +405,14 @@ sub make_cgi_subroutine
     }
     my $code = << 'CODE_END';
 
-    $cgi_subroutine = sub
+    $cgi_subroutine{$script_file} = sub
 {
     package Diogenes_Daemon;
     open *Diogenes_Daemon::client;
     select $Diogenes_Daemon::client;
     $| = 1;
     
-    CODE_END
+CODE_END
 
         $code .= $cgi_script . '}';
     
@@ -422,8 +422,6 @@ sub make_cgi_subroutine
     if ($@)
     {
         print "Error compiling CGI script: $@\n";
-        print "Press Enter to exit.";
-        <>;
         exit;
     }
 }
