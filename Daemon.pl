@@ -347,23 +347,26 @@ REQUEST:
                 {
                     $params = $request->content;
                     $params ||= '';
-
                     warn "POST request. Content: $params\n" if $DEBUG;
-                    # An utter lie, but this way we don't have to
-                    # stuff the params into our own STDIN, which would
-                    # cost a fork, probably.
-                    $ENV{REQUEST_METHOD} = 'GET';
-                    $ENV{QUERY_STRING} = $params;
+                    # We pass the params via the global $param, since
+                    # otherwise, we'd need to stuff the params into
+                    # our own STDIN, which would cost a fork,
+                    # probably.  Tried pretending this was a GET
+                    # request, and passing via %ENV, but that was Bad.
                 }
                 elsif ($request->headers->content_type =~ /multipart.*/)
                 # We do not handle multipart submission, since that
-                # would need to be turned into a URL-encoded string.  TODO?
+                # would need to be turned into a URL-encoded string to
+                # pass as an initializer for CGI.pm.  TODO?
                 {
                     warn "Multipart form submission is not supported by the Diogenes Daemon.\n";
                     $client->send_error(RC_NOT_IMPLEMENTED);
                     last REQUEST
                 }
             }
+            # Workaround for annoying CGI.pm bug/warning
+            $ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
+
             
             # Here we compile if necessary and execute any CGI scripts
             $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');

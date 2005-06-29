@@ -6,7 +6,7 @@ use CGI qw(:standard);
 use CGI::Carp 'fatalsToBrowser';
 $| = 1;
 
-my $q = new CGI;
+my $q = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 print $q->header(-type=>"text/html; charset=utf-8");
 
 use Data::Dumper;    
