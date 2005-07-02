@@ -136,7 +136,7 @@ my $my_footer = sub
 <p><FONT SIZE="-1">All data is &copy; the <em>Thesaurus Linguae
 Graecae</em>, the Packard Humanities Institute and others.<br>The information in
 these databases is subject to restrictions on access and use; consult your license.
-<br><a href="http://www.durham.ac.uk/p.j.heslin/diogenes">Diogenes</a>
+<br><a href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/">Diogenes</a>
 (version $version) is
 <a
 href="http://www.durham.ac.uk/p.j.heslin/diogenes/license.html">&copy;</a>
