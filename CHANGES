@@ -1,6 +1,9 @@
 
 Modification history:
 
+v. 1.4.2 Fixed bug reported by Bob Kaster, when giving multiple author
+   patterns.
+
 v. 1.4.1 Perl version 5.8.7 includes CGI.pm 3.10, which now makes
    xhtml the default, which in turn makes multipart forms the default,
    which Daemon.pl does not know how to deal with.  The result was 501

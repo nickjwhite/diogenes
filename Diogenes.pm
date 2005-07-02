@@ -27,8 +27,8 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION        =  1.3.4;
-$Diogenes::VERSION_string = "1.3.4";
+$Diogenes::VERSION        =  1.4.2;
+$Diogenes::VERSION_string = "1.4.2";
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
@@ -54,8 +54,8 @@ $Diogenes::context{g} = {
     'paragraph' => '[@{}]'
     };
 $Diogenes::context{l} = {
-    'sentence'  => '[.!?]',
     'clause'    => '[.!?;:]',
+    'sentence'  => '[.!?]',
     'phrase'    => '[.!?;:,_]',
     'paragraph' => '[@{}<>]'
     };
@@ -1062,7 +1062,6 @@ sub match_authtab
     my $self = shift;
     my $big_pattern = shift;
     utf8_to_beta_encoding(\$big_pattern);
-    $big_pattern = quotemeta $big_pattern;
     $big_pattern ||= '[A-Za-z]';            # Avoid warnings on null pattern
     my %total = ();
     my %auths;
@@ -1072,6 +1071,8 @@ sub match_authtab
     
     for my $pattern (split /[\s,]+/, $big_pattern)
     {
+        $pattern = quotemeta $pattern;
+
         if ($pattern =~ /\D/)
         {       # Search values (auth names)
             %auths = map { $_ => $Diogenes::auths{$self->{type}}{$_} }
