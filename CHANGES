@@ -1,6 +1,9 @@
 
 Modification history:
 
+v. 1.4.3 Alan Griffiths pointed out a regression where page-breaks
+   surrounded by spaces interfered with phrase searches.
+
 v. 1.4.2 Fixed bug reported by Bob Kaster, when giving multiple author
    patterns.
 

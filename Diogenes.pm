@@ -27,8 +27,8 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION        =  1.4.2;
-$Diogenes::VERSION_string = "1.4.2";
+$Diogenes::VERSION        =  1.4.3;
+$Diogenes::VERSION_string = "1.4.3";
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
@@ -1216,12 +1216,15 @@ sub latin_pattern
     print STDERR "Char classes: $pat\n" if $self->{debug};
                                 
     # Add non-alphabetics
+    # We have to allow spaces after hyphens and where there's a space
+    # in the input pattern, because of e.g. page-breaks that intervene
+    # like so: auctio- @1 .nem 
     $pat =~ 
         s/(\[[^\]]*\][*+?]?)(?!$)/$1(?:-\[$non_alpha_with_space\]\*|\[$non_alpha\]\*)/g;
     # spaces at the start + some lookbehind
     $pat =~ s/^\s+/(?<![A-Za-z])(?<!\-[\\x80-\\xff])(?<!\-[\\x80-\\xff][\\x80-\\xff])/g; 
     $pat =~ s/\s+$/(?![A-Za-z])/g;                     # spaces at the end
-    $pat =~ s/(?<!^)(?<!-)\s+/\\s+\[$non_alpha\]\*/g;  # other spaces (not at start or end)
+    $pat =~ s/(?<!^)(?<!-)\s+/\\s+\[$non_alpha_with_space\]\*/g;  # other spaces (not at start or end)
     $pat =~ s/\((?!\?)/(?:/g;                          # turn ( into (?: for speed
     return $pat;
 }
@@ -1274,13 +1277,19 @@ sub latin_to_beta
     tr/a-z/A-Z/;                                            # upcap all other letters
 
     my $non_alpha = '\\x00-\\x1f\\x21-\\x40\\x5b-\\x5e\\x60\\x7b-\\xff';
+    my $non_alpha_and_space = '\\x00-\\x40\\x5b-\\x5e\\x60\\x7b-\\xff';
     my $non_alpha_nor_asterisk = '\\x00-\\x1f\\x21-\\x29\\x2b-\\x40\\x5b-\\x5e\\x60\\x7b-\\xff';
     # The following allows trailing accents, hyphens, markup, etc. after letters, char classes and rough breathing
 #s/(\[[^\]]*\][*+?]?|\(\?:(?:[^\\)]|\\\)|\\)*\)|[A-Z])/$1\[\\x00-\\x1f\\x21-\\x40\\x5b-\\x60\\x7b-\\xff\]\*/g;
 #s/([^A-Z ]*[A-Z ][^A-Z ]*)/$1\[\\x00-\\x1f\\x21-\\x40\\x5b-\\x60\\x7b-\\xff\]\*/g;
-# Put non-alpha after all chars and spaces, except space at the end.
-s/([^A-Z ]*[A-Z][^A-Z ]*)/$1\[$non_alpha\]\*/g;
-s/([^A-Z ]*[ ][^A-Z ]*)(?!$)/$1\[$non_alpha\]\*/g;
+
+# Put non-alpha after all chars.  Allow spaces where there is a hyphenation (page-break markup)
+
+#     s/([^A-Z ]*[A-Z][^A-Z ]*)/$1\[$non_alpha\]\*/g;
+      s/([^A-Z ]*[A-Z][^A-Z ]*)/$1(?:-\[$non_alpha_and_space\]\*|\[$non_alpha\]\*)/g;
+
+# A space in the middle can gobble extra spaces for things like " @1 "
+s/([^A-Z ]*[ ][^A-Z ]*)(?!$)/$1\[$non_alpha_and_space\]\*/g;
 s/([^A-Z ]*[ ][^A-Z ]*)(?=$)/$1\[$non_alpha_nor_asterisk\]\*/g;
 #s/(?<!^)\s+(?!$)/\[^A-Z\]/g;           # other spaces (not at start or end)
     # spaces at the start (the lookbehind tries to reject hyphenation fragments and
@@ -4470,6 +4479,8 @@ sub make_tlg_regexp
 '\\x02-\\x19\\x22-\\x27\\x28-\\x2e\\x30-\\x3c\\x3e-\\x40\\x5b\\x5d-\\x7b\\x7d-\\xff';
     # these are the characters used in the word list
     my $used = '\\x21\\x27-\\x29\\x2f\\x3d\\x41-\\x5a\\x7c';
+    my $unused_plus_space =
+'\\x02-\\x20\\x22-\\x27\\x28-\\x2e\\x30-\\x3c\\x3e-\\x40\\x5b\\x5d-\\x7b\\x7d-\\xff';
 
     $word = quotemeta $word;
     $word =~ s/(?:\\\s)+/ /g;               # other spaces (not at start or end)
@@ -4492,7 +4503,9 @@ sub make_tlg_regexp
     my $mid_word = "[?+]?(?:\-(?:[\\x01-\\x7f]*[\\x00\\x80-\\xff]+))?[$unused]*";
                         
     # permit non-(alphabetic & diacritical) bytes to intervene
-    $word =~ s#([$used ])(?!$)#$1$mid_word#g;
+    $word =~ s#([$used])(?!$)#$1$mid_word#g;
+    # spaces between words
+    $word =~ s# (?!$)# [$unused_plus_space]*#g;
     print STDERR "Mid-word: $word\n\n" if $self->{debug};
     
     # ! (papyrus dot) at beginning or end is often ] or [ in the
