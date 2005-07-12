@@ -5,7 +5,7 @@
 # a graphical interface to the CD-Rom databases published by the         #
 # Thesaurus Linguae Graecae and the Packard Humanities Institute.        #
 #                                                                        #
-# Copyright P.J. Heslin 1999 - 2001.                                     #
+# Copyright P.J. Heslin 1999 - 2005.                                     #
 # Diogenes comes with ABSOLUTELY NO WARRANTY;                            #
 # for details see the file named COPYING.                                #
 #                                                                        #
@@ -140,7 +140,7 @@ these databases is subject to restrictions on access and use; consult your licen
 (version $version) is
 <a
 href="http://www.durham.ac.uk/p.j.heslin/diogenes/license.html">&copy;</a>
-1999-2001 P.J. Heslin. 
+1999-2005 P.J. Heslin. 
 </FONT>
 <p>    
 <a href="Diogenes.cgi" title="New Diogenes Search">New Search</a>
