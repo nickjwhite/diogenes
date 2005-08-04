@@ -126,7 +126,7 @@ elsif ($form->param('greek_output_format') and
 
 my %handler; my $query;
 
-my $version = $Diogenes::VERSION_string;
+my $version = $Diogenes::Version;
 
 my $my_footer = sub
 {							

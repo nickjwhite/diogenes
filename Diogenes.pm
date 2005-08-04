@@ -27,8 +27,7 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION        =  1.4.4;
-$Diogenes::VERSION_string = "1.4.4";
+$Diogenes::Version =  "1.4.4";
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
@@ -4382,7 +4381,7 @@ sub parse_wcnts
 "but I only see $running_count in $tlgwcnts.\n\n".
 "Please send a copy of ".
 "this error message to the author of the program.\n".
-"Diogenes version ($Diogenes::VERSION).".
+"Diogenes version ($Diogenes::Version).".
 "\n#########################################################################\n\n");
             }
         }
@@ -4750,7 +4749,7 @@ sub do_word_search
         " of them.\n\n".
         "Please send a copy of ".
         "this error message to $Diogenes::my_address.\n".
-        "Diogenes version ($Diogenes::VERSION).".
+        "Diogenes version ($Diogenes::Version).".
         "\n+-----------------------------------------------------------+\n\n");
                       }
                   }

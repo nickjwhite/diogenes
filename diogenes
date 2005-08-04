@@ -27,7 +27,8 @@
 #   details.                                                                      #
 #                                                                                 #
 ###################################################################################
-use Diogenes 0.9;
+use Diogenes;
+read_config_file Diogenes;
 
 #use Data::Dumper;
 #use Coy;
@@ -131,7 +132,7 @@ die "Edition info only available for the TLG. \n" if $opt_e and
 
 if ($opt_v) 
 {
-	print "Diogenes version is: $Diogenes::VERSION\n";
+	print "Diogenes version is: $Diogenes::Version\n";
 	exit;
 }
 
