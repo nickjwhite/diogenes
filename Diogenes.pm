@@ -27,8 +27,8 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::VERSION        =  1.4.3;
-$Diogenes::VERSION_string = "1.4.3";
+$Diogenes::VERSION        =  1.4.4;
+$Diogenes::VERSION_string = "1.4.4";
 $Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
 
 use strict;
@@ -1062,16 +1062,16 @@ sub match_authtab
     my $self = shift;
     my $big_pattern = shift;
     utf8_to_beta_encoding(\$big_pattern);
-    $big_pattern ||= '[A-Za-z]';            # Avoid warnings on null pattern
+    $big_pattern ||= '.';            # Avoid warnings on null pattern
     my %total = ();
     my %auths;
     $self->parse_authtab unless $Diogenes::auths{$self->{type}};
     die "Unable to get author info from the authtab.dir file!\n" unless 
         $Diogenes::auths{$self->{type}};
-    
+
     for my $pattern (split /[\s,]+/, $big_pattern)
     {
-        $pattern = quotemeta $pattern;
+        print STDERR "pattern: $pattern\n" if $self->{debug};
 
         if ($pattern =~ /\D/)
         {       # Search values (auth names)
