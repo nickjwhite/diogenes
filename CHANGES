@@ -1,6 +1,10 @@
 
 Modification history:
 
+v. 2.0 Many user-visible changes.  Setup.pl deprecated in favor of new
+   diogenes-launcher.  Name of configuration file changed to
+   diogenes.config.  New class method read_config_file.
+
 v. 1.4.3 Alan Griffiths pointed out a regression where page-breaks
    surrounded by spaces interfered with phrase searches.
 

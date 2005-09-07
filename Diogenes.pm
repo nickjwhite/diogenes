@@ -27,13 +27,14 @@
 package Diogenes;
 require 5.005;
 
-$Diogenes::Version =  "1.4.4";
-$Diogenes::my_address = 'P.J.Heslin@durham.ac.uk';
+$Diogenes::Version =  "2.0.0";
+$Diogenes::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
 use integer;
 use Cwd;
 use Carp;
+use File::Spec;
 #use Data::Dumper;
 
 eval "require 'Diogenes.map';";
@@ -42,7 +43,7 @@ $Diogenes::map_error = $@;
 $Diogenes::encoding{Beta} = {};
 $Diogenes::encoding{Ibycus} = {};
 $Diogenes::encoding{Transliteration} = {};
-use vars qw($RC_DEBUG);
+use vars qw($RC_DEBUG $OS);
 $RC_DEBUG = 0;
 
 # Define some globals
@@ -102,11 +103,12 @@ my @tlg_files =
     ('authtab.dir', 'tlgwlinx.inx', 'tlgwlist.inx', 'tlgwcinx.inx', 
      'tlgwcnts.inx', 'tlgawlst.inx');
 
-{   # For closure
-    # Default values for all Diogenes options.
-    # Overridden by rc files and constructor args.
-    
-    my %defaults = (
+$OS = ($^O=~/MSWin/i or $^O =~/dos/) ? 'windows' :
+    ($^O=~/darwin/i) ? 'mac' : 'unix';
+
+# Default values for all Diogenes options.
+# Overridden by rc files and constructor args.
+my %defaults = (
         type => 'phi',
         output_format => 'ascii',
         highlight => 1,
@@ -121,9 +123,9 @@ my @tlg_files =
         encoding => '',
         
         # System-wide defaults
-        tlg_dir => '/mnt/cdrom/',
-        phi_dir => '/mnt/cdrom/',
-        ddp_dir => '/mnt/cdrom/',
+        tlg_dir => '',
+        phi_dir => '',
+        ddp_dir => '',
         tlg_file_prefix => 'tlg',
         phi_file_prefix => 'lat',
         ddp_file_prefix => 'ddp',
@@ -179,11 +181,11 @@ my @tlg_files =
         
         # directory and prefix for the temp files we generate.
         cgi_tmp_dir => '/tmp',
-        cgi_prefix => 'diogenes.',
+        cgi_prefix => 'Diogenes.',
         
         cgi_root_dir => '',
-        cgi_img_dir_absolute => 'c:\\diogenes/gifs/',
-        cgi_img_dir_relative => '/gifs/',
+        cgi_img_dir_absolute => '',
+        cgi_img_dir_relative => '',
         
         cgi_gs  => '/usr/bin/gs',
         cgi_p2g => '/usr/bin/ppmtogif',
@@ -202,32 +204,33 @@ my @tlg_files =
         
         perseus_links => 1, # links to Perseus morphological parser 
         perseus_server => 'http://www.perseus.tufts.edu/',
-        perseus_target => 'morph',
+        perseus_target => '', # won't work with Mac Diogenes-browser
         
         quiet => 0,
         # deprecated
         cgi_pdflatex => undef,
     );
         
-    my $validate = sub 
-    {
-        my $key = shift;
-        $key =~ s/-?(\w+)/\L$1/;
-        return $key if exists $defaults{$key};
-        die ("Configuration file error in parameter: $key\n");
-    };
-                
+sub validate
+{
+    my $key = shift;
+    $key =~ s/-?(\w+)/\L$1/;
+    return $key if exists $defaults{$key};
+    die ("Configuration file error in parameter: $key\n");
+};
+
+
+sub read_config_file
+{
+    my %configuration = ();
     # UNIX - Local config files in home and cwd override the global file in /etc
     my @rc_files = ('/etc/diogenesrc');
     push @rc_files, "$ENV{HOME}/.diogenesrc" if $ENV{HOME};
     my $cwd = cwd;
-    push @rc_files, "$cwd/.diogenesrc";
+    push @rc_files, File::Spec->catfile($cwd, "diogenes.config");
     
-    # MS Win -- Only config file is .ini in current folder
-    @rc_files = ("$cwd\\diogenes.ini") if ($^O =~ /MSWin|dos/);
+    my ($attrib, $val);
     
-    my (%rc_defaults, $attrib, $val);
-                
     foreach my $rc_file (@rc_files) 
     {
         next unless $rc_file;
@@ -235,258 +238,426 @@ my @tlg_files =
         next unless -e $rc_file;
         open RC, "<$rc_file" or die ("Can't open (apparently extant) file $rc_file: $!");
         print STDERR "Opened.\n" if $RC_DEBUG;
+        local $/ = "\n";
         while (<RC>) 
         {
             next if m/^#/;
             next if m/^\s*$/;
-            ($attrib, $val) = m#^\s*(\w+)[\s=]+((?:"[^"]+"|[\S]+)+)#;
+            ($attrib, $val) = m#^\s*(\w+)[\s=]+((?:"[^"]*"|[\S]+)+)#;
             $val =~ s#"([^"]*)"#$1#g;
             print STDERR "parsing $rc_file for '$attrib' = '$val'\n" if $RC_DEBUG;
             die "Error parsing $rc_file for $attrib and $val: $_\n" unless 
                 $attrib and defined $val;
-            $attrib = $validate->($attrib);
-            $rc_defaults{$attrib} = $val;   
+            $attrib = validate($attrib);
+            $configuration{$attrib} = $val;   
         }
         close RC or die ("Can't close $rc_file");
     }
+#     print STDERR "££".(join '£', %configuration)."&&\n";
+    return %configuration;
+}
 
-    sub new 
-    {
-        my $proto = shift;
-        my $type = ref($proto) || $proto;
-        my $self = {};
-        bless $self, $type;
-        
-        my %args;
-        my %passed = @_;
-        $args{ $validate->($_) } = $passed{$_} foreach keys %passed;
-        
-        %{ $self } = ( %{ $self }, %defaults, %rc_defaults, %args );
-        
-        # Clone values that are references, so we don't clobber what was passed.
-        $self->{pattern_list} = [@{$self->{pattern_list}}] if $self->{pattern_list};
-        $self->{overflow}     = {%{$self->{overflow}}}     if $self->{overflow};
-        
-        $self->{type} = 'tlg' if ref $self eq 'Diogenes_indexed';
 
-        # Make sure all the directories end in a '/'
-        my @dirs = qw/tlg_dir phi_dir ddp_dir cgi_tmp_dir 
+sub new 
+{
+#     print STDERR "New object\n";
+    my $proto = shift;
+    my $type = ref($proto) || $proto;
+    my $self = {};
+    bless $self, $type;
+    
+    my %args;
+    my %passed = @_;
+
+    $args{ validate($_) } = $passed{$_} foreach keys %passed;
+
+    # We just re-read the config file each time.  It would be nice to
+    # do this only when needed, but then you need to arrange for
+    # communication between one process doing the writing and another
+    # doing the reading.
+
+    %{ $self } = ( %{ $self }, %defaults, read_config_file(), %args );
+    
+    my @dirs = qw/tlg_dir phi_dir ddp_dir cgi_tmp_dir cgi_root_dir
                       cgi_img_dir_absolute cgi_img_dir_relative/;
-        for my $dir (@dirs)
-        {
-            $self->{$dir} .= '/' unless $self->{$dir} =~ m#[/\\]$#;
-        }
-        
-        unless ($self->{type} eq 'none')
-        {
-            $self->{word_key} = "";
-            $self->{current_work} = 0;
-            $self->{word_list} = {};
-            $self->{auth_num} = 0;
-            $self->{work_num} = 0;
-            $self->{list_total} = 0;
-        }
-        print STDERR "\nTYPE: $self->{type}\n" if $self->{debug};
-        # Dummy object where no database access is desired -- e.g. to get at 
-        # configuration values or to format some Greek input from elsewhere.
-        if ($self->{type} eq 'none') 
-        {
-            $self->{cdrom_dir}   = undef;
-            $self->{file_prefix} = "";
-        }
-        # PHI
-        elsif ($self->{type} eq 'phi') 
-        {
-            $self->{cdrom_dir}   = $self->{phi_dir};
-            $self->{file_prefix} = $self->{phi_file_prefix};
-            $self->make_latin_pattern;      
-        }
-        
-        # TLG
-        elsif ($self->{type} eq 'tlg') 
-        {
-            $self->{cdrom_dir}   = $self->{tlg_dir};
-            $self->{file_prefix} = $self->{tlg_file_prefix};
-            if (ref $self eq 'Diogenes_indexed') 
-            {    # Can also pass this as an arg to read_index.
-                $self->{pattern} = $self->simple_latin_to_beta ($self->{pattern});
-            }
-            else 
-            {
-                $self->make_greek_pattern;
-            }
-        }
-        
-        # DDP
-        elsif ($self->{type} eq 'ddp') 
-        {
-            $self->{cdrom_dir}   = $self->{ddp_dir};
-            $self->{file_prefix} = $self->{ddp_file_prefix};
-            $self->make_greek_pattern;
-            $self->{documentary} = 1;
-        }
 
-        # INS
-        elsif ($self->{type} eq 'ins') 
-        {
-            $self->{cdrom_dir}   = $self->{ddp_dir};
-            $self->{file_prefix} = $self->{ins_file_prefix};
-            $self->{documentary} = 1;
-            if ($self->{input_lang} =~ /^g/i)   
-            { 
-                $self->make_greek_pattern; 
-            }
-            else 
-            { 
-                $self->make_latin_pattern;
-            }
-        }
-        # CHR
-        elsif ($self->{type} eq 'chr') 
-        {
-            $self->{cdrom_dir}   = $self->{ddp_dir};
-            $self->{file_prefix} = $self->{chr_file_prefix};
-            $self->{documentary} = 1;
-            if ($self->{input_lang} =~ /^g/i)       
-            { 
-                $self->make_greek_pattern; 
-            }
-            else 
-            { 
-                $self->make_latin_pattern;
-            }
-        }
-
-        # COP
-        elsif ($self->{type} eq 'cop') 
-        {
-            $self->{cdrom_dir}   = $self->{ddp_dir};
-            $self->{file_prefix} = $self->{cop_file_prefix};
-            $self->{latin_handler} = \&beta_latin_to_utf;
-            $self->{coptic_encoding} = 'beta' if 
-                $args{output_format} and $args{output_format} eq 'beta';
-        }
-        
-        # CIV
-        elsif ($self->{type} eq 'misc') 
-        {
-            $self->{cdrom_dir}   = $self->{phi_dir};
-            $self->{file_prefix} = $self->{misc_file_prefix};
-            if ($self->{input_lang} =~ /^g/i)       
-            { 
-                $self->make_greek_pattern; 
-            }
-            else 
-            { 
-                $self->make_latin_pattern;
-            }
-        }
-        # BIB
-        elsif ($self->{type} eq 'bib') 
-        {
-            $self->{cdrom_dir}   = $self->{tlg_dir};
-            $self->{file_prefix} = 'doccan';
+    # Override config values for directories if environment vars
+    # are set, and make sure all the directories end in a '/'
+    # (except for empty values).
+    for my $dir (@dirs) 
+    {
+#         print STDERR "--$dir: $self->{$dir}\n";
+        $self->{$dir} = $ENV{"diogenes_$dir"} if $ENV{"diogenes_$dir"};
+#         print STDERR '>>'. $ENV{"diogenes_$dir"}."\n" if $ENV{"diogenes_$dir"};
+        $self->{$dir} .= '/' unless $self->{$dir} eq '' or $self->{$dir} =~ m#[/\\]$#;
+    }
+    
+    # Clone values that are references, so we don't clobber what was passed.
+    $self->{pattern_list} = [@{$self->{pattern_list}}] if $self->{pattern_list};
+    $self->{overflow}     = {%{$self->{overflow}}}     if $self->{overflow};
+    
+    $self->{type} = 'tlg' if ref $self eq 'Diogenes_indexed';
+    
+    unless ($self->{type} eq 'none')
+    {
+        $self->{word_key} = "";
+        $self->{current_work} = 0;
+        $self->{word_list} = {};
+        $self->{auth_num} = 0;
+        $self->{work_num} = 0;
+        $self->{list_total} = 0;
+    }
+    print STDERR "\nTYPE: $self->{type}\n" if $self->{debug};
+    # Dummy object where no database access is desired -- e.g. to get at 
+    # configuration values or to format some Greek input from elsewhere.
+    if ($self->{type} eq 'none') 
+    {
+        $self->{cdrom_dir}   = undef;
+        $self->{file_prefix} = "";
+    }
+    # PHI
+    elsif ($self->{type} eq 'phi') 
+    {
+        $self->{cdrom_dir}   = $self->{phi_dir};
+        $self->{file_prefix} = $self->{phi_file_prefix};
+        $self->make_latin_pattern;      
+    }
+    
+    # TLG
+    elsif ($self->{type} eq 'tlg') 
+    {
+        $self->{cdrom_dir}   = $self->{tlg_dir};
+        $self->{file_prefix} = $self->{tlg_file_prefix};
+        if (ref $self eq 'Diogenes_indexed') 
+        {    # Can also pass this as an arg to read_index.
+            $self->{pattern} = $self->simple_latin_to_beta ($self->{pattern});
         }
         else 
         {
-            die ("I did not understand the type => $self->{type}\n");
+            $self->make_greek_pattern;
         }
-        
-        # Evidently some like to mount their CD-Roms in uppercase
-        ($authtab, $tlgwlinx, $tlgwlist, $tlgwcinx, $tlgwcnts, $tlgawlst) = 
-            $self->{uppercase_files} ? map {uc $_} @tlg_files : @tlg_files;
-        if ($self->{uppercase_files})
+    }
+    
+    # DDP
+    elsif ($self->{type} eq 'ddp') 
+    {
+        $self->{cdrom_dir}   = $self->{ddp_dir};
+        $self->{file_prefix} = $self->{ddp_file_prefix};
+        $self->make_greek_pattern;
+        $self->{documentary} = 1;
+    }
+    
+    # INS
+    elsif ($self->{type} eq 'ins') 
+    {
+        $self->{cdrom_dir}   = $self->{ddp_dir};
+        $self->{file_prefix} = $self->{ins_file_prefix};
+        $self->{documentary} = 1;
+        if ($self->{input_lang} =~ /^g/i)   
+        { 
+            $self->make_greek_pattern; 
+        }
+        else 
+        { 
+            $self->make_latin_pattern;
+        }
+    }
+    # CHR
+    elsif ($self->{type} eq 'chr') 
+    {
+        $self->{cdrom_dir}   = $self->{ddp_dir};
+        $self->{file_prefix} = $self->{chr_file_prefix};
+        $self->{documentary} = 1;
+        if ($self->{input_lang} =~ /^g/i)       
+        { 
+            $self->make_greek_pattern; 
+        }
+        else 
+        { 
+            $self->make_latin_pattern;
+        }
+    }
+    
+    # COP
+    elsif ($self->{type} eq 'cop') 
+    {
+        $self->{cdrom_dir}   = $self->{ddp_dir};
+        $self->{file_prefix} = $self->{cop_file_prefix};
+        $self->{latin_handler} = \&beta_latin_to_utf;
+        $self->{coptic_encoding} = 'beta' if 
+            $args{output_format} and $args{output_format} eq 'beta';
+    }
+    
+    # CIV
+    elsif ($self->{type} eq 'misc') 
+    {
+        $self->{cdrom_dir}   = $self->{phi_dir};
+        $self->{file_prefix} = $self->{misc_file_prefix};
+        if ($self->{input_lang} =~ /^g/i)       
+        { 
+            $self->make_greek_pattern; 
+        }
+        else 
+        { 
+            $self->make_latin_pattern;
+        }
+    }
+    # BIB
+    elsif ($self->{type} eq 'bib') 
+    {
+        $self->{cdrom_dir}   = $self->{tlg_dir};
+        $self->{file_prefix} = 'doccan';
+    }
+    else 
+    {
+        die ("I did not understand the type => $self->{type}\n");
+    }
+    
+    # Evidently some like to mount their CD-Roms in uppercase
+    ($authtab, $tlgwlinx, $tlgwlist, $tlgwcinx, $tlgwcnts, $tlgawlst) = 
+        $self->{uppercase_files} ? map {uc $_} @tlg_files : @tlg_files;
+    if ($self->{uppercase_files})
+    {
+        $self->{$_} = uc $self->{$_} for 
+            qw(file_prefix txt_suffix cdrom_dir idt_suffix);
+    }
+    
+    # For all searches:
+    
+    if (exists $self->{pattern}
+        and not exists $self->{pattern_list})
+    {
+        $self->{pattern_list} = [$self->{pattern}];
+        $self->{min_matches_int} = 1;
+    }
+    elsif ($self->{pattern})
+    {
+        push @{ $self->{pattern_list} }, $self->{pattern};
+    }
+    $self->{word_pattern} = $self->{pattern};
+    
+    # min_matches_int is for "internal", since we have to munge it here
+    $self->{min_matches_int} = '';
+    unless (ref $self eq 'Diogenes_indexed')
+    {
+        $self->{min_matches_int} = $self->{min_matches};
+        $self->{min_matches_int} = 1 if $self->{min_matches} eq 'any';
+        $self->{min_matches_int} =  scalar @{ $self->{pattern_list} } if 
+            $self->{min_matches} eq 'all';
+    }
+    print STDERR "MM: $self->{min_matches}\n" if $self->{debug};
+    print STDERR "MMI: $self->{min_matches_int}\n" if $self->{debug};
+    
+    $self->{context} = $1 if 
+        $self->{context} =~ /(sentence|paragraph|clause|phrase|\d+\s*(?:lines)?)/i;
+    $self->{context} = lc $self->{context};
+    die "Undefined value for context.\n" unless defined $self->{context};
+    die "Illegal value for context: $self->{context}\n" unless 
+        $self->{context} =~ 
+        m/^(?:sentence|paragraph|clause|phrase|\d+\s*(?:lines)?)$/;
+    $self->{numeric_context} = ($self->{context} =~ /\d/) ? 1 : 0;
+    print STDERR "Context: $self->{context}\n" if $self->{debug};
+    
+    # Check for external encoding
+    die "You have asked for an external output encoding ($self->{encoding}), "
+        . "but I was not able to load a Diognes.map file in which such encodings "
+        . "are defined: $Diogenes::map_error \n"  
+        if  $self->{encoding} and $Diogenes::map_error;
+    die "You have specified an encoding ($self->{encoding}) that does not "
+        . "appear to have been defined in your Diogenes.map file.\n\n"
+        . "The following Greek encodings are available:\n"
+        . (join "\n", $self->get_encodings)
+        . "\n\n"
+        if $self->{encoding} and not exists $Diogenes::encoding{$self->{encoding}};
+    
+    # Some defaults       
+    if (not $self->{encoding})
+    {
+        # force encoding Ibycus for repaging output removing hyphens and
+        # using TLG non-ascii markers for section references.  PAM 090102
+        $self->{encoding} = 'Ibycus' if $self->{output_format} =~ m/repaging/i;
+        $self->{encoding} = 'Ibycus' if $self->{output_format} =~ m/latex/i;
+        $self->{encoding} = 'Transliteration' if $self->{output_format} =~ m/ascii/i;
+        $self->{encoding} = 'UTF-8' if $self->{output_format} =~ m/html/i;
+        $self->{encoding} = 'Beta' if $self->{output_format} =~ m/beta/i;
+    }
+    
+    $self->set_handlers;    
+    
+    $self->{perseus_server} .= '/' unless $self->{perseus_server} =~ m#/$#; 
+    
+    print STDERR "Using prefix: $self->{file_prefix}\nUsing pattern(s): ",
+    join "\n", @{ $self->{pattern_list} }, "\n" if $self->{debug};
+    print STDERR "Using reject pattern: $self->{reject_pattern}\n" if 
+        $self->{debug} and $self->{reject_pattern};
+    
+    # Read in some preliminary data, except for a dummy object
+    if (($self->{type} eq 'none') or ($self->parse_authtab))
+    {
+        if ($self->{bib_info})
         {
-            $self->{$_} = uc $self->{$_} for 
-                qw(file_prefix txt_suffix cdrom_dir idt_suffix);
+            $self->read_tlg_biblio if $self->{type} eq 'tlg';
+            $self->read_phi_biblio if $self->{type} eq 'phi';
         }
+    }
+    return $self;
+}
 
-        # For all searches:
-                
-        if (exists $self->{pattern}
-            and not exists $self->{pattern_list})
-        {
-            $self->{pattern_list} = [$self->{pattern}];
-            $self->{min_matches_int} = 1;
-        }
-        elsif ($self->{pattern})
-        {
-            push @{ $self->{pattern_list} }, $self->{pattern};
-        }
-        $self->{word_pattern} = $self->{pattern};
-        
-        # min_matches_int is for "internal", since we have to munge it here
-        $self->{min_matches_int} = '';
-        unless (ref $self eq 'Diogenes_indexed')
-        {
-            $self->{min_matches_int} = $self->{min_matches};
-            $self->{min_matches_int} = 1 if $self->{min_matches} eq 'any';
-            $self->{min_matches_int} =  scalar @{ $self->{pattern_list} } if 
-                $self->{min_matches} eq 'all';
-        }
-        print STDERR "MM: $self->{min_matches}\n" if $self->{debug};
-        print STDERR "MMI: $self->{min_matches_int}\n" if $self->{debug};
-        
-        $self->{context} = $1 if 
-            $self->{context} =~ /(sentence|paragraph|clause|phrase|\d+\s*(?:lines)?)/i;
-        $self->{context} = lc $self->{context};
-        die "Undefined value for context.\n" unless defined $self->{context};
-        die "Illegal value for context: $self->{context}\n" unless 
-            $self->{context} =~ 
-            m/^(?:sentence|paragraph|clause|phrase|\d+\s*(?:lines)?)$/;
-        $self->{numeric_context} = ($self->{context} =~ /\d/) ? 1 : 0;
-        print STDERR "Context: $self->{context}\n" if $self->{debug};
+# When looking for a database location, Diogenes checks if there is an
+# environment variable set for the the selected type of search, and if
+# so uses that.  If not, it uses the value from the configuration
+# file(s).  If the authtab is not found, an error is signaled.
 
-        # Check for external encoding
-        die "You have asked for an external output encoding ($self->{encoding}), "
-            . "but I was not able to load a Diognes.map file in which such encodings "
-            . "are defined: $Diogenes::map_error \n"  
-            if  $self->{encoding} and $Diogenes::map_error;
-        die "You have specified an encoding ($self->{encoding}) that does not "
-            . "appear to have been defined in your Diogenes.map file.\n\n"
-            . "The following Greek encodings are available:\n"
-            . (join "\n", $self->get_encodings)
-            . "\n\n"
-            if $self->{encoding} and not exists $Diogenes::encoding{$self->{encoding}};
+# For nicest error handling, run check_db before doing a search, and
+# if it returns false, run check_cdroms, in case the user has
+# e.g. unmounted the old disk and mounted a new one, but has no
+# settings in the init file.  In such a case, we need to look at the
+# file-system to find the new cdrom.  Then run check_db again.
 
-        # Some defaults       
-        if (not $self->{encoding})
+# Make sure current database is accessible
+sub check_db
+{
+    my $self= shift;
+    my $file = File::Spec->catfile($self->{cdrom_dir}, 'authtab.dir');
+    return check_authtab($file);
+}
+
+
+# See which databases can now be found (checking environment vars and
+# init file settings).
+sub check_db_all
+{
+    my $self = shift;
+    my %databases_found;
+    my @databases = qw(tlg phi ddp);
+
+    for my $db (@databases)
+    {
+        my $dir = $db . '_dir';
+        if ($self->{$dir})
         {
-            # force encoding Ibycus for repaging output removing hyphens and
-            # using TLG non-ascii markers for section references.  PAM 090102
-            $self->{encoding} = 'Ibycus' if $self->{output_format} =~ m/repaging/i;
-            $self->{encoding} = 'Ibycus' if $self->{output_format} =~ m/latex/i;
-            $self->{encoding} = 'Transliteration' if $self->{output_format} =~ m/ascii/i;
-            $self->{encoding} = 'UTF-8' if $self->{output_format} =~ m/html/i;
-            $self->{encoding} = 'Beta' if $self->{output_format} =~ m/beta/i;
-        }
-
-        $self->set_handlers;    
-        
-        $self->{perseus_server} .= '/' unless $self->{perseus_server} =~ m#/$#; 
-
-        print STDERR "Using prefix: $self->{file_prefix}\nUsing pattern(s): ",
-        join "\n", @{ $self->{pattern_list} }, "\n" if $self->{debug};
-        print STDERR "Using reject pattern: $self->{reject_pattern}\n" if 
-            $self->{debug} and $self->{reject_pattern};
-        
-        # Read in some preliminary data, except for a dummy object
-        if (($self->{type} eq 'none') or ($self->parse_authtab))
-        {
-            if ($self->{bib_info})
+            my $file = File::Spec->catfile($self->{$dir}, 'authtab.dir');
+            if ($db eq check_authtab($file))
             {
-                $self->read_tlg_biblio if $self->{type} eq 'tlg';
-                $self->read_phi_biblio if $self->{type} eq 'phi';
+                $databases_found{$db} = $file;
             }
-            return $self;
+        }
+    }
+    return %databases_found;
+}
+
+# Closure: within each call to check_cdroms, we memoize the
+# results of find_cdrom for efficiency.
+{
+    my %found_cdroms;
+    my $did_cdrom_search;
+
+# First clear any environment vars, in case they have stale settings.
+# Then see how many databases are available given the init file
+# settings.  For any that are not found, we look in the usual places
+# CD-Roms are mounted.  If any database(s) are found by this method,
+# register location(s) in environment variable(s).  Note that
+# environment variables override config file settings, so use them
+# with care.
+
+    sub check_cdroms
+    {
+        my $self = shift;
+        my %databases_found = $self->check_db_all;
+        my @databases = qw(tlg phi ddp);
+        Diogenes->clear_dir_env_vars(@databases);
+        $did_cdrom_search = 0;
+        
+        for my $db (@databases)
+        {
+            next if exists $databases_found{$db};
+            my $cd = find_cdrom($db);
+            if ($cd)
+            {
+                $databases_found{$db} = $cd;
+                $ENV{'diogenes_'.$db.'_dir'} = $cd;
+            }
+        }
+        return %databases_found;
+    }
+
+    # For internal use.
+    sub find_cdrom
+    {
+        # Takes a database and returns the directory in which the
+        # corresponding authtab file is found, looking in likely places.
+        my $db = shift;
+        if ($did_cdrom_search)
+        {
+            return $found_cdroms{$db} if exists $found_cdroms{$db};
+            return undef;
+        }
+
+        %found_cdroms = ();
+        my @candidates = ();
+        if ($OS eq 'windows')
+        {
+            push @candidates, "$_:\\" for 'c' .. 'z';
+        }
+        elsif ($OS eq 'mac')
+        {
+            opendir DIR, "/Volumes" or die "can't open /Volumes: $!";
+            foreach my $dir (readdir(DIR))
+            {
+                next if $dir =~ m/^\./;
+                $dir = "/Volumes/$dir";
+                next unless -d $dir;
+                push @candidates, $dir;
+                closedir DIR;
+            }
         }
         else
         {
-            warn   "Error: $self->{cdrom_dir}$authtab was not found!\n";
-            return "$self->{cdrom_dir}";
+            @candidates = qw (/cdrom /mnt/cdrom /mnt/tlg /mnt/phi /mnt/ddp /mnt/lat);
         }
+        for my $dir (@candidates)
+        {
+            if (-d $dir)
+            {
+                my $file = File::Spec->catfile($dir, 'authtab.dir');
+                my $db = check_authtab($file);
+                if ($db)
+                {
+                    $found_cdroms{$db} = $dir;
+                }  
+            }   
+        }
+        $did_cdrom_search = 1;
+        return $found_cdroms{$db} if exists $found_cdroms{$db};
+        return undef;
     }
-} # End closure
+}
+
+sub clear_dir_env_vars
+{
+    my @dirs = @_;
+    delete $ENV{'diogenes_'.$_.'_dir'} for @dirs;
+}
+
+# Returns tlg, phi or ddp (or '' if not extant or recognized).  Class method.
+sub check_authtab
+{
+    my $file = shift;
+    if (-e $file)
+    {
+        open AUTHTAB, "<$file" or die ("Can't open (apparently extant) file $file: $!");
+        my $buf;
+        read AUTHTAB, $buf, 4;
+        $buf =~ s/^\*//;
+        $buf = lc $buf;
+        $buf = 'phi' if $buf eq 'lat';
+        $buf = 'ddp' if $buf eq 'ins' or $buf eq 'chr' or $buf eq 'cop';
+        return $buf if $buf eq 'tlg' or $buf eq 'phi' or $buf eq 'ddp';
+        return '';
+    }
+    return '';
+}
+
 
 sub set_handlers
 {
@@ -2877,7 +3048,7 @@ sub beta_latin_to_utf
     # First, we translate to iso-8859-1
     beta_encoding_to_latin1($ref);
 
-    # Then to utf-8 (but we don't use "use utf8")
+    # Then to utf-8 (but we don't use the pragma)
     $$ref =~ s#(ÿ.ÿ|[\x80-\xff])#my $c = $1;
                                 if ($c =~ m/ÿ.ÿ/)
                                 {       

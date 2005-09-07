@@ -18,10 +18,11 @@ BEGIN
     print "\nStarting Diogenes. Please wait ...\n";
 }
 
+
 package Diogenes_Daemon;
 require 5.005;
 use strict;
-use vars qw($client $params $flag $OS $config);
+use vars qw($client $params $flag $config);
 $|=1;
 
 # Script to pre-compile and run
@@ -30,6 +31,7 @@ my $CGI_SCRIPT = 'Diogenes.cgi';
 # process hanging around (unix only -- Windows must pre-fork at least
 # one, or it crashes).
 my $PRE_FORK = 1;
+my $flag_file = ".diogenes.flag";
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
@@ -46,17 +48,17 @@ use HTTP::Request;
 use HTTP::Status;
 use HTTP::Headers;
 use Cwd;
-use Diogenes 0.9;
+use Diogenes;
 use Net::Domain qw(hostfqdn);
 use Socket;
 use Getopt::Std;
-use vars qw/$opt_d $opt_p $opt_h $opt_H $opt_l $opt_m/;
+use vars qw/$opt_d $opt_p $opt_h $opt_H $opt_l $opt_m $opt_D $opt_b/;
 
-unless (getopts('dp:hH:lm:'))
+unless (getopts('dDp:hH:lm:b'))
 {
     print <<"END";
 
-USAGE: Daemon.pl [-dhl] [-p port] [-H host] [-m netmask]
+USAGE: Daemon.pl [-dhlb] [-p port] [-H host] [-m netmask]
 
     -h  Use current network hostname, so that Diogenes can be accessed by
     other computers on the network (localhost is the default).
@@ -72,11 +74,20 @@ USAGE: Daemon.pl [-dhl] [-p port] [-H host] [-m netmask]
 
     -d  Turn on debugging output.
 
+    -D  Do not infer cgi directories from current dir, but use the settings
+        in the config file(s) instead.
+
+    -b  Print message about launching a browser instead of the usual message.
 END
     exit;
 }
 
-print "\@INC: ", join "\n", @INC, "\n" if $opt_d;
+my %cgi_subroutine;
+my $DEBUG = 0;
+$DEBUG = 1 if $opt_d;
+$| = 1;
+
+print "\@INC: ", join "\n", @INC, "\n" if $DEBUG;
 
 # Port to listen at:
 my $PORT = '8888';
@@ -101,28 +112,35 @@ my $HOST_long = unpack ('N', inet_aton($HOST));
 my $netmask = 0;
 $netmask = unpack ('N', inet_aton($opt_m)) if defined $opt_m;
 
-my %cgi_subroutine;
-my $DEBUG = 0;
-$DEBUG = 1 if $opt_d;
-$| = 1;
+# CGI dirs
+my $root_dir = cwd;
+$root_dir .= '/' unless $root_dir =~ m#[/\\]$#;
+
+print "Server Root: $root_dir\n" if $DEBUG;
+
+unless ($opt_D)
+{
+    $ENV{diogenes_cgi_root_dir} = $root_dir;
+    $ENV{diogenes_cgi_tmp_dir} = catdir($root_dir, 'cache');
+    $ENV{diogenes_cgi_img_dir_absolute} = catdir ($root_dir, 'images');
+    $ENV{diogenes_cgi_img_dir_relative} = 'images';
+}
 
 # Check the setup
 my $init = new Diogenes(-type => 'none');
-if ($init->{cgi_root_dir})
+if ($init->{cgi_root_dir} ne $root_dir)
 {
     if (-d $init->{cgi_root_dir})
     {
-        chdir $init->{cgi_root_dir} ;
-        print "Changing to $init->{cgi_root_dir}\n" if $DEBUG;
+        $root_dir = $init->{cgi_root_dir};
+        chdir $root_dir;
+        print "Changing to $root_dir\n" if $DEBUG;
     }
     else
     {
         die "Server root directory $init->{cgi_root_dir} does not exist\n.";
     }
 }
-my $root_dir = cwd;
-print "Server Root: $root_dir\n" if $DEBUG;
-find_os();
 
 for my $dir ("$init->{cgi_tmp_dir}", "$init->{cgi_img_dir_absolute}", 
              "$root_dir$init->{cgi_img_dir_relative}")
@@ -166,17 +184,23 @@ my $server = HTTP::Daemon->new(
         exit;
 };
 
-# To let the CGI program know it's us that invoked it.
+# To let the CGI program know it is us that invoked it.
 $flag = 1; 
 
-print "\nStartup complete. ", 
+if ($opt_b or $ENV{Diogenes_Launch_Browser})
+{
+    print "\nSetup complete ... Launching browser.\n";
+}
+else
+{
+    print "\nStartup complete. ", 
     "You may now point your browser at ",
     "this address:\n",
     $server->url, "\n",
     "\n(Press control-c to quit.)\n\n";
+}
 
 warn "Local address: $HOST_dot\n" if $DEBUG;
-
 
 # Wait loop for requests.  Global var $client is not only an object ref, but
 # also the filehandle ref we write back to.
@@ -188,13 +212,25 @@ warn "Local address: $HOST_dot\n" if $DEBUG;
 # Should this should be generalized to allow forking more children?
 
 my $pid;
+my @child_pids;
 
-if ($OS eq 'MS')
+my $swan_song = sub {
+    for (@child_pids)
+    {
+        kill 1, $_;
+    }
+    exit
+};
+$SIG{HUP}  = $swan_song;
+$SIG{INT}  = $swan_song;
+$SIG{KILL} = $swan_song;
+
+if ($Diogenes::OS eq 'windows')
 {
     $pid = fork;
     if ($pid)
-    {       # I am the parent -- I do nothing but wait for my child to exit.
-        openBrowser();#open the default browser to the designated address
+    {   # I am the parent -- I do nothing but wait for my child to exit.
+        push @child_pids, $pid;
         wait;
     }
     elsif (not defined $pid)
@@ -203,7 +239,10 @@ if ($OS eq 'MS')
         print STDERR "Unable to fork!\n";
     }
     else
-    {       # I am the child -- I wait for a request and process it.
+    {
+        # I am the child -- I wait for a request and process it.
+        @child_pids = ();
+        make_flag();
         while ($client = $server->accept)
         {
             # Windows gets confused if we die in midstream w/o chdir'ing # back
@@ -217,7 +256,9 @@ elsif ($PRE_FORK)
     {
         $pid = fork;
         if ($pid)
-        {       # I am the parent -- I do nothing but wait for my child to exit.
+        {
+            # I am the parent -- I do nothing but wait for my child to exit.
+            push @child_pids, $pid;
             wait;
         }
         elsif (not defined $pid)
@@ -226,7 +267,10 @@ elsif ($PRE_FORK)
             print STDERR "Unable to fork!\n";
         }
         else
-        {       # I am the child -- I wait for a request and process it.
+        {
+            # I am the child -- I wait for a request and process it.
+            @child_pids = ();
+            make_flag();
             while ($client = $server->accept)
             {
                 # Windows gets confused if we die in midstream w/o chdir'ing # back
@@ -243,6 +287,7 @@ else
 {
     # A "normal" forking server
 #       $SIG{CHLD} = 'IGNORE';
+    make_flag();
     while ($client = $server->accept) 
     {
         handle_connection();
@@ -260,7 +305,9 @@ sub handle_connection
 {
     $pid = fork;
     if ($pid)
-    {       # I am the parent -- I do nothing.
+    {
+        # I am the parent -- I do nothing.
+        push @child_pids, $pid;
         close $client;
         return;
     }
@@ -270,7 +317,9 @@ sub handle_connection
         print STDERR "Unable to fork!\n";
     }
     else
-    {       # I am the child -- I process the request.
+    {
+        # I am the child -- I process the request.
+        @child_pids = ();
         handle_request();
         exit 0; # Kill children off to reclaim their memory
     }
@@ -395,6 +444,13 @@ REQUEST:
     undef $client;
 }
 
+sub make_flag
+{
+    open FLAG, ">./$flag_file" or die "Could not make flag: $!";
+    print FLAG $server->url;
+    close FLAG;
+}
+    
 sub compile_cgi_subroutine
 {
     my $script_file = shift;
@@ -429,40 +485,3 @@ CODE_END
     }
 }
 
-sub find_os
-{
-    unless ($OS) 
-    {
-        unless ($OS = $^O) 
-        {
-            require Config;
-            $OS = $Config::Config{'osname'};
-        }       
-    }
-    if ($OS=~/MSWin/i or $OS =~/dos/) 
-    {
-        $OS = 'MS';
-        $config = $root_dir.'\\diogenes.ini';
-        unless (-e $config)
-        {
-            print "Configuration file diogenes.ini not found in the " .
-                "current folder ($root_dir).  Run Setup to generate one.\n"; 
-            print "\n\nPress Enter to exit.";
-            <>;
-            exit;
-        }
-    } 
-    else 
-    {
-        $OS = 'UNIX';
-        undef $config;
-    }                        
-}
-
-sub openBrowser
-{
-    # I guess this works for some Windows folk, but it seems pretty
-    # timing dependent to me:
-    #system("start http://localhost:$PORT");
-    #system("start iexplore.exe http://localhost:$PORT");
-}

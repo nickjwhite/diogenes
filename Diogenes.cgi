@@ -20,7 +20,7 @@
 
 ##########################################################################
 
-use Diogenes 0.9;
+use Diogenes;
 use strict;
 $Diogenes::cgi_flag = 1;
 
