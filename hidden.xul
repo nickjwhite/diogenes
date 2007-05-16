@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="diogenes-xul.css" type="text/css"?>
+
+<!DOCTYPE window SYSTEM "chrome://diogenes/locale/diogenes.dtd">
+
+<window
+  id     = "diogenes-browser"
+  class = "diogenes-window"
+  width  = "0"
+  height = "0"
+  windowtype = "diogenes:hidden"
+  xmlns  = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="diogenes.js"/>
+
+  <!--  For goDoCommand() -->
+  <script src="chrome://global/content/globalOverlay.js"/>
+  <script src="chrome://venkman/content/venkman-overlay.js"/> 
+  
+  
+    <menubar id="main-menubar">
+      <menu id="file-menu" label="&dio.file;" accesskey="F">
+        <menupopup id="file-popup">
+          <menuitem label="&dio.new.window;" oncommand="newWindow();"
+                    accesskey="N" key="key_new"/>
+          <menuitem label="&dio.about;" oncommand="showAbout();"
+                    accesskey="A" key="key_about" id="aboutName"/>
+          <menuseparator id="menu_FileQuitSeparator"/>
+          <menuitem label="&dio.quit;" id="menu_FileQuitItem" 
+                    oncommand="quitHiddenDiogenes();"
+                    key="key_quit" accesskey="Q"/>
+        </menupopup>
+      </menu>
+    </menubar>
+
+    <keyset>
+      <key id="key_quit" modifiers="accel" key="Q" oncommand="quitHiddenDiogenes();"/>
+      <key id="key_new" modifiers="accel" key="N" oncommand="newWindow();"/>
+      <key id="key_about" modifiers="accel" key="B" oncommand="showAbout();"/>
+    </keyset>
+    
+</window>
