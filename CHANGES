@@ -1,8 +1,18 @@
 
 Modification history:
 
-v. 2.0 Many user-visible changes.  Setup.pl deprecated in favor of new
-   diogenes-launcher.  Name of configuration file changed to
+v. 2.1 Re-factored Diogenes.pm to break it into smaller modules, total
+   re-write of Diogenes.cgi.  Added display of line numbers, etc. via
+   CSS in the browser, which now shows the desired passage at the
+   center of the screen, instead of the top.  Never found time to
+   release this version publicly.  
+
+v. 2.0 Essentially a pre-release of Diogenes version 2, with the
+   old 1.4.3 Perl code mostly intact.  Big change is the new
+   installation procedure for Mac and Windows, and addition of the
+   dedicated binary browser on those platforms.  Also improved the
+   installation procedure on Linux.  Setup.pl deprecated in favor of
+   new diogenes-launcher.  Name of configuration file changed to
    diogenes.config.  New class method read_config_file.
 
 v. 1.4.3 Alan Griffiths pointed out a regression where page-breaks

@@ -10,7 +10,7 @@
 # Perl strings.  These may be simple ascii chars or they may include 
 # hexadecimal or octal escapes or whatever you like.  
 
-$Diogenes::encoding{Unicode_Entities} = {
+$Diogenes::Base::encoding{Unicode_Entities} = {
 
 # This entry tells us that this particular encoding includes glyphs 
 # compounded from capital letters and leading diacritics. 1 is true.
@@ -451,7 +451,7 @@ dagger_dbl 		 => '&#135;',
 
 ############ Unicode UTF-8 Encoding ##################
 
-$Diogenes::encoding{'UTF-8'} = {
+$Diogenes::Base::encoding{'UTF-8'} = {
 
 # This entry tells us that this particular encoding includes glyphs 
 # compounded from capital letters and leading diacritics. 1 is true.
@@ -932,7 +932,7 @@ my $UTF_8_post = sub
 
 };
 
-$Diogenes::encoding{'UTF-8'}{post_match} = $UTF_8_post;
+$Diogenes::Base::encoding{'UTF-8'}{post_match} = $UTF_8_post;
 
 ############ WinGreek Encoding ###############
 
@@ -946,7 +946,7 @@ $Diogenes::encoding{'UTF-8'}{post_match} = $UTF_8_post;
 
 # Here is the name of the encoding:
 
-$Diogenes::encoding{WinGreek} = {
+$Diogenes::Base::encoding{WinGreek} = {
 
 # Some styles of Greek encoding cannot be intermixed with Latin
 # letters without confusion -- in other words, they remap the ascii or
@@ -1252,7 +1252,7 @@ aspirate 		 => "",
 
 }; # Keep this line.
 
-$Diogenes::encoding{WinGreek}{pre_match} = sub
+$Diogenes::Base::encoding{WinGreek}{pre_match} = sub
 {
 	my $ref = shift;
 	$$ref =~ s/"\d*/\x40/;
@@ -1263,7 +1263,7 @@ $Diogenes::encoding{WinGreek}{pre_match} = sub
 
 # From the font Athenian, for use with the Greek Keys fonts.
 
-$Diogenes::encoding{SMK_GreekKeys} = {
+$Diogenes::Base::encoding{SMK_GreekKeys} = {
 
 # Some styles of Greek encoding cannot be intermixed with Latin
 # letters without confusion -- in other words, they remap the ascii or
@@ -1588,7 +1588,7 @@ dagger_dbl 		 => "\x7e",
 # of the various stress symbols.
 #
 
-$Diogenes::encoding{ISO_8859_7} = {
+$Diogenes::Base::encoding{ISO_8859_7} = {
 
 #
 # Basic alphabet
@@ -1884,7 +1884,7 @@ aspirate 		 => "",
 # Diomidis Spinellis, January 2001.  
 # Please read the note for ISO-8859-7.
 
-$Diogenes::encoding{DOS_CP_737} = {
+$Diogenes::Base::encoding{DOS_CP_737} = {
 
 #
 # Basic alphabet
@@ -2177,7 +2177,7 @@ aspirate 		 => "",
 }; # Keep this line.
 
 
-$Diogenes::encoding{SuperGreek} = {
+$Diogenes::Base::encoding{SuperGreek} = {
 
 # Since this encoding remaps the ascii range, it is not safe to parse
 # the output as BETA code, so you will not get any nice formatting.
@@ -2481,7 +2481,7 @@ dagger_dbl 		 => "\xe6",
 }; # Keep this line.
 
 
-$Diogenes::encoding{SIL_Composite} = {
+$Diogenes::Base::encoding{SIL_Composite} = {
 
 font_name => 'Galatia',   
 
@@ -2790,7 +2790,7 @@ dagger_dbl 		 => '',
 # \languageattribute{greek}{polutoniko}
 # \usepackage[iso-8859-7]{inputenc}
 
-$Diogenes::encoding{Babel_7} = {
+$Diogenes::Base::encoding{Babel_7} = {
 
 #
 # Basic alphabet
@@ -3138,7 +3138,7 @@ my $babel_latex = sub
 	$$ref =~ s/(\ \ +)/my $l=length($1);'{'.('¬¬ 'x$l) .'}'/ge; #only multiple spaces
 
 };
-$Diogenes::encoding{Babel_7}{pre_match} = $babel_latex;
+$Diogenes::Base::encoding{Babel_7}{pre_match} = $babel_latex;
 
 my $babel_latex_post = sub 
 {
@@ -3148,7 +3148,7 @@ my $babel_latex_post = sub
 	$$ref = "\\selectlanguage{polutonikogreek}\n" . $$ref . "\n\\latintext";
 
 };
-$Diogenes::encoding{Babel_7}{post_match} = $babel_latex_post; 
+$Diogenes::Base::encoding{Babel_7}{post_match} = $babel_latex_post; 
 
 ##################################################################
 
@@ -3166,7 +3166,7 @@ $Diogenes::encoding{Babel_7}{post_match} = $babel_latex_post;
 # to the BETA encoding.  This code does not take advantage of its
 # distinction between wide and narrow letters.
 
-$Diogenes::encoding{SPIonic}{sub} = sub 
+$Diogenes::Base::encoding{SPIonic}{sub} = sub 
 {
 	my $ref = shift; 		# The text is passed as a reference to a string
 							# (Note double $$ in subsequent lines)
@@ -3189,7 +3189,7 @@ $Diogenes::encoding{SPIonic}{sub} = sub
 # iso_8859_1 ranges (<255).  It may help some markup formats to give a 
 # font name to be associated with this encoding in order to distinguish
 # it from Latin text.
-$Diogenes::encoding{SPIonic}{font_name} = 'SPIonic';
+$Diogenes::Base::encoding{SPIonic}{font_name} = 'SPIonic';
 
 
 # Standard installations of TeX such as teTeX come with the LaTeX Babel
@@ -3199,7 +3199,7 @@ $Diogenes::encoding{SPIonic}{font_name} = 'SPIonic';
 # \usepackage[greek]{babel}
 # \languageattribute{greek}{polutoniko}
 
-$Diogenes::encoding{Babel}{pre_match} = sub
+$Diogenes::Base::encoding{Babel}{pre_match} = sub
 {
 	my $ref = shift;
 	$$ref =~ tr/A-Z/a-z/;
@@ -3211,8 +3211,8 @@ $Diogenes::encoding{Babel}{pre_match} = sub
 	$$ref =~ s/\*(\W*)(\w)/$1\u$2/g; # Upper-case
 
 };
-$Diogenes::encoding{Babel}{sub} = $babel_latex;
-$Diogenes::encoding{Babel}{post_match} = sub
+$Diogenes::Base::encoding{Babel}{sub} = $babel_latex;
+$Diogenes::Base::encoding{Babel}{post_match} = sub
 {
 	my $ref = shift;
 	$$ref =~ s/\'/''/g;   # coronis is ''
@@ -3234,7 +3234,7 @@ $Diogenes::encoding{Babel}{post_match} = sub
 };
 
 
-$Diogenes::encoding{SGreek}{sub} = sub 
+$Diogenes::Base::encoding{SGreek}{sub} = sub 
 {
 	my $ref = shift;
 	$$ref =~ tr/A-Z/a-z/;
@@ -3243,11 +3243,11 @@ $Diogenes::encoding{SGreek}{sub} = sub
 	$$ref =~ s/\*(\W*)(\w)/$1\u$2/g;
 };
 
-$Diogenes::encoding{SGreek}{font_name} = 'Sgreek Fixed';
+$Diogenes::Base::encoding{SGreek}{font_name} = 'Sgreek Fixed';
 
 ################ Coptic encodings ###################
 
-$Diogenes::coptic_encoding{'UTF-8'} = {
+$Diogenes::Base::coptic_encoding{'UTF-8'} = {
 
 #
 # Basic alphabet
@@ -3350,9 +3350,9 @@ dagger_dbl 		 => "Â‡",
 
 }; # Keep this line.
 
-$Diogenes::coptic_encoding{'UTF-8'}{post_match} = $UTF_8_post;
+$Diogenes::Base::coptic_encoding{'UTF-8'}{post_match} = $UTF_8_post;
 
-$Diogenes::coptic_encoding{Koptos} = {
+$Diogenes::Base::coptic_encoding{Koptos} = {
 
 font_name => 'Koptos',  # The usual name under MSWindows 
 remap_ascii => 1,
