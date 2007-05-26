@@ -12,9 +12,12 @@
 #                                                                        #
 ##########################################################################
 
+package Diogenes::CGI;
+
 use Data::Dumper;
 
-use Diogenes::Base qw(%encoding %context @contexts %choices %work %author);
+use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %database @databases @filters);
+# use Diogenes::CGI_utils qw($f %st $get_state $set_state);
 use Diogenes::Search;
 use Diogenes::Indexed;
 use Diogenes::Browser;
@@ -24,13 +27,31 @@ use File::Spec::Functions qw(:ALL);
 
 $Diogenes::Base::cgi_flag = 1;
 
+my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
+my $user = $f->cookie('userID');
+
 # Force read of config files 
-my $init = new Diogenes::Base(-type => 'none');
+my %args_init = (-type => 'none');
+$args_init{user} = $user if $user;
+my $init = new Diogenes::Base(%args_init);
+my $filter_file = $init->{filter_file};
 
-# These are the old config variables -- I don't feel like rewriting all
-# of the places they appear, despite the bad OO hygiene.
+# my @choices = reverse sort keys %choices;
+# If you change the order of these options, you may also have to change onActionChange
+my @choices = (
+    'TLG Texts',
+    'PHI Latin Corpus',
+    'Duke Documentary Papyri',
+    'Classical Inscriptions (Latin)',
+    'Classical Inscriptions (Greek)',
+    'Christian Inscriptions (Latin)',
+    'Christian Inscriptions (Greek)',
+    'Miscellaneous PHI Texts (Greek)',
+    'Miscellaneous PHI Texts (Latin)',
+    'PHI Coptic Texts',
+    'TLG Bibliography',
+    );
 
-my @choices = reverse sort keys %choices;
 my $default_choice;
 my $choice_from_config = quotemeta $init->{cgi_default_corpus};
 for (@choices)
@@ -66,16 +87,15 @@ use CGI::Carp 'fatalsToBrowser';
 $ENV{PATH} = "/bin/:/usr/bin/";
 $| = 1;
 
-my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
 # We need to pre-set the encoding for the earlier pages, so that the right
 # header is sent out the first time Greek is displayed
 $f->param('greek_output_format', $default_encoding) unless
     $f->param('greek_output_format');
 
-my $default_input = $f->param('input_method');
-$default_input ||= ($init->{cgi_input_format} eq 'BETA code') ? 'Beta' : 'Perseus';
-
+# my $default_input = $f->param('input_method');
+# $default_input ||= ($init->{cgi_input_format} eq 'BETA code') ? 'Beta' : 'Perseus';
+my $input_method = $init->{cgi_input_format};
 # This works for WinGreek, etc, and any encoding/font that's designed
 # more for cutting and pasting than for proper viewing in a browser.
 my $charset = 'iso-8859-1';
@@ -94,12 +114,11 @@ elsif ($f->param('greek_output_format') and
 
 # Preserving state: all previous parameters are embedded as hidden
 # fields in each subsequent page.
-
+my %st;
 # Remember that this sets up a single namespace for all cgi
 # parameters on all pages of the script, so be careful not to
 # duplicate parameter names from page to page.
 
-my %st;
 my $set_state = sub
 {
     for (keys %st)
@@ -144,6 +163,28 @@ my $get_state = sub
 };
 
 $get_state->();
+
+my $read_filters = sub {
+    if (-e $filter_file)
+    {
+        open my $filter_fh, "<$filter_file"
+            or die "Can't read from filter file ($filter_file): $!";
+        
+        local $/ = undef;
+        my $code = <$filter_fh>;
+        eval $code;
+        warn "Error reading in saved corpora: $@" if $@;
+        
+        close $filter_fh or die "Can't close filter file ($filter_file): $!";
+
+#         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
+
+    }
+};
+
+$read_filters->() unless @filters;
+
+
 my $previous_page = $st{current_page};
 
 my $essential_footer = sub
@@ -164,7 +205,7 @@ my $my_footer = sub
         restrictions on access and use; consult your license.  <br><a
         href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/">Diogenes</a>
         (version $version) is <a
-        href="http://www.durham.ac.uk/p.j.heslin/diogenes/license.html">&copy;</a>
+        href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/license.php">&copy;</a>
         1999-2005 P.J. Heslin.  </font>)),
 
         $f->p('<a href="Diogenes.cgi" title="New Diogenes Search">New Search</a>'));
@@ -185,6 +226,7 @@ my $print_error_page = sub
 
 my $print_title = sub 
 {
+    print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
     my $jscript = undef;
 
@@ -200,7 +242,21 @@ my $print_title = sub
                     }
                 }
             }
-        })
+        });
+        $jscript .= q#
+function onActionChange() {
+  if (document.form.action.selectedIndex == 2) {
+//    document.form.corpus.selectedIndex = 0;
+//    document.form.corpus.disabled = true;
+  }
+  else {
+    document.form.corpus.disabled = false;
+  }
+  if (document.form.action.selectedIndex == 4) {
+    document.form.submit();
+  }
+}
+#;
     }
     print
         $f->start_html(-title=>$title,
@@ -216,6 +272,7 @@ my $print_title = sub
 
 my $print_header = sub 
 {
+    # HTML output
     print qq(
         <center>
           <p id="logo">
@@ -249,7 +306,6 @@ my $database_error = sub
 {
     my $self = shift;
     $print_title->('Database Error');
-#     if ($ENV{"Diogenes-Browser"}) {print "FOO!!!"}
     print qq(<center>
               <div style="display: block; width: 50%; text-align: center;">
                   <h2 id="database-error" type="$st{short_type}"
@@ -260,13 +316,31 @@ my $database_error = sub
 
     $st{current_page} = 'splash';
     $essential_footer->();
+    exit;
 };
 
 ### Splash page
 
 $output{splash} = sub 
 {
-    $print_title->('Diogenes');
+    # If you change the order of these, you may have to change onActionChange() above
+    my @actions = ('search',
+                   'multiple',
+                   'word_list',
+                   'browse',
+                   'filters');
+    
+    my %action_labels = ('search' => 'Simple search for a word or phrase',
+                         'multiple' => 'Search for conjunctions of multiple words or phrases',
+                         'word_list' => 'Search the TLG using its word-list',
+                         'browse' => 'Browse to a specific passage in a given text',
+                         'filters' => 'Manage user-defined corpora');
+
+    my @corpora = @choices;
+    my @filter_names;
+    push @filter_names, $_->{name} for @filters;
+
+    $print_title->('Diogenes', 1);
     $st{current_page} = 'splash';
     
     print $f->center(
@@ -276,898 +350,231 @@ $output{splash} = sub
                  -width=>'383'})),
         $f->start_form(-id=>'form');
 
-    
+
     print $f->p('Welcome to Diogenes, a tool for searching and
-browsing through databases of ancient texts',
-                $Diogenes_Daemon::flag 
-                ? ' (<a href="Settings.cgi">see current settings</a>). '
-                : '. ');
+        browsing through databases of ancient texts. Choose your type
+        of query, then the corpus, then type in the query itself: this
+        can be either some Greek or Latin to <strong>search</strong>
+        for (<a href="Input_info.html">see hints</a>), or the name of
+        an author whose work you wish to <strong>browse</strong>
+        through.'),
 
-    print $f->p('Please enter your query: either some Greek or Latin
-to <strong>search</strong> for (<a href="Input_info.html">see
-hints</a>), or the name of an author whose work you wish to
-<strong>browse</strong> through.  Then select the database containing
-the information you require.  Click below on &quot;Basic Search&quot;
-to find a single word or phrase using your default settings.  Click on
-&quot;Advanced Search&quot; to specify multiple non-contiguous words
-or phrases, or to specify what subset of texts to search in, or to
-specify what language to use.  Click on &quot;Browse Texts&quot; to
-see the work of the author whose name you have given (or specify no
-author at all to browse through a complete list).');
+        $f->p("The Greek input method you have currently selected is:
+        $input_method.  There are other options available for <a
+        href=\"Greek_input_info.html\">typing Greek</a>, which can be
+        selected on your <a href=\"Settings.cgi\"> current settings
+        page</a>.");
+
 
     print $f->center(
-        $f->p(
-            'Query: ', 
-            $f->textfield(-name=>'query', -size=>29),
-            '&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;',
-            'Corpus: ',
-            $f->popup_menu( -name =>'type',
-                            -id=>'corpus_menu',
-                            -Values =>\@choices,
-                            -Default=>$default_choice)));
-    print $f->p('&nbsp;');
+        $f->table({cellspacing=>'10px'},
+            $f->Tr(
+                $f->th({align=>'right'}, 'Action: '),
+                $f->td($f->popup_menu(
+                           -name=>'action',
+                           -id=>'action_menu',
+                           -onChange=>'onActionChange();',
+                           -Values=>\@actions,
+                           -labels=>\%action_labels,
+                           -Default=>'Simple search for a word or phrase'))),
+            $f->Tr(
+                $f->th({align=>'right'}, 'Corpus: '),
+                $f->td($f->popup_menu(
+                           -name=>'corpus',
+                           -id=>'corpus_menu',
+                           -Values=>[
+                                $f->optgroup( -name=>'Databases',
+                                              -values=>\@corpora),
+                                $f->optgroup( -name=>'User-defined corpora',
+                                              -values=>\@filter_names),
+                           ],
+                           -Default=>$default_choice))),
+            $f->Tr(
+                $f->th({align=>'right'}, 'Query: '),
+                $f->td($f->textfield(
+                           -id=>'query_text',
+                           -name=>'query',
+                           -size=>40),
+                       ' ',
+                       $f->submit( -name =>'go',
+                                   -value=>'Go')))));
     
-    print $f->center(
-        $f->p(
-            $f->submit( -name =>'Search',
-                        -value=>'Basic Search'),
-            '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-            $f->submit( -name =>'Advanced',
-                        -value=>'Advanced Search'),
-            '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-            $f->submit( -name=>'Browse',
-                        -value=>'Browse Texts')));
+
     print $f->p('&nbsp;');
 
     $my_footer->();
         
+};
+
+my $current_filter;
+my $get_filter = sub
+{
+    my $name = shift;
+    for (@filters) {
+        return $_ if $_->{name} eq $name;
+    }
+    die ("Filter for $name not found!");
 };
 
 ### Splash handler
 
 $handler{splash} = sub
 {
-    my $long_type = $st{type};
-    if ($choices{$long_type}) 
+
+    my $corpus = $st{corpus};
+    my $action = $st{action};
+    if ($choices{$corpus}) 
     {
         # Convert to abbreviated form
-        $st{short_type} = $choices{$long_type};
+        $st{short_type} = $choices{$corpus};
+        $st{type} = $corpus;
     }
     else
     {
-        $print_error_page->();
+        $current_filter = $get_filter->($corpus);
+        $st{short_type} = $current_filter->{type};
+        $st{type} = $corpus;
     }
-    
-    if ($st{Search} and not $st{query})
+
+    if ((not $st{query}) and $action eq 'search')
     {
+        $print_title->('Error');
         print $f->center($f->p($f->strong('Error.')),
                          $f->p('You must specify a search pattern.'));
     }
-    elsif ($st{Search}) 
+    elsif ($action eq 'filters') 
+    {
+        $output{filter_splash}->();
+    }
+    elsif ($action eq 'search') 
     {
         $output{search}->();
     }
-    elsif ($st{Advanced})
+    elsif ($action eq 'multiple')
     {
-        $output{advanced}->();
+        $output{multiple}->();
     }
-    elsif ($st{Browse}) 
+    elsif ($action eq 'word_list')
+    {
+        if ($current_filter and $current_filter->{type} ne 'tlg') {
+            $print_title->('Error');
+            print
+                $f->center(
+                    $f->p($f->strong('Error.'),
+                          'You have requested to do a TLG word search on a user-defined corpus
+ which is not a subset of the TLG.'));
+        }
+        else {
+            $st{short_type} = 'tlg';
+            $st{type} = 'TLG Word List';
+            $output{indexed_search}->();
+        }
+    }
+    elsif ($action eq 'browse') 
     {
         $output{browser}->();
     }
     else
     {
+        $print_title->('Error');
         print $f->center($f->p($f->strong('Flow Error.')));
     }
+
 };
 
-### Advanced search page
-
-my $no_filters_msg = 'There are no saved texts';
-
-my $read_filter_dir = sub
+$output{multiple} = sub 
 {
-    my $dir = $init->{cgi_filter_dir};
-    opendir(DIR, $dir) or die "can't opendir $dir: $!";
-    my @filters = grep { /^[^.]/ and -f "$dir/$_" } readdir(DIR);
-    closedir DIR;
-    s/_/ /g for @filters;
-    return grep {m/\.$st{short_type}$/} @filters;
-};
-
-$output{advanced} = sub 
-{
-    $print_title->('Diogenes Advanced Search Page');
+    $print_title->('Diogenes Multiple Search Page');
     $print_header->();
-    $st{current_page} = 'advanced';
+    $st{current_page} = 'multiple';
     
-    my $first_pattern = $st{query};
+    my $new_pattern = $st{query};
 
-    print $f->h1($st{type}, ' Advanced Search Options');
+    print '<div style="margin-left: auto; margin-right: auto; width: 50%">';
+    print
+        $f->h1('Multiple Patterns'),
+        $f->p( 'Use this page to search for multiple words or phrases
+         within a particular scope');
 
-    print $f->h2('Input Style');
-
-    print $f->p('Here you can specify whether the search pattern(s)
-    you enter should be interpreted as Latin or as transliterated
-    Greek.  Usually you can just accept the default for this corpus,
-    but sometimes you may wish to search for Greek text in a Latin
-    corpus or vice versa.  If you are entering transliterated Greek,
-    on the right you can override the default style as specified in your
-    settings.');
-
-    my $default_lang = 'Latin';
-    $default_lang = 'Greek' if $st{type} =~ m/tlg text|tlg word|duke|greek|coptic/i;
-    my %translit_labels =
-        ( Perseus => 'Perseus-style Greek transliteration (no accents)',
-          Beta => 'Beta code Greek transliteration (accents significant)' );
-    print $f->table(
-        $f->Tr(
-            $f->td(
-                $f->radio_group( -name => 'input_lang',
-                                 -values => ['Latin', 'Greek'],
-                                 -default => $default_lang,
-                                 -columns=>1 )),
-            $f->td('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'),
-            $f->td('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'),
-            $f->td(
-                $f->radio_group( -name => 'input_method',
-                                 -values => ['Perseus','Beta'],
-                                 -default => $default_input,
-                                 -columns => 1,
-                                 -labels => \%translit_labels ))));
-
-
-    print $f->hr, $f->h2('Multiple Patterns');
-
-    print $f->p( 'If you wish to search for multiple, possibly
-        non-contiguous words or phrases, a certain number of which
-        must be found together within a particular scope, enter them
-        here:');
-
-    print 
-        $f->textfield(-name=>'query1', -size=>50, -default=>$first_pattern),
-        $f->br;
-
-    my $fields = $init->{cgi_multiple_fields} || 6; 
-    for (2 .. $fields)
-    {
-        print 
-            $f->textfield(-name=>"query$_", -size=>50, -default=>''),
-            $f->br;
-    }
+    my @patterns = ();
+    push @patterns, $st{query_list} if $st{query_list};
+    push @patterns, $new_pattern if $new_pattern;
+    $st{query_list} = \@patterns;
     
-    my @matches = ('any', 2 .. 5, 'all');
-
-    print $f->p( 'Define the scope within which these patterns are to
-    be found together.  The number of lines is an exact measure,
-    whereas the others depend on punctuation, which is guesswork.');
-
-    print $f->p('Scope: ',
-                $f->popup_menu( -name => 'context',
-                                -Values => \@contexts,
-                                -Default => 'sentence'));
-
-    print $f->p('Define the minimum number of these patterns that must be
-    present within a given scope in order to qualify as a successful
-    match.');
-
-    print $f->p('Quantity: ',
-                $f->popup_menu( -name => 'min_matches',
-                                -Values => \@matches,
-                                -Default => 'all'));
-
-    print $f->h3('Reject pattern'),
-
-    $f->p('If there is a word or phrase whose presence in a given
-    context should cause a match to be rejected, specify it here.');
-
-    print $f->p('Reject: ',
-                $f->textfield( -name => 'reject_pattern',
-                               -size => 50,
-                               -default => ''));
-
-    print $f->hr, $f->h2('Which texts to search');
-
-    print $f->p('Select one of the options below to proceed.'),
-    $f->p(' The
-    first option is not to limit the corpus at all but to search the
-    whole thing.'),
-    $f->p('The second option is to enter a name or names or parts
-    thereof, in order to narrow down the scope of your search; you may
-    separate multiple names by spaces or commas.  When you proceed,
-    this will bring you to another page where you can select which
-    matching authors you wish to search in; you can save this set of
-    authors for later use.'),
-    $f->p('The third option is to search within a set of
-    texts that you selected previously and which have been saved for future
-    use with the current corpus ('.$st{short_type}.').'),
-    $f->p('The fourth option is to examine and manipulate the sets of saved
-    search criteria');
-
-    my @values = qw(search simple_filter use_saved_filter saved_filters);
-    my %labels = ( search => 'Search full corpus',
-                   simple_filter => 'Enter author name(s): ',
-                   use_saved_filter => 'Use saved texts: ',
-                   saved_filters => 'Manage saved texts',
-        );
-    my $default_choice = $st{proceed_to} || 'search';
-    
-    if ($st{type} =~ m/tlg/i)
-    {
-        print $f->p(' The last option is to proceed to a page where you
-        can use a wide variety of criteria supplied by the <i>TLG</i>
-        to narrow down the scope of your search, including genre,
-        date, location, and so forth.');
-        push @values, 'tlg_filters';
-        $labels{tlg_filters} = 'Go to TLG categories';
-    }
-
-    my $default_filter = $st{saved_filter_choice};
-    my @filters = $read_filter_dir->();
-    
-    @filters = ($no_filters_msg) unless @filters;
-    
-    
-    my @group = $f->radio_group( -name => 'proceed_to',
-                                 -values => \@values,
-                                 -default => $default_choice,
-                                 -labels => \%labels );
-    print $f->table(
-        $f->Tr(
-            $f->td( $group[0] )),
-        $f->Tr(
-            $f->td( $group[1] ),
-            $f->td(
-                $f->textfield( -name => 'author_pattern',
-                               -size => 60,
-                               -default => ''))),
-        $f->Tr(
-            $f->td( $group[2] ),
-            $f->td(
-                $f->popup_menu( -name => 'saved_filter_choice',
-                                -values => \@filters,
-                                -default => $default_filter ))),
-        $f->Tr(
-            $f->td( $group[3] )),
-
-        $group[4] ?
-        $f->Tr(
-            $f->td( $group[4] )) : '' );
-
-    
-
-    print $f->p(
-        $f->submit( -name =>'Proceed'));
-    
-    $my_footer->();
-};
-
-$handler{advanced} = sub
-{
-    my $fields = $init->{cgi_multiple_fields} || 6; 
-    delete $st{query_list};
-    for (1 .. $fields)
-    {
-        if ($st{"query$_"} and $st{"query$_"} =~ m/\S/)
-        {
-            push @{ $st{query_list} }, $st{"query$_"};
-        }   
-        delete $st{"query$_"};
-    }
-    if (scalar @{ $st{query_list} } == 1)
-    {
-        $st{query} = $st{query_list}->[0];
-        delete $st{query_list};
-    }
-
-    # output { search, use_saved_filter, simple_filter, or tlg_filter }
-    $output{$st{proceed_to}}->();
-
-};
-
-$output{use_saved_filter} = sub
-{
-    if ($st{saved_filter_choice} eq $no_filters_msg)
-    {
-         $print_error_page->();
-         return;
-    }
-    $filter_flag = 'saved_filter';
-    $output{search}->();
-};
-
-$output{simple_filter} = sub
-{
-    $print_title->('Diogenes Author Select Page', 'author_list');
-    $print_header->();
-    
-    $st{current_page} = 'simple_filter';
-    my %args;
-    $args{type} = $st{short_type};
-    $args{output_format} = 'html';
-    $args{encoding} = $default_encoding;
-    my $q = new Diogenes::Search(%args);
-    $database_error->($q) if not $q->check_db;
-    
-    my @auths = $q->select_authors(author_regex => $st{author_pattern});
-    unless (scalar @auths)
+    if (@patterns)
     {
         print
-            $f->p($f->strong('Error.')),
-            $f->p(qq(There were no texts matching the author $st{author_pattern}));
-        $my_footer->();
-        return;
+            $f->h2('Patterns Entered:'),
+            $f->p('Here is a list of the patterns you have entered thus far:');
+        print '<p><ol>';
+        print "<li>$_</li>\n" foreach @patterns;
+        print '</ol></p>';
     }
     
-    $f->autoEscape(undef);
-    print $f->h1('Matching Authors'),
+    print
+        $f->h2('Add a Pattern'),
+        $f->p('You may add a' . (@patterns ? 'nother' : '') . ' pattern:'),
+            $f->p(
+                $f->textfield(-name=>'query', -size=>40, -default=>'',
+                              -override=>1)),
+            $f->p(
+                $f->submit(-name=>'Add_Pattern',
+                           -value=>'Add this pattern to the list'));
 
-    $f->p('Here is a list of the authors that matched your query'),
-    $f->p('Please select as many as you wish to search in, then go to
-    the bottom of the page.');
-
-    my @auth_nums = @{ $q->{prev_list} };
-    my %labels;
-    $labels{"$auth_nums[$_]"} = $auths[$_] for (0 .. $#auths);
-    print $f->checkbox_group( -name => 'author_list',
-                              -Values => \@auth_nums,
-                              -labels => \%labels,
-                              -linebreak => 'true' );
+    my @matches = ('any', 2 .. $#patterns, 'all');
+    
 
     print
-        $f->p(
-            $f->button( -value => "Select All",
-                        -onClick => "setAll()" ),
-            '&nbsp;&nbsp;&nbsp;&nbsp;',
-            $f->reset( -value => 'Unselect All')),
-        $f->hr;
+        $f->hr(),
+        $f->h1('Search Options'),
+        $f->h2('Scope'),
+        $f->p( 'Define the scope within which these patterns are to
+    be found together.  The number of lines is an exact measure,
+    whereas the others depend on punctuation, which is guesswork.'),
+        $f->popup_menu( -name => 'context',
+                        -Values => \@contexts,
+                        -Default => 'sentence');
 
-    print $f->p('Please choose one of the following options before proceeding');
+    print
+        $f->h2('Quantity'),
+        $f->p('Define the minimum number of these patterns that must be ',
+              'present within a given scope in order to qualify as a successful ',
+              'match.'),
+        $f->popup_menu( -name => 'min_matches',
+                        -Values => \@matches,
+                        -Default => 'all');
 
-    my @values = qw(search saved_filters refine_works);
-    my %radio_labels = ( search =>
-                         'Just do a search over the selected authors',
-                         saved_filters =>
-                         'Save the selected authors as a set for later
-use under this name:',
-                         refine_works =>
-                         'Further narrow down to particular works of
-the selected authors' );
-    my $default_choice = $st{simple_filter_option} || 'search';
+    print
+        $f->h2('Reject pattern'),
+        $f->p('Optionally, if there is a word or phrase whose presence in a given ',
+              'context should cause a match to be rejected, specify it here.'),
+        $f->textfield( -name => 'reject_pattern',
+                       -size => 50,
+                       -default => '');
 
-    my @group = $f->radio_group( -name => 'simple_filter_option',
-                                 -values => \@values,
-                                 -default => $default_choice,
-                                 -labels => \%radio_labels );
+    print
+        $f->p('&nbsp;'),
+        $f->center(
+            $f->p(
+                $f->submit( -name =>'do_search',
+                            -value=>'Do Search')));
 
-    print $f->table(
-        $f->Tr(
-            $f->td( $group[0] )),
-        $f->Tr(
-            $f->td( $group[1] ),
-            $f->td(
-                $f->textfield( -name => 'saved_filter_name',
-                               -size => 60,
-                               -default => '' ))),
-        $f->Tr(
-            $f->td( $group[2] )));
-
-    print $f->p($f->submit( -name =>'Proceed'));
-
+    print '</div>';
     $my_footer->();
 };
 
-$handler{simple_filter} = sub
+$handler{multiple} = sub
 {
-    # $output { search, saved_filters, refine_works }
-    $filter_flag = 'simple_filter';
-    $output{$st{simple_filter_option}}->();
-};
+#     push @{ $st{query_list} }, $st{query};
 
-my $get_args_for_tlg_filter = sub
-{
-    my %args;
-    for (qw(epithet genre_clx location gender))
+    if ($st{do_search})
     {
-        next if not defined $st{$_} or $st{$_} eq '--';
-        my $ref = ref $st{$_} ? $st{$_} : [ $st{$_} ];
-        $args{$_} = [ grep {$_ ne '--'} @{ $ref } ];
-    }
-    for (qw(author_regex criteria))
-    {
-        $args{$_} = $st{$_} if $st{$_};
-    }
-    $args{criteria} = 1 if $args{criteria} =~ m/any/;
-#       $args{criteria} = 6 if $args{criteria} eq 'All';
-    my @dates;
-    push @dates, $f->param('date_after') ;
-    push @dates, $f->param('date_before') ;
-    push @dates, 1, 1 if $f->param('Varia');
-
-    @{ $args{date} } = @dates
-        if @dates and (($f->param('date_after') ne '--')
-                       and ($f->param('date_before') ne '--'));
-
-    return %args;
-};
-
-# Take a query object and return contents of a saved filter, or the
-# filter constituted by the parameters to the script.  Returns a
-# hashref that can be used in select_authors.
-my $get_filter = sub
-{
-    my $q = shift;
-    my $file = shift;
-    my $work_nums;
-    if ($filter_flag eq 'saved_filter')
-    {
-        $file =  $st{saved_filter_choice} unless $file;
-        my $path = catfile($init->{cgi_filter_dir}, $file);
-        open my $filter, "<$path" or die "Can't open $path: $!";
-        local $/ = undef;
-        my %texts;
-        my $code = <$filter>;
-        eval $code;
-        warn "Error reading in saved texts: $@" if $@;
-        $work_nums = \%texts;
-    }
-    elsif ($filter_flag eq 'simple_filter')
-    {
-        $q->select_authors(author_regex => $st{author_pattern});
-        $work_nums->{$_} = 1 for @{ $st{author_list} };
-    }
-    elsif ($filter_flag eq 'works_filter')
-    {
-        for my $k (keys %st)
-        {
-            next unless $k =~ m/^work_list_for_/;
-            my $auth_num = $k;
-            $auth_num =~ s/^work_list_for_//;
-            $work_nums->{$auth_num} = $st{$k};
-        }
-    }
-    elsif ($filter_flag eq 'tlg_filter')
-    {
-        my %args = $get_args_for_tlg_filter->();
-        () = $q->select_authors(%args);
-
-        my @auths = $q->select_authors(previous_list => $st{works_list});
-
-        $work_nums = $q->{req_authors};
-        for my $k (keys %{ $q->{req_auth_wk} })
-        {
-            $work_nums->{$k} = [keys %{ $q->{req_auth_wk}{$k} }];
-        }
+        $output{search}->();
     }
     else
     {
-        $print_error_page->();
+        $output{multiple}->();
     }
-    return $work_nums;
-};
-
-
-$output{saved_filters} = sub
-{
-    $print_title->('Diogenes Managing Text Sets');
-    $print_header->();
-    $st{current_page} = 'managing_sets';
-    print $f->h1(q(Manage Saved Text Sets.));
-
-    if ($st{saved_filter_name})
-    {
-        my $file = $st{saved_filter_name};
-        if (not $file or not $file =~ m/\w/)
-        {
-
-            print
-                $f->p($f->strong('ERROR')),
-                $f->p(q(You have not given a valid name for this set
-                of texts.  Please go back and choose another name.));
-            $my_footer->();
-            return;
-        }
-        elsif ($file =~ m/[`~!@#\$%^&\*()\=+\\\|'";:,\.<>\/\?гд]/)
-        {
-            print
-                $f->p($f->strong('ERROR')),
-                $f->p(qq(You have used a funny symbol in the name you
-                gave for this set of texts: $file.  Since this is used as a
-                filename, that's not a good idea.  Please go back and
-                choose another name));
-            $my_footer->();
-            return;
-        }
-        my $q = new Diogenes::Base( -type => $st{short_type} );
-        $database_error->($q) if not $q->check_db;
-
-        my $work_nums = $get_filter->($q);
-
-        $file .= '.' . $st{short_type};
-        my $path = catfile($init->{cgi_filter_dir}, $file);
-        if (-e $path)
-        {
-            print
-                $f->p($f->strong('ERROR')),
-                $f->p(qq(You have used the same name as an existing file:
-                $file.  You must choose a different name or explicitly delete the old file.));
-            $my_footer->();
-            return;
-        }
-        
-        open my $NEWFILTER, ">$path" or die "Can't open $path: $!";
-        print $NEWFILTER Data::Dumper->Dump([$work_nums], ['*texts']);
-        close $NEWFILTER or die "Can't close $path: $!";
-
-        print $f->hr,
-            $f->p(qq(Your selected texts have been saved under the
-            name $st{saved_filter_name} )),
-            $f->hr;
-    }
-
-    print
-        $f->h2('Sets'),
-
-        $f->p('Here are the saved sets of texts that are available for
-        use with the current corpus ('.$st{short_type}.'). 
-        Use the buttons to view or delete any of them.  To
-        perform a search, click on the buttons at the bottom.');
-
-    my @filters = $read_filter_dir->();
-    print q(<table>);
-    for my $filter (@filters)
-    {
-        my $filter_file = $filter;
-        $filter_file =~ s/ /_/g;
-        print $f->Tr(
-            $f->td($filter),  '&nbsp;&nbsp;',
-            $f->td($f->submit( -name => "view_filter_$filter_file",
-                               -value => 'View' )),
-            $f->td($f->submit( -name => "delete_filter_$filter_file",
-                               -value => 'Delete' )));
-    }
-    print
-        q(</table>),
-        $f->hr(),
-
-        $f->p(
-            q(Click on the button below to return to the advanced
-            search options page, where you can select any of the
-            text sets listed above to use in a search.)),
-            
-        $f->submit( -name => 'proceed_back_to_advanced',
-                    -value => 'Return to Searching');
-    $my_footer->();
-};
-
-$handler{managing_sets} = sub
-{
-    delete $st{saved_filter_name};
-    for my $p (keys %st)
-    {
-        if ($p =~ m/^view_filter/)
-        {
-            my $filter = $p;
-            $filter =~ s/^view_filter_//;
-
-            $filter_flag = 'saved_filter';
-            my $q = new Diogenes::Base( -type => $st{short_type} );
-            $database_error->($q) if not $q->check_db;
-            my $work_nums = $get_filter->($q, $filter);
-            my @texts = $q->select_authors( -author_nums => $work_nums);
-        
-            $filter =~ s/_/ /g;
-            print
-                $f->h2('Content'),
-                $f->p(qq(Here is the content of the set of texts called
-                $filter.) ),
-                (join '<br />', @texts);
-            
-            delete $st{$p};
-            $my_footer->();
-            return;
-        }
-        elsif ($p =~ m/^delete_filter/)
-        {
-            my $filter = $p;
-            $filter =~ s/^delete_filter_//;
-            my $path = catfile($init->{cgi_filter_dir}, $filter);
-            unlink($path) or die "Can't unlink $path: $!";
-            $filter =~ s/_/ /g;
-            delete $st{$p};
-            $output{saved_filters}->();
-            return; 
-        }
-    }
-    $output{advanced}->();
-
-};
-
-$output{refine_works} = sub
-{
-    $print_title->('Diogenes Individual Works', 'works_list');
-    $print_header->();
-    $st{current_page} = 'select_works';
-    print
-        $f->h1('Individual Works'),
-        $f->p('Select the works you wish to use for searching.');
-    
-    my $q = new Diogenes::Search( -type => $st{short_type},
-                                  -output_format => 'html',
-                                  -encoding => $default_encoding );
-    $database_error->($q) if not $q->check_db;
-
-    my @auth_nums = @{ $st{author_list} };
-    unless (scalar @auth_nums)
-    {
-        print
-            $f->p($f->strong('Error.')),
-            $f->p(qq(There were no texts matching the author $st{author_pattern}));
-        $my_footer->();
-        return;
-    }
-
-
-    for my $a (@auth_nums)
-    {
-        my @work_nums = ();
-        my %labels = ();
-        $q->parse_idt($a);
-        my $author = $author{$q->{type}}{$a};
-        print $f->h2($author);
-        for my $work_num (sort numerically
-                          keys %{ $work{$q->{type}}{$a} })
-        {
-            push @work_nums, $work_num;
-            $labels{"$work_num"} = $work{$q->{type}}{$a}{$work_num};
-        }
-        unless (scalar @work_nums == 1)
-        {
-            push @work_nums, 'ALL';
-            $labels{'ALL'} = q{Include all of this author's works};
-        }
-        print $f->checkbox_group( -name => "work_list_for_$a",
-                                  -Values => \@work_nums,
-                                  -labels => \%labels,
-                                  -linebreak => 'true' );
-    }
-    print
-        $f->hr,
-        $f->p('Please choose one of the following options before proceeding');
-
-    my @values = qw(search saved_filters);
-    my %radio_labels = ( search =>
-                         'Just do a search over the selected works',
-                         saved_filters =>
-                         'Save the selected works as a set for later
-use under this name:');
-    my $default_choice = $st{works_filter_option} || 'search';
-
-    my @group = $f->radio_group( -name => 'works_filter_option',
-                                 -values => \@values,
-                                 -default => $default_choice,
-                                 -labels => \%radio_labels );
-    my $default_filter_name = $st{saved_filter_name} || '';
-    print $f->table(
-        $f->Tr(
-            $f->td( $group[0] )),
-        $f->Tr(
-            $f->td( $group[1] ),
-            $f->td(
-                $f->textfield( -name => 'saved_filter_name',
-                               -size => 60,
-                               -default => $default_filter_name ))));
-
-    print $f->p($f->submit( -name =>'Proceed'));
-
-    $my_footer->();
-};
-
-$handler{select_works} = sub
-{
-    # $output { search, saved_filters }
-    $filter_flag = 'works_filter';
-    $output{$st{works_filter_option}}->();
-    
-};
-
-$output{tlg_filters} = sub
-{
-    $print_title->('Diogenes TLG Selection Page', 'author_list');
-    $print_header->();
-    
-    $st{current_page} = 'tlg_filters';
-    my %args;
-    $args{type} = $st{short_type};
-    $args{output_format} = 'html';
-    $args{encoding} = $default_encoding;
-    my $q = new Diogenes::Search(%args);
-    $database_error->($q) if not $q->check_db;
-    
-    my %labels = %{ $q->select_authors(get_tlg_categories => 1) };
-    my %nice_labels = ( 'epithet' => 'Author\'s genre',
-                        'genre_clx' => 'Text genre',
-                        'location'  => 'Location' );
-    my $j = 0;
-    
-    print
-        $f->p(
-            'Here are the various criteria by which the texts contained in
-         the TLG are classified.'),
-        $f->p('You may select as many items as you like in each box.  Try holding down
-               the control key to select multiple items.');
-    print '<table border=0><tr><td>';
-    foreach my $label (sort keys %labels)
-    {
-        unshift @{$labels{$label}}, '--';
-
-        next if $label eq 'date' or $label eq 'gender' or $label eq 'genre';
-        $j++;
-        print "<strong>$j. $nice_labels{$label}:</strong><br>";
-        print $f->scrolling_list( -name => $label,
-                                  -Values => \@{ $labels{$label} },
-                                  -multiple => 'true',
-                                  -size => 8,
-                                  -Default => '--');
-        print '</td><td>';
-    }
-    print '</td></tr><tr><td>';
-    $j++;
-    print
-        "<strong>$j. Gender:</strong><br>",
-        $f->scrolling_list( -name => 'gender',
-                            -Values => \@{ $labels{gender} },
-                            -multiple => 'true',
-                            -Default => '--'),
-        '</td><td colspan=2>';
-    $j++;
-    print
-        "<strong>$j. Name of Author(s):</strong><br>",
-        $f->textfield(-name=>'author_regex', -size=>25),
-        
-        '</td></tr></table>',
-        '<TABLE border=0><TR><TD colspan=2>';
-    $j++;
-    print
-        "<strong>$j. Date Range:</strong>",
-        '</td></tr><tr><td>',
-        "After &nbsp;",
-        '</td><td>';
-    my @dates = @{ $labels{date} };
-    pop @dates while $dates[-1] =~ m/Varia|Incertum/;
-    unshift @dates, '--';
-    print
-        $f->popup_menu( -name => 'date_after',
-                        -Values => \@dates,
-                        -Default => '--'),
-        '</td><td rowspan=2>',
-        $f->checkbox( -name =>'Varia',
-                      -label => ' Include Varia and Incerta?'),
-        
-        '</td></tr><tr><td>',
-        "Before ",
-        '</td><td>',
-        $f->popup_menu( -name => 'date_before',
-                        -Values => \@dates,
-                        -Default => '--'),
-        
-        '</td></tr></table>',
-        $f->p('You may select multiple values for as many ',
-        'of the above criteria as you wish.'),
-        $f->p(
-            'Then indicate below how many of ',
-            'the stipulated criteria a text must meet ',
-            'in order to be included in the search.'),
-        $f->p(
-            "<p><strong>Number of criteria to match: </strong>");
-    my @crits = ('Any', 2 .. --$j, 'All');
-    print
-        $f->popup_menu(-name=>'criteria',
-                       -Values=>\@crits,
-                       -Default=>$default_criteria),
-        '&nbsp;',
-        $f->submit(  -name => 'tlg_filter_results',
-                     -value => 'Get Matching Texts');
-
-        $my_footer->();   
-};
-
-$handler{tlg_filters} = sub
-{
-    #FIXME
-    # $output { search, saved_filters, refine_works }
-    $filter_flag = 'tlg_filter';
-#     print STDERR "foo";
-    $output{tlg_filter_results}->();
-};
-
-
-
-$output{tlg_filter_results} = sub
-{
-    $print_title->('Diogenes TLG Select Page', 'works_list');
-    $print_header->();
-    
-    $st{current_page} = 'tlg_filter_output';
-    my %args;
-    $args{type} = $st{short_type};
-    $args{output_format} = 'html';
-    $args{encoding} = $default_encoding;
-    my $q = new Diogenes::Search(%args);
-    $database_error->($q) if not $q->check_db;
-
-    %args = $get_args_for_tlg_filter->();
-    
-    $f->autoEscape(undef);
-    my @texts = $q->select_authors(%args);
-    my %labels;
-    $labels{$_} = $texts[$_] for (0 .. $#texts);
-
-    unless (scalar @texts)
-    {
-        print
-            $f->p($f->strong('Error.')),
-            $f->p(qq(There were no texts matching the criteria you gave.'));
-        $my_footer->();
-        return;
-    }
-
-    print $f->h1('Matching Authors and/or Texts'),
-        $f->p('Here is a list of the texts that matched your query.'),
-        $f->p('Please select as many as you wish to search in' ,
-              'and click on the button at the bottom.'),
-    
-        $f->checkbox_group(-name => 'works_list',
-                           -Values => [0 .. $#texts],
-                           -labels => \%labels,
-                           -linebreak => 'true' );
-
-    print
-        $f->p(
-            $f->button( -value => "Select All",
-                        -onClick => "setAll()" ),
-            '&nbsp;&nbsp;&nbsp;&nbsp;',
-            $f->reset( -value => 'Unselect All')),
-        $f->hr;
-
-    print $f->p('Please choose one of the following options before proceeding');
-
-    my @values = qw(search saved_filters);
-    my %radio_labels = ( search =>
-                         'Just do a search over the selected items',
-                         saved_filters =>
-                         'Save the selected authors as a set for later
-use under this name:');
-    my $default_choice = $st{simple_filter_option} || 'search';
-
-    my @group = $f->radio_group( -name => 'tlg_filter_output_option',
-                                 -values => \@values,
-                                 -default => $default_choice,
-                                 -labels => \%radio_labels );
-
-    print $f->table(
-        $f->Tr(
-            $f->td( $group[0] )),
-        $f->Tr(
-            $f->td( $group[1] ),
-            $f->td(
-                $f->textfield( -name => 'saved_filter_name',
-                               -size => 60,
-                               -default => '' ))),
-        $f->Tr(
-            $f->td( $group[2] )));
-
-    print $f->p($f->submit( -name =>'Proceed'));
-
-    $my_footer->();
-    
-};
-
-$handler{tlg_filter_output} = sub
-{
-    # $output { search, saved_filters, refine_works }
-    $filter_flag = 'tlg_filter';
-    $output{$st{tlg_filter_output_option}}->();
 };
 
 
@@ -1178,10 +585,7 @@ my $get_args = sub
         output_format => 'html',
         highlight => 1,
         );
-    $args{input_beta} = 1 if (exists $st{input_method}
-                              and $st{input_method} =~ m/beta/i);
-    $args{input_lang} = $st{input_lang} ? $st{input_lang} : $st{type} =~ m/Latin/i ? 'l' : 'g';
-    $args{perseus_links} =  $st{perseus_links} if exists $st{perseus_links};
+    $args{user} = $user if $user;
 
     # These don't matter for indexed searches
     if (exists $st{query_list})
@@ -1205,14 +609,16 @@ my $get_args = sub
     return %args;
 };
 
-my $show_filter = sub
+my $use_and_show_filter = sub
 {
     my $q = shift;
-    if ($filter_flag)
+    my $filter;
+    $filter = $current_filter ? $current_filter :
+        ($st{saved_filter} ? $get_filter->($st{saved_filter}) : undef);
+    if ($filter)
     {
-
-        my $filter = $get_filter->($q);
-        my @texts = $q->select_authors( -author_nums => $filter);
+        my $work_nums = $filter->{authors};
+        my @texts = $q->select_authors( -author_nums => $work_nums);
         
         print
             $f->p('Searching in the following: '),
@@ -1224,20 +630,18 @@ my $show_filter = sub
 
 $output{indexed_search} = sub 
 {
-    
+    my %args = $get_args->();
+    my $q = new Diogenes::Indexed(%args);
+    $database_error->($q) if not $q->check_db;
+
     $print_title->('Diogenes TLG word list result', 'word_list');
     $print_header->();
     $st{current_page} = 'word_list';
     my @params = $f->param;
     
-    my %args = $get_args->();
-    my $q = new Diogenes::Indexed(%args);
-    $database_error->($q) if not $q->check_db;
-
-    $show_filter->($q);
-
+    $use_and_show_filter->($q);
     # Since this is a 2-step search, we have to save it.
-    $st{saved_filter_flag} = $filter_flag if $filter_flag;
+    $st{saved_filter} = $st{corpus} if $current_filter;
 
     my $pattern_list = $st{query_list} ? $st{query_list} : [$st{query}];
     print $f->p('Here are the entries in the TLG word list that match your ',
@@ -1300,8 +704,6 @@ $output{search} = sub
         return;
     }    
 
-    $print_title->('Diogenes Search');
-    $print_header->();
     $st{current_page} = 'doing_search';
 
     my %args = $get_args->();
@@ -1317,7 +719,10 @@ $output{search} = sub
     }
     $database_error->($q) if not $q->check_db;
 
-    $show_filter->($q);
+    $print_title->('Diogenes Search');
+    $print_header->();
+
+    $use_and_show_filter->($q);
 
     if ($st{type} =~ m/TLG Word List/)
     {
@@ -1367,14 +772,13 @@ $handler{doing_search} = sub
 
 $output{browser} = sub 
 {
+    my %args = $get_args->();
+    my $q = new Diogenes::Browser::Stateless(%args);
+    $database_error->($q) if not $q->check_db;
+
     $print_title->('Diogenes Author Browser');
     $print_header->();
     $st{current_page} = 'browser_authors';
-
-    my %args = $get_args->();
-
-    my $q = new Diogenes::Browser::Stateless(%args);
-    $database_error->($q) if not $q->check_db;
 
     my %auths = $q->browse_authors($st{query});
 
@@ -1385,12 +789,11 @@ $output{browser} = sub
     if (keys %auths == 0) 
     {
         print
-            $f->p($f->strong('Sorry, no matching names')),
+            $f->p($f->strong('Sorry, no matching author names')),
             $f->p(
                 'To browse texts, enter part of the name of the author ',
-                'or corpus you wish to examine.<p>  Remember to specify the ',
-                'correct database and note that capitalization ',
-                'of names is significant.');
+                'or corpus you wish to examine.'),
+            $f->p('To get a list of all authors, simply leave the text area blank.');
     }
     elsif (keys %auths == 1) 
     {
@@ -1437,15 +840,14 @@ $handler{browser_authors} = sub { $output{browser_works}->(); };
 
 $output{browser_works} = sub 
 {
+    my %args = $get_args->();
+    my $q = new Diogenes::Browser::Stateless(%args);
+    $database_error->($q) if not $q->check_db;
+
     $print_title->('Diogenes Work Browser');
     $print_header->();
     $st{current_page} = 'browser_works';
     
-    my %args = $get_args->();
-    
-    my $q = new Diogenes::Browser::Stateless(%args);
-    $database_error->($q) if not $q->check_db;
-
     my %works = $q->browse_works( $st{author} );
     $strip_html->(\$_) for (values %works, keys %works);
     
@@ -1486,14 +888,14 @@ $handler{browser_works} = sub { $output{browser_passage}->() };
 
 $output{browser_passage} = sub 
 {
-    $print_title->('Diogenes Passage Browser');
-    $print_header->();
-    $st{current_page} = 'browser_passage';
     my %args = $get_args->();
-    
     my $q = new Diogenes::Browser::Stateless(  %args );
     $database_error->($q) if not $q->check_db;
 
+    $print_title->('Diogenes Passage Browser');
+    $print_header->();
+    $st{current_page} = 'browser_passage';
+    
     print
         $f->center(
             $f->p(
@@ -1540,16 +942,15 @@ $handler{browser_output} = sub { $output{browser_output}->() };
 
 $output{browser_output} = sub 
 {
-    $print_title->('Diogenes Browser');
-    $print_header->();
-    $st{current_page} = 'browser_output';
-    
     my %args = $get_args->();
-    
     my $q = new Diogenes::Browser::Stateless( %args );
     $database_error->($q) if not $q->check_db;
     
     my @target;
+    $print_title->('Diogenes Browser');
+    $print_header->();
+    $st{current_page} = 'browser_output';
+    
     if (exists $st{levels})
     {
         for (my $j = $st{levels}; $j >= 0; $j--) 
@@ -1615,17 +1016,599 @@ $output{browser_output} = sub
     $my_footer->();
 };
 
+############ Filters ###############
+
+# @filters is an array of hash-refs, each of which have the keys
+# "name", "type", and "authors".  The latter points to either an
+# array-ref of author numbers (use the whole author) or a hash-ref
+# whose keys are author numbers, and whose values are a ref to an
+# array of work numbers.  Suitable for passing to
+# select_authors(author_nums=>foo).
+
+$output{filter_splash} = sub
+{
+    $st{current_page} = 'filter_splash';
+    $print_title->('Diogenes Corpora');
+    print
+        $f->h1("Manage user-defined subsets of the databases."),
+
+        $f->p('From this page you can create new corpora or subsets of the
+        databases to search within, and you can also view and
+        delete exiting user-defined corpora.'),
+
+        $f->p("Note that these user-defined corpora must be a subset
+        of one and only one database; currently you cannot define a
+        corpus to encompass texts from two different databases."),
+
+        $f->p('Choose one of the options below.');
+
+
+    print $f->h2('Define a new, simple corpus'),
+
+        $f->p(q(Enter a name or names or parts thereof, in order to
+        narrow down the scope of your search within a particular
+        database; you may separate multiple names by spaces or commas.
+        When you proceed, this will bring you to another page where
+        you can select which matching authors you wish to search in;
+        you can then further narrow your selection down to particular
+        works.));
+
+    print
+        $f->table({cellspacing=>'10px'},
+                  $f->Tr(
+                      $f->th({align=>'right'}, 'Author name(s): '),
+                      $f->td(
+                          $f->textfield( -name => 'author_pattern',
+                                         -size => 60, -default => ''))),
+                  $f->Tr(
+                      $f->th({align=>'right'}, 'Database: '),
+                      $f->td(
+                          $f->popup_menu(
+                              -name=>'database',
+                              -Values=>\@databases,
+                              -labels=>\%database,
+                              -Default=>'tlg'),
+                          $f->submit( -name =>'simple',
+                                      -value=>'Define subset' ))));
+
+    print
+        $f->h2('Define a complex subset of the TLG'),
+
+        $f->p('The TLG classifies its texts into a large number of
+        categories: chronological, generic, geographical, and so
+        forth.  You can use these classifications to define a subset
+        of works in the TLG to narrow down your search. '),
+        
+    $f->submit( -name => 'complex',
+                -value => 'Define a complex TLG corpus');
+
+    my $no_filters_msg = 'There are no saved texts';
+    my $dis = '';
+    $dis = '-disabled=>"true"' unless @filters;
+    my @filter_names = ($no_filters_msg) unless @filters;
+    push @filter_names, $_->{name} for @filters;
+    
+    
+    print
+        $f->h2('List or delete an existing corpus'),
+
+        $f->p('Select a previously defined corpus from the list below
+        and click on the appropriate button to list its contents. On the subsequent page you can
+        choose to delete it.'),
+
+        $f->popup_menu( -name => 'filter_choice',
+                        -values => \@filter_names,
+                        $dis),
+        $f->p(
+            $f->submit (-name=>'list',
+                        -value=>'List contents of selected corpus'));
+
+
+    $my_footer->();
+};
+
+$handler{filter_splash} = sub
+{
+    if ($st{simple})
+    {
+        $output{simple_filter}->();
+    }
+    elsif ($st{complex})
+    {
+        $output{tlg_filter}->();
+    }
+    elsif ($st{list})
+    {
+        $output{list_filter}->();
+    }
+    else {
+        $print_title->('Error');
+        print $f->center($f->p($f->strong('Flow Error.')));
+    }
+
+};
+
+$output{simple_filter} = sub
+{
+    my %args;
+    $args{type} = $st{database};
+    $args{output_format} = 'html';
+    $args{encoding} = $default_encoding;
+    $args{user} = $user if $user;
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;   
+
+    $print_title->('Diogenes Author Select Page', 'author_list');
+    $print_header->();   
+    $st{current_page} = 'simple_filter';
+
+    my @auths = $q->select_authors(author_regex => $st{author_pattern});
+
+    unless (scalar @auths)
+    {
+        print
+            $f->p($f->strong('Error.')),
+            $f->p(qq(There were no texts matching the author $st{author_pattern}));
+        $my_footer->();
+        return;
+    }
+    
+    $f->autoEscape(undef);
+    print $f->h1('Matching Authors'),
+
+    $f->p('Here is a list of the authors that matched your query'),
+    $f->p('Please select as many as you wish to search in, then go to
+    the bottom of the page.');
+
+    my @auth_nums = @{ $q->{prev_list} };
+    my %labels;
+    $labels{"$auth_nums[$_]"} = $auths[$_] for (0 .. $#auths);
+    print $f->checkbox_group( -name => 'author_list',
+                              -Values => \@auth_nums,
+                              -labels => \%labels,
+                              -linebreak => 'true' );
+
+    print
+        $f->p(
+            $f->button( -value => "Select All",
+                        -onClick => "setAll()" ),
+            '&nbsp;&nbsp;&nbsp;&nbsp;',
+            $f->reset( -value => 'Unselect All')),
+        $f->p('&nbsp;');
+
+    print $f->p('Please choose one of the following options before proceeding');
+
+    my @values = qw(refine_works save_filter);
+    my %radio_labels = ( save_filter =>
+                         'Save the selected authors as a subset for later
+use under this name:',
+                         refine_works =>
+                         'Further narrow down to particular works of
+the selected authors' );
+    my $default_choice = $st{simple_filter_option} || 'save_filter';
+
+    my @group = $f->radio_group( -name => 'simple_filter_option',
+                                 -values => \@values,
+                                 -default => $default_choice,
+                                 -labels => \%radio_labels );
+
+    print $f->table(
+        $f->Tr(
+            $f->td( $group[0] )),
+        $f->Tr(
+            $f->td( $group[1] ),
+            $f->td(
+                $f->textfield( -name => 'saved_filter_name',
+                               -size => 60,
+                               -default => '' ))));
+
+    print $f->p($f->submit( -name =>'Proceed'));
+
+    $my_footer->();
+
+};
+
+my $save_filters = sub {
+    open my $filter_fh, ">$filter_file"
+        or die "Can't write to filter file ($filter_file): $!";
+    print $filter_fh Data::Dumper->Dump([\@filters], ['*filters']);
+    close $filter_fh or die "Can't close filter file ($filter_file): $!";
+};
+
+my $go_splash = sub {
+    $output{splash}->();
+};
+
+my $save_filters_and_go = sub {
+    $save_filters->();
+    %st = ();
+    $go_splash->();
+};
+
+$handler{simple_filter} = sub
+{
+    if ($st{simple_filter_option} eq 'save_filter') {
+        print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
+
+        push @filters, { name => $st{saved_filter_name},
+                         authors => $st{author_list},
+                         type => $st{database} };
+        print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
+
+        $save_filters_and_go->();
+    }
+    elsif ($st{simple_filter_option} eq 'refine_works') {
+        $output{refine_works}->();
+    }
+    else{
+        $print_error_page->();
+    }
+};
+
+$output{refine_works} = sub
+{
+    my %args = ( -type => $st{database},
+                 -output_format => 'html',
+                 -encoding => $default_encoding );
+    $args{user} = $user if $user;
+    my $q = new Diogenes::Search( %args );
+    $database_error->($q) if not $q->check_db;
+
+    $print_title->('Diogenes Individual Works', 'works_list');
+    $print_header->();
+    $st{current_page} = 'select_works';
+    print
+        $f->h1('Individual Works'),
+        $f->p('Select the works you wish to use for searching.');
+
+
+    my @auth_nums = @{ $st{author_list} };
+    unless (scalar @auth_nums)
+    {
+        print
+            $f->p($f->strong('Error.')),
+            $f->p(qq(There were no texts matching the author $st{author_pattern}));
+        $my_footer->();
+        return;
+    }
+
+
+    for my $a (@auth_nums)
+    {
+        my @work_nums = ();
+        my %labels = ();
+        $q->parse_idt($a);
+        my $author = $author{$q->{type}}{$a};
+        print $f->h2($author);
+        for my $work_num (sort numerically
+                          keys %{ $work{$q->{type}}{$a} })
+        {
+            push @work_nums, $work_num;
+            $labels{"$work_num"} = $work{$q->{type}}{$a}{$work_num};
+        }
+        print $f->checkbox_group( -name => "work_list_for_$a",
+                                  -Values => \@work_nums,
+                                  -labels => \%labels,
+                                  -linebreak => 'true' );
+    }
+    print
+        $f->hr,
+        $f->p('Please choose a name for this corpus before saving it.');
+
+    my $default_filter_name = $st{saved_filter_name} || '';
+    print
+        $f->textfield( -name => 'saved_filter_name',
+                       -size => 60,
+                       -default => $default_filter_name ),
+        $f->p('&nbsp;'),
+        $f->p($f->submit( -name =>'Save'));
+
+    $my_footer->();
+};
+
+$handler{select_works} = sub
+{
+    my $work_nums;
+    for my $k (keys %st)
+    {
+        next unless $k =~ m/^work_list_for_/;
+        my $auth_num = $k;
+        $auth_num =~ s/^work_list_for_//;
+        $work_nums->{$auth_num} = $st{$k};
+    }
+    push @filters, { name => $st{saved_filter_name},
+                     authors => $work_nums,
+                     type => $st{database} };
+    
+    $save_filters_and_go->();
+};
+
+$output{tlg_filter} = sub
+{
+    my %args;
+    $args{type} = $st{database};
+    $args{output_format} = 'html';
+    $args{encoding} = $default_encoding;
+    $args{user} = $user if $user;
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;
+
+    $print_title->('Diogenes TLG Selection Page', 'author_list');
+    $print_header->();
+    
+    $st{current_page} = 'tlg_filter';
+    
+    my %labels = %{ $q->select_authors(get_tlg_categories => 1) };
+    my %nice_labels = ( 'epithet' => 'Author\'s genre',
+                        'genre_clx' => 'Text genre',
+                        'location'  => 'Location' );
+    my $j = 0;
+    
+    print
+        $f->h1('TLG Classification'),
+        $f->p(
+            'Here are the various criteria by which the texts contained in
+         the TLG are classified.'),
+        $f->p('You may select as many items as you like in each box.  Try holding down
+               the control key to select multiple items.');
+    print '<table border=0 cellpadding=10px><tr><td>';
+    foreach my $label (sort keys %labels)
+    {
+        unshift @{$labels{$label}}, '--';
+
+        next if $label eq 'date' or $label eq 'gender' or $label eq 'genre';
+        $j++;
+        print "<strong>$j. $nice_labels{$label}:</strong><br>";
+        print $f->scrolling_list( -name => $label,
+                                  -Values => \@{ $labels{$label} },
+                                  -multiple => 'true',
+                                  -size => 8,
+                                  -Default => '--');
+        print '</td><td>';
+    }
+    print '</td></tr><tr><td>';
+    $j++;
+    print
+        "<strong>$j. Gender:</strong><br>",
+        $f->scrolling_list( -name => 'gender',
+                            -Values => \@{ $labels{gender} },
+                            -multiple => 'true',
+                            -Default => '--'),
+        '</td><td>';
+    $j++;
+    print
+        "<strong>$j. Name of Author(s):</strong><br>",
+        $f->textfield(-name=>'author_regex', -size=>25),
+        
+        '</td><td>',
+        '<TABLE border=0><TR><TD colspan=2>';
+    $j++;
+    print
+        "<strong>$j. Date Range:</strong>",
+        '</td></tr><tr><td>',
+        "After &nbsp;",
+        '</td><td>';
+    my @dates = @{ $labels{date} };
+    pop @dates while $dates[-1] =~ m/Varia|Incertum/;
+    unshift @dates, '--';
+    print
+        $f->popup_menu( -name => 'date_after',
+                        -Values => \@dates,
+                        -Default => '--'),
+        '</td><td rowspan=2>',
+        $f->checkbox( -name =>'Varia',
+                      -label => ' Include Varia and Incerta?'),
+        
+        '</td></tr><tr><td>',
+        "Before ",
+        '</td><td>',
+        $f->popup_menu( -name => 'date_before',
+                        -Values => \@dates,
+                        -Default => '--'),
+        
+        '</td></tr></table></td></tr></table>',
+        $f->p('You may select multiple values for as many ',
+        'of the above criteria as you wish.'),
+        $f->p(
+            'Then indicate below how many of ',
+            'the stipulated criteria a text must meet ',
+            'in order to be included in the search.'),
+        $f->p(
+            "<p><strong>Number of criteria to match: </strong>");
+    my @crits = ('Any', 2 .. --$j, 'All');
+    print
+        $f->popup_menu(-name=>'criteria',
+                       -Values=>\@crits,
+                       -Default=>$default_criteria),
+        '&nbsp;',
+        $f->submit(  -name => 'tlg_filter_results',
+                     -value => 'Get Matching Texts');
+
+        $my_footer->();   
+};
+
+$handler{tlg_filter} = sub
+{
+    $output{tlg_filter_results}->();
+};
+
+my $get_args_for_tlg_filter = sub
+{
+    my %args;
+    $args{user} = $user if $user;
+    for (qw(epithet genre_clx location gender))
+    {
+        next if not defined $st{$_} or $st{$_} eq '--';
+        my $ref = ref $st{$_} ? $st{$_} : [ $st{$_} ];
+        $args{$_} = [ grep {$_ ne '--'} @{ $ref } ];
+    }
+    for (qw(author_regex criteria))
+    {
+        $args{$_} = $st{$_} if $st{$_};
+    }
+    $args{criteria} = 1 if $args{criteria} =~ m/any/;
+#       $args{criteria} = 6 if $args{criteria} eq 'All';
+    my @dates;
+    push @dates, $st{'date_after'};
+    push @dates, $st{'date_before'};
+    push @dates, 1, 1 if $st{'Varia'};
+
+    @{ $args{date} } = @dates
+        if @dates and (($st{'date_after'} ne '--')
+                       and ($st{'date_before'} ne '--'));
+
+    return %args;
+};
+
+
+$output{tlg_filter_results} = sub
+{
+    my %args;
+    $args{type} = $st{database};
+    $args{output_format} = 'html';
+    $args{encoding} = $default_encoding;
+    $args{user} = $user if $user;
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;
+
+    $print_title->('Diogenes TLG Select Page', 'works_list');
+    $print_header->();
+    
+    $st{current_page} = 'tlg_filter_output';
+    
+    $f->autoEscape(undef);
+    %args = $get_args_for_tlg_filter->();
+    my @texts = $q->select_authors(%args);
+    my %labels;
+    $labels{$_} = $texts[$_] for (0 .. $#texts);
+
+    unless (scalar @texts)
+    {
+        print
+            $f->p($f->strong('Error.')),
+            $f->p(qq(There were no texts matching the criteria you gave.'));
+        $my_footer->();
+        return;
+    }
+
+    print $f->h1('Matching Authors and/or Texts'),
+        $f->p('Here is a list of the texts that matched your query.'),
+        $f->p('Please select as many as you wish to search in' ,
+              'and click on the button at the bottom.'),
+    
+        $f->checkbox_group(-name => 'works_list',
+                           -Values => [0 .. $#texts],
+                           -labels => \%labels,
+                           -linebreak => 'true' );
+
+    print
+        $f->p(
+            $f->button( -value => "Select All",
+                        -onClick => "setAll()" ),
+            '&nbsp;&nbsp;&nbsp;&nbsp;',
+            $f->reset( -value => 'Unselect All')),
+        $f->hr;
+
+    print
+        $f->p('Please choose a name for this corpus before saving'),
+        $f->textfield( -name => 'saved_filter_name',
+                       -size => 60,
+                       -default => '' ),
+        $f->p('&nbsp'),
+        $f->p($f->submit( -name =>'Save'));
+
+    $my_footer->();
+    
+};
+
+$handler{tlg_filter_output} = sub
+{
+    my %args;
+    $args{type} = $st{database};
+    $args{output_format} = 'html';
+    $args{encoding} = $default_encoding;
+    $args{user} = $user if $user;
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;
+
+    %args = $get_args_for_tlg_filter->();
+    
+    () = $q->select_authors(%args);
+    () = $q->select_authors(previous_list => $st{works_list});
+
+    my $work_nums = $q->{req_authors};
+    for my $k (keys %{ $q->{req_auth_wk} })
+    {
+        $work_nums->{$k} = [keys %{ $q->{req_auth_wk}{$k} }];
+    }
+    push @filters, { name => $st{saved_filter_name},
+                     authors => $work_nums,
+                     type => $st{database}};
+    $save_filters_and_go->();
+};
+
+$output{list_filter} = sub
+{
+    my $filter = $get_filter->($st{filter_choice});
+    my $type = $filter->{type};
+    my %args = ( -type => $type );
+    $args{user} = $user if $user;
+    my $q = new Diogenes::Search( %args );
+    $database_error->($q) if not $q->check_db;
+
+    $print_title->('User-defined corpus listing');
+    $print_header->();
+    $st{current_page} = 'list_filter';
+    
+    my $work_nums = $filter->{authors};
+    my @texts = $q->select_authors( -author_nums => $work_nums);
+
+    print
+        $f->h2('User-defined corpus listing'),
+        $f->p(qq(Here is the subset of the $type database named $st{filter_choice}:)),
+              (join '<br />', @texts);
+
+    print
+        $f->p('&nbsp;'),
+        $f->hr,
+        $f->submit(-name=>'delete',
+                   -value=>'Click here to delete this corpus');
+    $my_footer->();
+};
+
+my $delete_filter =sub {
+    my $name = shift;
+    my $i = 0;
+    for (@filters) {
+        if ($_->{name} eq $name) {
+            splice @filters, $i, 1;
+            $save_filters_and_go->();
+            return;
+        }
+        $i++;
+    }
+    die ("Could not find filter $name to delete it!");
+};
+
+$handler{list_filter} = sub
+{
+    if ($st{delete}) {
+        $delete_filter->($st{filter_choice});
+    }
+    else {
+        $print_title->('Error');
+        print $f->center($f->p($f->strong('Flow Error.')));
+    }
+};
+
+
+
 sub numerically { $a <=> $b; }
 
 
-###################################################################
-#                                                                 #
-# Page 1 is the opening page, with choice of general search type  #
-#                                                                 #
-###################################################################
-
 my $mod_perl_error = sub 
 {
+    $print_title->('Error');
     print '<p><center><strong>Error</strong></center></p>',
     '<p>This CGI script is set up to expect to run under mod_perl, ',
     'and yet it seems not to be doing so.</p>',
@@ -1640,9 +1623,6 @@ my $mod_perl_error = sub
 
 
 # End of subroutine definitions -- here's where the dispatching gets done
-
-# HTML output
-print $f->header(-type=>"text/html; charset=$charset");
 
 # Flow control
 # warn $previous_page;
