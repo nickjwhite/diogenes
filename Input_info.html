@@ -1,78 +1,13 @@
-<HTML>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <meta http-equiv="charset" content="UTF-8">
-        <title>Searching Tips</title>
+    <title>Searching Tips</title>
   </head>
-  <body ALINK="#000099" LINK="#0000ee" VLINK="#ff0000" TEXT="#000000" BGCOLOR="#FFFFFF">
+  <body>
 
-
-<h2>Entering Greek Words</h2>
-
-<p>At the moment, most browsers do not support in a consistent way
-the entering of polytonic Greek text into <small>HTML</small> 
-fill-in forms.  It is therefore
-necessary to type in Greek words via some scheme of Latin
-transliteration.  Diogenes supports two such schemes.  
-
-<h3>Perseus style</h3><a target="Perseus">
-<p>
-The normal and more permissive method is similar to the transliteration
-adopted by the <a href="http://www.perseus.tufts.edu">Perseus
-Project</a>.  In this scheme, you should not indicate accents or upper-case
-letters in the words you are searching for; consonants are rendered by
-their phonetic equivalent; and eta and omega are distinguished from
-epsilon and omicron by the use of a circumflex accent (&ecirc;,
-&ocirc;) if your keyboard can manage them, or by placing a caret after
-the vowel (e^, o^).  Rough and smooth breathings are distinguished;
-put "h" in front of a word to indicate a rough breathing.  The absence of an "h"
-implies the absence of a rough breathing, rather than the presence of a smooth
-breathing.
-</p><p>
-You may use a limited subset of Perl regular expressions in your input;
-see <a href="#regexp">below</a>.
-
-</p><p>
-Thus a search for the hero Herakles would be
-performed by entering the word "<tt>&nbsp;he^rakle^s&nbsp;</tt>" for the nominative case
-only, or "<tt>&nbsp;he^rakl</tt>" to add the oblique cases (note the
-leading and trailing spaces to indicate the start and end of a word).
-</p>
-
-<h3>BETA code</h3>
-
-<p>
-If you prefer to stipulate your searches more precisely, you may
-work with the transliteration employed natively by the
-<i>TLG</i>, the so-called BETA code. 
-</p>
-<p>
-In this scheme, you <b>must</b> indicate accents and breathings in the
-normalized form used by the <i>TLG</i> word list: do not indicate
-upper-case letters, and do not use barytone accents.  You may use
-lower-case Latin letters.
-Thus the Attic nominative singular of Herakles would be
-"<tt>&nbsp;h(raklh=s&nbsp;</tt>", and the oblique and variant forms would be found with
-"<tt>&nbsp;h(rakl</tt>".
-Remember that words appearing in all upper-case Greek will not usually
-have dicritics, so to pick up titles, etc., you will also need to try
-"<tt>&nbsp;hraklhs&nbsp;</tt>" (note the leading and trailing spaces to indicate the start and end
-of a word).   You may not use Perl regular expression metacharacters,
-because many of them are significant in Beta code; your pattern will be
-turned into a regular expression that allows hyphenation to intervene.
-
-</p>
-
-<h3>Character maps</h3>
-<p>
-Here are the full details of the two transliteration schemes:
-</p>
-<p>
-<IMG src="images/Diogenes_Transliteration.gif" alt="Transliteration guide"
-height="63" width="883">
-</p>
-
-
-<h3>Usage hints<a name="regexp"></a></h3>
+    <h1>Searching Tips for Diogenes</h1>
 
 <p>
 For both Latin and Greek searches, your search term is turned into a
@@ -80,7 +15,7 @@ pattern that ignores distinctions between upper and lower case, and
 which permits the hypenation and the indexing and formatting codes that
 are used in the databases to intervene.  In the case of Latin, w and v
 and i and j are treated as equivalent.
-
+</p>
 
 <p>
 When constructing a search pattern, you may include spaces at the
@@ -91,7 +26,7 @@ course <i>et</i>, whereas <tt>"&nbsp;et"</tt> would only match in the
 words <i>etiam</i> and <i>et</i>.  Likewise, <tt>"et&nbsp;"</tt> would
 match in <i>scilicet</i> and <i>et</i>, and if you entered the pattern
 <tt>"&nbsp;et&nbsp;"</tt>, you would match only the word <i>et</i>.
-
+</p>
 
 <p>
 The way in which this is accomplished is by turning your pattern into a
@@ -105,21 +40,18 @@ you are using Beta-style input for Greek searches):
 <dl>
  <dt><tt>[abcd]</tt></dt>
  <dd>Square brackets mean: "match any one (and only one) of the enclosed letters".</dd>
- <p>
+  
  <dt><tt>(quid)</tt></dt>
  <dd>Round parentheses mean: "match everything enclosed herein or nothing at
  all".</dd>
- <p>
  <dt><tt>h(ic)|(aec)|(oc)</tt></dt>
  <dd>The vertical bar between expressions (a|b|c) means: "match 
  a or b or c ..., but only one of these". So [abc], defined above, is
  just a shorthand for (a|b|c).  </dd>
- <p>
  <dt><tt>?</tt></dt>
  <dd>The question mark means that matching the preceeding expression is
  optional: the match will include it if present, but will not fail in
  its absence. Thus "<tt>hae?c</tt>" will match haec or hac.</dd>
- <p>
  <dt>*</dt>
  <dd>The asterisk means: "Match the preceeding expression if it occurs
  for as many times as it repeats, but do not fail in its absence". Note
@@ -132,7 +64,6 @@ you are using Beta-style input for Greek searches):
  <dd>The plus sign is just like the asterisk, except that at least one
  of the preceeding expression must be present in order to match.  Thus
  a+ is just shorthand for aa*.</dd>
- <p>
 </dl>
 
 <p>
@@ -140,6 +71,7 @@ Note that Diogenes performs its own transformation of your input, so the
 full range of Perl regular expressions is not available to those who use
 the Perseus-style input, but what is available should be sufficient for
 many uses.
+</p>
 
 <p>
 There is no space here for an extensive description of regular
@@ -162,26 +94,17 @@ round parentheses. What must follow the "g" is defined as "Either the
 letter "i", followed optionally by the letter "s" or the letters "bus";
 or the letter "e", followed optionally by either the letter "m" or "s"
 (but not both), or by the letters "um".
+</p>
 
 <p>In this way, you can define searches quite narrowly, while not
 worrying about hyphenated words, upper and lower case, or
 in the case of Greek, accentuation.
+</p>
 
-<h3><i>TLG</i> word list</h3>
+<hr/>
 
 <p>
-If you choose to search via the <i>TLG</I> word list, note that it is
-indexed by the first two characters of every word, so that if you look
-for "<tt>agathos</tt>", you may not get "kagathos".  Set the option 
-<tt>use_tlgwlinx</tt> to <tt>0</tt> to do a more comprehensive, but slower
-search of the word list.
-</p><p>
-As with normal search terms, but a space in front of your query if you are only
-interested in words beginning with those letters.
-
-<hr>
-
-
-Copyright 2001, P. J. Heslin
+  P. J. Heslin, 2001-7
+</p>
 </body>
 </html>
