@@ -607,6 +607,16 @@ function browserOnLoad () {
             }
         }
     }
+    var action = browser.contentWindow.document.getElementById("action_menu");
+    var pref = getPrefAction();
+    if (action) {
+        for (var i=0; i<action.length; i++) {
+            if (action.options[i].value == pref) {
+                action.selectedIndex = i;
+                break;
+            }
+        }
+    }
     var query = browser.contentWindow.document.getElementById("query_text");
     if (query) {
         query.focus();
@@ -622,11 +632,25 @@ function getPrefCorpus () {
     }
     catch (e) { return false; }
 }
+function getPrefAction () {
+    // Will fail on first run
+    try {
+        var prefs = Components.classes["@mozilla.org/preferences-service;1"].
+            getService(Components.interfaces.nsIPrefBranch);
+        return prefs.getCharPref("diogenes.preferred.action");
+    }
+    catch (e) { return false; }
+}
 
 function setPrefCorpus (corpus) {
     var prefs = Components.classes["@mozilla.org/preferences-service;1"].
         getService(Components.interfaces.nsIPrefBranch);
     prefs.setCharPref("diogenes.preferred.corpus", corpus);
+}
+function setPrefAction (action) {
+    var prefs = Components.classes["@mozilla.org/preferences-service;1"].
+        getService(Components.interfaces.nsIPrefBranch);
+    prefs.setCharPref("diogenes.preferred.action", action);
 }
 
 function maybeSetPrefCorpus () {
@@ -634,6 +658,13 @@ function maybeSetPrefCorpus () {
     var corpus = browser.contentWindow.document.getElementById("corpus_menu");
     if (corpus) {
         setPrefCorpus(corpus.options[corpus.selectedIndex].value);
+    }
+}
+function maybeSetPrefAction () {
+    var browser = document.getElementById("browser");
+    var action = browser.contentWindow.document.getElementById("action_menu");
+    if (action) {
+        setPrefAction(action.options[action.selectedIndex].value);
     }
 }
  
@@ -646,6 +677,7 @@ function maybeSetPrefCorpus () {
 function browserOnSubmit () {
     wentBack = false;
     maybeSetPrefCorpus();
+    maybeSetPrefAction();
 }
 
 function setupEnv() {
