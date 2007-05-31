@@ -1,11 +1,17 @@
 
 Modification history:
 
+v. 3.0 Another change of infrastructure.  Abandoned the
+   platform-specific binary browsers used in version 2.0 in favor of
+   the Mozilla (xulrunner) platform.  First public release of the
+   changes made in version 2.1, along with further rewrite of the GUI,
+   especially in handling user-defined corpora.
+
 v. 2.1 Re-factored Diogenes.pm to break it into smaller modules, total
-   re-write of Diogenes.cgi.  Added display of line numbers, etc. via
-   CSS in the browser, which now shows the desired passage at the
-   center of the screen, instead of the top.  Never found time to
-   release this version publicly.  
+   re-write of Diogenes.cgi.  Added display of line numbers in the
+   browser and we now show the desired passage at the center of the
+   screen, instead of the top.  Never found time to release this
+   version publicly.
 
 v. 2.0 Essentially a pre-release of Diogenes version 2, with the
    old 1.4.3 Perl code mostly intact.  Big change is the new
