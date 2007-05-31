@@ -89,10 +89,13 @@
           <menuitem label="&dio.show.console;"
                     oncommand="showConsole();" accesskey="C"
                     key="key_console"/>
-          <menuitem label="Venkman" oncommand="start_venkman();"
-                    key="key_venkman"/>
+          <!-- <menuitem label="Venkman" oncommand="start_venkman();"
+               key="key_venkman"/>
+          -->
+          <menuitem label="&dio.shortcuts;" oncommand="showShortcuts();"
+                    accesskey="S"/>
           <menuitem label="&dio.about;" oncommand="showAbout();"
-                    accesskey="A" key="key_about" id="aboutName"/>
+                    accesskey="A" id="aboutName"/>
         </menupopup>
       </menu>
     </menubar>
@@ -135,8 +138,20 @@
     <key id="key_enlarge" modifiers="accel" key="+" oncommand="enlargeText();"/>
     <key id="key_reduce" modifiers="accel" key="-" oncommand="reduceText();"/>
     <key id="key_font" modifiers="accel" key="T" oncommand="selectFont();"/>
-    <key id="key_about" modifiers="accel" key="B" oncommand="showAbout();"/>
     <key id="key_foo" modifiers="accel" key="1" oncommand="foo();"/>
+  </keyset>
+
+  <keyset>
+    <key id="key_l" modifiers="accel" key="l" oncommand="doShortcut('l');"/>
+    <key id="key_g" modifiers="accel" key="g" oncommand="doShortcut('g');"/>
+    <key id="key_w" modifiers="accel" key="w" oncommand="doShortcut('w');"/>
+    <key id="key_d" modifiers="accel" key="d" oncommand="doShortcut('d');"/>
+    <key id="key_o" modifiers="accel" key="o" oncommand="doShortcut('o');"/>
+    <key id="key_dot" modifiers="accel" key="." oncommand="doShortcut('.');"/>
+    <key id="key_u" modifiers="accel" key="u" oncommand="doShortcut('u');"/>
+    <key id="key_m" modifiers="accel" key="m" oncommand="doShortcut('m');"/>
+    <key id="key_b" modifiers="accel" key="b" oncommand="doShortcut('b');"/>
+    <key id="key_c" modifiers="accel" key="c" oncommand="doShortcut('c');"/>
   </keyset>
 
 

@@ -367,8 +367,21 @@ function getLockFile () {
     return myAppendPath(getSettingsDir(), ".diogenes.run");
 }
 
+// The lock file goes into the base dir, but individual user settings
+// go into a subdir, which for us, since we are not using cookies, is
+// "default".
 function getSettingsFile () {
-    return myAppendPath(getSettingsDir(), "diogenes.prefs");
+    var userDir = ensureDirectory(myAppendPath(getSettingsDir(), 'default'));
+    var dir = new FileFactory(userDir);
+    if (!dir.exists()) {
+        try {
+            dir.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);
+        } catch (e) { 
+            warnUser("Unable to create preferences dir: aborting ("+userDir+"). "+e);
+            quitDiogenes();
+        }
+    }
+    return myAppendPath(userDir, "diogenes.prefs");
 }
 
 var startIntervalID;
@@ -594,12 +607,20 @@ function browserOnLoad () {
             }
         }
     }
+    var query = browser.contentWindow.document.getElementById("query_text");
+    if (query) {
+        query.focus();
+    }
 }
 
 function getPrefCorpus () {
-    var prefs = Components.classes["@mozilla.org/preferences-service;1"].
-        getService(Components.interfaces.nsIPrefBranch);
-    return prefs.getCharPref("diogenes.preferred.corpus");
+    // Will fail on first run
+    try {
+        var prefs = Components.classes["@mozilla.org/preferences-service;1"].
+            getService(Components.interfaces.nsIPrefBranch);
+        return prefs.getCharPref("diogenes.preferred.corpus");
+    }
+    catch (e) { return false; }
 }
 
 function setPrefCorpus (corpus) {
@@ -636,7 +657,7 @@ function setupEnv() {
         .getService(Components.interfaces.nsIXULAppInfo);
     environment.set('Xulrunner-version', appInfo.platformVersion);
 
-    environment.set('Diogenes-Config-Dir', getSettingsDir());
+    environment.set('Diogenes_Config_Dir', getSettingsDir());
 }
 
 function getDatabaseDirectory (type, longType, prompt) {
@@ -696,14 +717,14 @@ function saveDatabasePath (type, path) {
     if (!oldLine) {
         output += type_key + ' "' + path + '"' + "\n";
     }
-    
-    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
-        .createInstance(Components.interfaces.nsIFileOutputStream);
-//     file = new FileFactory(getSettingsFile());
-
-    foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
-    foStream.write(output, output.length);
-    foStream.close();
+    try {
+        var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
+            .createInstance(Components.interfaces.nsIFileOutputStream);
+        foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
+        foStream.write(output, output.length);
+        foStream.close();
+    }
+    catch (e) {alert("Error: could not write to settings file ("+file.path+").  "+e)}
 
     
     // Resubmit (error page helpfully pretends to be the splash page)
@@ -764,6 +785,46 @@ function quitDiogenes () {
 
 function quitHiddenDiogenes () {
     quit(true);
+}
+
+var shortcuts = new Object;
+shortcuts['l'] = 'PHI Latin'; 
+shortcuts['g'] = 'TLG Texts'; 
+shortcuts['w'] = 'word_list'; 
+shortcuts['d'] = 'Duke'; 
+shortcuts['o'] = 'Coptic'; 
+shortcuts['.'] = 'search'; 
+shortcuts['u'] = 'multiple'; 
+shortcuts['m'] = 'morphological'; 
+shortcuts['b'] = 'browse'; 
+shortcuts['c'] = 'filters'; 
+
+function doShortcut(key) {
+    var browser = document.getElementById("browser");
+    var action = browser.contentWindow.document.getElementById("action_menu");
+    var corpus = browser.contentWindow.document.getElementById("corpus_menu");
+    if (action) {
+        for (var i=0; i<action.length; i++) {
+            if (action.options[i].value.indexOf(shortcuts[key]) != -1) {
+                action.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    if (corpus) {
+        for (var i=0; i<corpus.length; i++) {
+            if (corpus.options[i].value.indexOf(shortcuts[key]) != -1) {
+                corpus.selectedIndex = i;
+                break;
+            }
+        }
+    }
+}
+
+function showShortcuts () {
+    var browser = document.getElementById("browser");
+    var port = get_port();
+    browser.loadURI("http:127.0.0.1:" + port + "/Shortcuts.html", null, null); 
 }
 
 
