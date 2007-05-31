@@ -41,13 +41,13 @@ use Diogenes::BetaHtml;
 our(%encoding, %context, @contexts, %choices, %list_labels, %auths,
     %lists, %work, %lang, %author, %last_work, %work_start_block,
     %level_label, %sub_works, %top_levels, %last_citation, $bibliography,
-    %coptic_encoding);
+    %coptic_encoding, %database, @databases, @filters);
 
 use Exporter;
 @Diogenes::Base::ISA = qw(Exporter);
 @Diogenes::Base::EXPORT_OK = qw(%encoding %context @contexts
     %choices %work %author %last_work %work_start_block %level_label
-    %top_levels %last_citation);
+    %top_levels %last_citation %database @databases @filters);
 
 eval "require 'Diogenes.map';";
 $Diogenes::Base::map_error = $@;
@@ -55,7 +55,7 @@ $Diogenes::Base::map_error = $@;
 $encoding{Beta} = {};
 $encoding{Ibycus} = {};
 $encoding{Transliteration} = {};
-our($RC_DEBUG, $OS, $user_config, $auto_config, $user_config_dir);
+our($RC_DEBUG, $OS, $config_dir_base);
 $RC_DEBUG = 0;
 
 # Define some globals
@@ -84,15 +84,12 @@ $context{l} = {
     '50 lines',
     );
 
-# These are the choices presented (e.g. on the opening CGI page).  If you do
-# not have all of these CD-Roms, or if you wish to disallow one or more of
-# these searches, comment lines out of this list.
+# These are the choices presented (e.g. on the opening CGI page).  
 
 %choices =  (
     'PHI Latin Corpus' => 'phi',
-    'TLG Word List' => 'tlg',
     'TLG Texts' => 'tlg',
-    'TLG Bibliography', => 'bib',
+    'TLG Bibliography' => 'bib',
     'Duke Documentary Papyri' => 'ddp',
     'Classical Inscriptions (Latin)' =>'ins',
     'Classical Inscriptions (Greek)' =>'ins',
@@ -102,8 +99,19 @@ $context{l} = {
     'Miscellaneous PHI Texts (Latin)' => 'misc',
     'PHI Coptic Texts' => 'cop',
     );
-# Here are some handy constants
 
+%database =  (
+    'phi' => 'PHI Latin Corpus',
+    'tlg' => 'TLG Texts',
+    'ddp' => 'Duke Documentary Papyri',
+    'ins' => 'Classical Inscriptions',
+    'chr' => 'Christian Inscriptions',
+    'misc' => 'Miscellaneous PHI Texts',
+    'cop' => 'PHI Coptic Texts',
+    );
+@databases = qw(tlg phi ddp ins chr cop misc);
+
+# Here are some handy constants
 use constant MASK     => hex '7f';
 use constant RMASK    => hex '0f';
 use constant LMASK    => hex '70';
@@ -136,6 +144,7 @@ my %defaults = (
     phi_dir => '',
     ddp_dir => '',
     tlg_file_prefix => 'tlg',
+    phi_file_prefix => 'lat',
     ddp_file_prefix => 'ddp',
     ins_file_prefix => 'ins',
     chr_file_prefix => 'chr',
@@ -153,7 +162,9 @@ my %defaults = (
     latex_pointsize => '',
     latex_baseskip => '',
     latex_counter => 1,
-    use_tlgwlinx => 1,
+
+    # Slower, but not rooted at the start of words
+    use_tlgwlinx => 0,
     
     # Lines per pass in browser
     browse_lines => 29,
@@ -180,7 +191,7 @@ my %defaults = (
     coptic_encoding => 'UTF-8',
     
     cgi_input_format => 'Perseus', # default: Perseus
-    cgi_default_corpus => 'TLG Word List', 
+    cgi_default_corpus => 'TLG Texts', 
     cgi_default_encoding => 'UTF-8', 
     cgi_buttons => 'Go to Context', 
     default_criteria => 'All',
@@ -194,6 +205,8 @@ my %defaults = (
     quiet => 0,
 
     line_print_modulus => 5,
+
+    user => 'default'
     
     );
 
@@ -205,15 +218,16 @@ sub validate
     die ("Configuration file error in parameter: $key\n");
 };
 
+
 # We use the env var if it has been set by the browser, just to make
 # sure.  If not, we try to guess at the prefs dir used by Mozilla, as
 # this will allow the cli tool to pick up the settings made by the gui
 # tool.
-sub get_user_config_dir
+sub get_user_config_dir_base
 {
-    if ($ENV{'Diogenes-Config-Dir'})
+    if ($ENV{'Diogenes_Config_Dir'})
     {
-        return $ENV{'Diogenes-Config-Dir'};
+        return $ENV{'Diogenes_Config_Dir'};
         
     }
     elsif ($OS eq 'unix')
@@ -251,16 +265,28 @@ sub get_user_config_dir
         else { warn "Could not find user profile dir! \n" }
     }
 }
-$user_config_dir = get_user_config_dir();
-# For prefs saved by diogenes.js and Diogenes.cgi
-$auto_config = File::Spec->catfile($user_config_dir, 'diogenes.prefs');
-# For manual editing by the user
-$user_config = File::Spec->catfile($user_config_dir, 'diogenes.config');
 
-sub read_config_file
+$config_dir_base = get_user_config_dir_base();
+
+sub get_user_config_dir
 {
-    my %configuration = ();
+    my $user = shift;
+    my $base = $config_dir_base;
+    if ($user) {
+        return File::Spec->catdir($base, $user);
+    }
+    else {
+        return $base;
+    }
+}
 
+
+
+sub read_config_files
+{
+    my $self = shift;
+    my %configuration = ();
+    
     my @rc_files;
     if ($OS eq 'unix')
     {
@@ -270,8 +296,8 @@ sub read_config_file
     {
         @rc_files = ('/Library/Application Support/Diogenes/diogenes.config');
     }
-    push @rc_files, $auto_config;
-    push @rc_files, $user_config;
+    push @rc_files, $self->{auto_config};
+    push @rc_files, $self->{user_config};
     
     my ($attrib, $val);
     
@@ -297,14 +323,12 @@ sub read_config_file
         }
         close RC or die ("Can't close $rc_file");
     }
-#     print STDERR "££".(join '£', %configuration)."&&\n";
     return %configuration;
 }
 
 
 sub new 
 {
-#     print STDERR "New object\n";
     my $proto = shift;
     my $type = ref($proto) || $proto;
     my $self = {};
@@ -315,12 +339,21 @@ sub new
 
     $args{ validate($_) } = $passed{$_} foreach keys %passed;
 
+    my $user = $args{user} || $defaults{user};
+    my $user_config_dir = get_user_config_dir($user);
+    # For prefs saved by diogenes.js and Diogenes.cgi
+    $self->{auto_config} = File::Spec->catfile($user_config_dir, 'diogenes.prefs');
+    # For manual editing by the user
+    $self->{user_config} = File::Spec->catfile($user_config_dir, 'diogenes.config');
+    # For saving user-defined corpora
+    $self->{filter_file} = File::Spec->catfile($user_config_dir, 'diogenes.corpora');
+
     # We just re-read the config file each time.  It would be nice to
     # do this only when needed, but then you need to arrange for
     # communication between one process doing the writing and another
     # doing the reading.
 
-    %{ $self } = ( %{ $self }, %defaults, read_config_file(), %args );
+    %{ $self } = ( %{ $self }, %defaults, $self->read_config_files, %args );
     
     my @dirs = qw/tlg_dir phi_dir ddp_dir/;
 
@@ -360,7 +393,7 @@ sub new
     elsif ($self->{type} eq 'phi') 
     {
         $self->{cdrom_dir}   = $self->{phi_dir};
-        $self->{file_prefix} = $self->get_phi_file_prefix();
+        $self->{file_prefix} = $self->{phi_file_prefix};
         $self->{input_lang} = 'l' unless $self->{input_lang};
     }
     
@@ -536,7 +569,27 @@ sub check_db
 {
     my $self= shift;
     my $file = File::Spec->catfile($self->{cdrom_dir}, 'authtab.dir');
-    return check_authtab($file);
+    my $check = check_authtab($file);
+
+    # Fix up the case where the "lat" prefix is wrong.
+    if ($check and not -e File::Spec->catfile($self->{cdrom_dir}, $self->{file_prefix}.'0474.txt')) {
+        my $pre;
+        # Look for Cicero
+        foreach (qw(lat LAT phi PHI)) {
+            if (-e File::Spec->catfile($self->{cdrom_dir}, $_.'0474.txt')) {
+                $pre = $_;
+                last;
+            }
+        }
+        if ($pre) {
+            $self->{file_prefix} = $pre;
+        }
+        else {
+            $self->barf('Found authtab, but could not find Cicero!');
+            return undef;
+        }
+    }
+    return $check;
 }
 
 
@@ -619,18 +672,6 @@ sub set_handlers
 #               $self->{latin_handler} = sub { beta_encoding_to_latin1(shift) };
 #       }
 
-}
-
-sub get_phi_file_prefix
-{
-    my $self = shift;
-    # Look for Cicero
-    foreach my $pre (qw(lat LAT phi PHI)) {
-        if (-e File::Spec->catfile($self->{cdrom_dir}, $pre.'0474.txt')) {
-            return $pre;
-        }
-    }
-    $self->barf('Could not find Cicero!');
 }
 
 sub set_perseus_links
@@ -1880,12 +1921,13 @@ sub print_output
 
     if (not defined $self->{interleave_printing})
     {
-        $$ref =~ s#ÿ®ÿ#\n#g;
+        $$ref =~ s#ÿ®ÿ##g;
         print $$ref;
     }
     else
     {
-        print shift @{ $self->{interleave_printing} };
+        my $first_cit = shift @{ $self->{interleave_printing} };
+        print $first_cit if $first_cit;
         while ($$ref =~ m#(.*?)(?:ÿ®ÿ|$)#gs)
         {
             print $1;
@@ -2053,7 +2095,7 @@ sub perseus_handler
         # ÿÿ% gets changed to % and ÿÿ¿ to "
         # URL escape (from CGI.pm)
         $link =~ s/([^a-zA-Z0-9_.-])/'ÿÿ'.uc sprintf("%%%02x",ord($1))/eg; 
-            my $html = qq(<a$target href=ÿÿ¿$self->{perseus_server}cgi-bin/morphindex?lookup=$link&.submit=Analyze+Form&lang=$lang&formentry=1ÿÿ¿>$word</a>); 
+            my $html = qq(<a$target class=perseus href=ÿÿ¿$self->{perseus_server}cgi-bin/morphindex?lookup=$link&.submit=Analyze+Form&lang=$lang&formentry=1ÿÿ¿>$word</a>); 
             $out .= $html.$space;
             ($h_word, $h_space) = ('', '');
 #         print STDERR ">>$html\n";
@@ -2904,7 +2946,7 @@ sub beta_encoding_to_external
     $$ref =~ s#S3#S#g;
     # Force final sigmas. (watch out for things like mes<s>on, which shouldn't
     # become final -- I'm not sure that there's much one can do there)
-    $$ref =~ s#(?<!\*)S(?![123A-Z)(|/\\=+\'])#S2#g; 
+    $$ref =~ s#(?<!\*)S(?![123A-Z~)(|/\\=+\'])#S2#g; 
     
     if (ref $encoding{$encoding}{pre_match} eq 'CODE')
     {   # Code to execute before the match

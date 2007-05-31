@@ -72,7 +72,14 @@ sub seek_passage
     my %target = map {$index-- => $_} @array_target;
     die "Ooops! $index" if $index != -1; 
     $self->{target_levels} = scalar @array_target;
-    $self->{target_citation} = join '.', @array_target;
+    # If we aim for Book 0, Line 90, we really want Book 1, Line 90.
+    my @modified_target = @array_target;
+    for (my $j = 0; $j < $self->{target_levels}; $j++) {
+        if ($modified_target[$j] eq "0") {
+            $modified_target[$j] = 1;
+        }
+    }
+    $self->{target_citation} = join '.', @modified_target;
         
     my $orig_auth_num = $auth;
     my $real_num = $self->parse_idt ($auth);
@@ -137,7 +144,9 @@ sub seek_passage
     $top_level = (keys %{ $level_label{$self->{type}}{$auth}{$work} }) - 1;
     my ($block, $old_block);
 
-    if ($self->{type}.$auth =~ /tlg5034|phi1348|phi0588/m )
+    my $typeauth = $self->{type}.$auth;
+    if ($typeauth eq 'tlg5034' or $typeauth eq 'phi1348' or $typeauth
+        eq 'phi0588')
     {
         print STDERR "Skipping ToC for this wierd author.\n" if $self->{debug};
     }
@@ -248,7 +257,13 @@ sub seek_passage
         die "Error: cannot find the start of the work\n";
     }
     print STDERR "Search begins: $i \n" if $self->{debug};
-    
+
+    # For authors where we have to do a strict match rather than
+    # matching when the citation is higher than the target.  For
+    # Sextus Empiricus AM, books 1-6 come after 7-11.
+    my $weird_auth;
+    $weird_auth = 1 if $typeauth eq 'tlg0544';
+
     # read first bookmark
     $code = ord (substr ($buf, ++$i, 1));
     $self->parse_non_ascii (\$buf, \$i) if ($code >> 7);
@@ -265,7 +280,11 @@ sub seek_passage
       
       # loop until the count at this level reaches the desired number
       next LEV unless $target{$lev};
-      next LEV if (compare($self->{level}{$lev}, $target{$lev}) >= 0);
+      if ($weird_auth) {
+          next LEV if (compare($self->{level}{$lev}, $target{$lev}) == 0);
+      } else {
+          next LEV if (compare($self->{level}{$lev}, $target{$lev}) >= 0);
+      }
       
       # Scan the text
     SCAN:   while ($i <= length $buf) 
@@ -277,7 +296,11 @@ sub seek_passage
         
         # String equivalence
         print STDERR "=> $self->{level}{$lev} :: $target{$lev} \n" if $self->{debug};
-        last SCAN if (compare($self->{level}{$lev}, $target{$lev}) >= 0);
+        if ($weird_auth) {
+            last SCAN if (compare($self->{level}{$lev}, $target{$lev}) == 0);
+        } else {
+            last SCAN if (compare($self->{level}{$lev}, $target{$lev}) >= 0);
+        }
     } 
       print STDERR "Target found: $target{$lev}, level: $self->{level}{$lev}\n" 
           if $self->{debug};
@@ -597,7 +620,17 @@ sub browse_forward
                  before_cit_hit => '<div class="citation" id="hit">',
                  after_cit_hit => '</div>',
                  before_text_hit => '<div class="text" id="hit">',
-               });
+               },
+               ascii =>
+               { before_cit => '',
+                 after_cit => "",
+                 before_text => "\t\t",
+                 before_text_with_cit => "\t\t",
+                 after_text => '',
+                 before_cit_hit => '',
+                 after_cit_hit => '',
+                 before_text_hit => "\t\t",
+               } );
 
 sub interleave_citations
 {
@@ -710,14 +743,12 @@ sub browse_half_backward
     my $lines = $self->{browse_lines};
     $self->{browse_lines} = $lines/2 - 2;
     $self->{browse_backwards_scan} = 1;
-    print STDERR "foo\n";
     my @location = $self->browse_backward(@args);
     my @a = ($location[0], -1, $args[2], $args[3]);
-    print STDERR join '--', @a;
+    print STDERR join '--', @a if $self->{debug};
     $self->{browse_lines} = $lines;
     $self->{browse_backwards_scan} = 0;
-    print STDERR "bar\n";
-
+    $self->{browse_end} = -1;
     return $self->browse_forward(@a);
 }
 
@@ -734,7 +765,7 @@ sub browse_backward
     
     $self->set_perseus_links; 
     
-    if (ref $self eq 'Diogenes_browser')
+    if (ref $self eq 'Diogenes::Browser')
     {   # Get persistent browser info from object
         $ref = $self->{browse_buf_ref};
         $end = $self->{browse_begin};
@@ -777,7 +808,7 @@ sub browse_backward
     }
     else
     { 
-        die "What is ".ref $self."?\n"
+        die "What is ".ref $self."?\n";
     }
     
     $begin = $end;
