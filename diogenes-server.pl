@@ -51,7 +51,7 @@ use Diogenes::Base;
 use Net::Domain qw(hostfqdn);
 use Socket;
 use Getopt::Std;
-use vars qw/$opt_d $opt_p $opt_h $opt_H $opt_l $opt_m $opt_D $opt_b/;
+use vars qw/$opt_d $opt_p $opt_h $opt_H $opt_l $opt_m $opt_D/;
 
 my $config_dir = $Diogenes::Base::config_dir_base;
 unlink $config_dir if (-e $config_dir and not -d $config_dir);
@@ -83,7 +83,6 @@ USAGE: diogenes-server.pl [-dhlb] [-p port] [-H host] [-m netmask]
 
     -d  Turn on debugging output.
 
-    -b  Print message about launching a browser instead of the usual message.
 END
     exit;
 }
@@ -160,17 +159,10 @@ unless ($server)
 }
 
 
-if ($opt_b or $ENV{Diogenes_Launch_Browser})
-{
-    print "\nSetup complete ... Launching browser.\n";
-}
-else
-{
-    print "\nStartup complete. ", 
+print "\nStartup complete. ", 
     "You may now point your browser at ",
     "this address:\n",
-    "http://127.0.0.1:".$PORT."\n";
-}
+    "http://$HOST:$PORT\n";
 
 warn "Local address: $HOST_dot\n" if $DEBUG;
 
@@ -198,43 +190,48 @@ my $pid;
 # }
 #  $SIG{CHLD} = \&reaper;
 
-# Supposed to prevent zombies, but doesn't work on OS X
+# Supposed to prevent zombies
 $SIG{CHLD} = 'IGNORE';
 
-if ($Diogenes::Base::OS eq 'windows' or $PRE_FORK)
+# Occasionally, on Windows, the accept loop falls through -- not sure
+# why.  So we wrap the whole thing in a loop, which ought to be and in
+# most cases is superfluous.
+while (1)
 {
-    $pid = fork;
-    if ($pid)
-    {   # I am the parent -- I do nothing but wait for my child to exit.
-        write_lock();
-        wait;
-    }
-    elsif (not defined $pid)
+    if ($Diogenes::Base::OS eq 'windows' or $PRE_FORK)
     {
-        # Fork failed.
-        print STDERR "Unable to fork!\n";
-    }
-    else
-    {
-        # I am the child -- I wait for a request and process it.
-        while ($client = $server->accept)
+        $pid = fork;
+        if ($pid)
+        {   # I am the parent -- I do nothing but wait for my child to exit.
+            write_lock();
+            wait;
+        }
+        elsif (not defined $pid)
         {
-            # Windows gets confused if we die in midstream w/o chdir'ing # back
-            chdir $root_dir or die "Couldn't chdir to $root_dir: $!\n";
-            handle_request();
+            # Fork failed.
+            print STDERR "Unable to fork!\n";
+        }
+        else
+        {
+            # I am the child -- I wait for a request and process it.
+            while ($client = $server->accept)
+            {
+                # Windows gets confused if we die in midstream w/o chdir'ing # back
+                chdir $root_dir or die "Couldn't chdir to $root_dir: $!\n";
+                handle_request();
+            }
+        }
+    }
+    else 
+    {
+        # A "normal" forking server
+        write_lock();
+        while ($client = $server->accept) 
+        {
+            handle_connection();
         }
     }
 }
-else 
-{
-    # A "normal" forking server
-    write_lock();
-    while ($client = $server->accept) 
-    {
-        handle_connection();
-    }
-}
-
 print "An error has occurred in receiving your web browser's connection.\n";
 exit;
 
