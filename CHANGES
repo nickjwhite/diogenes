@@ -1,6 +1,10 @@
 
 Modification history:
 
+v. 3.0.1 Fixed bug in gui where multiple search did not respect
+   user-defined corpora.  Fixed gui bug when defining a user-defined
+   corpus without first specifying the location of the database.
+
 v. 3.0 Another change of infrastructure.  Abandoned the
    platform-specific binary browsers used in version 2.0 in favor of
    the Mozilla (xulrunner) platform.  First public release of the

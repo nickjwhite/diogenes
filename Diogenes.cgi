@@ -487,6 +487,8 @@ $output{multiple} = sub
     $print_title->('Diogenes Multiple Search Page');
     $print_header->();
     $st{current_page} = 'multiple';
+    # Since this is a multiple-step search, we have to save it.
+    $st{saved_filter} = $st{corpus} if $current_filter;
     
     my $new_pattern = $st{query};
 
@@ -1052,7 +1054,9 @@ $output{filter_splash} = sub
         you can select which matching authors you wish to search in;
         you can then further narrow your selection down to particular
         works.));
-
+    
+    # In case we have prompted the user for db path.
+    my $default_db = $st{database} || 'tlg';
     print
         $f->table({cellspacing=>'10px'},
                   $f->Tr(
@@ -1067,7 +1071,7 @@ $output{filter_splash} = sub
                               -name=>'database',
                               -Values=>\@databases,
                               -labels=>\%database,
-                              -Default=>'tlg'),
+                              -Default=>$default_db),
                           $f->submit( -name =>'simple',
                                       -value=>'Define subset' ))));
 
@@ -1135,6 +1139,8 @@ $output{simple_filter} = sub
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
     $args{user} = $user if $user;
+    $st{short_type} = $st{database};
+    $st{type} = $database{$st{database}};
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;   
 
@@ -1330,6 +1336,8 @@ $output{tlg_filter} = sub
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
     $args{user} = $user if $user;
+    $st{short_type} = 'tlg';
+    $st{type} = 'TLG Texts';
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
@@ -1551,6 +1559,9 @@ $output{list_filter} = sub
 {
     my $filter = $get_filter->($st{filter_choice});
     my $type = $filter->{type};
+    $st{short_type} = $type;
+    $st{type} = $database{$type};
+
     my %args = ( -type => $type );
     $args{user} = $user if $user;
     my $q = new Diogenes::Search( %args );
