@@ -71,6 +71,7 @@ my $version_info =
 if ($xulrunner_ver) {
     $version_info .= "<br>Xulrunner (Mozilla) version: $xulrunner_ver";
 }
+$version_info .= '<br>Operating System: '. $^O;
 
 my $display_splash = sub
 {

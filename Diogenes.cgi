@@ -206,7 +206,7 @@ my $my_footer = sub
         href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/">Diogenes</a>
         (version $version) is <a
         href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/license.php">&copy;</a>
-        1999-2005 P.J. Heslin.  </font>)),
+        1999-2007 P.J. Heslin.  </font>)),
 
         $f->p('<a href="Diogenes.cgi" title="New Diogenes Search">New Search</a>'));
     $essential_footer->();
@@ -865,8 +865,9 @@ $output{browser_works} = sub
             $f->center(
                 $f->p( 'There is only one work by this author:'),
                 $f->p( $works{$work} ),
-                $f->submit( -name => 'work',
+                $f->submit( -name => 'submit',
                             -value => 'Find a passage in this work'));
+        $st{work} = $work;
     }
     else 
     {
