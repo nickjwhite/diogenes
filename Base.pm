@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.0.0";
+$Diogenes::Base::Version =  "3.0.3";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -296,6 +296,11 @@ sub read_config_files
     {
         @rc_files = ('/Library/Application Support/Diogenes/diogenes.config');
     }
+    elsif ($OS eq 'windows')
+    {
+        @rc_files = ('C:\\diogenes.config');
+    }
+
     push @rc_files, $self->{auto_config};
     push @rc_files, $self->{user_config};
     
@@ -572,7 +577,8 @@ sub check_db
     my $check = check_authtab($file);
 
     # Fix up the case where the "lat" prefix is wrong.
-    if ($check and not -e File::Spec->catfile($self->{cdrom_dir}, $self->{file_prefix}.'0474.txt')) {
+    if ($check and $self->{type} eq 'phi'
+        and not -e File::Spec->catfile($self->{cdrom_dir}, $self->{file_prefix}.'0474.txt')) {
         my $pre;
         # Look for Cicero
         foreach (qw(lat LAT phi PHI)) {
@@ -599,7 +605,7 @@ sub check_authtab
     my $file = shift;
     if (-e $file)
     {
-        open AUTHTAB, "<$file" or die ("Can't open (apparently extant) file $file: $!");
+        open AUTHTAB, "<$file" or warn ("Can't open (apparently extant) file $file: $!");
         my $buf;
         read AUTHTAB, $buf, 4;
         $buf =~ s/^\*//;
@@ -1934,13 +1940,15 @@ sub print_output
             my $citation = shift @{ $self->{interleave_printing} };
             print $citation if $citation;
         }
+        my $citation = shift @{ $self->{interleave_printing} };
+        print $citation if $citation;
     }
 }
 
 sub format_output
 {
     my ($self, $ref, $current_lang) = @_;
-    
+    print STDERR "+".$$ref."\n" if $self->{debug};
     my $lang = $self->{current_lang} || 'g';
     $lang = $current_lang if $current_lang;
     $self->{perseus_morph} = 0 if ($encoding{$self->{encoding}}{remap_ascii});
@@ -1950,7 +1958,7 @@ sub format_output
     # (e.g. displaying Ibycus via HTML).  We have to leave something
     # here as a marker or formatting gets confused.  So all formats
     # must remember to remove this string.
-    $$ref =~ s/\`/ÿ®ÿ/g;
+    $$ref =~ s/\`/ÿ¬ÿ/g;
 
     if ($self->{type} eq 'cop' and $lang !~ m/l/)
     {
@@ -2065,7 +2073,7 @@ sub perseus_handler
         $link =~ s/[$punct\d]//g;
             # Perseus morph parser takes Beta, but lowercase <- NOT ANYMORE
             # $link =~ tr/A-Z/a-z/ if $lang eq 'greek'; 
-        # $link =~ s#\\#/#g if $lang eq 'greek';    # normalize barytone
+        $link =~ s#\\#/#g if $lang eq 'greek';    # normalize barytone
         
         # At some point perseus stopped accepting beta code,
         # particularly for psi, chi and xi, but to avoid future
@@ -2073,6 +2081,7 @@ sub perseus_handler
         # Perseus-style.  Note that Perseus still expects r(ei,
         # rather than rhei.
         $link = beta_to_perseus($link) if $lang eq 'greek'; 
+#         print STDERR ">>$link\n";
 
         $link =~ s/~[Hh]it~([^~]*)~/$1/g; 
         # Encode word itself
@@ -2108,8 +2117,9 @@ sub perseus_handler
 sub beta_to_perseus
 {
     my $word = shift;
-    $word =~ tr/A-Z/a-z/; 
-    $word =~ s/[^a-z(]//g;
+    $word =~ tr/A-Z/a-z/;
+# Perseus morph now requires accents
+#     $word =~ s/[^a-z(]//g;
                 $word =~ s/^\(/H/g;
                 $word =~ s/^([aeiouhw]+)\(/H$1/g;
 
@@ -2376,7 +2386,7 @@ sub beta_to_html
     $$ref =~ s/([\$\&\d\s\n~])\"[67]/$1&laquo;/g;
     $$ref =~ s/\"[67]/&raquo;/g;
 
-    $$ref =~ s/([\$\&\d\s\n~])\"\d?/$1&#147;/g;
+    $$ref =~ s/([@ÿ\$\&\d\s\n~])\"\d?/$1&#147;/g;
     $$ref =~ s/\"\d?/&#148;/g;
     $$ref =~ s/\"\d+/&quot;/g;
     
@@ -2483,9 +2493,14 @@ sub beta_to_html
     $$ref =~ s#(</[Hh]\d>)\s*<br>#$1#g;
     $$ref =~ s#<[Hh]\d></[Hh]\d>##g; # void marginal comments
 
-#       These have to stay, since babel, Ibycus uses ` as the grave accent
-
-#     print STDERR ">>$$ref\n";
+#   These have to stay, since babel, Ibycus uses ` as the grave accent
+    if ($self->{encoding} =~ m/Ibycus/i or $self->{encoding} =~ m/Babel/i) {
+        $$ref =~ s/ÿ¬ÿ/\`/g;
+    }
+    else {
+        $$ref =~ s/ÿ¬ÿ//g;
+    }
+#      print STDERR ">>$$ref\n";
     
 
 }
@@ -3147,7 +3162,9 @@ sub barf
         print DUMP ${ $self->{buf} } if defined $self->{buf}; 
         close DUMP or die ("Can't close dump file");
     }
-    croak shift;
+    # We don't die here, in case this is a single-process Windows
+    # server, and we wish to try to recover.
+    carp shift;
 }
 
 1;

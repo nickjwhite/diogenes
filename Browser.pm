@@ -619,7 +619,7 @@ sub browse_forward
                  after_text => '</div>',
                  before_cit_hit => '<div class="citation" id="hit">',
                  after_cit_hit => '</div>',
-                 before_text_hit => '<div class="text" id="hit">',
+                 before_text_hit => '<div class="text-noindent" id="hit">',
                },
                ascii =>
                { before_cit => '',
@@ -646,13 +646,14 @@ sub interleave_citations
         next unless ($code >> 7); # high bit set
         $self->parse_non_ascii ($buf, \$i);
         my $cit = $self->build_citation;
-#         print STDERR "]]$cit\n";
+#          print STDERR "]]$cit\n";
 #         print STDERR "]]".substr ($$buf, $i, 10)."\n";
         push @cites, $cit;
     }
     # Just eliminate the last citation, as it tends to cause problems
     my $last = pop @cites;
     push @cites, $self->build_citation('last');
+    push @cites, $cite_info{$self->{output_format}}{after_text};
 
     return \@cites;
 }
@@ -665,7 +666,7 @@ sub build_citation
     my $format = $self->{output_format};
     if ($pos eq 'last')
     {
-        return $cite_info{$format}{after_text} ;
+        return $cite_info{$format}{after_text} . $cite_info{$format}{before_text}; 
     }
     my $output = '';
     unless ($pos eq 'first')
