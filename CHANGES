@@ -1,6 +1,11 @@
 
 Modification history:
 
+v. 3.0.3 Changed links to Perseus web site to include accents, as
+   reportedly required due to a change in Perseus.
+
+v. 3.0.2 Fixed gui bug in text browser for authors with single works
+
 v. 3.0.1 Fixed bug in gui where multiple search did not respect
    user-defined corpora.  Fixed gui bug when defining a user-defined
    corpus without first specifying the location of the database.
