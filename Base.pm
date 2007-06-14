@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.0.3";
+$Diogenes::Base::Version =  "3.0.4";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -2118,8 +2118,9 @@ sub beta_to_perseus
 {
     my $word = shift;
     $word =~ tr/A-Z/a-z/;
-# Perseus morph now requires accents
-#     $word =~ s/[^a-z(]//g;
+# Perseus morph now requires accents, but doesn't like smooth breathings
+# #     $word =~ s/[^a-z(]//g;
+                $word =~ s/\)//g;
                 $word =~ s/^\(/H/g;
                 $word =~ s/^([aeiouhw]+)\(/H$1/g;
 

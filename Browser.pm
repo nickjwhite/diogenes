@@ -707,7 +707,12 @@ sub maybe_use_cit
     my $higher = $1;
     $line = $2;
     my $output = '';
-    return '' unless $higher and $line;
+    unless ($higher and $line) {
+        # For works with only line numbers and no higher levels
+        $cit =~ m/^(\d+)$/;
+        $line = $1;
+    }
+    return '' unless $line;
     $self->{higher_levels} = $higher unless $self->{higher_levels};
 #     print STDERR "($higher)\n";
     if ($self->{work_num} != $self->{current_work})
@@ -728,7 +733,7 @@ sub maybe_use_cit
     {
          # use this to just print the line number; but it looks a bit odd in prose 
 #         $output .= $line;
-        $output .= $higher . '.' . $line;
+        $output .=  $higher ? $higher . '.' . $line : $line;
     }
 
     $self->{last_line} = $line;
