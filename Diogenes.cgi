@@ -1235,12 +1235,12 @@ my $save_filters_and_go = sub {
 $handler{simple_filter} = sub
 {
     if ($st{simple_filter_option} eq 'save_filter') {
-        print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
+#         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
 
         push @filters, { name => $st{saved_filter_name},
                          authors => $st{author_list},
                          type => $st{database} };
-        print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
+#         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
 
         $save_filters_and_go->();
     }
