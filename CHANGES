@@ -1,6 +1,10 @@
 
 Modification history:
 
+v. 3.0.4 Perseus doesn't like smooth breathings.  Fixed bug in line
+   numbers in text browser for texts with only line numbers and no
+   higher levels.
+
 v. 3.0.3 Changed links to Perseus web site to include accents, as
    reportedly required due to a change in Perseus.
 
