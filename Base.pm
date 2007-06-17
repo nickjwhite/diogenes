@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.0.4";
+$Diogenes::Base::Version =  "3.0.5";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -194,6 +194,7 @@ my %defaults = (
     cgi_default_corpus => 'TLG Texts', 
     cgi_default_encoding => 'UTF-8', 
     cgi_buttons => 'Go to Context', 
+    cgi_font => '', 
     default_criteria => 'All',
     cgi_multiple_fields => 6,
     check_mod_perl => 0,

@@ -15,7 +15,14 @@ sub browse_authors
     my ($self, $pattern) = @_;
     $self->{latex_counter} = 0;
     return (1 => 'doccan1', 2 => 'doccan2') if $self->{type} eq 'bib';
-    return %{ $self->match_authtab($pattern) }; 
+    # For authors without numbers
+#     return %{ $self->match_authtab($pattern) };
+    my $rv = $self->match_authtab($pattern);
+    # Add numbers (because some author names are identical)
+    foreach (keys % { $rv }) {
+        $rv->{$_} .= " ($_)";
+    }
+    return %{ $rv };
 }
 
 # Method to print the works belonging to the specified author (number).     #
