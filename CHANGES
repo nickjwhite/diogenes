@@ -1,6 +1,11 @@
 
 Modification history:
 
+v. 3.0.5 Fix bug where selected Greek output encoding is not
+   respected.  Move back to embedding chosen font in HTML, as Mozilla
+   on the Mac has problems respecting the default font.  Add author
+   numbers in the author browser for homonomous authors.
+
 v. 3.0.4 Perseus doesn't like smooth breathings.  Fixed bug in line
    numbers in text browser for texts with only line numbers and no
    higher levels.

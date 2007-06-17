@@ -35,7 +35,7 @@ my %args_init = (-type => 'none');
 $args_init{user} = $user if $user;
 my $init = new Diogenes::Base(%args_init);
 my $filter_file = $init->{filter_file};
-
+my $font = $init->{cgi_font};
 # my @choices = reverse sort keys %choices;
 # If you change the order of these options, you may also have to change onActionChange
 my @choices = (
@@ -65,10 +65,8 @@ for (@choices)
 warn "I don't understand default search type $init->{cgi_default_corpus}\n"
     unless $default_choice;
 
-my $default_encoding = 'UTF-8';
-my %format_choices;
-$format_choices{$_} = $_ for $init->get_encodings;
-$format_choices{$default_encoding} = "Default: $default_encoding";
+# my $default_encoding = 'UTF-8';
+my $default_encoding = $init->{cgi_default_encoding} || 'UTF-8';
 
 my $default_criteria = $init->{default_criteria};
 
@@ -190,6 +188,7 @@ my $previous_page = $st{current_page};
 my $essential_footer = sub
 {
     $set_state->();
+    print '</div>'; # font div
     print $f->end_form,
     $f->end_html;
 };
@@ -268,6 +267,11 @@ function onActionChange() {
         ),
         "\n",
         $f->start_form(-name=>'form', -id=>'form');
+    if ($font) {
+        print qq{<div style="font-family: '$font'">};
+    } else {
+        print '<div>';
+    }
 };
 
 my $print_header = sub 
@@ -786,7 +790,7 @@ $output{browser} = sub
 
     # Because they are going into form elements, and most browsers
     # do not allow HTML there.
-    $strip_html->(\$_) for values %auths;
+     $strip_html->(\$_) for values %auths;
 
     if (keys %auths == 0) 
     {
@@ -820,7 +824,8 @@ $output{browser} = sub
                 $f->p( 'Please select one and click on the button below.'),
                 $f->p(
                     $f->scrolling_list( -name => 'author',
-                                        -Values => [sort {author_sort($auths{$a}, $auths{$b})} keys %auths],
+#                                         -Values => [sort {author_sort($auths{$a}, $auths{$b})} keys %auths],
+                                        -Values => [sort numerically keys %auths],
                                         -labels => \%auths, -size=>$size)),
                 $f->p(
                     $f->submit(-name=>'submit',

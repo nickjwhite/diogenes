@@ -47,7 +47,7 @@ else
 my $rcfile = $d->{auto_config};
 my $config_file = $d->{user_config};
 
-my @fields = qw(context cgi_default_encoding browse_lines 
+my @fields = qw(context cgi_default_encoding cgi_font browse_lines 
                 cgi_input_format tlg_dir phi_dir ddp_dir
 				 perseus_links perseus_server) ;
 
@@ -98,6 +98,14 @@ my $display_splash = sub
           $q->td($q->popup_menu(-name=>'cgi_default_encoding',
                                 -Values=>[$d->get_encodings],
                                 -Default=>$d->{cgi_default_encoding}))
+         ),
+         $q->Tr
+         (
+          $q->th({align=>'right'}, 'Font for user interface:'),
+          $q->td($q->textfield(-name=>'cgi_font',
+                               -size=>40,
+                               -maxlength=>100,
+                               -Default=>$d->{cgi_font}))
          ),
          $q->Tr
          (
