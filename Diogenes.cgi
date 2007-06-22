@@ -149,7 +149,7 @@ my $get_state = sub
         $r =~ s/XXstate$//;
         next if $p =~ m/XXstate$/ and exists $real_params{$r};
         my @tmp = $f->param($p);
-        if ( scalar @tmp == 1 and not $r =~ /work_list_for|author_list|works_list/)
+        if ( scalar @tmp == 1 and not $r =~ /_list/)
         {
             $st{$r} = $tmp[0];
         }
@@ -214,13 +214,16 @@ my $my_footer = sub
 
 my $print_error_page = sub 
 {
-    print $f->start_html( -title =>'Diogenes Error Page',
-                          -style => {-type=>'text/plain', -src=>'diogenes.css'}),
-    $f->center(
-        $f->p(
-            'Sorry. You seem to have made a request that I do not understand.')),
-    $f->end_html;
-
+    my $msg = shift;
+    $msg ||= 'Sorry. You seem to have made a request that I do not understand.';
+    print $f->header(-type=>"text/html; charset=$charset");
+    print
+        $f->start_html( -title =>'Diogenes Error Page',
+                        -style => {-type=>'text/plain', -src=>'diogenes.css'}),
+        $f->center(
+            $f->p($msg)),
+        $f->end_html;
+     exit;
 };
 
 my $print_title = sub 
@@ -417,7 +420,8 @@ my $get_filter = sub
     for (@filters) {
         return $_ if $_->{name} eq $name;
     }
-    die ("Filter for $name not found!");
+#     die ("Filter for $name not found!");
+    return undef;
 };
 
 ### Splash handler
@@ -1051,7 +1055,7 @@ $output{filter_splash} = sub
         $f->p('Choose one of the options below.');
 
 
-    print $f->h2('Define a new, simple corpus'),
+    print $f->h2('Define a simple new corpus'),
 
         $f->p(q(Enter a name or names or parts thereof, in order to
         narrow down the scope of your search within a particular
@@ -1061,8 +1065,16 @@ $output{filter_splash} = sub
         you can then further narrow your selection down to particular
         works.));
     
-    # In case we have prompted the user for db path.
-    my $default_db = $st{database} || 'tlg';
+    my $default_db;
+    if ($st{database}) {
+        # In case we have prompted the user for db path.
+        $default_db = $st{database};
+    } elsif ($st{corpus} and exists $choices{$st{corpus}}) {
+        $default_db = $choices{$st{corpus}};
+    } else {
+        $default_db = 'tlg';
+    }
+    
     print
         $f->table({cellspacing=>'10px'},
                   $f->Tr(
@@ -1100,18 +1112,30 @@ $output{filter_splash} = sub
     
     
     print
-        $f->h2('List or delete an existing corpus'),
+        $f->h2('Manipulate an existing corpus'),
 
         $f->p('Select a previously defined corpus from the list below
-        and click on the appropriate button to list its contents. On the subsequent page you can
-        choose to delete it.'),
+        and choose an action.  To delete items from a corpus, choose
+        "List contents".  To add items, simply define a new corpus
+        with the same name as an existing corpus and the new authors
+        will be merged into the old (but for any given author, a new
+        set of works will replace the old).  '),
 
-        $f->popup_menu( -name => 'filter_choice',
-                        -values => \@filter_names,
-                        $dis),
+        $f->p( 'Corpus to operate on: ',
+               $f->popup_menu( -name => 'filter_choice',
+                               -values => \@filter_names,
+                               $dis)),
         $f->p(
             $f->submit (-name=>'list',
-                        -value=>'List contents of selected corpus'));
+                        -value=>'List contents'),
+            $f->br,
+            $f->submit (-name=>'delete',
+                        -value=>'Delete entire corpus'),
+            $f->br,
+            $f->submit (-name=>'duplicate',
+                        -value=>'Duplicate corpus under new name: '),
+            $f->textfield( -name => 'duplicate_name',
+                           -size => 60, -default => ''));
 
 
     $my_footer->();
@@ -1130,6 +1154,14 @@ $handler{filter_splash} = sub
     elsif ($st{list})
     {
         $output{list_filter}->();
+    }
+    elsif ($st{delete})
+    {
+        $output{delete_filter}->();
+    }
+    elsif ($st{duplicate})
+    {
+        $output{duplicate_filter}->();
     }
     else {
         $print_title->('Error');
@@ -1237,14 +1269,50 @@ my $save_filters_and_go = sub {
     $go_splash->();
 };
 
+my $merge_filter = sub {
+    my $new = shift;
+    my $name = $new->{name};
+    $print_error_page->('You must give your corpus a name!') unless ($name and $name =~ m/\S/);
+    my $merge;
+    for my $f (@filters) {
+        if ($f->{name} eq $name) {
+            unless ($f->{type} eq $new->{type}) {
+                $print_error_page->("Cannot merge two corpora of different type!\n");
+            }
+            $merge = 1;
+            my %tmp;
+            if (ref($f->{authors}) eq 'ARRAY' and ref($new->{authors}) eq 'ARRAY') {
+                $f->{authors} = [@{ $f->{authors} }, @{ $new->{authors} }];
+            }
+            elsif (ref($f->{authors}) eq 'HASH' and ref($new->{authors}) eq 'ARRAY') {
+                $tmp{$_}++ for @{ $new->{authors} };
+                $f->{authors} = { %{ $f->{authors} }, %tmp };
+            }
+            elsif (ref($f->{authors}) eq 'ARRAY' and ref($new->{authors}) eq 'HASH') {
+                $tmp{$_}++ for @{ $f->{authors} };
+                $f->{authors} = { %tmp, %{ $new->{authors} } };
+            }
+            elsif (ref($f->{authors}) eq 'HASH' and ref($new->{authors}) eq 'HASH') {
+                $f->{authors} = { %{ $f->{authors} }, %{ $new->{authors} } };
+            }
+            else {
+                die "Unreachable code!";
+            }
+        }
+    }
+    unless ($merge) {
+        push @filters, $new;
+    }
+};
+
 $handler{simple_filter} = sub
 {
     if ($st{simple_filter_option} eq 'save_filter') {
 #         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
 
-        push @filters, { name => $st{saved_filter_name},
-                         authors => $st{author_list},
-                         type => $st{database} };
+        $merge_filter->({ name => $st{saved_filter_name},
+                          authors => $st{author_list},
+                          type => $st{database} });
 #         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
 
         $save_filters_and_go->();
@@ -1328,9 +1396,9 @@ $handler{select_works} = sub
         $auth_num =~ s/^work_list_for_//;
         $work_nums->{$auth_num} = $st{$k};
     }
-    push @filters, { name => $st{saved_filter_name},
-                     authors => $work_nums,
-                     type => $st{database} };
+    $merge_filter->({ name => $st{saved_filter_name},
+                      authors => $work_nums,
+                      type => $st{database} });
     
     $save_filters_and_go->();
 };
@@ -1555,9 +1623,9 @@ $handler{tlg_filter_output} = sub
     {
         $work_nums->{$k} = [keys %{ $q->{req_auth_wk}{$k} }];
     }
-    push @filters, { name => $st{saved_filter_name},
-                     authors => $work_nums,
-                     type => $st{database}};
+    $merge_filter->({ name => $st{saved_filter_name},
+                      authors => $work_nums,
+                      type => $st{database} });
     $save_filters_and_go->();
 };
 
@@ -1579,22 +1647,28 @@ $output{list_filter} = sub
     
     my $work_nums = $filter->{authors};
     my @texts = $q->select_authors( -author_nums => $work_nums);
+    my %labels;
+    $labels{$_} = $texts[$_] for 0 .. $#texts;
+        
 
     print
         $f->h2('User-defined corpus listing'),
-        $f->p(qq(Here is the subset of the $type database named $st{filter_choice}:)),
-              (join '<br />', @texts);
+        $f->p(qq(Here is the subset of the $type database named $st{filter_choice}:));
+#               (join '<br />', @texts);
+    print $f->checkbox_group( -name => "filter_list",
+                              -Values => [0 .. $#texts],
+                              -labels => \%labels,
+                              -columns=>'1' );
 
     print
-        $f->p('&nbsp;'),
         $f->hr,
-        $f->submit(-name=>'delete',
-                   -value=>'Click here to delete this corpus');
+        $f->submit(-name=>'delete_items',
+                   -value=>'Click here to delete selected items');
     $my_footer->();
 };
 
-my $delete_filter =sub {
-    my $name = shift;
+$output{delete_filter} = sub {
+    my $name = $st{filter_choice};
     my $i = 0;
     for (@filters) {
         if ($_->{name} eq $name) {
@@ -1609,8 +1683,8 @@ my $delete_filter =sub {
 
 $handler{list_filter} = sub
 {
-    if ($st{delete}) {
-        $delete_filter->($st{filter_choice});
+    if ($st{delete_items}) {
+        $output{delete_filter_items}->();
     }
     else {
         $print_title->('Error');
@@ -1618,6 +1692,58 @@ $handler{list_filter} = sub
     }
 };
 
+sub deep_copy {
+    my $this = shift;
+    if (not ref $this) {
+      $this;
+    } elsif (ref $this eq "ARRAY") {
+        [map deep_copy($_), @$this];
+    } elsif (ref $this eq "HASH") {
+        +{map { $_ => deep_copy($this->{$_}) } keys %$this};
+    } else { die "what type is $_?" }
+}
+
+
+$output{duplicate_filter} = sub {
+    return if $get_filter->($st{duplicate_name});
+    my $old_filter = $get_filter->($st{filter_choice});
+    my $new_filter = deep_copy($old_filter);
+    $new_filter->{name} = $st{duplicate_name};
+    push @filters, $new_filter;
+    $save_filters_and_go->();
+};
+
+
+
+$output{delete_filter_items} = sub {
+    my $filter = $get_filter->($st{filter_choice});
+    my $type = $filter->{type};
+    my %args = ( -type => $type );
+    $args{user} = $user if $user;
+    my $q = new Diogenes::Search( %args );
+    $database_error->($q) if not $q->check_db;
+    my $work_nums = $filter->{authors};
+    my @orig_texts = $q->select_authors( -author_nums => $work_nums);
+    # Naughty -- we ought to expose this in the API
+    my @list = @{ $q->{prev_list} };
+    splice @list, $_, 1 for @{ $st{filter_list} };
+    my %new_work_nums;
+    for my $item (@list) {
+        if (ref $item) {
+            my ($auth, $wk) = @{ $item };
+            next if $new_work_nums{$auth} and $new_work_nums{$auth} eq 'all';
+            my @w = exists $new_work_nums{$auth} ? @{ $new_work_nums{$auth} } : ();
+            push @w, $wk;
+            $new_work_nums{$auth} = \@w;
+        }
+        else {
+            $new_work_nums{$item} = 'all';
+        }
+    }
+    $filter->{authors} = \%new_work_nums;
+    $save_filters_and_go->();
+
+};
 
 
 sub numerically { $a <=> $b; }
