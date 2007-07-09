@@ -1,6 +1,12 @@
 
 Modification history:
 
+v. 3.0.8 Reverted to showing authors alphabetically in author browser,
+   fixed line-number indentation in command-line tool.
+
+v. 3.0.7 Added ActiveState Perl to Windows app to remove that as an
+   installation prerequisite.
+
 v. 3.0.6 Enhanced corpus management to include duplicating, merging
    and deleting selected items.
 

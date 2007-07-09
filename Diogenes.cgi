@@ -828,8 +828,8 @@ $output{browser} = sub
                 $f->p( 'Please select one and click on the button below.'),
                 $f->p(
                     $f->scrolling_list( -name => 'author',
-#                                         -Values => [sort {author_sort($auths{$a}, $auths{$b})} keys %auths],
-                                        -Values => [sort numerically keys %auths],
+                                        -Values => [sort {author_sort($auths{$a}, $auths{$b})} keys %auths],
+#                                         -Values => [sort numerically keys %auths],
                                         -labels => \%auths, -size=>$size)),
                 $f->p(
                     $f->submit(-name=>'submit',
@@ -1115,11 +1115,7 @@ $output{filter_splash} = sub
         $f->h2('Manipulate an existing corpus'),
 
         $f->p('Select a previously defined corpus from the list below
-        and choose an action.  To delete items from a corpus, choose
-        "List contents".  To add items, simply define a new corpus
-        with the same name as an existing corpus and the new authors
-        will be merged into the old (but for any given author, a new
-        set of works will replace the old).  '),
+        and choose an action.  '),
 
         $f->p( 'Corpus to operate on: ',
                $f->popup_menu( -name => 'filter_choice',
@@ -1135,8 +1131,19 @@ $output{filter_splash} = sub
             $f->submit (-name=>'duplicate',
                         -value=>'Duplicate corpus under new name: '),
             $f->textfield( -name => 'duplicate_name',
-                           -size => 60, -default => ''));
+                           -size => 60, -default => '')),
 
+        $f->p('<strong>N.B.</strong> To delete items from a corpus,
+        choose "List contents".  To add authors to an existing corpus,
+        find the new authors using either the simple corpus or complex
+        subset options above, and then use the name of the existing
+        corpus you want to add them to.  The new authors will be
+        merged into the old, but for any given author a new set of
+        works will replace the old.  If you want to preserve the
+        existing corpus and create a new one based on it, used the
+        "Duplicate corpus" function first using a new name, and then
+        add new authors to that. ');
+    
 
     $my_footer->();
 };
@@ -1260,7 +1267,7 @@ my $save_filters = sub {
 };
 
 my $go_splash = sub {
-    $output{splash}->();
+    $output{filter_splash}->();
 };
 
 my $save_filters_and_go = sub {
