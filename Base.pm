@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.0.6";
+$Diogenes::Base::Version =  "3.0.8";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -1997,6 +1997,7 @@ sub format_output
             $self->beta_to_html ($ref);
         }
     }
+    $$ref =~ s/ÿ¬ÿ//g;
 }
 
 sub greek_with_latin
@@ -2498,9 +2499,6 @@ sub beta_to_html
 #   These have to stay, since babel, Ibycus uses ` as the grave accent
     if ($self->{encoding} =~ m/Ibycus/i or $self->{encoding} =~ m/Babel/i) {
         $$ref =~ s/ÿ¬ÿ/\`/g;
-    }
-    else {
-        $$ref =~ s/ÿ¬ÿ//g;
     }
 #      print STDERR ">>$$ref\n";
     

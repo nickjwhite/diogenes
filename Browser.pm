@@ -618,6 +618,8 @@ sub browse_forward
     return ($self->{browse_begin}, $end + $offset);  # $abs_begin and $abs_end
 }
 
+my $fill_spaces = 14;
+
 %cite_info = ( html =>
                { before_cit => '<div class="citation">',
                  after_cit => '</div>',
@@ -630,13 +632,13 @@ sub browse_forward
                },
                ascii =>
                { before_cit => '',
-                 after_cit => "",
-                 before_text => "\t\t",
-                 before_text_with_cit => "\t\t",
+                 after_cit => "FILL",
+                 before_text => ' ' x $fill_spaces,
+                 before_text_with_cit => "",
                  after_text => '',
                  before_cit_hit => '',
                  after_cit_hit => '',
-                 before_text_hit => "\t\t",
+                 before_text_hit => "",
                } );
 
 sub interleave_citations
@@ -691,11 +693,19 @@ sub build_citation
     }
     elsif ($cit)
     {
-        $output .=
-            $cite_info{$format}{before_cit} .
-            $cit .
-            $cite_info{$format}{after_cit}.
-            $cite_info{$format}{before_text_with_cit}; 
+        if ($cite_info{$format}{after_cit} eq 'FILL') {
+            $output .=
+                $cite_info{$format}{before_cit} .
+                $cit .
+                ' ' x ($fill_spaces - length $cit).
+                $cite_info{$format}{before_text_with_cit}; 
+        } else {
+            $output .=
+                $cite_info{$format}{before_cit} .
+                $cit .
+                $cite_info{$format}{after_cit}.
+                $cite_info{$format}{before_text_with_cit};
+        }
     }
     else
     {
