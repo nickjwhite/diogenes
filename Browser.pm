@@ -637,7 +637,7 @@ my $fill_spaces = 14;
                  before_text_with_cit => "",
                  after_text => '',
                  before_cit_hit => '',
-                 after_cit_hit => '',
+                 after_cit_hit => 'FILL',
                  before_text_hit => "",
                } );
 
@@ -685,11 +685,19 @@ sub build_citation
     }
     if ($cit and $self->{target_citation} and $cit eq $self->{target_citation})
     {
-        $output .=
-            $cite_info{$format}{before_cit_hit} .
-            $cit .
-            $cite_info{$format}{after_cit_hit}.
-            $cite_info{$format}{before_text_hit}; 
+        if ($cite_info{$format}{after_cit_hit} eq 'FILL') {
+            $output .=
+                $cite_info{$format}{before_cit_hit} .
+                $cit .
+                ' ' x ($fill_spaces - length $cit).
+                $cite_info{$format}{before_text_hit};
+        } else {
+            $output .=
+                $cite_info{$format}{before_cit_hit} .
+                $cit .
+                $cite_info{$format}{after_cit_hit}.
+                $cite_info{$format}{before_text_hit};
+        }
     }
     elsif ($cit)
     {
