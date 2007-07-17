@@ -507,7 +507,7 @@ $output{multiple} = sub
          within a particular scope');
 
     my @patterns = ();
-    push @patterns, $st{query_list} if $st{query_list};
+    @patterns = @{ $st{query_list} } if $st{query_list};
     push @patterns, $new_pattern if $new_pattern;
     $st{query_list} = \@patterns;
     
