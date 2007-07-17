@@ -168,6 +168,8 @@ function onLoad() {
     browser.addEventListener("load", browserOnLoad, true);
     browser.addEventListener("submit", browserOnSubmit, true);
 
+    getZoomFactor();
+
     // When the first window is loading, we clean up any server
     // processes that are hanging around from a previous run that ended
     // uncleanly.  We then start the server and wait for a lock file to
@@ -233,6 +235,12 @@ function getEnv (envVar) {
     return environment.get(envVar);
 }
 
+function getDebug() {
+    if (getEnv("DIOGENESDEBUG") != "") {
+        return true;
+    }
+}
+
 function getPathSep() {
     var sep;
     var OS = getOS();
@@ -266,9 +274,13 @@ function getDirSep() {
 function getPerl() {
     var OS = getOS();
     if (OS == 'win') {
-        // This is provided with ActivePerl and runs without a console window
-        return 'wperl.exe';
-//         return 'perl.exe';
+        if (getDebug()) {
+            return 'perl.exe';
+        }
+        else {
+            // This is provided with ActivePerl and runs without a console window
+            return 'wperl.exe';
+        }
     } else {
         return 'perl';
     }
@@ -289,20 +301,32 @@ const FileFactory = new Components.Constructor("@mozilla.org/file/local;1","nsIL
 
 function getPerlExecutable() {
     var perlpath;
-    var path = getEnv('PATH');
-    var dirs = path.split(getPathSep());
-    for (var i in dirs) {
-        // nsIFile.append method doesn't seem to work here
-        var dir = dirs[i];
-        var file = new FileFactory(myAppendPath(dir, getPerl()));
-        // strangely, isExecutable fails for the Mac perl in /usr/bin.
-        if (file.exists() && file.isFile()) {
-            perlpath = file.path;
-            break;
+    var OS = getOS();
+    if (OS == 'win') {
+        var self_dir = Components.classes["@mozilla.org/file/directory_service;1"]
+            .getService(Components.interfaces.nsIProperties)
+            .get("resource:app", Components.interfaces.nsIFile);
+        return myAppendPath(myAppendPath(myAppendPath(self_dir.path, "activeperl"), "bin"), getPerl());
+    } else {
+        var path = getEnv('PATH');
+        var dirs = path.split(getPathSep());
+        for (var i in dirs) {
+            // nsIFile.append method doesn't seem to work here
+            var dir = dirs[i];
+            var file = new FileFactory(myAppendPath(dir, getPerl()));
+            // strangely, isExecutable fails for the Mac perl in /usr/bin.
+            if (file.exists() && file.isFile()) {
+                perlpath = file.path;
+                break;
+            }
         }
-    }
-    if (! perlpath) {
-        warnUser('Perl executable not found in path.');
+        if (! perlpath) {
+            warnUser('Perl executable not found in path.  Aborting.');
+//             if (getOS() == 'win') {
+//                 warnUser('NB. You must download and install ActiveState Perl before you can use Diogenes, and when doing so you must select the option to add Perl to your PATH.  See the Diogenes web site for links.');
+//             }
+            quitDiogenes();
+        }
     }
     return perlpath;
 }
@@ -577,16 +601,35 @@ function printDoc () {
 
 var zoomFactor = 1.0;
 
-function enlargeText () {
-    zoomFactor = zoomFactor + 0.25;
+function getZoomFactor () {
+    var browser = document.getElementById("browser");
+    var prefs = Components.classes["@mozilla.org/preferences-service;1"].
+        getService(Components.interfaces.nsIPrefBranch);
+    try {
+        zoomFactor = prefs.getCharPref("diogenes.last.zoomFactor");
+        browser.markupDocumentViewer.textZoom = zoomFactor;
+    } catch (e) { return; }
+}
+
+function saveZoomFactor () {
     var browser = document.getElementById("browser");
     browser.markupDocumentViewer.textZoom = zoomFactor;
+    var prefs = Components.classes["@mozilla.org/preferences-service;1"].
+        getService(Components.interfaces.nsIPrefBranch);
+    try {
+        prefs.setCharPref("diogenes.last.zoomFactor", zoomFactor);
+    } catch (e) { alert (e); }
+
+}
+
+function enlargeText () {
+    zoomFactor = zoomFactor + 0.25;
+    saveZoomFactor();
 }
 
 function reduceText () {
     zoomFactor = zoomFactor - 0.25;
-    var browser = document.getElementById("browser");
-    browser.markupDocumentViewer.textZoom = zoomFactor;
+    saveZoomFactor();
 }
 
 function browserOnLoad () {
@@ -708,7 +751,11 @@ function getDatabaseDirectory (type, longType, prompt) {
     if (rv != Components.interfaces.nsIFilePicker.returnCancel) {
         var authtab = new FileFactory(myAppendPath(fp.file.path, "authtab.dir"));
         if (authtab.exists() && authtab.isFile() && authtab.isReadable()) {
-            saveDatabasePath(type, fp.file.path);
+            saveDiogenesSetting(type+'_dir', fp.file.path);
+            // Resubmit (error page helpfully pretends to be the splash page)
+            var browser = document.getElementById("browser");
+            var form = browser.contentWindow.document.getElementById("form");
+            form.submit();
         } else {
             var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                 .getService(Components.interfaces.nsIPromptService);
@@ -722,8 +769,7 @@ function getDatabaseDirectory (type, longType, prompt) {
 }
 
 
-function saveDatabasePath (type, path) {
-    var type_key = type + '_dir';
+function saveDiogenesSetting (key, value) {
     var file = new FileFactory(getSettingsFile());
     var oldLine = false, output = '';
     if (file.exists() && file.isFile() && file.isReadable) {
@@ -735,10 +781,10 @@ function saveDatabasePath (type, path) {
         var line = {}, hasmore = true;
         while (hasmore) {
             hasmore = istream.readLine(line);
-            var re = new RegExp('^' + type_key);
+            var re = new RegExp('^' + key);
             if (re.test(line.value)) {
-                output += type_key + ' "' + path + '"' + "\n"; 
-                hasline = true;
+                output += key + ' "' + value + '"' + "\n"; 
+                oldline = true;
             }
             else {
                 output += line.value + "\n"; 
@@ -747,7 +793,7 @@ function saveDatabasePath (type, path) {
         istream.close();
     }
     if (!oldLine) {
-        output += type_key + ' "' + path + '"' + "\n";
+        output += key + ' "' + value + '"' + "\n";
     }
     try {
         var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
@@ -757,12 +803,6 @@ function saveDatabasePath (type, path) {
         foStream.close();
     }
     catch (e) {alert("Error: could not write to settings file ("+file.path+").  "+e)}
-
-    
-    // Resubmit (error page helpfully pretends to be the splash page)
-    var browser = document.getElementById("browser");
-    var form = browser.contentWindow.document.getElementById("form");
-    form.submit();
 
 }
 
@@ -777,11 +817,14 @@ function selectFont () {
     var ok = prompts.select(window, "Font Chooser", "Choose the font to use for Diogenes:", 
                         allFonts.length, allFonts, selected);
     if (ok) {
-        var prefs = Components.classes["@mozilla.org/preferences-service;1"].
-            getService(Components.interfaces.nsIPrefBranch);
-        try {
-            prefs.setCharPref("font.name.serif.x-western",allFonts[selected.value]);
-        } catch (e) { alert (e); }
+//         Macs didn't respect the default font, so we set it in the HTML instead
+//         var prefs = Components.classes["@mozilla.org/preferences-service;1"].
+//             getService(Components.interfaces.nsIPrefBranch);
+//         try {
+//             prefs.setCharPref("font.name.serif.x-western",allFonts[selected.value]);
+//         } catch (e) { alert (e); }
+        saveDiogenesSetting("cgi_font", allFonts[selected.value]);
+        alert("Font will be changed on next page load.");
     }
 }
 
@@ -795,7 +838,7 @@ function showAbout () {
         var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
             .getService(Components.interfaces.nsIPromptService);
         var ok = prompts.alert(window, "About Diogenes", 
-                               "Diogenes is an application for searching and browsing databases in the fomat used by the Packard Humanities Institute and the Thesaurus Linguae Gracae. Diogenes is free software by P. J.Heslin.");
+                               "Diogenes is an application for searching and browsing databases in the fomat used by the Packard Humanities Institute and the Thesaurus Linguae Gracae. Diogenes is free software by Peter Heslin.");
 
 }
 
@@ -822,14 +865,14 @@ function quitHiddenDiogenes () {
 var shortcuts = new Object;
 shortcuts['l'] = 'PHI Latin'; 
 shortcuts['g'] = 'TLG Texts'; 
-shortcuts['w'] = 'word_list'; 
+shortcuts['o'] = 'word_list'; 
 shortcuts['d'] = 'Duke'; 
-shortcuts['o'] = 'Coptic'; 
+shortcuts['e'] = 'Coptic'; 
 shortcuts['.'] = 'search'; 
 shortcuts['u'] = 'multiple'; 
 shortcuts['m'] = 'morphological'; 
 shortcuts['b'] = 'browse'; 
-shortcuts['c'] = 'filters'; 
+shortcuts['r'] = 'filters'; 
 
 function doShortcut(key) {
     var browser = document.getElementById("browser");
