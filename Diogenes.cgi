@@ -312,10 +312,20 @@ my $strip_html = sub
 my $database_error = sub
 {
     my $self = shift;
+    my $disk_type = $st{short_type};
+    if ($disk_type eq 'cop' or $disk_type eq 'ins' or $disk_type eq 'chr') {
+        $disk_type = 'ddp';
+    }
+    elsif ($disk_type eq 'misc') {
+        $disk_type = 'phi';
+    }
+    elsif ($disk_type eq 'bib') {
+        $disk_type = 'tlg';
+    }
     $print_title->('Database Error');
     print qq(<center>
               <div style="display: block; width: 50%; text-align: center;">
-                  <h2 id="database-error" type="$st{short_type}"
+                  <h2 id="database-error" type="$disk_type"
                       long-type="$st{type}">Error: Database not found</h2>
          </div>
          </center>

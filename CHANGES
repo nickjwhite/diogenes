@@ -1,6 +1,9 @@
 
 Modification history:
 
+v. 3.0.10 Fixed bug whereby entering a path for the minor corpora
+   would result in an illegal config file entry to be written.
+
 v. 3.0.9 Fixed bug in entering multiple patterns in the web
    interface.  Fixed a bug in browsing Servius.  Added some debugging
    tools for Windows installs.
