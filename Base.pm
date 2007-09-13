@@ -1,4 +1,4 @@
-################################################################################
+##############################################################################
 # Diogenes is a set of programs including this Perl module which provides      
 # an object-oriented interface to the CD-Rom databases published by the        
 # Thesaurus Linguae Graecae and the Packard Humanities Institute.              
@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.0.10";
+$Diogenes::Base::Version =  "3.1.0";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -37,6 +37,7 @@ use Carp;
 use File::Spec;
 use Data::Dumper;
 use Diogenes::BetaHtml;
+use Diogenes::UnicodeInput;
 
 our(%encoding, %context, @contexts, %choices, %list_labels, %auths,
     %lists, %work, %lang, %author, %last_work, %work_start_block,
@@ -44,10 +45,15 @@ our(%encoding, %context, @contexts, %choices, %list_labels, %auths,
     %coptic_encoding, %database, @databases, @filters);
 
 use Exporter;
-@Diogenes::Base::ISA = qw(Exporter);
+@Diogenes::Base::ISA = qw(Exporter Diogenes::UnicodeInput);
 @Diogenes::Base::EXPORT_OK = qw(%encoding %context @contexts
     %choices %work %author %last_work %work_start_block %level_label
     %top_levels %last_citation %database @databases @filters);
+our($RC_DEBUG, $OS, $config_dir_base);
+$RC_DEBUG = 0;
+
+$OS = ($^O=~/MSWin/i or $^O =~/dos/) ? 'windows' :
+    ($^O=~/darwin/i) ? 'mac' : 'unix';
 
 eval "require 'Diogenes.map';";
 $Diogenes::Base::map_error = $@;
@@ -55,8 +61,8 @@ $Diogenes::Base::map_error = $@;
 $encoding{Beta} = {};
 $encoding{Ibycus} = {};
 $encoding{Transliteration} = {};
-our($RC_DEBUG, $OS, $config_dir_base);
-$RC_DEBUG = 0;
+# Make UTF-8 a platform-dependent alias
+$encoding{'UTF-8'} = ($OS eq 'mac') ? $encoding{'UTF-8-DB'} :  $encoding{'UTF-8-CB'};
 
 # Define some globals
 $context{g} = {
@@ -91,12 +97,9 @@ $context{l} = {
     'TLG Texts' => 'tlg',
     'TLG Bibliography' => 'bib',
     'Duke Documentary Papyri' => 'ddp',
-    'Classical Inscriptions (Latin)' =>'ins',
-    'Classical Inscriptions (Greek)' =>'ins',
-    'Christian Inscriptions (Latin)' => 'chr',
-    'Christian Inscriptions (Greek)' => 'chr',
-    'Miscellaneous PHI Texts (Greek)' => 'misc',
-    'Miscellaneous PHI Texts (Latin)' => 'misc',
+    'Classical Inscriptions' =>'ins',
+    'Christian Inscriptions' => 'chr',
+    'Miscellaneous PHI Texts' => 'misc',
     'PHI Coptic Texts' => 'cop',
     );
 
@@ -108,6 +111,7 @@ $context{l} = {
     'chr' => 'Christian Inscriptions',
     'misc' => 'Miscellaneous PHI Texts',
     'cop' => 'PHI Coptic Texts',
+    'bib' => 'TLG Bibliography',
     );
 @databases = qw(tlg phi ddp ins chr cop misc);
 
@@ -119,9 +123,6 @@ use constant OFF_MASK => hex '1fff';
 $| = 1;
 
 my $authtab = 'authtab.dir';
-
-$OS = ($^O=~/MSWin/i or $^O =~/dos/) ? 'windows' :
-    ($^O=~/darwin/i) ? 'mac' : 'unix';
 
 # Default values for all Diogenes options.
 # Overridden by rc files and constructor args.
@@ -136,7 +137,7 @@ my %defaults = (
     input_beta => 0,
     debug => 0,
     bib_info => 1,
-    max_context => 100,
+    max_context => 20,
     encoding => 'UTF-8',
     
     # System-wide defaults
@@ -178,10 +179,10 @@ my %defaults = (
     
     # The max number of lines for different types of context
     overflow => {
-        'sentence'      => 30,
+        'sentence'      => 10,
         'clause'        => 5,
         'phrase'        => 3,
-        'paragraph'     => 100,
+        'paragraph'     => 20,
     },
     
     # Additional file handle to write raw output to 
@@ -189,8 +190,12 @@ my %defaults = (
     input_source => undef,
     
     coptic_encoding => 'UTF-8',
-    
-    cgi_input_format => 'Perseus', # default: Perseus
+    input_encoding => 'Unicode',
+
+    # These are obsolete -- kept to avoid errors in old config files
+    cgi_input_format => '',
+    perseus_server => '',
+
     cgi_default_corpus => 'TLG Texts', 
     cgi_default_encoding => 'UTF-8', 
     cgi_buttons => 'Go to Context', 
@@ -200,8 +205,7 @@ my %defaults = (
     check_mod_perl => 0,
 
     perseus_links => 1, # links to Perseus morphological parser 
-    perseus_server => 'http://www.perseus.tufts.edu/',
-    perseus_target => '', # won't work with Mac Diogenes-browser
+    perseus_show => "split",
     
     quiet => 0,
 
@@ -374,8 +378,9 @@ sub new
     # Clone values that are references, so we don't clobber what was passed.
     $self->{pattern_list} = [@{$self->{pattern_list}}] if $self->{pattern_list};
     $self->{overflow}     = {%{$self->{overflow}}}     if $self->{overflow};
-    
+
     $self->{type} = 'tlg' if ref $self eq 'Diogenes_indexed';
+    $self->{debug} = 1 if $ENV{Diogenes_Debug};
     
     unless ($self->{type} eq 'none')
     {
@@ -477,16 +482,23 @@ sub new
     }
     $self->{word_pattern} = $self->{pattern};
 
+    if ($self->{input_encoding} eq 'BETA code') {
+        $self->{input_beta} = 1;
+    }
     
-    if (ref $self eq 'Diogenes::Indexed') 
-    {    # Can also pass this as an arg to read_index.
+    # With Unicode we don't have to guess whether the input is Latin or Greek
+    if ($self->{input_encoding} eq 'Unicode') {
+        $self->unicode_make_patterns;
+    }
+    elsif (ref $self eq 'Diogenes::Indexed') 
+    {
         $self->{pattern} = $self->simple_latin_to_beta ($self->{pattern});
     }
     elsif (ref $self eq 'Diogenes::Search') 
     {
         if ($self->{input_lang} =~ /^g/i)   
         { 
-            $self->make_greek_pattern; 
+            $self->make_greek_patterns_translit; 
         }
         elsif ($self->{input_lang} =~ /^l/i) 
         { 
@@ -550,10 +562,8 @@ sub new
     
     $self->set_handlers;    
     
-    $self->{perseus_server} .= '/' unless $self->{perseus_server} =~ m#/$#; 
-    
     print STDERR "Using prefix: $self->{file_prefix}\nUsing pattern(s): ",
-    join "\n", @{ $self->{pattern_list} }, "\n" if $self->{debug};
+    join "\n\n", @{ $self->{pattern_list} }, "\n\n" if $self->{debug};
     print STDERR "Using reject pattern: $self->{reject_pattern}\n" if 
         $self->{debug} and $self->{reject_pattern};
     
@@ -567,6 +577,14 @@ sub new
         }
     }
     return $self;
+}
+
+sub unicode_make_patterns {
+    my $self = shift;
+    $self->{reject_pattern} = $self->Diogenes::UnicodeInput::unicode_pattern($self->{reject_pattern});
+    foreach my $pat (@{ $self->{pattern_list} }) {
+        $pat = $self->Diogenes::UnicodeInput::unicode_pattern($pat);
+    }
 }
 
 # For nicest error handling, run check_db before doing a search to
@@ -666,6 +684,12 @@ sub set_handlers
         die "I don't know what to do with $self->{encoding}!\n";
     }
 
+    $self->{perseus_morph} = 0 ; 
+    $self->{perseus_morph} = 1 if 
+        $self->{perseus_links} and $self->{output_format} =~ m/html/; 
+    $self->{perseus_morph} = 0 if $self->{type} eq 'cop';
+    $self->{perseus_morph} = 0 if $self->{encoding} =~ m/babel/i;
+    
 #       if ($self->{output_format} =~ m/html/i)
 #       {
 #               # Note that null chars need to stay in until the html or whatever is done.
@@ -680,16 +704,6 @@ sub set_handlers
 #       }
 
 }
-
-sub set_perseus_links
-{   # Set up links to Perseus morphological parser 
-    my $self = shift;
-    $self->{perseus_morph} = 0 ; 
-    $self->{perseus_morph} = 1 if 
-        $self->{perseus_links} and $self->{output_format} =~ m/html/; 
-    $self->{perseus_morph} = 0 if $self->{type} eq 'cop';
-    $self->{perseus_morph} = 0 if $self->{encoding} =~ m/babel/i;
-}       
 
 # Restricts the authors and works according to the settings passed,
 # and returns the relevant authors and works.
@@ -927,8 +941,6 @@ sub do_format
     my $self = shift;
     $self->begin_boilerplate;
     
-    $self->set_perseus_links; 
-    
     die "You must specify an input_source for do_format!\n" unless $self->{input_source};
     die "input_source should be a reference!\n" unless ref $self->{input_source};
     my $input = $self->{input_source};
@@ -988,8 +1000,9 @@ sub encode_greek
     $self->{encoding} = $enc;
     $self->set_handlers;
     $self->greek_with_latin($ref);
-    $$ref =~ s/ÿÿ¿/"/g;
-    $$ref =~ s/ÿÿ%/%/g;
+    $$ref =~ s/\x03\x01/"/g;
+    $$ref =~ s/\x03\x02/%/g;
+    $$ref =~ s/\x03\x03/_/g;
     $self->{encoding} = $old_encoding;
     $self->set_handlers;
 }
@@ -1446,7 +1459,7 @@ sub get_ascii_string
     my ($buf, $i) = @_;
     my $char;
     my $string = "";
-    until ((ord ($char = substr ($$buf, ++$$i, 1))) == hex("ff"))
+    until ((ord ($char = substr ($$buf, ++$$i, 1))) == hex("ff") or $$i > length $$buf)
     {
         $string .= chr ((ord $char) & MASK);
     }
@@ -1901,17 +1914,25 @@ sub print_output
 {
     my ($self, $ref) = @_;
     
-    # Replace runs of non-ascii with newlines and add symbol for
-    # the base language of the text at the start of the excerpt and
-    # after every run of non-ascii (only for documentary texts such
-    # as the DDP, which have lots of unterminated Latin embedded in
-    # non-ascii). Add null char afterwards, in case line begins with
+    # Replace runs of non-ascii with newlines and add symbol for the
+    # base language of the text at the start of the excerpt and after
+    # every run of non-ascii (only for documentary texts such as the
+    # DDP, which have lots of unterminated Latin embedded in
+    # non-ascii). Actually, we turn out to need this for PHI Latin
+    # texts, too, since it assumes reversion to Latin at the start of
+    # a line and will not terminate Greek quotes if they end a line
+    # (see Gellius, NA pref.)
+
+    # Add null char afterwards, in case line begins with
     # a number
 
+    # \x01 is to protect `
+    # \x02 is to protect \n
 
     my $lang = $self->{current_lang} || 'g';
-    my $newline = "\nÿ®ÿ"; 
-    $newline = "\n" . (($lang =~ m/g/) ? '$' : '&') . "ÿ®ÿ" if $self->{documentary};
+    my $newline = "\n\x02"; 
+    $newline = "\n" . (($lang =~ m/g/) ? '$' : '&') . "\x02" if
+        $self->{documentary} or $self->{type} eq 'phi';
     $$ref =~ s/[\x00-\x06\x0e-\x1f]+//g ;
     $$ref =~ s/[\x80-\xff]+/$newline/g ;
     
@@ -1919,7 +1940,7 @@ sub print_output
     if (defined $self->{aux_out})
     {
         my $aux = $$ref;
-        $aux =~ s#ÿ®ÿ##g;
+        $aux =~ s#\x02##g;
         print { $self->{aux_out} } ($aux);
     }
 
@@ -1928,14 +1949,14 @@ sub print_output
 
     if (not defined $self->{interleave_printing})
     {
-        $$ref =~ s#ÿ®ÿ##g;
+        $$ref =~ s#\x02##g;
         print $$ref;
     }
     else
     {
         my $first_cit = shift @{ $self->{interleave_printing} };
         print $first_cit if $first_cit;
-        while ($$ref =~ m#(.*?)(?:ÿ®ÿ|$)#gs)
+        while ($$ref =~ m#(.*?)(?:\x02|$)#gs)
         {
             print $1;
             my $citation = shift @{ $self->{interleave_printing} };
@@ -1959,7 +1980,7 @@ sub format_output
     # (e.g. displaying Ibycus via HTML).  We have to leave something
     # here as a marker or formatting gets confused.  So all formats
     # must remember to remove this string.
-    $$ref =~ s/\`/ÿ¬ÿ/g;
+    $$ref =~ s/\`/\x01/g;
 
     if ($self->{type} eq 'cop' and $lang !~ m/l/)
     {
@@ -1997,25 +2018,26 @@ sub format_output
             $self->beta_to_html ($ref);
         }
     }
-    $$ref =~ s/ÿ¬ÿ//g;
+    $$ref =~ s/\x01//g;
 }
 
 sub greek_with_latin
 {
     my ($self, $ref) = @_;
+#     $self->{perseus_morph} = 0;
     $$ref =~ s/([^\&]*)([^\$]*)/
                                         my $gk = $1 || '';
                                         if ($gk)
                                         {
                                                 $self->{perseus_morph} ? 
-                                                  $self->perseus_handler(\$gk, 'greek') 
+                                                  $self->perseus_handler(\$gk, 'grk') 
                                                 : $self->{greek_handler}->(\$gk);
                                         }
                                         my $lt = $2 || '';
                                         if ($lt)
                                         {
                                                 $self->{perseus_morph} ? 
-                                                  $self->perseus_handler(\$lt, 'la') 
+                                                  $self->perseus_handler(\$lt, 'lat') 
                                                 : $self->{latin_handler}->(\$lt);
                                         }
                                         $gk.$lt;
@@ -2030,113 +2052,82 @@ sub latin_with_greek
                                         if ($lt)
                                         {
                                                 $self->{perseus_morph} ? 
-                                                  $self->perseus_handler(\$lt, 'la') 
+                                                  $self->perseus_handler(\$lt, 'lat') 
                                                 : $self->{latin_handler}->(\$lt);
                                         }
                                         my $gk = $2 || '';
                                         if ($gk)
                                         {
                                                 $self->{perseus_morph} ? 
-                                                  $self->perseus_handler(\$gk, 'greek') 
+                                                  $self->perseus_handler(\$gk, 'grk') 
                                                 : $self->{greek_handler}->(\$gk);
                                         }
                                         $lt.$gk;
                                         /gex;
 }
-
+#/
 sub perseus_handler
 {
     my ($self, $ref, $lang) = @_;
-    my $target = $self->{perseus_target} ? " target=ÿÿ¿$self->{perseus_target}ÿÿ¿" : '';
     my $out = '';
     my ($h_word, $h_space) = ('', '');
     # $punct are not part of the word, but should not interfere in morph lookup
-    my ($beta, $punct) = $lang eq 'greek' ? ('A-Z/\\\\|+)(=*~hit\'', '\\[\\]!?.')
-        : ('A-Za-z~\'', '\\[\\]!?.+\\\\/=');  
-    while ($$ref =~ m/([$beta$punct\d]*)([^$beta]*)/g)
+    my ($beta, $punct) = $lang eq 'grk' ? ('-A-Za-z/\\\\|+)(=*~\'', '\\[\\]!?.')
+        : ('-A-Za-z~\'', '\\[\\]!?.,:+\\\\/=');  
+    while ($$ref =~ m/(~~~.+?~~~)|([$beta$punct\d]*)([^$beta]*)/g)
     {
-        my $word  = $1 || '';
-        my $space = $2 || '';
-        my $link = $h_word . $word;
-        $word = $h_word . $h_space . $word;
+        # This is a context/divider
+        $out .= $1, next if $1;
+        my $orig_word  = $2 || '';
+        my $space = $3 || '';
+        my $link = $h_word . $orig_word;
+        my $word = $h_word . $h_space . $orig_word;
 #         print STDERR ">>$word\n";
-        if ($word =~ m#~~~\d+~~~\d+~~~\d+~~~#)
-        {       # This is a context/divider
-            $out .= $word;
-            next;
-        }
-        
-        if ($space =~ m/^-/)
-    {       # Carry over hyphenated parts
-        ($h_word, $h_space) = ($word, $space);
-    }
-    else
-    {
-        $link =~ s/[$punct\d]//g;
-            # Perseus morph parser takes Beta, but lowercase <- NOT ANYMORE
-            # $link =~ tr/A-Z/a-z/ if $lang eq 'greek'; 
-        $link =~ s#\\#/#g if $lang eq 'greek';    # normalize barytone
-        
-        # At some point perseus stopped accepting beta code,
-        # particularly for psi, chi and xi, but to avoid future
-        # problems, we go the whole hog here and translate into
-        # Perseus-style.  Note that Perseus still expects r(ei,
-        # rather than rhei.
-        $link = beta_to_perseus($link) if $lang eq 'greek'; 
-#         print STDERR ">>$link\n";
-
-        $link =~ s/~[Hh]it~([^~]*)~/$1/g; 
-        # Encode word itself
-        if ($lang eq 'greek')
-        {
-            $self->{greek_handler}->(\$word); 
-            $self->{greek_handler}->(\$space); 
-        }
-        elsif ($lang eq 'la')
-        {
-            $self->{latin_handler}->(\$word); 
-            $self->{latin_handler}->(\$space); 
+            
+        if ($word =~ m/-~?$/)
+        {       # Carry over hyphenated parts
+            ($h_word, $h_space) = ($word, $space);
         }
         else
         {
-            die "What language is $lang?\n"
-        }
-        $self->html_escape(\$word);
-        $self->html_escape(\$space);
-        # ÿÿ% gets changed to % and ÿÿ¿ to "
-        # URL escape (from CGI.pm)
-        $link =~ s/([^a-zA-Z0-9_.-])/'ÿÿ'.uc sprintf("%%%02x",ord($1))/eg; 
-            my $html = qq(<a$target class=perseus href=ÿÿ¿$self->{perseus_server}cgi-bin/morphindex?lookup=$link&.submit=Analyze+Form&lang=$lang&formentry=1ÿÿ¿>$word</a>); 
+            $link =~ s/[$punct\d-]//g;
+            # Perseus morph parser takes Beta, but lowercase 
+            $link =~ tr/A-Z/a-z/ if $lang eq 'grk'; 
+            $link =~ s#\\#/#g if $lang eq 'grk';    # normalize barytone
+            
+#          print STDERR ">>$link\n";
+
+            $link =~ s/~[Hh]it~([^~]*)~/$1/g; 
+            # Encode word itself
+            if ($lang eq 'grk')
+            {
+                $self->{greek_handler}->(\$word); 
+                $self->{greek_handler}->(\$space); 
+            }
+            elsif ($lang eq 'lat')
+            {
+                $self->{latin_handler}->(\$word); 
+                $self->{latin_handler}->(\$space); 
+            }
+            else
+            {
+                die "What language is $lang?\n"
+            }
+            $self->html_escape(\$word);
+            $self->html_escape(\$space);
+            # \x03\x02 gets changed to %, \x03\x01 to " and \x03\x03 to _
+            # URL escape (from CGI.pm)
+            $link =~ s/([^a-zA-Z0-9_.%;&?\/\\:=-])/"\x03\x02".sprintf("%02X",ord($1))/eg;
+            my $html = qq(<a onClick=\x03\x01parse\x03\x03$lang('$link')\x03\x01>$word</a>); 
             $out .= $html.$space;
             ($h_word, $h_space) = ('', '');
 #         print STDERR ">>$html\n";
-
+            
         }
     }
     $$ref = $out;
 }
 
-sub beta_to_perseus
-{
-    my $word = shift;
-    $word =~ tr/A-Z/a-z/;
-# Perseus morph now requires accents, but doesn't like smooth breathings
-# #     $word =~ s/[^a-z(]//g;
-                $word =~ s/\)//g;
-                $word =~ s/^\(/H/g;
-                $word =~ s/^([aeiouhw]+)\(/H$1/g;
-
-                $word =~ s/h/e^/g;
-    $word =~ s/q/th/g;
-                $word =~ s/c/X/g;
-    $word =~ s/f/ph/g;
-                $word =~ s/x/ch/g;
-    $word =~ s/y/ps/g;
-                $word =~ s/w/o^/g;
-
-    $word =~ tr/A-Z/a-z/; 
-                return $word;
-        }
 
 ########################################################################
 #                                                                      #
@@ -2149,22 +2140,22 @@ sub beta_to_perseus
 {
     # Unlike many other encodings, Ibycus takes care of medial/final
     # sigmas for us, so we only have to worry about explicit S1, etc.
-    # The byte ÿ (\xff) is never used in UTF-8
+    # \x04 is used to protect dangerous analphabetics
     my ($self, $ref) = @_;
     $$ref =~ tr/A-Z/a-z/;
     $$ref =~ s/s1/s\|/g;
     $$ref =~ s/s2/j/g;
     $$ref =~ s/s3/c+/g;
-    $$ref =~ s/'/ÿ£ÿ/g; # Converted to {'} or '' later
+    $$ref =~ s/'/\x041/g; # Converted to {'} or '' later
     $$ref =~ s/\//'/g;
     $$ref =~ s/\\/`/g;
     $$ref =~ s/\*(\W*)(\w)/$1\u$2/g;
-    $$ref =~ s#;#ÿ§ÿ#g; # Must be converted to "?" *after* ?'s for underdots are done
+    $$ref =~ s#;#\x042#g; # Must be converted to "?" *after* ?'s for underdots are done
     $$ref =~ s#:#;#g;
-    $$ref =~ s#\[1#ÿ«ÿ(ÿ»ÿ#g; # These punctuation marks can cause trouble
-    $$ref =~ s#\]1#ÿ«ÿ)ÿ»ÿ#g;
-    $$ref =~ s#\[(?!\d)#ÿ«ÿ[ÿ»ÿ#g;
-    $$ref =~ s#\](?!\d)#ÿ«ÿ]ÿ»ÿ#g;
+    $$ref =~ s#\[1#\x043(\x044#g; # These punctuation marks can cause trouble
+    $$ref =~ s#\]1#\x043)\x044#g;
+    $$ref =~ s#\[(?!\d)#\x043[\x044#g;
+    $$ref =~ s#\](?!\d)#\x043]\x044#g;
     $$ref =~ s#J#{\\nrm{}h}#g;  # Early orthography in epigraphical corpus
 }
 
@@ -2191,17 +2182,16 @@ sub beta_encoding_to_transliteration
 
 sub beta_encoding_to_latin1
 {
-    # Watch out!  This introduces non-ascii chars.
     my $ref = shift;
     
-    my %acute = (a => 'á', e => 'é', i => 'í', o => 'ó', u => 'ú', 
-                 A => 'Á', E => 'É', I => 'Í', O => 'Ó', U => 'Ú'); 
-    my %grave = (a => 'à', e => 'è', i => 'ì', o => 'ò', u => 'ù', 
-                 A => 'À', E => 'È', I => 'Ì', O => 'Ò', U => 'Ù'); 
-    my %diaer = (a => 'ä', e => 'ë', i => 'ï', o => 'ö', u => 'ü', 
-                 A => 'Ä', E => 'Ë', I => 'Ï', O => 'Ö', U => 'Ü'); 
-    my %circm = (a => 'â', e => 'ê', i => 'î', o => 'ô', u => 'û', 
-                 A => 'Â', E => 'Ê', I => 'Î', O => 'Ô', U => 'Û'); 
+    my %acute = (a => "\xe1", e => "\xe9", i => "\xed", o => "\xf3", u => "\xfa", 
+                 A => "\xc1", E => "\xc9", I => "\xcd", O => "\xd3", U => "\xda"); 
+    my %grave = (a => "\xe0", e => "\xe8", i => "\xec", o => "\xf2", u => "\xf9", 
+                 A => "\xc0", E => "\xc8", I => "\xcc", O => "\xd2", U => "\xd9"); 
+    my %diaer = (a => "\xe4", e => "\xeb", i => "\xef", o => "\xf6", u => "\xfc", 
+                 A => "\xc4", E => "\xcb", I => "\xcf", O => "\xd6", U => "\xdc"); 
+    my %circm = (a => "\xe2", e => "\xea", i => "\xee", o => "\xf4", u => "\xfb", 
+                 A => "\xc2", E => "\xca", I => "\xce", O => "\xd4", U => "\xdb"); 
 
 
     $$ref =~ s/([aeiouAEIOU])\//$acute{$1}||'?'/ge;
@@ -2256,8 +2246,8 @@ sub beta_latin_to_utf
     beta_encoding_to_latin1($ref);
 
     # Then to utf-8 (but we don't use the pragma)
-    $$ref =~ s#(ÿ.ÿ|[\x80-\xff])#my $c = $1;
-                                if ($c =~ m/ÿ.ÿ/)
+    $$ref =~ s#(\x05|[\x80-\xff])#my $c = $1;
+                                if ($c =~ m/\x05/)
                                 {       
                                         $c;
                                 }
@@ -2294,8 +2284,7 @@ sub beta_formatting_to_ascii
     # arrays.
     local $^W = 0;
     
-    my @punct = (qw#¡ ? * / ! | = + % & : . * ¡¡ ¶ ¦ ¦ ¦¦ ' - #, 
-                 '', '', '', '', qw# ~ ¸ ¯ ° ¨ #);  
+    my @punct = (qw# ? * / ! | = + % & : . * #);  
     my @bra   = ('', '(', qw/< { [[ [ [ [ [ [ [ ( -> [ [ [ [[ [[/, '', '', qw/{ { { {/);
     my @ket   = ('', ')', qw/> } ]] ] ] ] ] ] ] ) <- ] ] ] ]] ]]/, '', '', qw/} } } }/);
     
@@ -2320,11 +2309,11 @@ sub beta_formatting_to_ascii
     $$ref =~ s#\[(\d+)#$bra[$1]#g; 
     $$ref =~ s#\](\d+)#$ket[$1]#g;
     
-    $$ref =~ s#ÿ§ÿ#?#g;
-    $$ref =~ s#sÿ£ÿ#$self->{ibycus4} ? 's\'' : 's\'\''#ge; # stop spurious final sigmas
-    $$ref =~ s#ÿ£ÿ#$self->{ibycus4} ? '{\'}' : '\'\''#ge;
-    $$ref =~ s#ÿ«ÿ#{#g;
-    $$ref =~ s#ÿ»ÿ#}#g;
+    $$ref =~ s#\x042#?#g;
+    $$ref =~ s#s\x041#$self->{ibycus4} ? 's\'' : 's\'\''#ge; # stop spurious final sigmas
+    $$ref =~ s#\x041#$self->{ibycus4} ? '{\'}' : '\'\''#ge;
+    $$ref =~ s#\x043#{#g;
+    $$ref =~ s#\x044#}#g;
 
     # Capitalization of vowels with diacrits won't work with many 
     # of the wierder encodings
@@ -2339,7 +2328,6 @@ sub beta_formatting_to_ascii
     {
         $$ref =~ s#~[Hh]it~([^~]+)~#\U$1\Q#g;
     }
-    $$ref =~ s#~~~(\d\d\d\d)~~~(\d\d\d)~~~(\d+)~~~#~~~~~~~~~~~~~~~~~~~~~~~~~~~#g;
 }
 
 
@@ -2389,11 +2377,11 @@ sub beta_to_html
     $$ref =~ s/([\$\&\d\s\n~])\"[67]/$1&laquo;/g;
     $$ref =~ s/\"[67]/&raquo;/g;
 
-    $$ref =~ s/([@ÿ\$\&\d\s\n~])\"\d?/$1&#147;/g;
+    $$ref =~ s/([\x01-\x1f@\$\&\d\s\n~])\"\d?/$1&#147;/g;
     $$ref =~ s/\"\d?/&#148;/g;
     $$ref =~ s/\"\d+/&quot;/g;
     
-    $$ref =~ s#ÿÿ¿#"#g;
+    $$ref =~ s#\x03\x01#"#g;
  
     $$ref =~ s#&lt;\d*#&lt;#g;
     $$ref =~ s#&gt;\d*#&gt;#g;
@@ -2426,8 +2414,8 @@ sub beta_to_html
     # BETA { and } -- title, marginalia, etc.
     # what to do about half-cut off bits? must stop at a blank line.
     #
-    $$ref =~ s#\{1((?:[^\}]|\}[^1]|\})*?)(?:\}1|$)#<b>$1</b><br>#g;
-    $$ref =~ s#((?:[^\}]|\}[^1]|\})*?)\}1#<b>$1</b><br>#g;
+    $$ref =~ s#\{1((?:[^\}]|\}[^1]|\})*?)(?:\}1|$)#<p><b>$1</b></p>#g;
+    $$ref =~ s#((?:[^\}]|\}[^1]|\})*?)\}1#<p><b>$1</b></p>#g;
     # Servius
     $$ref =~ s#\{43((?:[^\}]|\}[^4]|\}4[^3])*?)(?:\}43|$)#<i>$1</i>#g;
     $$ref =~ s#((?:[^\}]|\}[^4]|\}4[^3])*?)\}43#<i>$1</i>#g;
@@ -2439,13 +2427,13 @@ sub beta_to_html
     # record separators
     if ($Diogenes::Base::cgi_flag and $self->{cgi_buttons})
     {
-        $$ref =~ s#~~~(\d\d\d\d)~~~(\d\d\d)~~~(\d+)~~~#<TABLE cellpadding=0 border=0><TR><TD><input type=submit value="$self->{cgi_buttons}" name="GetContext~~~$1~~~$2~~~$3">\n</TD></TR></TABLE><hr>\n#g;
+        $$ref =~ s#~~~(.+?)~~~#<p><a onClick="jumpTo('$1');">$self->{cgi_buttons}</a></p><hr>#g;
         
     }
     else
     {
         $$ref =~ s#~~~~~+#<hr>\n#g;
-        $$ref =~ s#~~~(\d\d\d\d)~~~(\d\d\d)~~~(\d+)~~~#<hr>\n#g;
+        $$ref =~ s#~~~.+?~~~#<hr>\n#g;
         $$ref =~ s#^\$\-?$#\$<p> #g;
     }
     
@@ -2462,18 +2450,19 @@ sub beta_to_html
 
 
     # Perseus links use % for URL-escaped data in the href, so these are 
-    # written as ÿÿ% until now 
+    # written as \x03\x02 until now 
     # % (more punctuation)
     # s/([])%24/&$1tilde;/g;
-    $$ref =~ s#(?<!ÿÿ)%(\d+)#$Diogenes::BetaHtml::percent{$1}#g;
-    $$ref =~ s/(?<!ÿÿ)%/\&\#134\;/g;
-    $$ref =~ s/ÿÿ%/%/g;
+    $$ref =~ s#%(\d+)(?:\x01)?#$Diogenes::BetaHtml::percent{$1}#g;
+    $$ref =~ s/%/\&\#134\;/g;
+    $$ref =~ s/\x03\x02/%/g;
+    $$ref =~ s/\x03\x03/_/g;
     
-    $$ref =~ s#sÿ£ÿ#$self->{ibycus4} ? 's\'' : 's\'\''#ge; # stop spurious final sigmas
-    $$ref =~ s#ÿ£ÿ#$self->{ibycus4} ? '{\'}' : '\'\''#ge;
-    $$ref =~ s#ÿ§ÿ#?#g;
-    $$ref =~ s#ÿ«ÿ#{#g;
-    $$ref =~ s#ÿ»ÿ#}#g;
+    $$ref =~ s#s\x041#$self->{ibycus4} ? 's\'' : 's\'\''#ge; # stop spurious final sigmas
+    $$ref =~ s#\x041#$self->{ibycus4} ? '{\'}' : '\'\''#ge;
+    $$ref =~ s#\x042#?#g;
+    $$ref =~ s#\x043#{#g;
+    $$ref =~ s#\x044#}#g;
     
     # @ (whitespace)
     $$ref =~ s#@(\d+)#'&nbsp;' x $1#ge;
@@ -2491,14 +2480,14 @@ sub beta_to_html
 #     $$ref =~ s#\n\s*\n#\n#g; 
 
     # Try not to have citation info appear next to blank lines
-#     $$ref =~ s#ÿ®ÿ\n#\nÿ®ÿ#g;
+#     $$ref =~ s#\x02\n#\n\x02#g;
     $$ref =~ s#\n#<br>\n#g;
     $$ref =~ s#(</[Hh]\d>)\s*<br>#$1#g;
     $$ref =~ s#<[Hh]\d></[Hh]\d>##g; # void marginal comments
 
 #   These have to stay, since babel, Ibycus uses ` as the grave accent
     if ($self->{encoding} =~ m/Ibycus/i or $self->{encoding} =~ m/Babel/i) {
-        $$ref =~ s/ÿ¬ÿ/\`/g;
+        $$ref =~ s/\x01/\`/g;
     }
 #      print STDERR ">>$$ref\n";
     
@@ -2515,15 +2504,17 @@ sub beta_to_html
 sub beta_to_latex 
 {
     my ($self, $ref) = @_;
+
+    # \x061 protects \ \x062 protects { and \x063 protects } \x064 protects :
     
     # We may get many chunks now
-    $$ref = "xxbeginsamepage\n" . $$ref . "ÿÿðÿÿendsamepage\n" 
+    $$ref = "xxbeginsamepage\n" . $$ref . "\x061endsamepage\n" 
         unless $$ref =~ m/^\&\nIncidence of all words as reported by word list:/;
     
     # record separators
-    $$ref =~ s#~~~~~*\n#ÿÿðÿÿforcepagebreakÿÿÿÿ#g;
-    $$ref =~ s#~~~\d\d\d\d~~~\d\d\d~~~\d+~~~\n#ÿÿðÿÿforcepagebreakÿÿÿÿ#g;
-    $$ref =~ s#\n\&\&\n+#ÿÿðÿÿforcepagebreakÿÿÿÿ\n\n\&#g;
+    $$ref =~ s#~~~~~*\n#\x061forcepagebreak#g;
+    $$ref =~ s#~~~.+?~~~\n#\x061forcepagebreak#g;
+    $$ref =~ s#\n\&\&\n+#\x061forcepagebreak\n\n\&#g;
     
 
     # \familydefault to ibycus means that marginal notes and such are always set
@@ -2546,7 +2537,7 @@ sub beta_to_latex
     local $^W = 0;
 
     my @punct = (
-        '', qw#\textrm{£} $*$ / ! \ensuremath{|} $=$ $+$ \% \& © . $*$#, 
+        '', qw#\textsterling $*$ / ! \ensuremath{|} $=$ $+$ \% \&#, "\x064", qw# . $*$#, 
         '{\ddag}', '{\P}', '\ensuremath{|}','\ensuremath{|}', '\ensuremath{|}', 
         '\'', '-', '', '', '', '', '', '', '', '', '', '', '{})', '{}(', '{}\'', 
         '{}`', '{}\~{}', '{})\'', '{}(\'', '{}(`', '{}(=', '{}\"{~}');  
@@ -2598,46 +2589,46 @@ sub beta_to_latex
     
     # BETA { and } -- title, marginalia, etc.
     
-    #$$ref =~ s#\{1(?!\d)(([\$\&]\d*)?(?:[^\}]|\}[^1]|\})*?)(?:\}1(?!\d)|ÿÿð)#titlebox£$1£$2£#g;
-    $$ref =~ s#\{1(?!\d)([\$\&]\d*)?((?:(?!\}1(?!\d)|ÿÿð).)+)(?:\}1(?!\d))?#titlebox£$1£$2£#gs;
-    #$$ref =~ s#\{2(?!\d)((?:[^\}]|\}[^2]|\})*?)([\&\$]?)(?:\}2(?!\d)|ÿÿð)#\\marginlabel£$1£$2#g;
-    $$ref =~ s#\{2(?!\d)((?:(?!\}2(?!\d)|ÿÿð).)+)(?:\}2(?!\d))?#\\marginlabel£$1£#gs;
-    #$$ref =~ s#\{(\D[^\}]*?)([\$\&]?)\}(?:\s*\n)?#\\marginlabel£$1£$2#g;
-    $$ref =~ s#\{(\D[^\}]*?)([\$\&]?)\}(?:\s*\n)?#\\marginlabel£$1$2£#g;
-    ##$$ref =~ s#\{\d*([^\}]*)(?:\}\d*|ÿÿð)#ital¢$1¢#g;
-    #$$ref =~ s#\{43((?:[^\}]|\}[^4]|\}4[^3])*?)(?:\}43|ÿÿð)#ital¢$1¢#g;
-    #$$ref =~ s#((?:[^\}]|\}[^4]|\}4[^3])*?)\}43#ital¢$1¢#g;
-    $$ref =~ s#\{43((?:(?!\}43|ÿÿð).)+)(?:\}43)?#ital¢$1¢#g;
-    $$ref =~ s#(?:\{43)?((?:(?!\}43|ÿÿð).)+)(?:\}43)#ital¢$1¢#g;
+    #$$ref =~ s#\{1(?!\d)(([\$\&]\d*)?(?:[^\}]|\}[^1]|\})*?)(?:\}1(?!\d)|\x06)#\x061titlebox\x062$1\x063\x062$2\x063#g;
+    $$ref =~ s#\{1(?!\d)([\$\&]\d*)?((?:(?!\}1(?!\d)|\x06).)+)(?:\}1(?!\d))?#\x061titlebox\x062$1\x063\x062$2\x063#gs;
+    #$$ref =~ s#\{2(?!\d)((?:[^\}]|\}[^2]|\})*?)([\&\$]?)(?:\}2(?!\d)|\x06)#\\marginlabel\x062$1\x063$2#g;
+    $$ref =~ s#\{2(?!\d)((?:(?!\}2(?!\d)|\x06).)+)(?:\}2(?!\d))?#\\marginlabel\x062$1\x063#gs;
+    #$$ref =~ s#\{(\D[^\}]*?)([\$\&]?)\}(?:\s*\n)?#\\marginlabel\x062$1\x063$2#g;
+    $$ref =~ s#\{(\D[^\}]*?)([\$\&]?)\}(?:\s*\n)?#\\marginlabel\x062$1$2\x063#g;
+    ##$$ref =~ s#\{\d*([^\}]*)(?:\}\d*|\x06)#\x061ital\x062$1\x063#g;
+    #$$ref =~ s#\{43((?:[^\}]|\}[^4]|\}4[^3])*?)(?:\}43|\x06)#\x061ital\x062$1\x063#g;
+    #$$ref =~ s#((?:[^\}]|\}[^4]|\}4[^3])*?)\}43#\x061ital\x062$1\x063#g;
+    $$ref =~ s#\{43((?:(?!\}43|\x06).)+)(?:\}43)?#\x061ital\x062$1\x063#g;
+    $$ref =~ s#(?:\{43)?((?:(?!\}43|\x06).)+)(?:\}43)#\x061ital\x062$1\x063#g;
     # These {} signs are too multifarious in the papyri to do much with them -- and
     # if we make them italicized, then they often catch and localize wrongly font
     # shifts from rm to gk.
-    $$ref =~ s#\{\d*([^\}]*)(?:\}\d*|ÿÿð)#{$1}#g;
+    $$ref =~ s#\{\d*([^\}]*)(?:\}\d*|\x06)#{$1}#g;
     
     # escape all other { and } so as not to confuse latex
     $$ref =~ s#\{\d*#\\\{#g;
     $$ref =~ s#\}\d*#\\\}#g;
     
-    # now we can safely use { and } -- undo the business with £
+    # now we can safely use { and } -- undo the business with \x06
     # the eval block is for cases where the ~hit~...~ spans two lines.
     # and to make it spit out the record delimiter when it eats that.
-    $$ref =~ s#titlebox£([^£]*)£([^£]*)£#
+    $$ref =~ s#\x061titlebox\x062([^\x06]*)\x063\x062([^\x06]*)\x063#
                         my $rep = "\\titlebox{$1}{$2}";
                         $rep =~ s/~hit~([^~\n]*)\n([^~]*)~/~hit~$1~\n~hit~$2~/g;
                         $rep =~ s/(\n+\~+\n+)\}(\{[^\}]*\})$/\}$2$1/g;
                         $rep#gex; 
 
     # The font command to switch back is usually *inside* the marginal note!
-    $$ref =~ s#\\marginlabel£([^£]*)£#my $label = $1;
+    $$ref =~ s#\\marginlabel\x062([^\x06]*)\x063#my $label = $1;
                                 my $font = $1 if $label =~ m/([\&\$]\d*)$/;
                                 "\\marginlabel{$label}$font"#gex;
-    $$ref =~ s#ital¢([^¢]*)¢#\\emph{$1}#gi;
+    $$ref =~ s#\x061ital\x062([^\x06]*)\x063#\\emph{$1}#gi;
     
     # Pseudo-letterspacing with \,:
     # Real letterspacing separates accents from their letters.
     # This method screws up medial sigma, so we have to force it.
     
-    $$ref =~ s#\<20((?:(?!\>20|ÿÿð).)+)(?:\>20)?#my $rep = $1; 
+    $$ref =~ s#\<20((?:(?!\>20|\x06).)+)(?:\>20)?#my $rep = $1; 
     $rep =~ s/(['`=)(]*[A-Z ][+?]*)(?=[a-zA-Z])/$1\\,/g; 
                         $rep =~ s/([a-z]['`|+=)(?]*)(?=[a-zA-Z])/$1\\,/g; 
                         $rep =~ s/s\\,/s\|\\,/g; 
@@ -2646,7 +2637,7 @@ sub beta_to_latex
                         $rep#gsex;
 
     $$ref =~ s#\<(\D(?:[^\>\n]|\>\d)*?)(?:\>|\n)#\\ensuremath\{\\overline\{\\mbox\{$1\}\}\}#g;
-    $$ref =~ s#\<1(\D(?:[^\>]|\>[^1])*)(?:\>1|ÿÿð)#\\uline\{$1\}#g;
+    $$ref =~ s#\<1(\D(?:[^\>]|\>[^1])*)(?:\>1|\x06)#\\uline\{$1\}#g;
     $$ref =~ s#\<3(\D(?:[^\>\n]|\>[^3])*?)(?:\>3|\n)#\\ensuremath\{\\widehat\{\\mbox\{$1\}\}\}#g;
     $$ref =~ s#\<4(\D(?:[^\>\n]|\>[^4])*?)(?:\>4|\n)#\\ensuremath\{\\underbrace\{\\mbox\{$1\}\}\}#g;
     $$ref =~ s#\<5(\D(?:[^\>\n]|\>[^5])*?)(?:\>5|\n)#\\ensuremath\{\\overbrace\{\\mbox\{$1\}\}\}#g;
@@ -2682,8 +2673,8 @@ sub beta_to_latex
     $$ref =~ s/([^\&]*)([^\$]*)/
                                         my $gk = (defined $1) ? $1 : '';
                                         my $lt = (defined $2) ? $2 : '';
-                                        $lt =~ s#;#·#g;         # protect ; : in latin mode
-                                        $lt =~ s#:#µ#g;                 
+                                        $lt =~ s#;#\x065#g;         # protect ; : in latin mode
+                                        $lt =~ s#:#\x064#g;                 
                                         $lt =~ s#([?!])#$1\{\}$2#g;
                                         $gk.$lt;
                                         /gex;
@@ -2737,7 +2728,6 @@ sub beta_to_latex
     
     # # (numerical symbols) this is obviously wrong
     $$ref =~ s/#508/\ --\ /g;
-    #$$ref =~ s/[iI]tal¢([^¢]*)¢/\\emph{$1}/g;
     # get rid of those troublesome brackets around paragraphoi
     $$ref =~ s/\{\[\}\#6\{\]\}/\#6/g;
     $$ref =~ s/#(\d+)/$sym[$1]/g;  
@@ -2772,28 +2762,27 @@ sub beta_to_latex
     # record separators
     if ($self->{latex_counter})
     {
-        $$ref =~ s#xxbeginsamepage(?:\n\\nrm{} \n)?#\\begin{samepage}ÿÿcounter#g;
+        $$ref =~ s#xxbeginsamepage(?:\n\\nrm{} \n)?#\\begin{samepage}\x06counter#g;
     }
     else
     {
         $$ref =~ s#xxbeginsamepage\n?#\\begin{samepage}#g;
     }
-    $$ref =~ s#(?:ÿÿð)?ÿÿendsamepage\n+#\\end{samepage}\\nopagebreak[1]#g;
-    $$ref =~ s#(?:ÿÿð)?ÿÿforcepagebreakÿÿÿÿ\n*#\\pagebreak[3]~\\\\#g;
-    $$ref =~ s#·#;#g;       # these were escaped above in Latin text
-    $$ref =~ s#¿#:#g;               
-    $$ref =~ s#µ#:#g;       
-    $$ref =~ s#ÿ§ÿ#?#g;
-    $$ref =~ s#sÿ£ÿ#$self->{ibycus4} ? 's\'' : 's\'\''#ge; # stop spurious final sigmas
-    $$ref =~ s#ÿ£ÿ#$self->{ibycus4} ? '{\'}' : '\'\''#ge;
-    $$ref =~ s#ÿ«ÿ#{#g;
-    $$ref =~ s#ÿ»ÿ#}#g;
-    $$ref =~ s#©#\\textrm{:}#g;
+    $$ref =~ s#(?:\x06)?\x061endsamepage\n+#\\end{samepage}\\nopagebreak[1]#g;
+    $$ref =~ s#(?:\x06)?\x061forcepagebreak\n*#\\pagebreak[3]~\\\\#g;
+    $$ref =~ s#\x065#;#g;       # these were escaped above in Latin text
+    $$ref =~ s#\x064#:#g;       
+    $$ref =~ s#\x042#?#g;
+    $$ref =~ s#s\x041#$self->{ibycus4} ? 's\'' : 's\'\''#ge; # stop spurious final sigmas
+    $$ref =~ s#\x041#$self->{ibycus4} ? '{\'}' : '\'\''#ge;
+    $$ref =~ s#\x043#{#g;
+    $$ref =~ s#\x044#}#g;
+    $$ref =~ s#\x064#\\textrm{:}#g;
     #   You can eliminate some excess whitespace by commenting this next line out
     $$ref =~ s#\n\n+#~\\nopagebreak[4]\\\\~\\nopagebreak[4]\\\\#g; # consecutive newlines
     $$ref =~ s#\n\n#~\\nopagebreak[4]\\\\#g; # eol
     $$ref =~ s#\n#~\\nopagebreak[4]\\\\\n#g; # eol
-    $$ref =~ s#ÿÿcounter#\\showcounter{}#g;
+    $$ref =~ s#\x04counter#\\showcounter{}#g;
     # for early epigraphical orthography
     $$ref =~ s#([eo][)(]?)\=#\\~{$1}#g;
     $$ref =~ s#([)(]?[EO])\=#\\~{$1}#g;
@@ -2944,7 +2933,9 @@ sub beta_encoding_to_external
     my %vowel = (A => 1, E => 1, I => 1, O => 1, U => 1, H => 1, W => 1, R => 1);
     my %other = (
 	' ' => 'space', '-' => 'hyphen', ',' => 'comma',
-	'.' => 'period', ':' => 'raised_dot', ';' => 'semicolon', '_' => 'dash',
+	'.' => 'period', ':' => 'raised_dot', ';' => 'semicolon',
+#         '_' => 'dash',
+         '_' => 'underscore', # Perseus LSJ uses _ for long vowels, so pass it thru.
 	'!' => 'period', '\'' => 'apostrophe');
     # Chars (to search for) in encoding
     my $char = '[A-Z \'\-,.:;_!]';
@@ -2961,7 +2952,8 @@ sub beta_encoding_to_external
     $$ref =~ s#S3#S#g;
     # Force final sigmas. (watch out for things like mes<s>on, which shouldn't
     # become final -- I'm not sure that there's much one can do there)
-    $$ref =~ s#(?<!\*)S(?![123A-Z~)(|/\\=+\'])#S2#g; 
+    $$ref =~ s#(?<!\*)S(?![123A-Z)(|/\\=+\'])#S2#g; 
+    $$ref =~ s#(?<!\*)S~(?![123A-Z)(|/\\=+\'])#S2~#g; 
     
     if (ref $encoding{$encoding}{pre_match} eq 'CODE')
     {   # Code to execute before the match
@@ -3105,7 +3097,8 @@ sub coptic_handler
     # is done, so we might as well strip the junk out here
     $self->beta_formatting_to_ascii($ref);
 }
-
+# For greek, the lowercase protects "hit" from conversion, but not for coptic.
+$$ref =~ s/~hit~/~~~~~/g;
 if (ref $coptic_encoding{$encoding}{pre_match} eq 'CODE')
 {       # Code to execute before the match
     $coptic_encoding{$encoding}{pre_match}->($ref);
@@ -3129,12 +3122,13 @@ else
                                     $c =~ /\+/ and $code .= '_diaer';
                                     $c =~ /\=/ and $code .= '_peri';
                             }
-                            $post .= 'Ì…' if $a and $encoding =~ m/utf/i; # combining overline
+                            $post .= $coptic_encoding{$encoding}{overline}
+                                         if $a and $encoding =~ m/utf/i; # combining overline
                             $post .= $encoding =~ m/utf/i ? 'Ì£' : '?' if $c =~ m/\?/;
                             my $char = $coptic_encoding{$encoding}{$code} || '';
                             warn 'No mapping exists for BETA (Coptic) code '.
                                     ($a||'').($b||'').($c||'')." in encoding $encoding.\n" unless $char;
-                            print STDERR ">>$char.$post\n";
+#                             print STDERR ">>$char.$post\n";
                             $char.$post;
                             !gex;
     }
@@ -3143,6 +3137,7 @@ else
     {   # Code to execute after the match
         $coptic_encoding{$encoding}{post_match}->($ref);
     }
+$$ref =~ s/~~~~~/~hit~/g;
 
 }
 

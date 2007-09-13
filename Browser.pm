@@ -19,7 +19,7 @@ sub browse_authors
 #     return %{ $self->match_authtab($pattern) };
     my $rv = $self->match_authtab($pattern);
     # Add numbers (because some author names are identical)
-    foreach (keys % { $rv }) {
+    foreach (keys %{ $rv }) {
         $rv->{$_} .= " ($_)";
     }
     return %{ $rv };
@@ -203,7 +203,7 @@ sub seek_passage
                 next LEVEL unless $target{$lev};
                 my $result = compare($level->{$lev}, $target{$lev});
                 print STDERR 
-                    "¬¬¬$level->{$lev} <=> $target{$lev}: res = $result ($lev, $cite_block)\n"
+                    ">>>$level->{$lev} <=> $target{$lev}: res = $result ($lev, $cite_block)\n"
                     if $self->{debug};
                 if ($result == 0)
                 {
@@ -415,8 +415,6 @@ sub print_location
     my $cgi = (ref $self eq 'Diogenes::Browser::Stateless') ? 1 : 0;
     my ($location, $code);
     
-    $self->set_perseus_links; 
-    
     my $block_start = $cgi ? 0 :(($offset >> 13) << 13);
     
     $self->{work_num} = 0;
@@ -523,7 +521,6 @@ sub browse_forward
     my $self = shift;
     my ($abs_begin, $abs_end, $auth, $work);
     my ($ref, $begin, $end, $line, $result, $buf, $offset);
-    $self->set_perseus_links; 
     
     if (ref $self eq 'Diogenes::Browser')
     {   # Get persistent browser info from object
@@ -727,18 +724,25 @@ sub maybe_use_cit
 {
     my $self = shift;
     my $cit = $self->get_citation;
-    $cit =~ m/^(.*)\.(\d+)$/;
-    my $higher = $1;
-    $line = $2;
+    my ($higher, $line);
+    if ($cit =~ m/^(.*)\.(\d+)$/) {
+        $higher = $1;
+        $line = $2;
+    } else {
+        $higher = "";
+        $line = "";
+    }
     my $output = '';
     unless ($higher and $line) {
         # For works with only line numbers and no higher levels
-        $cit =~ m/^(\d+)$/;
-        $line = $1;
+        if ($cit =~ m/^(\d+)$/) {
+            $line = $1;
+        }
     }
     return '' unless $line;
     $self->{higher_levels} = $higher unless $self->{higher_levels};
 #     print STDERR "($higher)\n";
+#     print STDERR "+--$higher +++ $line\n";
     if ($self->{work_num} != $self->{current_work})
     {
         $self->{current_work} = $self->{work_num};
@@ -761,6 +765,7 @@ sub maybe_use_cit
     }
 
     $self->{last_line} = $line;
+
     return $output;
 }
 
@@ -792,8 +797,6 @@ sub browse_backward
     my $self = shift;
     my ($abs_begin, $abs_end, $auth, $work);
     my ($ref, $begin, $end, $line, $result, $buf, $offset);
-    
-    $self->set_perseus_links; 
     
     if (ref $self eq 'Diogenes::Browser')
     {   # Get persistent browser info from object

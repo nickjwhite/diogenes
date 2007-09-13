@@ -28,10 +28,10 @@ sub read_index
         $tlgawlst = uc $tlgawlst;
     }
 
-    $pattern = $self->simple_latin_to_beta ($pattern);
+    $pattern = $self->{input_encoding} eq 'Unicode' ? $self->unicode_pattern($pattern) :
+        $self->simple_latin_to_beta ($pattern);
+
     my ($ref, @wlist) = $self->parse_word_list($pattern);
-    
-    $self->set_perseus_links; 
     
     if ($self->{filtered} or $self->{blacklist_file})
     {
@@ -52,23 +52,12 @@ sub do_search
 {
     my $self = shift;
     
-    $self->set_perseus_links; 
-    
     $self->{pattern_list} = [];
-    
-    if ($self->{input_beta})
-    {
-        $self->{reject_pattern} = $self->beta_to_beta ($self->{reject_pattern});
-    }
-    elsif ($self->{input_raw})
-    {
-        $self->{reject_pattern} = quotemeta $self->{reject_pattern};
-    }
-    elsif (not $self->{input_pure})
-    {
-        $self->{reject_pattern} = $self->latin_to_beta($self->{reject_pattern});
-    }
-    
+
+    $self->{reject_pattern} = ($self->{input_encoding} eq 'Unicode') ?
+        $self->unicode_pattern($self->{reject_pattern}) :
+        $self->make_greek_pattern_from_translit($self->{reject_pattern});
+
     print STDERR "Using reject pattern: $self->{reject_pattern}\n" if $self->{debug}
                                                          and $self->{reject_pattern};
     my @wlist = @_;
@@ -220,9 +209,9 @@ sub parse_word_list
 
     my $start_pat = 0;
     # h looks ahead for a rough breathing 
-    $start_pat++ if $pattern =~ s#¬¬#(?=\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()#gi;
+    $start_pat++ if $pattern =~ s#\x072#(?=\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()#gi;
     # non-rough breathing (possibly not at word beginning) 
-    $pattern =~ s#¬£#(?!\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()#gi;                
+    $pattern =~ s#\x071#(?!\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()#gi;                
     $start_pat++ if $pattern =~ s#^\s+#(?<!['!A-Z)(/\\\\+=])#;
     $pattern =~ s#^#\['!A-Z)(/\\\\+=]\*#g unless $start_pat;
     $pattern =~ s#\s+$#(?!['!A-Z)(/\\\\+=])#;
@@ -417,7 +406,7 @@ sub parse_wcnts
         
             for ($i = 1; $i < $word_num; $i++) 
             {
-                print STDERR "] $offset: $i ($word)\n" if $self->{debug};
+#                 print STDERR "] $offset: $i ($word)\n" if $self->{debug};
                 # ignore `word form byte' (whatever that is)
                 read WCNTS, $junk, 1 or $self->barf("Couldn't read from $tlgwcnts");
                 
@@ -598,7 +587,7 @@ sub parse_wcnts
     close WCNTS or $self->barf("Couldn't close $tlgwcnts");
     close WCINX or $self->barf("Couldn't close $tlgwcinx");
         
-    print STDERR Data::Dumper->Dump([$self->{word_counts}], ['word_counts']) if $self->{debug};
+#     print STDERR Data::Dumper->Dump([$self->{word_counts}], ['word_counts']) if $self->{debug};
     # return the number of works in which the word was found (went one too
     # far)
     return --$entry;

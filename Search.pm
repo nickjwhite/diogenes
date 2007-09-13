@@ -6,8 +6,6 @@ sub do_search
 {
     my $self = shift;
     
-    $self->set_perseus_links; 
-    
     # Do the search (brute force).
     $self->begin_boilerplate;
     $self->pgrep;
@@ -173,56 +171,60 @@ sub print_totals
     $self->print_output(\$out);
 }
 
-sub make_greek_pattern 
-{
-    my $self = shift;
+# Non-unicode, various Latin transliterations
 
-    if ($self->{input_beta})
-    {
-        $self->{reject_pattern} = $self->beta_to_beta ($self->{reject_pattern});
-    }
-    elsif ($self->{input_raw})
-    {
-        $self->{reject_pattern} = quotemeta $self->{reject_pattern};
-    }
-    elsif (not $self->{input_pure})
-    {
-        $self->{reject_pattern} = $self->latin_to_beta($self->{reject_pattern});
-    }
-    
-    foreach my $pat (@{ $self->{pattern_list} })
-    {
-        if ($self->{input_pure}) 
-        { 
-            $pat = $pat;
-        }
-        elsif ($self->{input_raw}) 
-        { 
-            $pat = quotemeta $pat;
-        }
-        elsif ($self->{input_beta})
-        {
-            $pat = $self->beta_to_beta ($pat);
-        }
-        else 
-        {
-            $pat = $self->latin_to_beta ($pat);
-        }
+sub make_greek_patterns_translit {
+    my $self = shift;
+    $self->{reject_pattern} =
+        $self->make_greek_pattern_from_translit($self->{reject_pattern});
+    foreach my $pat (@{ $self->{pattern_list} }) {
+        $pat = $self->make_greek_pattern_from_translit($pat);
     }
 }
 
-# Input a raw BETA word, and this makes a TLG word-list style regexp
-sub beta_to_beta
+sub make_greek_pattern_from_translit { 
+    my ($self, $pat) = @_;
+    if ($self->{input_pure}) {
+        return $pat;
+    }
+    elsif ($self->{input_raw}) {
+        return quotemeta $pat;
+    }
+    elsif ($self->{input_beta}) {
+        return $self->make_strict_greek_pattern ($pat);
+    }
+    else {
+        # Fall back to Perseus transliteration
+        return $self->perseus_to_beta($pat);
+    }
+}
+
+# Construct a regexp to search for Greek, with accents and breathings
+# significant.  Input is Beta code with diacritics.  Uses the code for
+# word-list searches.
+
+sub make_strict_greek_pattern
 {
     my ($self, $pat) = @_;
     $pat =~ tr/a-z/A-Z/;                    # upcap all letters
-    $pat =~ s#\\#/#g;                       # normalize accents
-    my ($begin, $end) = (0, 0);
-    $begin = 1 if $pat =~ s#^\s+##;
-    $end   = 1 if $pat =~ s#\s+$##;
-    ($pat, undef) = 
-        Diogenes::Indexed::make_tlg_regexp($self, $pat, (not $begin), (not $end));
-    return $pat;
+    $pat =~ s#\\#/#g;                       # normalize barytone accents
+    $pat =~ s#\s+# #g;                      # normalize spacing
+
+    my @pats;
+    my @parts = split /( )/, $pat;
+    for (my $i = 0; $i < length @parts; $i++ ) {
+        next if $parts[$i] eq ' ';
+        my $begin = ($i == 0 || $parts[$i-1] ne ' ') ? 0 : 1;
+        my $end   = ($i == (length @parts - 1) || $parts[$i+1] ne ' ') ? 0 : 1;
+        my ($part_pat, undef) = 
+            Diogenes::Indexed::make_tlg_regexp($self, $parts[$i], (not $begin), (not $end));
+        push @pats, $part_pat;
+    }
+    my $pattern = join ' ', @pats;
+
+    s/\x073(?!\?)/(?:/g;                                # turn ( into (?: for speed
+    s/\x074/)/g;                
+    return $pattern;
 }
 
 sub make_latin_pattern
@@ -296,12 +298,15 @@ sub latin_pattern
 #                                                                   #
 #####################################################################
 
-sub latin_to_beta 
+sub perseus_to_beta 
 {
     my $self = shift;
     $_ = shift;
     return $_ unless $_;
-    
+
+    s#\(#\x073#g;                                                       # protect parens
+    s#\)#\x074#g;
+
     die "Invalid letter $1 used in Perseus-style transliteration\n" if m/([wyjqv])/;
     die "Invalid letter c used in Perseus-style transliteration\n" if m/c(?!h)/;
     # This is now entirely case-insensitive (and ignorant of accent).
@@ -309,31 +314,43 @@ sub latin_to_beta
     # made it nearly impossible to do case- sensitive searches reliably, and
     # the best candidate regeps were an order of magnitude slower.
         
-    # Sensitive to rough and smooth breathing ...
-    s#\(#«#g;                                                       # protect parens
-    s#\)#»#g;
+    s/\b([aeÃªioÃ´u\xea\xf4])/\x071$1/gi;         # mark where non-rough breathing goes
+    s/(?<!\w)h/\x072/gi;                        # mark where rough breathing goes
 
-    s/\b([aeêioôu])/¬£$1/g;                  # mark where non-rough breathing goes
-    s/(?<!\w)h/¬¬/gi;                        # mark where rough breathing goes
-
-#       #s#\b([aeêioôu^]+)(?!\+)#(?:\\\)[\\/|+=]*$1|$1\\\))#gi;         # initial vowel(s), smooth
+#       #s#\b([aeÃªioÃ´u^]+)(?!\+)#(?:\\\)[\\/|+=]*$1|$1\\\))#gi;         # initial vowel(s), smooth
 #
 #       s#^h# h#; # If there's a rough breathing at the start of the pattern, then we assume it's the start of a word
-#   s#(\s)([aeêioôu^]+)(?!\+)#$1(?:(?<!\\\([\\/|+=][\\/|+=])(?<!\\\([\\/|+=])(?<!\\\()$2(?!\\\())#gi;           # initial vowel(s), smooth
-#       s#(\s)h([aeêioôu^]+)(?!\+)#$1(?:\\\([\\/|+=]*$2|$2\\\()#gi;             # initial vowel(s), rough breathing
+#   s#(\s)([aeÃªioÃ´u^]+)(?!\+)#$1(?:(?<!\\\([\\/|+=][\\/|+=])(?<!\\\([\\/|+=])(?<!\\\()$2(?!\\\())#gi;           # initial vowel(s), smooth
+#       s#(\s)h([aeiou^]+)(?!\+)#$1(?:\\\([\\/|+=]*$2|$2\\\()#gi;             # initial vowel(s), rough breathing
 #   s#\bh##; # Ignore breathings
     
     s/[eE]\^/H/g;                                           # eta
-    s/[êÊ]/H/g;                                             # ditto
+    s/[ÃªÃŠ\xea\xca]/H/g;                                             # ditto
     s/[tT]h/Q/g;                                            # theta
     s/x/C/g;                                                # xi
     s/[pP]h/F/g;                                            # phi
     s/[cC]h/X/g;                                            # chi
     s/[pP]s/Y/g;                                            # psi
     s/[oO]\^/W/g;                                           # omega
-    s/[ôÔ]/W/g;                                             # ditto
+    s/[Ã´Ã”\xf4\xd4]/W/g;                                             # ditto
         
-    tr/a-z/A-Z/;                                            # upcap all other letters
+    return $self->make_loose_greek_pattern($_);              
+}
+
+# Make a regexp for searching greek, not sensitive to accents and
+# case.  Input is beta-code, with diacrits removed.  Smooth and rough
+# breathing should be marked with \x071 and \x072 respectively at the
+# start of the word, and parens by \x073 and \x074.
+
+# h looks ahead for a rough breathing somewhere in the following group
+# of vowels, or even before it as in the word (EA`N
+my $rough_breathing =  q{(?=\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()};    
+my $smooth_breathing = q{(?!\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()};     # opposite for smooth
+
+sub make_loose_greek_pattern {
+    my $self = shift;
+    $_ = shift;
+    tr/a-z/A-Z/;                                            # upcap all 
 
     my $non_alpha = '\\x00-\\x1f\\x21-\\x40\\x5b-\\x5e\\x60\\x7b-\\xff';
     my $non_alpha_and_space = '\\x00-\\x40\\x5b-\\x5e\\x60\\x7b-\\xff';
@@ -360,22 +377,18 @@ s/([^A-Z ]*[ ][^A-Z ]*)(?=$)/$1\[$non_alpha_nor_asterisk\]\*/g;
    
     #my $diacrits = '\/\\\\\=\+\?\!\)\(\|\'';
     
-    # h looks ahead for a rough breathing somewhere in the following group
-    # of vowels, or even before it as in the word (EA`N
-    s#¬¬#(?=\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()#gi;    
-    s#¬£#(?!\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()#g;     # opposite for smooth
+    s#\x072#$rough_breathing#g;    
+    s#\x071#$smooth_breathing#g;
 
-    s/«(?!\?)/(?:/g;                                # turn ( into (?: for speed
-    s/»/)/g;                
-    return $_;              
+    s/\x073(?!\?)/(?:/g;                                # turn ( into (?: for speed
+    s/\x074/)/g;                
+
+    return $_;
 }
 
-############################################################
-#                                                          #
-# As above, except without turning the greek into a regexp #
-# (Used on input destined for the word list.)              #
-#                                                          #
-############################################################
+
+# Latin transliteration input, except without turning the greek into a
+# regexp (Used on input destined for the word list.)
 
 sub simple_latin_to_beta 
 {
@@ -390,26 +403,31 @@ sub simple_latin_to_beta
         s#\\\s+# #g;
         return $_;
     }
+
+    # Fall back to Perseus-style transliteration
     
     tr/A-Z/a-z/;
     my $start;
     $start++ if s#^\s+##;
     
-    s/\b([aeêioôu])/¬£$1/g;     # mark where non-rough breathing goes
-    s#^h#¬¬#i;                  # protect h for rough breathing later
+    s/\b([aeÃªioÃ´u\xea\xf4])/\x071$1/g;     # mark where non-rough breathing goes
+    s#^h#\x072#i;                  # protect h for rough breathing later
     
     s/[eE]\^/H/g;                                           # eta
-    s/[êÊ]/H/g;
+    s/[ÃªÃŠ\xea\xca]/H/g;
     s/[tT]h/Q/g;                                            # theta
     s/x/C/g;                                                # xi
     s/[pP]h/F/g;                                            # phi
     s/[cC]h/X/g;                                            # chi
     s/[pP]s/Y/g;                                            # psi
     s/[oO]\^/W/g;                                           # omega
-    s/[ôÔ]/W/g;
+    s/[Ã´Ã”\xf4\xd4]/W/g;
 #   if (/h/) { $self->barf("I found an \`h\' I didn't understand in $_")};
     tr/a-z/A-Z/;                                            # upcap all other letters
 
+    s#\x072#$rough_breathing#g;    
+    s#\x071#$smooth_breathing#g;
+    
     s#^# # if $start; # put the space back in front
     return $_;              
 }
@@ -641,10 +659,6 @@ sub extract_hits
         
         $result = substr ($$buf, $start, ($end - $start));
         
-        # We use ~hit~...~ (and later ÿÿ) as temp placeholders for \hit{...},
-        # because "\" is special in both BETA code and TeX, as are {}; 
-        # ÿÿ is not used in BETA (except as a binary stop code), nor in utf-8.
-        
         # We want to highlight all matching patterns, and yet accept only those
         # passages where there are matches across a mimimum number of distinct
         # patterns from the list
@@ -737,11 +751,13 @@ sub extract_hits
                       $self->{bib_info_printed}{$self->{auth_num}}{$self->{work_num}})
             ? $self->get_biblio_info($self->{type}, $self->{auth_num}, $self->{work_num})
             : $this_work;
-        $self->{bib_info_printed}{$self->{auth_num}}{$self->{work_num}} = 'yes'
+            $self->{bib_info_printed}{$self->{auth_num}}{$self->{work_num}} = 'yes'
             if $self->{print_bib_info}; 
         
-        $location .="\&\n";
-                
+            $location .="\&\n";
+
+            my $jumpto = $self->{type}.','.$self->{auth_num}.','.$self->{work_num};
+            
         foreach (reverse sort keys %{ $self->{level} }) 
         {
             if 
@@ -750,10 +766,12 @@ sub extract_hits
                 $location .=
                     "$level_label{$self->{type}}{$self->{auth_num}}{$self->{work_num}}{$_}".
                     " $self->{level}{$_}, ";
+                $jumpto .= ':'.$self->{level}{$_};
             }
             elsif ($self->{level}{$_} ne '1') 
             {       # The Theognis exception & ddp
                 $location .= "$self->{level}{$_}, ";
+                $jumpto .= ':'.$self->{level}{$_};
             }
         }
         chop ($location); chop ($location);
@@ -766,14 +784,8 @@ sub extract_hits
         $location .= "\n\n";
         if ($Diogenes::Base::cgi_flag and $self->{cgi_buttons})
         {
-            my $browse_start = $start;
-            if (ref $self eq 'Diogenes_indexed')
-            {
-                # Indexed searches do not read the whole file into the buffer; only
-                # the blocks containing the current work
-                $browse_start += $work_start_block{$self->{type}}{$self->{auth_num}}{$self->{work_num}} << 13;
-            }
-            $result .= "\n~~~$self->{auth_num}~~~$self->{work_num}~~~$browse_start~~~\n";
+            # Leading space keeps it out of the perseus links
+            $result .= " \n~~~$jumpto~~~\n";
         }
         else
         {
