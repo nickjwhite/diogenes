@@ -134,6 +134,7 @@
     <key id="key_forward_alt" modifiers="alt" keycode="VK_RIGHT" oncommand="forward();"/>
     <key id="key_stop" modifiers="accel" keycode="VK_DELETE" oncommand="stop();"/>
     <key id="key_home" modifiers="accel" keycode="VK_HOME" oncommand="go();"/>
+    <key id="key_home_alt" modifiers="alt" keycode="VK_HOME" oncommand="go();"/>
     <key id="key_console" modifiers="accel" key="Z" oncommand="showConsole();"/>
     <key id="key_venkman" modifiers="accel" key="V" oncommand="start_venkman();"/>
     <key id="key_find" modifiers="accel" key="F" command="cmd_find"/>

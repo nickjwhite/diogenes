@@ -902,7 +902,3 @@ function showShortcuts () {
     browser.loadURI("http:127.0.0.1:" + port + "/Shortcuts.html", null, null); 
 }
 
-
-function foo () {
-}
-
