@@ -25,6 +25,7 @@ use strict;
 use vars qw($client $params $flag $config);
 $|=1;
 
+
 # Script to pre-compile and run
 my $CGI_SCRIPT = 'Diogenes.cgi';
 
@@ -51,7 +52,7 @@ use Diogenes::Base;
 use Net::Domain qw(hostfqdn);
 use Socket;
 use Getopt::Std;
-use vars qw/$opt_d $opt_p $opt_h $opt_H $opt_l $opt_m $opt_D/;
+use vars qw/$opt_d $opt_p $opt_h $opt_H $opt_l $opt_m $opt_D $opt_P/;
 
 my $config_dir = $Diogenes::Base::config_dir_base;
 unlink $config_dir if (-e $config_dir and not -d $config_dir);
@@ -62,25 +63,28 @@ my $lock_file = File::Spec->catfile($config_dir, '.diogenes.run');
 use LWP::MediaTypes qw(add_type);
 add_type('text/css', '.css');
 
-unless (getopts('dDp:hH:lm:b'))
+unless (getopts('dDp:hH:lm:bP:'))
 {
     print <<"END";
 
 USAGE: diogenes-server.pl [-dhlb] [-p port] [-H host] [-m netmask]
 
     -h  Use current network hostname, so that Diogenes can be accessed by
-    other computers on the network (localhost is the default).
+        other computers on the network (localhost is the default).
 
     -H  Specify a hostname to bind to.
 
-    -p Specify a port to bind to (8888 is the default).  If
-       unavailable, will try again by increasing the number.
+    -p Specify a port to bind to (8888 is the default; the usual range
+        is between 1024 and 65535).  If the specified port is
+        unavailable, it will try again by increasing the number.
 
     -l  Check to make sure that all queries are from localhost.
 
     -m  Specify the netmask (eg. 255.255.0.0); external queries will be 
-    refused.  
+        refused.  
 
+    -P  Specify the path to the Perseus data directory
+    
     -d  Turn on debugging output.
 
 END
@@ -90,12 +94,16 @@ END
 my %cgi_subroutine;
 my $DEBUG = 0;
 $DEBUG = 1 if $opt_d;
+$ENV{Diogenes_Debug} = 1 if $DEBUG;
 $| = 1;
 
 print "\@INC: ", join "\n", @INC, "\n" if $DEBUG;
 
 # To let the CGI program know it is us that invoked it.
 $flag = 1; 
+
+$ENV{Diogenes_Perseus_Dir} = $opt_P if $opt_P;
+# binmode STDOUT, ':utf8';
 
 # Port to start attempting to listen at:
 my $PORT = '8888';
@@ -320,16 +328,24 @@ REQUEST:
         {
             if ($request -> method eq 'GET')
             {
-                $params = $request->url->query_form;        
+                $params = $request->url->query;        
                 $params ||= '';
                 warn "GET request.".($params ? " Query:$params\n" : "\n") if $DEBUG;
                 $ENV{REQUEST_METHOD} = 'GET';
                 $ENV{QUERY_STRING} = $params;
             }
             else ## eq 'POST'
-            { 
-                if ($request->headers->content_type eq 'application/x-www-form-urlencoded')
-                {
+            {
+                my $content_type = $request->headers->content_type;
+                if ($content_type =~ /multipart.*/) {
+                    # We do not handle multipart submission, since that
+                    # would need to be turned into a URL-encoded string to
+                    # pass as an initializer for CGI.pm.  TODO?
+                    warn "Multipart form submission is not supported by the Diogenes server.\n";
+                    $client->send_error(RC_NOT_IMPLEMENTED);
+                    last REQUEST
+                }
+                else {
                     $params = $request->content;
                     $params ||= '';
                     warn "POST request. Content: $params\n" if $DEBUG;
@@ -338,15 +354,6 @@ REQUEST:
                     # our own STDIN, which would cost a fork,
                     # probably.  Tried pretending this was a GET
                     # request, and passing via %ENV, but that was Bad.
-                }
-                elsif ($request->headers->content_type =~ /multipart.*/)
-                # We do not handle multipart submission, since that
-                # would need to be turned into a URL-encoded string to
-                # pass as an initializer for CGI.pm.  TODO?
-                {
-                    warn "Multipart form submission is not supported by the Diogenes server.\n";
-                    $client->send_error(RC_NOT_IMPLEMENTED);
-                    last REQUEST
                 }
             }
             # Workaround for annoying CGI.pm bug/warning
@@ -387,7 +394,7 @@ sub write_lock
     # to receive connections.  Mild race condition here, but I'm not
     # sure if anything can be done about it.
     unlink $lock_file;
-    print "Writing $lock_file\n";
+    print "Writing $lock_file\n" if $DEBUG;
     open FLAG, ">$lock_file" or warn "Could not make lock file: $!";
     print FLAG
 "port $PORT

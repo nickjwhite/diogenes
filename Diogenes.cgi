@@ -24,11 +24,14 @@ use Diogenes::Browser;
 
 use strict;
 use File::Spec::Functions qw(:ALL);
+use Encode;
 
 $Diogenes::Base::cgi_flag = 1;
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 my $user = $f->cookie('userID');
+
+# binmode STDOUT, ':utf8';
 
 # Force read of config files 
 my %args_init = (-type => 'none');
@@ -36,22 +39,26 @@ $args_init{user} = $user if $user;
 my $init = new Diogenes::Base(%args_init);
 my $filter_file = $init->{filter_file};
 my $font = $init->{cgi_font};
+
 # my @choices = reverse sort keys %choices;
-# If you change the order of these options, you may also have to change onActionChange
 my @choices = (
     'TLG Texts',
     'PHI Latin Corpus',
     'Duke Documentary Papyri',
-    'Classical Inscriptions (Latin)',
-    'Classical Inscriptions (Greek)',
-    'Christian Inscriptions (Latin)',
-    'Christian Inscriptions (Greek)',
-    'Miscellaneous PHI Texts (Greek)',
-    'Miscellaneous PHI Texts (Latin)',
+    'Classical Inscriptions',
+    'Christian Inscriptions',
+    'Miscellaneous PHI Texts',
     'PHI Coptic Texts',
     'TLG Bibliography',
     );
 
+# Probable input language for morphological search
+my %prob_lang = ( 'phi' => 'l',
+                  'tlg' => 'g',
+                  'ddp' => 'g',
+                  'ins' => 'g',
+                  'chr' => 'g',
+                  'misc' => 'l' );
 my $default_choice;
 my $choice_from_config = quotemeta $init->{cgi_default_corpus};
 for (@choices)
@@ -65,7 +72,6 @@ for (@choices)
 warn "I don't understand default search type $init->{cgi_default_corpus}\n"
     unless $default_choice;
 
-# my $default_encoding = 'UTF-8';
 my $default_encoding = $init->{cgi_default_encoding} || 'UTF-8';
 
 my $default_criteria = $init->{default_criteria};
@@ -81,7 +87,7 @@ my (%handler, %output, $filter_flag);
 
 use CGI qw(:standard);
 #use CGI;
-use CGI::Carp 'fatalsToBrowser';
+# use CGI::Carp 'fatalsToBrowser';
 $ENV{PATH} = "/bin/:/usr/bin/";
 $| = 1;
 
@@ -91,9 +97,6 @@ $| = 1;
 $f->param('greek_output_format', $default_encoding) unless
     $f->param('greek_output_format');
 
-# my $default_input = $f->param('input_method');
-# $default_input ||= ($init->{cgi_input_format} eq 'BETA code') ? 'Beta' : 'Perseus';
-my $input_method = $init->{cgi_input_format};
 # This works for WinGreek, etc, and any encoding/font that's designed
 # more for cutting and pasting than for proper viewing in a browser.
 my $charset = 'iso-8859-1';
@@ -149,6 +152,9 @@ my $get_state = sub
         $r =~ s/XXstate$//;
         next if $p =~ m/XXstate$/ and exists $real_params{$r};
         my @tmp = $f->param($p);
+        if ($init->{input_encoding} eq 'Unicode') {
+            @tmp = map {Encode::decode(utf8=>$_) } @tmp;
+        }
         if ( scalar @tmp == 1 and not $r =~ /_list/)
         {
             $st{$r} = $tmp[0];
@@ -199,9 +205,9 @@ my $my_footer = sub
     $f->center(
 
         $f->p(qq(<font size="-1">All data is &copy; the <em>Thesaurus
-        Linguae Graecae</em>, the Packard Humanities Institute and
-        others.<br>The information in these databases is subject to
-        restrictions on access and use; consult your license.  <br><a
+        Linguae Graecae</em>, the Packard Humanities Institute, The Perseus Project and
+        others. The information in these databases is subject to
+        restrictions on access and use; consult your licenses.  <a
         href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/">Diogenes</a>
         (version $version) is <a
         href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/license.php">&copy;</a>
@@ -230,51 +236,37 @@ my $print_title = sub
 {
     print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
-    my $jscript = undef;
-
-    if (my $js = shift)
-    {
-        $jscript=qq(
-        function setAll() {
-            with (document.form) {
-                for (i = 0; i < elements.length; i++) {
-                    if (elements[i].name == "$js") {
-                        elements[i].checked = true;
-                        elements[i].selected = true;
-                    }
-                }
-            }
-        });
-        $jscript .= q#
-function onActionChange() {
-  if (document.form.action.selectedIndex == 2) {
-//    document.form.corpus.selectedIndex = 0;
-//    document.form.corpus.disabled = true;
-  }
-  else {
-    document.form.corpus.disabled = false;
-  }
-  if (document.form.action.selectedIndex == 4) {
-    document.form.submit();
-  }
-}
-#;
-    }
     print
         $f->start_html(-title=>$title,
                        -encoding=>$charset,
-                       -script=>$jscript,
+                       -script=>{-type=>'text/javascript',
+                                 -src=>'diogenes-cgi.js'},
                        -style=>{ -type=>'text/css',
                                  -src=>'diogenes.css'},
                        -meta=>{'content' => 'text/html;charset=utf-8'}
         ),
-        "\n",
-        $f->start_form(-name=>'form', -id=>'form');
+    "\n",
+    $f->start_form(-name=>'form', -id=>'form');
+    # We put this here (other hidden fields are at the end), so that
+    # Javascript can use it for jumpTo even before the page has
+    # completely loaded.
+    print $f->hidden( -name => 'JumpTo',
+                      -default => "",
+                      -override => 1 );
+    # So that Perseus.cgi can use this value when making a pop-up
+    print $f->hidden( -name => 'FontName',
+                      -default => "$font" || '',
+                      -override => 1 );
+ 
+    # for Perseus data
+    print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}" style="font-family: '$font'"></div>};
+
     if ($font) {
-        print qq{<div style="font-family: '$font'">};
+        print qq{<div id="main_window" class="main-full" style="font-family: '$font'">};
     } else {
-        print '<div>';
+        print '<div id="main_window" class="main-full">';
     }
+    
 };
 
 my $print_header = sub 
@@ -282,17 +274,10 @@ my $print_header = sub
     # HTML output
     print qq(
         <center>
-          <p id="logo">
-           <font size="-1">
-             <a href="Diogenes.cgi" title="New Diogenes Search">
+             <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
                <img src="${picture_dir}Diogenes_Logo_Small.gif" alt="Logo"
                 height="38" width="109" align="center" hspace="24" border="0"
-                />
-               <br />
-               New Search
-             </a>
-           </font>
-         </p>
+                /></a>
        </center>);
 };
 
@@ -338,17 +323,33 @@ my $database_error = sub
 
 ### Splash page
 
+my %input_blurb = (
+
+    'Unicode' => qq{<strong>NB. Unicode input is new.</strong> You
+    must type Greek using your computer's facility to type Greek
+    letters in Unicode, and you should either type all accents or none
+    at all.  <a href="Unicode_input.html">Further info.</a>},
+
+    'Perseus-style' => qq{Here is <a href="Perseus_input.html">further
+    info</a> on this style of Latin transliteration.},
+
+    'BETA code' => qq{Here is <a href="Beta_input.html">further
+    info</a> on this style of Latin transliteration.}
+    );
+
 $output{splash} = sub 
 {
-    # If you change the order of these, you may have to change onActionChange() above
+    # If you change this list, you may have to change onActionChange() in diogenes-cgi.js
     my @actions = ('search',
                    'multiple',
+                   'lemma',
                    'word_list',
                    'browse',
                    'filters');
     
     my %action_labels = ('search' => 'Simple search for a word or phrase',
                          'multiple' => 'Search for conjunctions of multiple words or phrases',
+                         'lemma' => 'Morphological analysis and search',
                          'word_list' => 'Search the TLG using its word-list',
                          'browse' => 'Browse to a specific passage in a given text',
                          'filters' => 'Manage user-defined corpora');
@@ -357,7 +358,7 @@ $output{splash} = sub
     my @filter_names;
     push @filter_names, $_->{name} for @filters;
 
-    $print_title->('Diogenes', 1);
+    $print_title->('Diogenes');
     $st{current_page} = 'splash';
     
     print $f->center(
@@ -372,14 +373,13 @@ $output{splash} = sub
         browsing through databases of ancient texts. Choose your type
         of query, then the corpus, then type in the query itself: this
         can be either some Greek or Latin to <strong>search</strong>
-        for (<a href="Input_info.html">see hints</a>), or the name of
-        an author whose work you wish to <strong>browse</strong>
-        through.'),
+        for, or the name of an author whose work you wish to
+        <strong>browse</strong> through.'),
 
         $f->p("The Greek input method you have currently selected is:
-        $input_method.  There are other options available for <a
-        href=\"Greek_input_info.html\">typing Greek</a>, which can be
-        selected on your <a href=\"Settings.cgi\"> current settings
+        $init->{input_encoding}.  ".$input_blurb{$init->{input_encoding}} .
+
+        "  This and other settings can be displayed and changed via the <a href=\"Settings.cgi\"> current settings
         page</a>.");
 
 
@@ -463,6 +463,10 @@ $handler{splash} = sub
     elsif ($action eq 'filters') 
     {
         $output{filter_splash}->();
+    }
+    elsif ($action eq 'lemma') 
+    {
+        $output{lemma}->();
     }
     elsif ($action eq 'search') 
     {
@@ -597,7 +601,6 @@ $handler{multiple} = sub
     }
 };
 
-
 my $get_args = sub
 {
     my %args = (
@@ -647,6 +650,121 @@ my $use_and_show_filter = sub
     }
 };
 
+$output{lemma} = sub {
+    $print_title->('Diogenes Lemma Search Page');
+    $print_header->();
+    $st{current_page} = 'lemma';
+    # Since this is a multiple-step search, we have to save it.
+    $st{saved_filter} = $st{corpus} if $current_filter;
+    my %args = $get_args->();
+    my $q = new Diogenes::Base(%args);
+    $st{lang} = $q->{input_lang} =~ m/g/i ? 'grk' : 'lat';
+    my $inp_enc = $init->{input_encoding};
+    my $perseus_params = qq{do=lemma&lang=$st{lang}&q=$st{query}&noheader=1&inp_enc=}.$inp_enc;
+#     print STDERR ">>$perseus_params\n";
+    $Diogenes_Daemon::params = $perseus_params;
+    do "Perseus.cgi" or die $!;
+    
+    print
+        $f->p(
+            $f->button( -Value  =>"Select All",
+                        -onClick=>"setAll()"),
+            '&nbsp;&nbsp;&nbsp;&nbsp;',
+            $f->reset( -value  =>'Deselect All')),
+        $f->p('Select the lemmata above that interest you.'),
+    
+        $f->submit( -name => 'proceed',
+                    -Value  =>'Show Inflected Forms');
+
+    $my_footer->();
+    
+};
+
+$handler{lemma} = sub {
+    $output{lemmata}->();
+};
+
+$output{lemmata} = sub {
+    $print_title->('Diogenes Lemma Choice Page');
+    $print_header->();
+    my $n = 0;
+    $st{current_page} = 'inflections';
+    my $lem_string = join " ", @{ $st{lemma_list} }; 
+    $Diogenes_Daemon::params = qq{do=inflects&lang=$st{lang}&q=$lem_string&noheader=1};
+    do "Perseus.cgi" or die $!;
+
+    print
+        $f->hr,
+        $f->p('Show only forms matching this text (e.g. "aor opt" for only aorist optatives):',
+              $f->br,
+              $f->textfield(-name => 'form_filter',
+                            -id => 'form_filter',
+                            -default => '',
+                            -size => 25),
+              '&nbsp;<a onClick="formFilter();">Go</a>');
+    
+    print qq{<p><a onClick="selectVisible(true);">Select All Visible Forms</a><br>
+<a onClick="selectVisible(false);">Unselect All Visible Forms</a></p>};
+
+    
+    print
+        $f->p(
+            $f->submit( -name => 'proceed',
+                        -Value  =>'Search for selected forms'),
+            qq{(Current corpus: $st{type})});
+
+    $my_footer->();
+};
+
+$handler{inflections} = sub {
+    $print_title->('Diogenes Morphological Search');
+    $print_header->();
+    if ($st{short_type} eq "tlg") {
+        my %args = $get_args->();
+        $args{use_tlgwlinx} = 1;
+        my $q = new Diogenes::Indexed(%args);
+        $database_error->($q) if not $q->check_db;
+        $use_and_show_filter->($q);
+
+        my %seen = ();
+        for my $upcase (@{ $st{lemma_list} }) {
+            $upcase =~ tr/a-z/A-Z/;
+            unless ($seen{$upcase}) {
+                my $bare = $upcase;
+                $bare =~ s/[^A-Z]//g;
+                $q->{input_raw} = 1;
+                my ($ref, @wlist) = $q->read_index($bare);
+                # Make sure we get back what we put in
+                warn "Inflection $upcase is not in the word-list!\n" unless exists $ref->{$upcase};
+                $seen{$_}++ for @wlist;
+            }
+        }
+        # Since the morphological variants of a given lemma can look
+        # very heterogeneous, it doesn't make sense to search for them
+        # via one big regexp as would be the case for
+        # $q->do_search($st{lemma_list}).  Instead we pass an array of
+        # single-element arrays to treat each word as a separate
+        # "word-set".
+        my @word_sets;
+        push @word_sets, [$_] for @{ $st{lemma_list} };
+        $q->do_search(@word_sets);
+    }
+    else {
+        # Simple searches
+        delete $st{query};
+        for my $form (@{ $st{lemma_list} }) {
+            push @{ $st{query_list} }, " $form ";
+        }
+        my %args = $get_args->();
+        my $q = new Diogenes::Search(%args);
+        if ($prob_lang{$st{short_type}} eq "g") {
+            $args{input_encoding} = 'BETA code';
+        }
+        $database_error->($q) if not $q->check_db;
+        $use_and_show_filter->($q);
+        $q->do_search();
+    }
+};
 
 $output{indexed_search} = sub 
 {
@@ -654,7 +772,7 @@ $output{indexed_search} = sub
     my $q = new Diogenes::Indexed(%args);
     $database_error->($q) if not $q->check_db;
 
-    $print_title->('Diogenes TLG word list result', 'word_list');
+    $print_title->('Diogenes TLG word list result');
     $print_header->();
     $st{current_page} = 'word_list';
     my @params = $f->param;
@@ -760,33 +878,10 @@ $output{search} = sub
 
 
 
-my $process_perseus_toggle = sub
-{
-    if ($st{add_perseus_links})
-    {
-        $st{perseus_links} = 1;
-        delete $st{add_perseus_links};
-    }
-    elsif ($st{remove_perseus_links})
-    { 
-        $st{perseus_links} = 0;
-        delete $st{remove_perseus_links};
-    }
-
-};
 
 $handler{doing_search} = sub
 {
-    $process_perseus_toggle->();
-    # Check to see if we are switching to the browser
-    if (grep m/^GetContext/, keys %st)
-    {
-        $output{browser_output}->();
-    }
-    else
-    {
-        warn("Unreachable code!");
-    }
+    warn("Unreachable code!");
 };
 
 
@@ -964,6 +1059,7 @@ $handler{browser_output} = sub { $output{browser_output}->() };
 
 $output{browser_output} = sub 
 {
+    my $jumpTo =  shift;
     my %args = $get_args->();
     my $q = new Diogenes::Browser::Stateless( %args );
     $database_error->($q) if not $q->check_db;
@@ -972,8 +1068,42 @@ $output{browser_output} = sub
     $print_title->('Diogenes Browser');
     $print_header->();
     $st{current_page} = 'browser_output';
-    
-    if (exists $st{levels})
+
+    if ($jumpTo)
+    {
+        if ($jumpTo =~ m/^([^,]+),\s*(\d+?),\s*(\d+?):(.+)$/) {
+            my $corpus = $1;
+            $st{author} = $2;
+            $st{work} = $3;
+            my $loc = $4;
+            if ($loc =~ m/:/){
+                @target = split(/:/, $loc);
+            } else {
+                push @target, $loc;
+            }
+#             print STDERR "$jumpTo; $corpus, $st{author}, $st{work}, @target\n";
+        }
+        else {
+            $print_error_page->("Bad location description: $jumpTo");
+        }
+        # Try to fix cases where we are not given the number of levels we expect
+        $q->parse_idt($st{author});
+        my $levels = scalar keys %{ $Diogenes::Base::level_label{$st{short_type}}{$st{author}}{$st{work}} };
+        my $diff = $levels - scalar @target;
+#         print STDERR "**$levels**$diff**\n";
+        if ($diff > 0) {
+            while ($diff > 0) {
+                push @target, 1;
+                $diff--;
+            }
+        } elsif ($diff < 0) {
+            while ($diff < 0) {
+                pop @target;
+                $diff++;
+            }
+        }
+    }
+    elsif (exists $st{levels})
     {
         for (my $j = $st{levels}; $j >= 0; $j--) 
         {
@@ -981,7 +1111,7 @@ $output{browser_output} = sub
         }
     }
     
-    if ($previous_page eq 'browser_passage') 
+    if ($jumpTo or $previous_page eq 'browser_passage') 
     { 
         my ($begin_offset, $end_offset) = $q->seek_passage ($st{author}, $st{work}, @target);
         # When looking at the start of a work, don't browse back
@@ -1007,16 +1137,6 @@ $output{browser_output} = sub
         ($st{begin_offset}, $st{end_offset}) = $q->browse_backward ($st{begin_offset},
                                                                         $st{end_offset},
                                                                         $st{author}, $st{work});
-    }
-    elsif (my @array = grep {m/^GetContext/} keys %st) 
-    {
-        # Set up the browser if we have come from a search result
-        my $param = pop @array;
-        $param =~ s#^GetContext~~~##;
-        my ($auth, $work, $beginning) = split(/~~~/, $param);
-        ($st{begin_offset}, $st{end_offset}) = $q->browse_forward ($beginning, -1, $auth, $work);
-        $st{author} = $auth;
-        $st{work} = $work;
     }
     else 
     {
@@ -1199,7 +1319,7 @@ $output{simple_filter} = sub
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;   
 
-    $print_title->('Diogenes Author Select Page', 'author_list');
+    $print_title->('Diogenes Author Select Page');
     $print_header->();   
     $st{current_page} = 'simple_filter';
 
@@ -1351,7 +1471,7 @@ $output{refine_works} = sub
     my $q = new Diogenes::Search( %args );
     $database_error->($q) if not $q->check_db;
 
-    $print_title->('Diogenes Individual Works', 'works_list');
+    $print_title->('Diogenes Individual Works');
     $print_header->();
     $st{current_page} = 'select_works';
     print
@@ -1432,7 +1552,7 @@ $output{tlg_filter} = sub
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
-    $print_title->('Diogenes TLG Selection Page', 'author_list');
+    $print_title->('Diogenes TLG Selection Page');
     $print_header->();
     
     $st{current_page} = 'tlg_filter';
@@ -1570,7 +1690,7 @@ $output{tlg_filter_results} = sub
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
-    $print_title->('Diogenes TLG Select Page', 'works_list');
+    $print_title->('Diogenes TLG Select Page');
     $print_header->();
     
     $st{current_page} = 'tlg_filter_output';
@@ -1781,7 +1901,6 @@ my $mod_perl_error = sub
     return;
 };
 
-
 # End of subroutine definitions -- here's where the dispatching gets done
 
 # Flow control
@@ -1790,6 +1909,15 @@ my $mod_perl_error = sub
 if ($check_mod_perl and not $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl/)
 {
     $mod_perl_error->();
+}
+elsif ($f->param('JumpTo')) 
+{
+    # Jump straight to a passage in the browser
+    my $jump = $f->param('JumpTo');
+    $jump =~ m/^([^,]+)/;
+    $st{short_type} = $1;
+    $st{type} = $database{$1};
+    $output{browser_output}->($jump);
 }
 elsif (not $previous_page) 
 {

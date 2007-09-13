@@ -1,6 +1,25 @@
 
 Modification history:
 
+v. 3.1.0 Major new functionality added:
+
+     * Perseus morphological data and dictionaries added.  Old Perseus
+       links removed. Morphological search added.
+
+     * Unicode input added and made default.  Utf-8 output now prefers
+       basic Greek codepage where the extended codepage duplicates it.
+       On the Mac, utf-8 additionally defaults to decomposed
+       characters. Added many Unicode equivalents from the TLG beta
+       code manual.
+
+     * Upgraded to Xulrunner 1.9a8pre (pre-release codebase of Firefox
+       3), which fixes many Mac UI bugs.  I think this moves the min
+       OS version for Mac up to 10.4.
+
+     * Misc bugfixes: go to context works (differently) now; Greek
+       quotes in Latin text terminate properly; Unicode input makes it
+       easier to search in bilingual corpora.
+
 v. 3.0.10 Fixed bug whereby entering a path for the minor corpora
    would result in an illegal config file entry to be written.
 

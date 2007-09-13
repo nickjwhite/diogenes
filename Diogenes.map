@@ -449,9 +449,27 @@ dagger_dbl 		 => '&#135;',
 }; # Keep this line.
 
 
-############ Unicode UTF-8 Encoding ##################
+############ Unicode UTF-8 Encodings ##################
 
-$Diogenes::Base::encoding{'UTF-8'} = {
+# NB.  This file is read in as bytes, not chars.  This means that we
+# don't need to worry about wide-char on print warnings, which would
+# require selectively making STDOUT a utf8 filehandle.  That may be
+# necessary when Perl switches to reading source as utf8 by default
+# (or we might put "no utf8" here and elsewhere).
+
+# There are various ways to do polytonic Greek in Unicode: (a)
+# normaliztion form can be C or D and (b) the duplicate characters can
+# be taken from the Greek/Coptic basic codepage or the Greek exteneded
+# codepage.  Macs tend to use norm. form D, while others use C.
+# Unicode now recommends preferring chars from the basic codepage even
+# for polytonic Greek, but this may cause problems with certain fonts
+# that have different style accents for the two pages.
+
+# UTF-8-CX is precomposed (form C), preferring the extended page.
+# UTF-8-CB is precomposed (form C), preferring the base page.
+# UTF-8-DB is decomposed (form D), preferring the base page.
+
+$Diogenes::Base::encoding{'UTF-8-CX'} = {
 
 # This entry tells us that this particular encoding includes glyphs 
 # compounded from capital letters and leading diacritics. 1 is true.
@@ -870,12 +888,12 @@ vertical   => '|', # vertical bar: `|'
 tilde	   => '~',
 apostrophe => '\'',
 
-quote_sngl_left  => "",    
-quote_sngl_right => "",    
+quote_sngl_left  => "‘",    
+quote_sngl_right => "’",    
 guillemot_left 	 => "«",
 guillemot_right  => "»",
-quote_dbl_left 	 => "",
-quote_dbl_right  => "",
+quote_dbl_left 	 => "“",
+quote_dbl_right  => "”",
 parens_left		 => '(',
 parens_right	 => ')',
 bracket_left 	 => '[',
@@ -884,8 +902,8 @@ angle_left 		 => '<',
 angle_right 	 => '>', 
 brace_left 		 => '{',  
 brace_right 	 => '}', 
-dagger 			 => "",     
-dagger_dbl 		 => "",  
+dagger 			 => "†",     
+dagger_dbl 		 => "‡",  
 
 }; # Keep this line.
 
@@ -932,7 +950,866 @@ my $UTF_8_post = sub
 
 };
 
-$Diogenes::Base::encoding{'UTF-8'}{post_match} = $UTF_8_post;
+$Diogenes::Base::encoding{'UTF-8-CX'}{post_match} = $UTF_8_post;
+$Diogenes::Base::encoding{'UTF-8-CB'}{post_match} = $UTF_8_post;
+$Diogenes::Base::encoding{'UTF-8-DB'}{post_match} = $UTF_8_post;
+
+# Pre-combined, preferring basic page
+$Diogenes::Base::encoding{'UTF-8-CB'} = {
+
+caps_with_diacrits => 1,
+font_name => '',  # Not relevant 
+
+alpha	=> "α",
+beta 	=> "β",
+gamma 	=> "γ",
+delta 	=> "δ",
+epsilon => "ε",
+zeta 	=> "ζ",
+eta 	=> "η",
+theta 	=> "θ",
+iota 	=> "ι",
+kappa 	=> "κ",
+lambda	=> "λ",
+mu 		=> "μ",
+nu 		=> "ν",
+xi 		=> "ξ",
+omicron => "ο",
+pi 		=> "π",
+rho 	=> "ρ",
+sigma 	=> "σ",
+tau 	=> "τ",
+upsilon => "υ",
+phi 	=> "φ",
+chi 	=> "χ",
+psi 	=> "ψ",
+omega 	=> "ω",
+
+Alpha 	=> "Α",
+Beta 	=> "Β",
+Gamma 	=> "Γ",
+Delta 	=> "Δ",
+Epsilon => "Ε",
+Zeta 	=> "Ζ",
+Eta 	=> "Η",
+Theta 	=> "Θ",
+Iota 	=> "Ι",
+Kappa 	=> "Κ",
+Lambda 	=> "Λ",
+Mu 		=> "Μ",
+Nu 		=> "Ν",
+Xi 		=> "Ξ",
+Omicron => "Ο",
+Pi 		=> "Π",
+Rho 	=> "Ρ",
+Sigma 	=> "Σ",
+Tau 	=> "Τ",
+Upsilon => "Υ",
+Phi 	=> "Φ",
+Chi 	=> "Χ",
+Psi 	=> "Ψ",
+Omega 	=> "Ω",
+
+#
+# Lone diacritics
+#
+oxy  			=> "΄",   # lone acute
+bary 			=> "`",   # lone grave    
+peri		  	=> "῀",   # lone circumflex
+lenis 			=> "᾿",   # lone smooth breathing 
+asper 			=> "῾",   # lone rough  breathing  
+diaer			=> "¨",   # lone diaeresis
+lenis_oxy   	=> "῎",   # combinations of the above             
+lenis_bary  	=> "῍",     
+lenis_peri  	=> "῏",    
+asper_oxy   	=> "῞",    
+asper_bary  	=> "῝",   
+asper_peri  	=> "῟",     
+diaer_oxy  		=> "΅",       
+diaer_bary 		=> "῭",       
+diaer_peri 		=> "῁",       
+
+iota_subscript 	=> "ͺ",
+longum 			=> "¯",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "ς",
+sigma_lunate => "ϲ",      
+Sigma_lunate => "ϲ",
+rho_asper	 => "ῥ",
+Rho_asper	 => "Ῥ",
+rho_lenis 	 => "ῤ",
+Rho_lenis 	 => "Ρ", # not defined by Unicode
+digamma 	 => "ϝ", 
+Digamma 	 => "Ϝ",
+koppa 		 => "ϟ",
+Koppa 		 => "Ϟ",
+sampi 		 => "ϡ",   
+Sampi 		 => "Ϡ",   
+Special		 => "h", # *J is used by Cornell epigraphy database for aspirates
+
+#
+# alpha with accents
+#
+alpha_oxy        => "ά", # 03ac 
+alpha_bary       => "ὰ",
+alpha_peri       => "ᾶ",  
+alpha_lenis      => "ἀ",       
+alpha_asper      => "ἁ",       
+alpha_lenis_oxy  => "ἄ",       
+alpha_asper_oxy  => "ἅ",
+alpha_lenis_bary => "ἂ",    
+alpha_asper_bary => "ἃ",	
+alpha_lenis_peri => "ἆ",
+alpha_asper_peri => "ἇ",     
+
+Alpha_oxy        => "Ά", # 0386 
+Alpha_bary       => "Ὰ",
+Alpha_peri       => "",  
+Alpha_lenis      => "Ἀ",       
+Alpha_asper      => "Ἁ",       
+Alpha_lenis_oxy  => "Ἄ",       
+Alpha_asper_oxy  => "Ἅ",
+Alpha_lenis_bary => "Ἂ",    
+Alpha_asper_bary => "Ἃ",	
+Alpha_lenis_peri => "Ἆ",
+Alpha_asper_peri => "Ἇ",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "ᾳ",
+alpha_oxy_isub        => "ᾴ",     
+alpha_bary_isub       => "ᾲ",        
+alpha_peri_isub       => "ᾷ",        
+alpha_lenis_isub      => "ᾀ",     
+alpha_asper_isub      => "ᾁ",     
+alpha_lenis_oxy_isub  => "ᾄ",     
+alpha_asper_oxy_isub  => "ᾅ",   
+alpha_lenis_bary_isub => "ᾂ",   
+alpha_asper_bary_isub => "ᾃ",     
+alpha_lenis_peri_isub => "ᾆ",     
+alpha_asper_peri_isub => "ᾇ",    
+
+Alpha_isub       	  => "ᾼ",
+Alpha_oxy_isub        => "",     
+Alpha_bary_isub       => "",        
+Alpha_peri_isub       => "",        
+Alpha_lenis_isub      => "ᾈ",     
+Alpha_asper_isub      => "ᾉ",     
+Alpha_lenis_oxy_isub  => "ᾌ",     
+Alpha_asper_oxy_isub  => "ᾍ",   
+Alpha_lenis_bary_isub => "ᾊ",   
+Alpha_asper_bary_isub => "ᾋ",     
+Alpha_lenis_peri_isub => "ᾎ",     
+Alpha_asper_peri_isub => "ᾏ",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "έ",
+epsilon_bary       => "ὲ",     
+epsilon_peri 	   => "ε̄", # macron for epigraphy    
+epsilon_lenis      => "ἐ",        
+epsilon_asper      => "ἑ",        
+epsilon_lenis_oxy  => "ἔ",        
+epsilon_asper_oxy  => "ἕ",        
+epsilon_lenis_bary => "ἒ",        
+epsilon_asper_bary => "ἓ",	 
+epsilon_asper_peri => "ἑ̄",
+epsilon_lenis_peri => "ἐ̄", 
+
+Epsilon_oxy        => "Έ",
+Epsilon_bary       => "Ὲ",     
+Epsilon_peri 	   => "̄Ε", # macron for epigraphy, etc.       
+Epsilon_lenis      => "Ἐ",        
+Epsilon_asper      => "Ἑ",        
+Epsilon_lenis_oxy  => "Ἔ",        
+Epsilon_asper_oxy  => "Ἕ",        
+Epsilon_lenis_bary => "Ἒ",        
+Epsilon_asper_bary => "Ἓ",	 
+Epsilon_asper_peri => "Ἑ̄",
+Epsilon_lenis_peri => "Ἐ̄", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "ή",
+eta_bary       => "ὴ",
+eta_peri       => "ῆ",
+eta_lenis      => "ἠ",
+eta_asper      => "ἡ",
+eta_lenis_oxy  => "ἤ",
+eta_asper_oxy  => "ἥ",
+eta_lenis_bary => "ἢ",
+eta_asper_bary => "ἣ",
+eta_lenis_peri => "ἦ",
+eta_asper_peri => "ἧ",
+
+Eta_oxy        => "Ή",
+Eta_bary       => "Ὴ",
+Eta_peri       => "",
+Eta_lenis      => "Ἠ",
+Eta_asper      => "Ἡ",
+Eta_lenis_oxy  => "Ἤ",
+Eta_asper_oxy  => "Ἥ",
+Eta_lenis_bary => "Ἢ",
+Eta_asper_bary => "Ἣ",
+Eta_lenis_peri => "Ἦ",
+Eta_asper_peri => "Ἧ",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "ῃ",      
+eta_oxy_isub        => "ῄ",  
+eta_bary_isub       => "ῂ",  
+eta_peri_isub       => "ῇ",  
+eta_lenis_isub      => "ᾐ",  
+eta_asper_isub      => "ᾑ",  
+eta_lenis_oxy_isub  => "ᾔ",  
+eta_asper_oxy_isub  => "ᾕ",  
+eta_lenis_bary_isub => "ᾒ",  
+eta_asper_bary_isub => "ᾓ",  
+eta_lenis_peri_isub => "ᾖ",  
+eta_asper_peri_isub => "ᾗ",  
+
+Eta_isub      		=> "ῌ",      
+Eta_oxy_isub        => "",  
+Eta_bary_isub       => "",  
+Eta_peri_isub       => "",  
+Eta_lenis_isub      => "ᾘ",  
+Eta_asper_isub      => "ᾙ",  
+Eta_lenis_oxy_isub  => "ᾜ",  
+Eta_asper_oxy_isub  => "ᾝ",  
+Eta_lenis_bary_isub => "ᾚ",  
+Eta_asper_bary_isub => "ᾛ",  
+Eta_lenis_peri_isub => "ᾞ",  
+Eta_asper_peri_isub => "ᾟ",  
+
+#
+#iota with accents
+#
+iota_oxy        => "ί",
+iota_bary       => "ὶ",
+iota_peri       => "ῖ",
+iota_lenis      => "ἰ",
+iota_asper      => "ἱ",
+iota_lenis_oxy  => "ἴ",
+iota_asper_oxy  => "ἵ",
+iota_lenis_bary => "ἲ",
+iota_asper_bary => "ἳ",
+iota_lenis_peri => "ἶ",
+iota_asper_peri => "ἷ",
+iota_diaer      => "ϊ",
+iota_diaer_oxy  => "ΐ",
+iota_diaer_bary => "ῒ",
+iota_diaer_peri => "ῗ",
+
+Iota_oxy        => "Ί",
+Iota_bary       => "Ὶ",
+Iota_peri       => "",
+Iota_lenis      => "Ἰ",
+Iota_asper      => "Ἱ",
+Iota_lenis_oxy  => "Ἴ",
+Iota_asper_oxy  => "Ἵ",
+Iota_lenis_bary => "Ἲ",
+Iota_asper_bary => "Ἳ",
+Iota_lenis_peri => "Ἶ",
+Iota_asper_peri => "Ἷ",
+Iota_diaer      => "Ϊ",
+Iota_diaer_oxy  => "",
+Iota_diaer_bary => "",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "ό",
+omicron_bary       => "ὸ",
+omicron_peri 	   => "ο̄",  #macron for epigraphy          
+omicron_lenis      => "ὀ",
+omicron_asper      => "ὁ",
+omicron_lenis_oxy  => "ὄ",
+omicron_asper_oxy  => "ὅ",
+omicron_lenis_bary => "ὂ",
+omicron_asper_bary => "ὃ",
+omicron_asper_peri => "ὁ̄",    
+omicron_lenis_peri => "ὀ̄",        
+
+Omicron_oxy        => "Ό",
+Omicron_bary       => "Ὸ",
+Omicron_peri 	   => "Ο̄",           
+Omicron_lenis      => "Ὀ",
+Omicron_asper      => "Ὁ",
+Omicron_lenis_oxy  => "Ὄ",
+Omicron_asper_oxy  => "Ὅ",
+Omicron_lenis_bary => "Ὂ",
+Omicron_asper_bary => "Ὃ",
+Omicron_asper_peri => "Ὁ̄",    
+Omicron_lenis_peri => "Ὀ̄",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "ύ",
+upsilon_bary       => "ὺ",
+upsilon_peri       => "ῦ",
+upsilon_lenis      => "ὐ",
+upsilon_asper      => "ὑ",
+upsilon_lenis_oxy  => "ὔ",
+upsilon_asper_oxy  => "ὕ",
+upsilon_lenis_bary => "ὒ",
+upsilon_asper_bary => "ὓ",
+upsilon_lenis_peri => "ὖ",
+upsilon_asper_peri => "ὗ",
+upsilon_diaer      => "ϋ",
+upsilon_diaer_oxy  => "ΰ", 
+upsilon_diaer_bary => "ῢ",
+upsilon_diaer_peri => "ῧ",
+
+Upsilon_oxy        => "Ύ",
+Upsilon_bary       => "Ὺ",
+Upsilon_peri       => "",
+Upsilon_lenis      => "",
+Upsilon_asper      => "Ὑ",
+Upsilon_lenis_oxy  => "",
+Upsilon_asper_oxy  => "Ὕ",
+Upsilon_lenis_bary => "",
+Upsilon_asper_bary => "Ὓ",
+Upsilon_lenis_peri => "",
+Upsilon_asper_peri => "Ὗ",
+Upsilon_diaer      => "Ϋ",
+Upsilon_diaer_oxy  => "", 
+Upsilon_diaer_bary => "",
+
+#
+# omega with accents
+#
+omega_oxy        => "ώ",
+omega_bary       => "ὼ",
+omega_peri       => "ῶ",
+omega_lenis      => "ὠ",
+omega_asper      => "ὡ",
+omega_lenis_oxy  => "ὤ",
+omega_asper_oxy  => "ὥ",
+omega_lenis_bary => "ὢ",
+omega_asper_bary => "ὣ",
+omega_lenis_peri => "ὦ",
+omega_asper_peri => "ὧ",
+
+Omega_oxy        => "Ώ",
+Omega_bary       => "Ὼ",
+Omega_peri       => "",
+Omega_lenis      => "Ὠ",
+Omega_asper      => "Ὡ",
+Omega_lenis_oxy  => "Ὤ",
+Omega_asper_oxy  => "Ὥ",
+Omega_lenis_bary => "Ὢ",
+Omega_asper_bary => "Ὣ",
+Omega_lenis_peri => "Ὦ",
+Omega_asper_peri => "Ὧ",
+
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "ῳ",     
+omega_oxy_isub        => "ῴ",
+omega_bary_isub       => "ῲ", 
+omega_peri_isub       => "ῷ",
+omega_lenis_isub      => "ᾠ", 
+omega_asper_isub      => "ᾡ",
+omega_lenis_oxy_isub  => "ᾤ",
+omega_asper_oxy_isub  => "ᾥ",
+omega_lenis_bary_isub => "ᾢ", 
+omega_asper_bary_isub => "ᾣ",
+omega_lenis_peri_isub => "ᾦ",  
+omega_asper_peri_isub => "ᾧ",  
+
+Omega_isub      	  => "ῼ",     
+Omega_oxy_isub        => "",
+Omega_bary_isub       => "", 
+Omega_peri_isub       => "",
+Omega_lenis_isub      => "ᾨ", 
+Omega_asper_isub      => "ᾩ",
+Omega_lenis_oxy_isub  => "ᾬ",
+Omega_asper_oxy_isub  => "ᾭ",
+Omega_lenis_bary_isub => "ᾪ", 
+Omega_asper_bary_isub => "ᾫ",
+Omega_lenis_peri_isub => "ᾮ",  
+Omega_asper_peri_isub => "ᾯ",  
+
+#
+# Punctuation
+#
+space      => ' ',
+prime      => "ʹ", # for numbers
+hyphen     => "-",
+dash       => " - ",
+period     => '.',
+asterisk   => '*',
+comma	   => ',',
+underscore => '_',
+asteriskos => '*',
+raised_dot => "·",
+semicolon  => ";", # Greek mark of interrogation
+question   => '?', # Latin question mark: `?'
+equals     => '=',
+vertical   => '|', # vertical bar: `|'
+tilde	   => '~',
+apostrophe => '\'',
+
+quote_sngl_left  => "‘",    
+quote_sngl_right => "’",    
+guillemot_left 	 => "«",
+guillemot_right  => "»",
+quote_dbl_left 	 => "“",
+quote_dbl_right  => "”",
+parens_left		 => '(',
+parens_right	 => ')',
+bracket_left 	 => '[',
+bracket_right 	 => ']',
+angle_left 		 => '<',  
+angle_right 	 => '>', 
+brace_left 		 => '{',  
+brace_right 	 => '}', 
+dagger 			 => "†",     
+dagger_dbl 		 => "‡",  
+
+}; # Keep this line.
+
+# Pre-combined, preferring basic page (auto-generated from the above
+# via decompose.pl).
+
+$Diogenes::Base::encoding{'UTF-8-DB'} = {
+
+caps_with_diacrits => 1,
+font_name => '',  # Not relevant 
+
+alpha	=> "α",
+beta 	=> "β",
+gamma 	=> "γ",
+delta 	=> "δ",
+epsilon => "ε",
+zeta 	=> "ζ",
+eta 	=> "η",
+theta 	=> "θ",
+iota 	=> "ι",
+kappa 	=> "κ",
+lambda	=> "λ",
+mu 		=> "μ",
+nu 		=> "ν",
+xi 		=> "ξ",
+omicron => "ο",
+pi 		=> "π",
+rho 	=> "ρ",
+sigma 	=> "σ",
+tau 	=> "τ",
+upsilon => "υ",
+phi 	=> "φ",
+chi 	=> "χ",
+psi 	=> "ψ",
+omega 	=> "ω",
+
+Alpha 	=> "Α",
+Beta 	=> "Β",
+Gamma 	=> "Γ",
+Delta 	=> "Δ",
+Epsilon => "Ε",
+Zeta 	=> "Ζ",
+Eta 	=> "Η",
+Theta 	=> "Θ",
+Iota 	=> "Ι",
+Kappa 	=> "Κ",
+Lambda 	=> "Λ",
+Mu 		=> "Μ",
+Nu 		=> "Ν",
+Xi 		=> "Ξ",
+Omicron => "Ο",
+Pi 		=> "Π",
+Rho 	=> "Ρ",
+Sigma 	=> "Σ",
+Tau 	=> "Τ",
+Upsilon => "Υ",
+Phi 	=> "Φ",
+Chi 	=> "Χ",
+Psi 	=> "Ψ",
+Omega 	=> "Ω",
+
+#
+# Lone diacritics
+#
+oxy  			=> "΄",   # lone acute
+bary 			=> "`",   # lone grave    
+peri		  	=> "῀",   # lone circumflex
+lenis 			=> "᾿",   # lone smooth breathing 
+asper 			=> "῾",   # lone rough  breathing  
+diaer			=> "¨",   # lone diaeresis
+lenis_oxy   	=> "῎",   # combinations of the above             
+lenis_bary  	=> "῍",     
+lenis_peri  	=> "῏",    
+asper_oxy   	=> "῞",    
+asper_bary  	=> "῝",   
+asper_peri  	=> "῟",     
+diaer_oxy  		=> "΅",       
+diaer_bary 		=> "῭",       
+diaer_peri 		=> "῁",       
+
+iota_subscript 	=> "ͺ",
+longum 			=> "¯",
+breve 			=> "",
+
+#
+# Funny letters
+#
+sigma_final	 => "ς",
+sigma_lunate => "ϲ",      
+Sigma_lunate => "ϲ",
+rho_asper	 => "ῥ",
+Rho_asper	 => "Ῥ",
+rho_lenis 	 => "ῤ",
+Rho_lenis 	 => "Ρ", # not defined by Unicode
+digamma 	 => "ϝ", 
+Digamma 	 => "Ϝ",
+koppa 		 => "ϟ",
+Koppa 		 => "Ϟ",
+sampi 		 => "ϡ",   
+Sampi 		 => "Ϡ",   
+Special		 => "h", # *J is used by Cornell epigraphy database for aspirates
+
+#
+# alpha with accents
+#
+alpha_oxy        => "ά", # 03ac 
+alpha_bary       => "ὰ",
+alpha_peri       => "ᾶ",  
+alpha_lenis      => "ἀ",       
+alpha_asper      => "ἁ",       
+alpha_lenis_oxy  => "ά̓",       
+alpha_asper_oxy  => "ά̔",
+alpha_lenis_bary => "ὰ̓",    
+alpha_asper_bary => "ὰ̔",	
+alpha_lenis_peri => "ᾶ̓",
+alpha_asper_peri => "ᾶ̔",     
+
+Alpha_oxy        => "Ά", # 0386 
+Alpha_bary       => "Ὰ",
+Alpha_peri       => "",  
+Alpha_lenis      => "Ἀ",       
+Alpha_asper      => "Ἁ",       
+Alpha_lenis_oxy  => "Ά̓",       
+Alpha_asper_oxy  => "Ά̔",
+Alpha_lenis_bary => "Ὰ̓",    
+Alpha_asper_bary => "Ὰ̔",	
+Alpha_lenis_peri => "Α͂̓",
+Alpha_asper_peri => "Α͂̔",     
+
+#
+# alpha with accents and iota subscript
+# 
+alpha_isub       	  => "ᾳ",
+alpha_oxy_isub        => "ᾴ",     
+alpha_bary_isub       => "ᾲ",        
+alpha_peri_isub       => "ᾷ",        
+alpha_lenis_isub      => "ᾀ",     
+alpha_asper_isub      => "ᾁ",     
+alpha_lenis_oxy_isub  => "ᾴ̓",     
+alpha_asper_oxy_isub  => "ᾴ̔",   
+alpha_lenis_bary_isub => "ᾲ̓",   
+alpha_asper_bary_isub => "ᾲ̔",     
+alpha_lenis_peri_isub => "ᾷ̓",     
+alpha_asper_peri_isub => "ᾷ̔",    
+
+Alpha_isub       	  => "ᾼ",
+Alpha_oxy_isub        => "",     
+Alpha_bary_isub       => "",        
+Alpha_peri_isub       => "",        
+Alpha_lenis_isub      => "ᾈ",     
+Alpha_asper_isub      => "ᾉ",     
+Alpha_lenis_oxy_isub  => "Ά̓ͅ",     
+Alpha_asper_oxy_isub  => "Ά̔ͅ",   
+Alpha_lenis_bary_isub => "Ὰ̓ͅ",   
+Alpha_asper_bary_isub => "Ὰ̔ͅ",     
+Alpha_lenis_peri_isub => "ᾼ͂̓",     
+Alpha_asper_peri_isub => "ᾼ͂̔",    
+
+#
+# epsilon with accents
+#
+epsilon_oxy        => "έ",
+epsilon_bary       => "ὲ",     
+epsilon_peri 	   => "ε̄", # macron for epigraphy    
+epsilon_lenis      => "ἐ",        
+epsilon_asper      => "ἑ",        
+epsilon_lenis_oxy  => "έ̓",        
+epsilon_asper_oxy  => "έ̔",        
+epsilon_lenis_bary => "ὲ̓",        
+epsilon_asper_bary => "ὲ̔",	 
+epsilon_asper_peri => "ἑ̄",
+epsilon_lenis_peri => "ἐ̄", 
+
+Epsilon_oxy        => "Έ",
+Epsilon_bary       => "Ὲ",     
+Epsilon_peri 	   => "̄Ε", # macron for epigraphy, etc.       
+Epsilon_lenis      => "Ἐ",        
+Epsilon_asper      => "Ἑ",        
+Epsilon_lenis_oxy  => "Έ̓",        
+Epsilon_asper_oxy  => "Έ̔",        
+Epsilon_lenis_bary => "Ὲ̓",        
+Epsilon_asper_bary => "Ὲ̔",	 
+Epsilon_asper_peri => "Ἑ̄",
+Epsilon_lenis_peri => "Ἐ̄", 
+
+#					 
+# eta with accents			 
+#					 
+eta_oxy        => "ή",
+eta_bary       => "ὴ",
+eta_peri       => "ῆ",
+eta_lenis      => "ἠ",
+eta_asper      => "ἡ",
+eta_lenis_oxy  => "ή̓",
+eta_asper_oxy  => "ή̔",
+eta_lenis_bary => "ὴ̓",
+eta_asper_bary => "ὴ̔",
+eta_lenis_peri => "ῆ̓",
+eta_asper_peri => "ῆ̔",
+
+Eta_oxy        => "Ή",
+Eta_bary       => "Ὴ",
+Eta_peri       => "",
+Eta_lenis      => "Ἠ",
+Eta_asper      => "Ἡ",
+Eta_lenis_oxy  => "Ή̓",
+Eta_asper_oxy  => "Ή̔",
+Eta_lenis_bary => "Ὴ̓",
+Eta_asper_bary => "Ὴ̔",
+Eta_lenis_peri => "Η͂̓",
+Eta_asper_peri => "Η͂̔",
+
+#
+# eta with accents and iota subscript
+#
+#
+eta_isub      		=> "ῃ",      
+eta_oxy_isub        => "ῄ",  
+eta_bary_isub       => "ῂ",  
+eta_peri_isub       => "ῇ",  
+eta_lenis_isub      => "ᾐ",  
+eta_asper_isub      => "ᾑ",  
+eta_lenis_oxy_isub  => "ῄ̓",  
+eta_asper_oxy_isub  => "ῄ̔",  
+eta_lenis_bary_isub => "ῂ̓",  
+eta_asper_bary_isub => "ῂ̔",  
+eta_lenis_peri_isub => "ῇ̓",  
+eta_asper_peri_isub => "ῇ̔",  
+
+Eta_isub      		=> "ῌ",      
+Eta_oxy_isub        => "",  
+Eta_bary_isub       => "",  
+Eta_peri_isub       => "",  
+Eta_lenis_isub      => "ᾘ",  
+Eta_asper_isub      => "ᾙ",  
+Eta_lenis_oxy_isub  => "Ή̓ͅ",  
+Eta_asper_oxy_isub  => "Ή̔ͅ",  
+Eta_lenis_bary_isub => "Ὴ̓ͅ",  
+Eta_asper_bary_isub => "Ὴ̔ͅ",  
+Eta_lenis_peri_isub => "ῌ͂̓",  
+Eta_asper_peri_isub => "ῌ͂̔",  
+
+#
+#iota with accents
+#
+iota_oxy        => "ί",
+iota_bary       => "ὶ",
+iota_peri       => "ῖ",
+iota_lenis      => "ἰ",
+iota_asper      => "ἱ",
+iota_lenis_oxy  => "ί̓",
+iota_asper_oxy  => "ί̔",
+iota_lenis_bary => "ὶ̓",
+iota_asper_bary => "ὶ̔",
+iota_lenis_peri => "ῖ̓",
+iota_asper_peri => "ῖ̔",
+iota_diaer      => "ϊ",
+iota_diaer_oxy  => "ί̈",
+iota_diaer_bary => "ὶ̈",
+iota_diaer_peri => "ῖ̈",
+
+Iota_oxy        => "Ί",
+Iota_bary       => "Ὶ",
+Iota_peri       => "",
+Iota_lenis      => "Ἰ",
+Iota_asper      => "Ἱ",
+Iota_lenis_oxy  => "Ί̓",
+Iota_asper_oxy  => "Ί̔",
+Iota_lenis_bary => "Ὶ̓",
+Iota_asper_bary => "Ὶ̔",
+Iota_lenis_peri => "Ι͂̓",
+Iota_asper_peri => "Ι͂̔",
+Iota_diaer      => "Ϊ",
+Iota_diaer_oxy  => "",
+Iota_diaer_bary => "",
+
+#
+# omicron with accents
+#
+omicron_oxy        => "ό",
+omicron_bary       => "ὸ",
+omicron_peri 	   => "ο̄",  #macron for epigraphy          
+omicron_lenis      => "ὀ",
+omicron_asper      => "ὁ",
+omicron_lenis_oxy  => "ό̓",
+omicron_asper_oxy  => "ό̔",
+omicron_lenis_bary => "ὸ̓",
+omicron_asper_bary => "ὸ̔",
+omicron_asper_peri => "ὁ̄",    
+omicron_lenis_peri => "ὀ̄",        
+
+Omicron_oxy        => "Ό",
+Omicron_bary       => "Ὸ",
+Omicron_peri 	   => "Ο̄",           
+Omicron_lenis      => "Ὀ",
+Omicron_asper      => "Ὁ",
+Omicron_lenis_oxy  => "Ό̓",
+Omicron_asper_oxy  => "Ό̔",
+Omicron_lenis_bary => "Ὸ̓",
+Omicron_asper_bary => "Ὸ̔",
+Omicron_asper_peri => "Ὁ̄",    
+Omicron_lenis_peri => "Ὀ̄",        
+
+#
+# upsilon with accents
+#
+upsilon_oxy        => "ύ",
+upsilon_bary       => "ὺ",
+upsilon_peri       => "ῦ",
+upsilon_lenis      => "ὐ",
+upsilon_asper      => "ὑ",
+upsilon_lenis_oxy  => "ύ̓",
+upsilon_asper_oxy  => "ύ̔",
+upsilon_lenis_bary => "ὺ̓",
+upsilon_asper_bary => "ὺ̔",
+upsilon_lenis_peri => "ῦ̓",
+upsilon_asper_peri => "ῦ̔",
+upsilon_diaer      => "ϋ",
+upsilon_diaer_oxy  => "ύ̈", 
+upsilon_diaer_bary => "ὺ̈",
+upsilon_diaer_peri => "ῦ̈",
+
+Upsilon_oxy        => "Ύ",
+Upsilon_bary       => "Ὺ",
+Upsilon_peri       => "",
+Upsilon_lenis      => "",
+Upsilon_asper      => "Ὑ",
+Upsilon_lenis_oxy  => "",
+Upsilon_asper_oxy  => "Ύ̔",
+Upsilon_lenis_bary => "",
+Upsilon_asper_bary => "Ὺ̔",
+Upsilon_lenis_peri => "",
+Upsilon_asper_peri => "Υ͂̔",
+Upsilon_diaer      => "Ϋ",
+Upsilon_diaer_oxy  => "", 
+Upsilon_diaer_bary => "",
+
+#
+# omega with accents
+#
+omega_oxy        => "ώ",
+omega_bary       => "ὼ",
+omega_peri       => "ῶ",
+omega_lenis      => "ὠ",
+omega_asper      => "ὡ",
+omega_lenis_oxy  => "ώ̓",
+omega_asper_oxy  => "ώ̔",
+omega_lenis_bary => "ὼ̓",
+omega_asper_bary => "ὼ̔",
+omega_lenis_peri => "ῶ̓",
+omega_asper_peri => "ῶ̔",
+
+Omega_oxy        => "Ώ",
+Omega_bary       => "Ὼ",
+Omega_peri       => "",
+Omega_lenis      => "Ὠ",
+Omega_asper      => "Ὡ",
+Omega_lenis_oxy  => "Ώ̓",
+Omega_asper_oxy  => "Ώ̔",
+Omega_lenis_bary => "Ὼ̓",
+Omega_asper_bary => "Ὼ̔",
+Omega_lenis_peri => "Ω͂̓",
+Omega_asper_peri => "Ω͂̔",
+
+#
+# omega with accents and iota subscript
+#
+omega_isub      	  => "ῳ",     
+omega_oxy_isub        => "ῴ",
+omega_bary_isub       => "ῲ", 
+omega_peri_isub       => "ῷ",
+omega_lenis_isub      => "ᾠ", 
+omega_asper_isub      => "ᾡ",
+omega_lenis_oxy_isub  => "ῴ̓",
+omega_asper_oxy_isub  => "ῴ̔",
+omega_lenis_bary_isub => "ῲ̓", 
+omega_asper_bary_isub => "ῲ̔",
+omega_lenis_peri_isub => "ῷ̓",  
+omega_asper_peri_isub => "ῷ̔",  
+
+Omega_isub      	  => "ῼ",     
+Omega_oxy_isub        => "",
+Omega_bary_isub       => "", 
+Omega_peri_isub       => "",
+Omega_lenis_isub      => "ᾨ", 
+Omega_asper_isub      => "ᾩ",
+Omega_lenis_oxy_isub  => "Ώ̓ͅ",
+Omega_asper_oxy_isub  => "Ώ̔ͅ",
+Omega_lenis_bary_isub => "Ὼ̓ͅ", 
+Omega_asper_bary_isub => "Ὼ̔ͅ",
+Omega_lenis_peri_isub => "ῼ͂̓",  
+Omega_asper_peri_isub => "ῼ͂̔",  
+
+#
+# Punctuation
+#
+space      => ' ',
+prime      => "ʹ", # for numbers
+hyphen     => "-",
+dash       => " - ",
+period     => '.',
+asterisk   => '*',
+comma	   => ',',
+underscore => '_',
+asteriskos => '*',
+raised_dot => "·",
+semicolon  => ";", # Greek mark of interrogation
+question   => '?', # Latin question mark: `?'
+equals     => '=',
+vertical   => '|', # vertical bar: `|'
+tilde	   => '~',
+apostrophe => '\'',
+
+quote_sngl_left  => "‘",    
+quote_sngl_right => "’",    
+guillemot_left 	 => "«",
+guillemot_right  => "»",
+quote_dbl_left 	 => "“",
+quote_dbl_right  => "”",
+parens_left		 => '(',
+parens_right	 => ')',
+bracket_left 	 => '[',
+bracket_right 	 => ']',
+angle_left 		 => '<',  
+angle_right 	 => '>', 
+brace_left 		 => '{',  
+brace_right 	 => '}', 
+dagger 			 => "†",     
+dagger_dbl 		 => "‡",  
+
+}; # Keep this line.
+
 
 ############ WinGreek Encoding ###############
 
@@ -3252,6 +4129,115 @@ $Diogenes::Base::coptic_encoding{'UTF-8'} = {
 #
 # Basic alphabet
 #
+alpha	=> "ⲁ",
+beta 	=> "ⲃ",
+gamma 	=> "ⲅ",
+delta 	=> "ⲇ",
+epsilon => "ⲉ",
+zeta 	=> "ⲍ",
+eta 	=> "ⲏ",
+theta 	=> "ⲑ",
+iota 	=> "ⲓ",
+kappa 	=> "ⲕ",
+lambda	=> "ⲗ",
+mu 		=> "ⲙ",
+nu 		=> "ⲛ",
+xi 		=> "ⲝ",
+omicron => "ⲟ",
+pi 		=> "ⲡ",
+rho 	=> "ⲣ",
+sigma 	=> "ⲥ", 
+tau 	=> "ⲧ",
+upsilon => "ⲩ",
+phi 	=> "ⲫ",
+chi 	=> "ⲭ",
+psi 	=> "ⲯ",
+omega 	=> "ⲱ",
+
+# combining diacrits
+
+iota_diaer 	=> "ϊ",
+upsilon_diaer => "ϋ",
+alpha_peri	=> "ᾶ",
+eta_peri    => "ῆ", 
+omicron_peri => "ο͂",
+omega_peri  => "ῶ",
+shei_peri   => "ϣ͂",
+
+# NB. Caps not used in PHI texts
+
+#
+# Coptic letters
+#
+shei    => "ϣ",
+fei     => "ϥ",
+khei    => "ϧ",
+hori    => "ϩ",
+gangia  => "ϫ",
+shima   => "ϭ",
+dei     => "ϯ",
+
+overline => "̅",
+
+#Shei    => "Ϣ",
+#Fei     => "Ϥ",
+#Khei    => "Ϧ",
+#Hori    => "Ϩ",
+#Gangia  => "Ϫ",
+#Shima   => "Ϭ",
+#Dei     => "Ϯ",
+
+#
+# Punctuation
+#
+space      => ' ',
+prime      => "ʹ", # for numbers
+hyphen     => "-",
+dash       => " - ",
+period     => '.',
+asterisk   => '*',
+comma	   => ',',
+underscore => '_',
+asteriskos => '*',
+raised_dot => "·",
+semicolon  => ";", # Greek mark of interrogation
+question   => '?', # Latin question mark: `?'
+equals     => '=',
+vertical   => '|', # vertical bar: `|'
+tilde	   => '~',
+apostrophe => '\'',
+forward_slash => '\'', # a convention of the PHI texts
+
+#quote_sngl_left  => "",    
+#quote_sngl_right => "",    
+guillemot_left 	 => "«",
+guillemot_right  => "»",
+#quote_dbl_left 	 => "",
+#quote_dbl_right  => "",
+parens_left		 => '(',
+parens_right	 => ')',
+bracket_left 	 => '[',
+bracket_right 	 => ']',
+angle_left 		 => '<',  
+angle_right 	 => '>', 
+brace_left 		 => '{',  
+brace_right 	 => '}', 
+#dagger 			 => "",     
+#dagger_dbl 		 => "",  
+
+}; # Keep this line.
+
+$Diogenes::Base::coptic_encoding{'UTF-8'}{post_match} = $UTF_8_post;
+
+# This is the old-style Unicode in which the Coptic letters
+# supplemented the Greek.  In the new style, Coptic has its own code
+# page (2C80–2CFF).
+
+$Diogenes::Base::coptic_encoding{'UTF-8-old'} = {
+
+#
+# Basic alphabet
+#
 alpha	=> "α",
 beta 	=> "β",
 gamma 	=> "γ",
@@ -3310,6 +4296,8 @@ Gangia  => "Ϫ",
 Shima   => "Ϭ",
 Dei     => "Ϯ",
 
+overline => "̅",
+
 #
 # Punctuation
 #
@@ -3350,7 +4338,7 @@ dagger_dbl 		 => "",
 
 }; # Keep this line.
 
-$Diogenes::Base::coptic_encoding{'UTF-8'}{post_match} = $UTF_8_post;
+$Diogenes::Base::coptic_encoding{'UTF-8-old'}{post_match} = $UTF_8_post;
 
 $Diogenes::Base::coptic_encoding{Koptos} = {
 
