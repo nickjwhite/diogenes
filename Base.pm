@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.1.0";
+$Diogenes::Base::Version =  "3.1.2";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -3097,8 +3097,12 @@ sub coptic_handler
     # is done, so we might as well strip the junk out here
     $self->beta_formatting_to_ascii($ref);
 }
+# Code designed for Greek captures \ within hit,
+# but here it really belongs to the following letter
+$$ref =~ s/~hit~([^~]+)\\~/~hit~$1~\\/g;
+$$ref =~ s/\\~hit~([^~]+)~/~hit~\\$1~\\/g;
 # For greek, the lowercase protects "hit" from conversion, but not for coptic.
-$$ref =~ s/~hit~/~~~~~/g;
+$$ref =~ s/~hit~/\x08\x08/g;
 if (ref $coptic_encoding{$encoding}{pre_match} eq 'CODE')
 {       # Code to execute before the match
     $coptic_encoding{$encoding}{pre_match}->($ref);
@@ -3137,7 +3141,7 @@ else
     {   # Code to execute after the match
         $coptic_encoding{$encoding}{post_match}->($ref);
     }
-$$ref =~ s/~~~~~/~hit~/g;
+$$ref =~ s/\x08\x08/~hit~/g;
 
 }
 

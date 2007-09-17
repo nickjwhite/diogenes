@@ -343,9 +343,14 @@ sub perseus_to_beta
 # start of the word, and parens by \x073 and \x074.
 
 # h looks ahead for a rough breathing somewhere in the following group
-# of vowels, or even before it as in the word (EA`N
-my $rough_breathing =  q{(?=\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()};    
-my $smooth_breathing = q{(?!\\\(|[AEHIOWU/\\\\)=+?!|']+\\\()};     # opposite for smooth
+# of vowels, or before it as capitalized words or in the word (EA`N.
+# In lookbehind, allow for other diacrits to intervene
+
+my $rough_breathing =  q{(?:(?<=\()|(?<=\([^A-Z])|(?<=\([^A-Z][^A-Z])|(?=[AEHIOWU/\\\\)=+?!|']+\())};    
+my $smooth_breathing =  q{(?:(?<=\))|(?<=\)[^A-Z])|(?<=\)[^A-Z][^A-Z])|(?=[AEHIOWU/\\\\)=+?!|']+\)))};    
+
+# smooth is lack of rough
+# my $smooth_breathing = q{(?:(?<!\()(?<!\([^A-Z])(?<!\([^A-Z][^A-Z])(?![AEHIOWU/\\\\)=+?!|']+\())}; 
 
 sub make_loose_greek_pattern {
     my $self = shift;
