@@ -236,6 +236,7 @@ my $print_title = sub
 {
     print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
+    my $newpage = shift;
     print
         $f->start_html(-title=>$title,
                        -encoding=>$charset,
@@ -259,8 +260,13 @@ my $print_title = sub
                       -override => 1 );
  
     # for Perseus data
-    print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}" style="font-family: '$font'"></div>};
-
+    if ($newpage) {
+        # For when what we show first is Perseus data (we don't want a
+        # perseus sidebar within a perseus page
+        print qq{<div id="sidebar" class="sidebar-newpage" style="font-family: '$font'"></div>};
+    } else {
+        print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}" style="font-family: '$font'"></div>};
+    }
     if ($font) {
         print qq{<div id="main_window" class="main-full" style="font-family: '$font'">};
     } else {
@@ -341,16 +347,18 @@ $output{splash} = sub
 {
     # If you change this list, you may have to change onActionChange() in diogenes-cgi.js
     my @actions = ('search',
+                   'word_list',
                    'multiple',
                    'lemma',
-                   'word_list',
+                   'lookup',
                    'browse',
                    'filters');
     
     my %action_labels = ('search' => 'Simple search for a word or phrase',
-                         'multiple' => 'Search for conjunctions of multiple words or phrases',
-                         'lemma' => 'Morphological analysis and search',
                          'word_list' => 'Search the TLG using its word-list',
+                         'multiple' => 'Search for conjunctions of multiple words or phrases',
+                         'lemma' => 'Morphological search',
+                         'lookup' => 'Look up a word in the dictionary',
                          'browse' => 'Browse to a specific passage in a given text',
                          'filters' => 'Manage user-defined corpora');
 
@@ -467,6 +475,10 @@ $handler{splash} = sub
     elsif ($action eq 'lemma') 
     {
         $output{lemma}->();
+    }
+    elsif ($action eq 'lookup') 
+    {
+        $output{lookup}->();
     }
     elsif ($action eq 'search') 
     {
@@ -650,6 +662,30 @@ my $use_and_show_filter = sub
     }
 };
 
+$output{lookup} = sub {
+    $print_title->('Diogenes Dictionary Lookup Page', 1);
+    $print_header->();
+    $st{current_page} = 'lookup';
+
+    my $lang = $prob_lang{$st{short_type}};
+    my $inp_enc = $init->{input_encoding};
+    my $query = $st{query};
+    $query =~ s/\s//g;
+    if ($inp_enc eq 'Unicode') {
+        $lang = ($query =~ m/^[\x01-\x7f]+$/) ? 'lat' : 'grk';
+    }
+    $lang = 'eng' if $query =~ s/^@//;
+#     my $perseus_params = qq{do=lookup&lang=$lang&q=$query&popup=1&noheader=1&inp_enc=$inp_enc};
+    my $perseus_params = qq{do=lookup&lang=$lang&q=$query&noheader=1&inp_enc=$inp_enc};
+#     print STDERR ">>$perseus_params\n";
+    $Diogenes_Daemon::params = $perseus_params;
+    do "Perseus.cgi" or die $!;
+    
+    $my_footer->();
+    
+};
+
+
 $output{lemma} = sub {
     $print_title->('Diogenes Lemma Search Page');
     $print_header->();
@@ -661,7 +697,7 @@ $output{lemma} = sub {
     $st{lang} = $q->{input_lang} =~ m/g/i ? 'grk' : 'lat';
     my $inp_enc = $init->{input_encoding};
     my $perseus_params = qq{do=lemma&lang=$st{lang}&q=$st{query}&noheader=1&inp_enc=}.$inp_enc;
-#     print STDERR ">>$perseus_params\n";
+    print STDERR ">>$perseus_params\n";
     $Diogenes_Daemon::params = $perseus_params;
     do "Perseus.cgi" or die $!;
     
