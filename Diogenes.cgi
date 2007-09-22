@@ -53,12 +53,12 @@ my @choices = (
     );
 
 # Probable input language for morphological search
-my %prob_lang = ( 'phi' => 'l',
-                  'tlg' => 'g',
-                  'ddp' => 'g',
-                  'ins' => 'g',
-                  'chr' => 'g',
-                  'misc' => 'l' );
+my %prob_lang = ( 'phi' => 'lat',
+                  'tlg' => 'grk',
+                  'ddp' => 'grk',
+                  'ins' => 'grk',
+                  'chr' => 'grk',
+                  'misc' => 'lat' );
 my $default_choice;
 my $choice_from_config = quotemeta $init->{cgi_default_corpus};
 for (@choices)
@@ -297,7 +297,7 @@ my $strip_html = sub
     $$ref =~ s#&quot;#"#g;
     $$ref =~ s#&nbsp;# #g;
     $$ref =~ s/&#14[78];/"/g;
-    $$ref =~ s/&#\d+;/ /g;
+    $$ref =~ s/&#x?[0-9a-fA-F]+;/ /g;
 };
 
 my $database_error = sub
@@ -677,7 +677,7 @@ $output{lookup} = sub {
     $lang = 'eng' if $query =~ s/^@//;
 #     my $perseus_params = qq{do=lookup&lang=$lang&q=$query&popup=1&noheader=1&inp_enc=$inp_enc};
     my $perseus_params = qq{do=lookup&lang=$lang&q=$query&noheader=1&inp_enc=$inp_enc};
-#     print STDERR ">>$perseus_params\n";
+    print STDERR ">>$perseus_params\n"  if $init->{debug};
     $Diogenes_Daemon::params = $perseus_params;
     do "Perseus.cgi" or die $!;
     
@@ -697,7 +697,7 @@ $output{lemma} = sub {
     $st{lang} = $q->{input_lang} =~ m/g/i ? 'grk' : 'lat';
     my $inp_enc = $init->{input_encoding};
     my $perseus_params = qq{do=lemma&lang=$st{lang}&q=$st{query}&noheader=1&inp_enc=}.$inp_enc;
-    print STDERR ">>$perseus_params\n";
+    print STDERR ">>$perseus_params\n" if $init->{debug};
     $Diogenes_Daemon::params = $perseus_params;
     do "Perseus.cgi" or die $!;
     
@@ -793,7 +793,7 @@ $handler{inflections} = sub {
         }
         my %args = $get_args->();
         my $q = new Diogenes::Search(%args);
-        if ($prob_lang{$st{short_type}} eq "g") {
+        if ($prob_lang{$st{short_type}} eq "grk") {
             $args{input_encoding} = 'BETA code';
         }
         $database_error->($q) if not $q->check_db;
@@ -1117,7 +1117,7 @@ $output{browser_output} = sub
             } else {
                 push @target, $loc;
             }
-#             print STDERR "$jumpTo; $corpus, $st{author}, $st{work}, @target\n";
+             print STDERR "$jumpTo; $corpus, $st{author}, $st{work}, @target\n" if $q->{debug};
         }
         else {
             $print_error_page->("Bad location description: $jumpTo");
@@ -1126,7 +1126,7 @@ $output{browser_output} = sub
         $q->parse_idt($st{author});
         my $levels = scalar keys %{ $Diogenes::Base::level_label{$st{short_type}}{$st{author}}{$st{work}} };
         my $diff = $levels - scalar @target;
-#         print STDERR "**$levels**$diff**\n";
+        print STDERR "**$levels**$diff**\n" if $q->{debug};
         if ($diff > 0) {
             while ($diff > 0) {
                 push @target, 1;
@@ -1212,7 +1212,7 @@ $output{filter_splash} = sub
 
         $f->p('From this page you can create new corpora or subsets of the
         databases to search within, and you can also view and
-        delete exiting user-defined corpora.'),
+        delete existing user-defined corpora.'),
 
         $f->p("Note that these user-defined corpora must be a subset
         of one and only one database; currently you cannot define a
@@ -1514,7 +1514,15 @@ $output{refine_works} = sub
         $f->h1('Individual Works'),
         $f->p('Select the works you wish to use for searching.');
 
-
+    
+    unless ($st{author_list})
+    {
+        print
+            $f->p($f->strong('Error.')),
+            $f->p(qq(You must select at least one author));
+        $my_footer->();
+        return;
+    }
     my @auth_nums = @{ $st{author_list} };
     unless (scalar @auth_nums)
     {
@@ -1532,6 +1540,8 @@ $output{refine_works} = sub
         my %labels = ();
         $q->parse_idt($a);
         my $author = $author{$q->{type}}{$a};
+        $q->format_output(\$author, 'l', 1);
+
         print $f->h2($author);
         for my $work_num (sort numerically
                           keys %{ $work{$q->{type}}{$a} })
@@ -1539,6 +1549,8 @@ $output{refine_works} = sub
             push @work_nums, $work_num;
             $labels{"$work_num"} = $work{$q->{type}}{$a}{$work_num};
         }
+        $q->format_output(\$_, 'l', 1) for values %labels;
+        $strip_html->(\$_) for values %labels;
         print $f->checkbox_group( -name => "work_list_for_$a",
                                   -Values => \@work_nums,
                                   -labels => \%labels,
