@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.1.2";
+$Diogenes::Base::Version =  "3.1.3";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -206,7 +206,9 @@ my %defaults = (
 
     perseus_links => 1, # links to Perseus morphological parser 
     perseus_show => "split",
-    
+
+    hit_html_start => '<font color="red"><b><u>',
+    hit_html_end => '</u></b></font>',
     quiet => 0,
 
     line_print_modulus => 5,
@@ -1969,11 +1971,12 @@ sub print_output
 
 sub format_output
 {
-    my ($self, $ref, $current_lang) = @_;
+    my ($self, $ref, $current_lang, $inhibit_perseus) = @_;
     print STDERR "+".$$ref."\n" if $self->{debug};
     my $lang = $self->{current_lang} || 'g';
     $lang = $current_lang if $current_lang;
     $self->{perseus_morph} = 0 if ($encoding{$self->{encoding}}{remap_ascii});
+    $self->{perseus_morph} = 0 if $inhibit_perseus;
     
     # Get rid of null chars.  We can't do this last, as we would like,
     # because this represents a grave accent for many encodings
@@ -2365,8 +2368,7 @@ sub beta_to_html
     $$ref =~ s#&lt;1(?!\d)((?:(?!\>|$).)+)(?:&gt;1(?!\d))#<u>$1</u>#gs;
     
     # undo the business with ~hit~...~
-    #$$ref =~ s#~[Hh]it~([^~]*)~#<b>$1</b>#g;
-    $$ref =~ s#~[Hh]it~([^~]*)~#<u>$1</u>#g;
+#     $$ref =~ s#~[Hh]it~([^~]*)~#<u>$1</u>#g;
 
     # " (quotes)
     $$ref =~ s/([\$\&\d\s\n~])\"3\"3/$1&#147;/g;
@@ -2382,7 +2384,9 @@ sub beta_to_html
     $$ref =~ s/\"\d+/&quot;/g;
     
     $$ref =~ s#\x03\x01#"#g;
- 
+
+    $$ref =~ s#~[Hh]it~([^~]*)~#$self->{hit_html_start}$1$self->{hit_html_end}#g;
+    
     $$ref =~ s#&lt;\d*#&lt;#g;
     $$ref =~ s#&gt;\d*#&gt;#g;
 
