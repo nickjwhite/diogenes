@@ -950,10 +950,6 @@ my $UTF_8_post = sub
 
 };
 
-$Diogenes::Base::encoding{'UTF-8-CX'}{post_match} = $UTF_8_post;
-$Diogenes::Base::encoding{'UTF-8-CB'}{post_match} = $UTF_8_post;
-$Diogenes::Base::encoding{'UTF-8-DB'}{post_match} = $UTF_8_post;
-
 # Pre-combined, preferring basic page
 $Diogenes::Base::encoding{'UTF-8-CB'} = {
 
@@ -1810,6 +1806,10 @@ dagger 			 => "†",
 dagger_dbl 		 => "‡",  
 
 }; # Keep this line.
+
+$Diogenes::Base::encoding{'UTF-8-CX'}{post_match} = $UTF_8_post;
+$Diogenes::Base::encoding{'UTF-8-CB'}{post_match} = $UTF_8_post;
+$Diogenes::Base::encoding{'UTF-8-DB'}{post_match} = $UTF_8_post;
 
 
 ############ WinGreek Encoding ###############
