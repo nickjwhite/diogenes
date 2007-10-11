@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "3.1.3";
+$Diogenes::Base::Version =  "3.1.4";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -2956,8 +2956,8 @@ sub beta_encoding_to_external
     $$ref =~ s#S3#S#g;
     # Force final sigmas. (watch out for things like mes<s>on, which shouldn't
     # become final -- I'm not sure that there's much one can do there)
-    $$ref =~ s#(?<!\*)S(?![123A-Z)(|/\\=+\'])#S2#g; 
-    $$ref =~ s#(?<!\*)S~(?![123A-Z)(|/\\=+\'])#S2~#g; 
+    $$ref =~ s#(?<!\*)S(?![123A-Z)(|/\\=+\'?])#S2#g; 
+    $$ref =~ s#(?<!\*)S~(?![123A-Z)(|/\\=+\'?])#S2~#g; 
     
     if (ref $encoding{$encoding}{pre_match} eq 'CODE')
     {   # Code to execute before the match
