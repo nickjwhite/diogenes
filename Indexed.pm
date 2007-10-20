@@ -318,6 +318,7 @@ sub parse_wcnts
     else
     {
         # A list of lists of words
+        $self->{single_list} = 0;
         my $j = 0;
         foreach my $x (@_)
         {
@@ -601,7 +602,7 @@ sub make_big_regexp
     
     foreach my $set (@{ $self->{word_set} })
     {
-        my $pattern = $Diogenes::Indexed::lookback;
+        my $pattern = '';
         foreach my $word (sort {length $b <=> length $a } @{ $set })
         {       
             # Skip if word was not found in the selected texts
@@ -610,10 +611,12 @@ sub make_big_regexp
             $self->{tlg_regexps}{$word} = $lw;
             $pattern .= '(?:' . $w . ')|';
         }
-        chop $pattern;
-        print STDERR "Big pattern: $pattern \n" if $self->{debug};
-        push @{ $self->{pattern_list} }, $pattern;
-        
+        if ($pattern) {
+            chop $pattern;
+            $pattern = $Diogenes::Indexed::lookback . $pattern;
+            print STDERR "Big pattern: $pattern \n" if $self->{debug};
+            push @{ $self->{pattern_list} }, $pattern;
+        }
     }
 }
 
