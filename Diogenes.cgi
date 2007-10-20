@@ -351,6 +351,7 @@ $output{splash} = sub
                    'multiple',
                    'lemma',
                    'lookup',
+                   'parse',
                    'browse',
                    'filters');
     
@@ -359,6 +360,7 @@ $output{splash} = sub
                          'multiple' => 'Search for conjunctions of multiple words or phrases',
                          'lemma' => 'Morphological search',
                          'lookup' => 'Look up a word in the dictionary',
+                         'parse' => 'Parse the inflection of a Greek or Latin word',
                          'browse' => 'Browse to a specific passage in a given text',
                          'filters' => 'Manage user-defined corpora');
 
@@ -476,9 +478,9 @@ $handler{splash} = sub
     {
         $output{lemma}->();
     }
-    elsif ($action eq 'lookup') 
+    elsif ($action eq 'lookup' or $action eq 'parse') 
     {
-        $output{lookup}->();
+        $output{lookup}->($action);
     }
     elsif ($action eq 'search') 
     {
@@ -663,7 +665,8 @@ my $use_and_show_filter = sub
 };
 
 $output{lookup} = sub {
-    $print_title->('Diogenes Dictionary Lookup Page', 1);
+    my $action = shift;
+    $print_title->('Diogenes Perseus Lookup Page', 1);
     $print_header->();
     $st{current_page} = 'lookup';
 
@@ -675,8 +678,8 @@ $output{lookup} = sub {
         $lang = ($query =~ m/^[\x01-\x7f]+$/) ? 'lat' : 'grk';
     }
     $lang = 'eng' if $query =~ s/^@//;
-#     my $perseus_params = qq{do=lookup&lang=$lang&q=$query&popup=1&noheader=1&inp_enc=$inp_enc};
-    my $perseus_params = qq{do=lookup&lang=$lang&q=$query&noheader=1&inp_enc=$inp_enc};
+#     my $perseus_params = qq{do=$action&lang=$lang&q=$query&popup=1&noheader=1&inp_enc=$inp_enc};
+    my $perseus_params = qq{do=$action&lang=$lang&q=$query&noheader=1&inp_enc=$inp_enc};
     print STDERR ">>$perseus_params\n"  if $init->{debug};
     $Diogenes_Daemon::params = $perseus_params;
     do "Perseus.cgi" or die $!;
