@@ -247,7 +247,7 @@ my $print_title = sub
                        -meta=>{'content' => 'text/html;charset=utf-8'}
         ),
     "\n",
-    $f->start_form(-name=>'form', -id=>'form');
+    $f->start_form(-name=>'form', -id=>'form', -method=> 'get');
     # We put this here (other hidden fields are at the end), so that
     # Javascript can use it for jumpTo even before the page has
     # completely loaded.
@@ -376,7 +376,7 @@ $output{splash} = sub
                  -alt=>'Diogenes', 
                  -height=>'137', 
                  -width=>'383'})),
-        $f->start_form(-id=>'form');
+        $f->start_form(-id=>'form', -method=> 'get');
 
 
     print $f->p('Welcome to Diogenes, a tool for searching and
@@ -634,7 +634,7 @@ my $get_args = sub
         $args{pattern} = $st{query};
     }
     
-    for my $arg qw(context min_matches reject_pattern)
+    for my $arg (qw(context min_matches reject_pattern))
     {
         $args{$arg} = $st{$arg} if $st{$arg};
     }

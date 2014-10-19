@@ -38,7 +38,8 @@ use File::Spec::Functions qw(:ALL);
 use lib ($Bin, catdir($Bin,'CPAN') );
 
 use HTTP::Daemon;  
-use CGI qw(-nodebug -compile :standard);
+# use CGI qw(-nodebug -compile :standard);
+use CGI qw(-nodebug :standard);
 use CGI::Carp 'fatalsToBrowser';
 # From v. 3.10 XHTML defaults to 1, which turns on multipart forms,
 # which we can't handle.
