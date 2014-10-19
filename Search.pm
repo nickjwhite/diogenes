@@ -212,10 +212,10 @@ sub make_strict_greek_pattern
 
     my @pats;
     my @parts = split /( )/, $pat;
-    for (my $i = 0; $i < length @parts; $i++ ) {
+    for (my $i = 0; $i < (length scalar(@parts)); $i++ ) {
         next if $parts[$i] eq ' ';
         my $begin = ($i == 0 || $parts[$i-1] ne ' ') ? 0 : 1;
-        my $end   = ($i == (length @parts - 1) || $parts[$i+1] ne ' ') ? 0 : 1;
+        my $end   = ($i == ((length scalar(@parts)) - 1) || $parts[$i+1] ne ' ') ? 0 : 1;
         my ($part_pat, undef) = 
             Diogenes::Indexed::make_tlg_regexp($self, $parts[$i], (not $begin), (not $end));
         push @pats, $part_pat;
