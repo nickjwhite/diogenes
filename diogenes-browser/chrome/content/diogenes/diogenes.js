@@ -606,20 +606,25 @@ function getZoomFactor () {
     var prefs = Components.classes["@mozilla.org/preferences-service;1"].
         getService(Components.interfaces.nsIPrefBranch);
     try {
-        zoomFactor = prefs.getCharPref("diogenes.last.zoomFactor");
+        zoomFactor = parseFloat(prefs.getCharPref("diogenes.last.zoomFactor"));
+        if (isNaN(zoomFactor)) {
+            zoomFactor = 1.0;
+        }
         browser.markupDocumentViewer.textZoom = zoomFactor;
-    } catch (e) { return; }
+    } catch (e) { return }
 }
 
 function saveZoomFactor () {
     var browser = document.getElementById("browser");
-    browser.markupDocumentViewer.textZoom = zoomFactor;
     var prefs = Components.classes["@mozilla.org/preferences-service;1"].
         getService(Components.interfaces.nsIPrefBranch);
+    if (isNaN(zoomFactor)) {
+        zoomFactor = 1.0;
+    }
     try {
-        prefs.setCharPref("diogenes.last.zoomFactor", zoomFactor);
+        browser.markupDocumentViewer.textZoom = zoomFactor;
+        prefs.setCharPref("diogenes.last.zoomFactor", zoomFactor.toString());
     } catch (e) { alert (e); }
-
 }
 
 function enlargeText () {
