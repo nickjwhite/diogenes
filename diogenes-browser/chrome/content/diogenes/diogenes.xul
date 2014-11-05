@@ -48,6 +48,8 @@
                     accesskey="A" key="key_select_all"/>
           <menuitem label="&dio.copy;" command="cmd_copy"
                     accesskey="C" key="key_copy"/>
+          <menuitem label="&dio.paste;" command="cmd_paste"
+                    accesskey="P" key="key_paste"/>
           <menuseparator/>
           <menuitem label="&dio.find;" command="cmd_find"
                     accesskey="F" key="key_find"/>
@@ -95,7 +97,7 @@
           <menuitem label="&dio.shortcuts;" oncommand="showShortcuts();"
                     accesskey="S"/>
           <menuitem label="&dio.about;" oncommand="showAbout();"
-                    accesskey="A" id="aboutName"/>
+                    accesskey="A" id="aboutName" key="key_about"/>
         </menupopup>
       </menu>
     </menubar>
@@ -113,10 +115,13 @@
                      oncommand="newWindow();" tooltiptext="&dio.new.window;"/>
       <toolbarbutton class="toolbarbutton-1" id="copy-button"
                      command="cmd_copy" tooltiptext="&dio.copy;"/>
+      <toolbarbutton class="toolbarbutton-1" id="paste-button"
+                     command="cmd_paste" tooltiptext="&dio.paste;"/>
     </hbox>
 
     <command id="cmd_select_all" oncommand="goDoCommand('cmd_selectAll');"/>
     <command id="cmd_copy" oncommand="goDoCommand('cmd_copy');"/>
+    <command id="cmd_paste" oncommand="goDoCommand('cmd_paste');"/>
     <command id="cmd_find" oncommand="dioFind();"/>
     <command id="cmd_saveas" oncommand="goDoCommand('cmd_saveas');"/>
 
@@ -128,6 +133,7 @@
     <key id="key_print" modifiers="accel" key="P" oncommand="printDoc();"/>
     <key id="key_select_all" modifiers="accel" key="A" command="cmd_select_all"/>
     <key id="key_copy" modifiers="accel" key="C" command="cmd_copy"/>
+    <key id="key_paste" modifiers="accel" key="V" command="cmd_paste"/>
     <key id="key_back" modifiers="accel" keycode="VK_LEFT" oncommand="back();"/>
     <key id="key_back_alt" modifiers="alt" keycode="VK_LEFT" oncommand="back();"/>
     <key id="key_forward" modifiers="accel" keycode="VK_RIGHT" oncommand="forward();"/>
@@ -141,6 +147,7 @@
     <key id="key_enlarge" modifiers="accel" key="+" oncommand="enlargeText();"/>
     <key id="key_reduce" modifiers="accel" key="-" oncommand="reduceText();"/>
     <key id="key_font" modifiers="accel" key="T" oncommand="selectFont();"/>
+    <key id="key_about" modifiers="accel" key="!" oncommand="showAbout();"/>
     <key id="key_foo" modifiers="accel" key="1" oncommand="foo();"/>
   </keyset>
 
