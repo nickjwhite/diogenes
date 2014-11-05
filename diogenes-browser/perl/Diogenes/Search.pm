@@ -617,6 +617,8 @@ sub extract_hits
             {
                 last if substr ($$buf, $start, 2) =~ /[a-zA-Z)(=\\\/+][\s.,;:]/;
             }
+            
+            $start++; # This is to compensate for the $start-- on the first pass below
             # Get a regexp-delimited context
             for ($lines = 0; $start > 0; $start--)
             {
