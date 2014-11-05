@@ -604,7 +604,8 @@ sub extract_hits
                  ($start > 0); $start--) 
             {
                 $lines++ if (((ord (substr ($$buf, $start, 1))) >> 7) and not
-                             (ord (substr ($$buf, $start - 1, 1)) >> 7)); 
+                             (ord (substr ($$buf, $start - 1, 1)) >> 7) and not
+                             (substr ($$buf, $start - 1, 1) eq "\x00"));
             }
             $start+=2;
         }
@@ -624,7 +625,8 @@ sub extract_hits
                     and not substr ($$buf, $start - 2, 5) =~ $reject;
                 # Failsafe
                 $lines++ if (((ord (substr ($$buf, $start, 1))) >> 7) and not
-                             (ord (substr ($$buf, $start - 1, 1)) >> 7)); 
+                             (ord (substr ($$buf, $start - 1, 1)) >> 7) and not
+                             (substr ($$buf, $start - 1, 1) eq "\x00"));
                 last if $lines >= $overflow; 
             }
             # Try to eliminate stray chars and wasteful whitespace
@@ -642,7 +644,8 @@ sub extract_hits
                  ($end < length $$buf ) ; $end++) 
             {
                 $lines++ if (((ord (substr ($$buf, $end, 1))) >> 7) and not 
-                             (ord (substr ($$buf, $end + 1, 1)) >> 7)); 
+                             (ord (substr ($$buf, $end + 1, 1)) >> 7) and not
+                             (substr ($$buf, $end + 1, 1) eq "\x00"));
             }
             $end-=2;
         } 
@@ -656,7 +659,8 @@ sub extract_hits
                     and not substr ($$buf, $end - 2, 5) =~ $reject;
                 # Failsafe
                 $lines++ if (((ord (substr ($$buf, $end, 1))) >> 7) and not
-                             (ord (substr ($$buf, $end + 1, 1)) >> 7)); 
+                             (ord (substr ($$buf, $end + 1, 1)) >> 7) and not
+                             (substr ($$buf, $end + 1, 1) eq "\x00"));
                 last if $lines >= $overflow; 
             }
             $end++; # Take one more
