@@ -1,0 +1,119 @@
+body { 
+  background-color: #ffffff;
+  color: #000000;
+}
+
+/* Fix problem where sub/super-scripts increases the line spacing for
+text, but not for the citations, so they no longer align properly */
+
+sup { vertical-align: baseline; font-size: 90%; position: relative;
+top: -.4em; }
+
+sub { vertical-align: baseline; font-size: 90%; position: relative; top:
++.3em; }
+
+a:link {
+  text-decoration:none;
+}
+a:visited {
+  text-decoration: none;
+}
+a:active {
+  text-decoration:none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+a.perseus:link {
+  color: #000000;
+}
+a.perseus:visited {
+  color: #404040;
+}
+
+#logo a:hover { 
+  text-decoration: none;
+ }
+
+.text {
+   text-indent: 8em;
+}
+
+.text-noindent {
+   text-indent: 0in;
+}
+
+.citation {
+  float: left;
+  width: 8em;
+  text-align: left; 
+  vertical-align: bottom;
+}
+
+#hit { 
+  background: #e3e3e3;
+ }
+
+#sidebar h1 {
+         font-size: 150%;
+}
+
+#sidebar h2 {
+         font-size: 120%;
+}
+
+.sidebar-split {
+         width: 45%;
+         display: block;
+         float: right;
+         background-color: #ffffff;
+         border-left: 1px grey solid;
+         padding-left: 4px;
+}
+.sidebar-full {
+         width: 100%;
+         display: block;             
+         background-color: #ffffff;
+}
+.sidebar-hidden {
+         display: none;             
+}
+.main-full {
+         width: 100%;
+         padding-right: 4px;
+         display: block;             
+}
+.main-hidden {
+         display: none;             
+}
+
+#sidebar-control {
+         color: red;             
+         display: block;
+         float: right;
+}
+
+.invisible {
+         display: none;             
+}
+
+.visible {
+         display: block;             
+}
+
+.lemma_span_invisible {
+         display: none;             
+}
+
+.lemma_span_visible {
+         display:block;             
+}
+
+.form_span_invisible {
+         display: none;             
+}
+
+.form_span_visible {
+         display: inline;             
+}
