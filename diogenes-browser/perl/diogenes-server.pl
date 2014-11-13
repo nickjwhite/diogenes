@@ -305,6 +305,7 @@ REQUEST:
         }
         my $requested_file = ($request->url->path);
         warn "Requested file: $requested_file; cwd: ".cwd."\n" if $DEBUG;
+        my $leading_slash = ($requested_file =~ m#^/#) ? 1 : 0;
         $requested_file = $CGI_SCRIPT if $requested_file eq '/';
         # Internet exploder stupidity
         $requested_file =~ s#^\Q$root_dir\E##;  
@@ -363,9 +364,12 @@ REQUEST:
             
             # Here we compile if necessary and execute any CGI scripts
             $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
-            # This tells CGI.pm the name of the script, which goes into
+            # This tells CGI.pm the name of the host and script, which goes into
             # the action parameter of the form element(s)
-            $ENV{SCRIPT_NAME} = $requested_file;
+            my $host = $request->header('Host');
+            $ENV{HTTP_HOST} = $host if $host;
+            $ENV{SCRIPT_NAME} = ($leading_slash ? '/' : '') . "$requested_file";
+
             compile_cgi_subroutine($requested_file)
                 unless exists $cgi_subroutine{$requested_file}; 
             # Trap any exceptions
