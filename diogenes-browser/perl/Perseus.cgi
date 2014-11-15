@@ -337,7 +337,7 @@ my $format_latin_analysis = sub {
 
 use XML::Tiny;
 # Use global vars to avoid leaking memory with recursive anon subs
-use vars '$xml_lang', '$munge_tree', '$munge_content', '$munge_element';
+use vars '$xml_lang', '$munge_tree', '$munge_content', '$munge_element', '$xml_ital';
 my ($out, $in_link);
 my $munge_xml = sub {
     my $text = shift;
@@ -347,6 +347,7 @@ my $munge_xml = sub {
     return $text if $xml_out;
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
+    local $xml_ital = 0  ; 
     my $tree = XML::Tiny::parsefile($text,
                                     'no_entity_parsing' => 1,
                                     'input_is_string' => 1,
@@ -368,6 +369,14 @@ my $munge_text = sub {
     if (not $in_link) {
         if ($xml_lang eq 'greek' or $xml_lang eq 'la') {
             $text = $text_with_links->($text, $xml_lang);
+        }
+        elsif ($lang eq 'lat' and $text =~ m/^, (?:v\.|=) /) {
+            # Hack for L-S cross refs (not identified as Latin).
+            $text = $text_with_links->($text, 'lat');
+        }
+        elsif ($lang eq 'lat' and not $xml_ital) {
+            # Hack to make all non-italicized L-S text Latin
+            $text = $text_with_links->($text, 'lat');
         }
         else {
             $text = $text_with_links->($text, 'eng');
@@ -405,7 +414,13 @@ my $swap_element = sub {
         $out .= $close ? '</b>' : '<b>';
     }
     if ($e->{attrib}->{rend} and $e->{attrib}->{rend} eq 'ital') {
-        $out .= $close ? '</i>' : '<i>';
+        if ($close) {
+            $out .= '</i>';
+            $xml_ital = 0;
+        } else {
+            $out .= '<i>';
+            $xml_ital = 1;
+        }
     }
     if ($e->{name} eq "bibl" and exists $e->{attrib}->{n}
         and $e->{attrib}->{n} =~ m/^Perseus:abo:(.+)$/) {
