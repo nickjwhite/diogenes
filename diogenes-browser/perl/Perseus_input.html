@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Diogenes -- Perseus-style transliteration help</title>
+  </head>
+  <body>
+      <h1>Typing Greek in Latin transliteration (Perseus-style)</h1>
+
+      <p><strong>NB.</strong>  There are disadvantages to using Latin
+      transliteration to input Greek -- especially in searching
+      corpora that mix Latin and Greek texts, where Diogenes may not
+      be able to guess which language you mean.  Unicode input is preferred.
+      </p>
+      
+      <p> The transliteration adopted by the <a
+      href="http://www.perseus.tufts.edu">Perseus Project</a> may be
+      used to search for Greek text without regard to accents.  In
+      this scheme, you should not indicate accents or upper-case
+      letters in the words you are searching for; consonants are
+      rendered by their phonetic equivalent; and eta and omega are
+      distinguished from epsilon and omicron by the use of a
+      circumflex accent (&ecirc;, &ocirc;) if your keyboard can manage
+      them, or by placing a caret after the vowel (e^, o^).  Rough and
+      smooth breathings are distinguished; put "h" in front of a word
+      to indicate a rough breathing.  This transliteration scheme
+      cannot distinguish between the presence of a smooth breathing
+      and the absence of a breathing mark.
+      </p>
+      <p>
+        You may use a limited subset of Perl
+      regular expressions in your input; see <a
+      href="regexp_info.html">further info</a>.
+    </p>
+    <p>
+      Thus a search for the hero Herakles would be performed by
+      entering the word "<tt>&nbsp;he^rakle^s&nbsp;</tt>" for the
+      nominative case only, or "<tt>&nbsp;he^rakl</tt>" to add the
+      oblique cases (note the leading and trailing spaces to indicate
+      the start and end of a word).
+    </p>
+
+
+    <h2>Character maps</h2>
+    <p>
+      Here are the full details of the Perseus and Beta transliteration schemes:
+    </p>
+    <p>
+      <img src="images/Diogenes_Transliteration.gif" alt="Transliteration guide"
+           height="63" width="883"/>
+    </p>
+
+  </body>
+</html>

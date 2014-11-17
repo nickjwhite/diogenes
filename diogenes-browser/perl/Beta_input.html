@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Diogenes -- BETA-style transliteration help</title>
+  </head>
+  <body>
+
+    <h1>Typing Greek in BETA code</h1>
+
+    <p>
+      <strong>NB.</strong>  There are disadvantages to using Latin
+      transliteration to input Greek -- especially in searching
+      corpora that mix Latin and Greek texts, where Diogenes may not
+      be able to guess which language you mean.  Unicode input is preferred.
+    </p>
+    <p>
+      If you work with the transliteration employed natively by the
+      <i>TLG</i>, the so-called BETA code, your searches must
+      stipulate accents.
+    </p>
+    <p>
+      In this scheme, you <b>must</b> indicate accents and breathings
+      in the normalized form used by the <i>TLG</i> word list: do not
+      indicate upper-case letters, and do not use barytone accents.
+      You may use lower-case Latin letters.  Thus the Attic nominative
+      singular of Herakles would be "<tt>&nbsp;h(raklh=s&nbsp;</tt>",
+      and the oblique and variant forms would be found with
+      "<tt>&nbsp;h(rakl</tt>".  Remember that words appearing in all
+      upper-case Greek will not usually have dicritics, so to pick up
+      titles, etc., you will also need to try
+      "<tt>&nbsp;hraklhs&nbsp;</tt>" (note the leading and trailing
+      spaces to indicate the start and end of a word).  You may not
+      use Perl regular expression metacharacters, because many of them
+      are significant in Beta code; your pattern will be turned into a
+      regular expression that allows hyphenation to intervene.
+    </p>
+
+    <h3>Character maps</h3>
+    <p>
+      Here are the full details of the Perseus and Beta transliteration schemes:
+    </p>
+    <p>
+      <img src="images/Diogenes_Transliteration.gif" alt="Transliteration guide"
+           height="63" width="883"/>
+    </p>
+    
+  </body>
+</html>

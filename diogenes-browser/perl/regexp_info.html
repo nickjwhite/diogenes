@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Searching Tips</title>
+  </head>
+  <body>
+
+    <h1>Searching Tips for Diogenes</h1>
+
+<p>
+For both Latin and Greek searches, your search term is turned into a
+pattern that ignores distinctions between upper and lower case, and
+which permits the hypenation and the indexing and formatting codes that
+are used in the databases to intervene.  In the case of Latin, w and v
+and i and j are treated as equivalent.
+</p>
+
+<p>
+When constructing a search pattern, you may include spaces at the
+beginning, at the end, or in the middle of your pattern in order to
+indicate a word boundary.  Thus the pattern <tt>"et"</tt> would find a
+match in the words <i>aetas</i>, <i>etiam</i>, <i>scilicet</i> and of
+course <i>et</i>, whereas <tt>"&nbsp;et"</tt> would only match in the
+words <i>etiam</i> and <i>et</i>.  Likewise, <tt>"et&nbsp;"</tt> would
+match in <i>scilicet</i> and <i>et</i>, and if you entered the pattern
+<tt>"&nbsp;et&nbsp;"</tt>, you would match only the word <i>et</i>.
+</p>
+
+<p>
+The way in which this is accomplished is by turning your pattern into a
+more complex pattern called a "regular expression", a notation that
+permits the stipulation of highly complex patterns.  Diogenes permits
+you to use certain aspects of the Perl regular expression syntax in
+combination with the Perseus-style transliteration.  Some of the
+features that you may wish to use are (NB. These are not available if
+you are using Beta-style input for Greek searches):
+</p>
+<dl>
+ <dt><tt>[abcd]</tt></dt>
+ <dd>Square brackets mean: "match any one (and only one) of the enclosed letters".</dd>
+  
+ <dt><tt>(quid)</tt></dt>
+ <dd>Round parentheses mean: "match everything enclosed herein or nothing at
+ all".</dd>
+ <dt><tt>h((ic)|(aec)|(oc))</tt></dt>
+ <dd>The vertical bar between expressions (a|b|c) means: "match 
+ a or b or c ..., but only one of these". So [abc], defined above, is
+ just a shorthand for (a|b|c).  </dd>
+ <dt><tt>?</tt></dt>
+ <dd>The question mark means that matching the preceeding expression is
+ optional: the match will include it if present, but will not fail in
+ its absence. Thus "<tt>hae?c</tt>" will match haec or hac.</dd>
+ <dt>*</dt>
+ <dd>The asterisk means: "Match the preceeding expression if it occurs
+ for as many times as it repeats, but do not fail in its absence". Note
+ that this is a very different meaning to the use of the asterisk as a
+ "wild card" character.  So the pattern "<tt>et</tt>" will match both "et" and
+ "etiam": there is no need to write "<tt>et*</tt>".  In fact,
+ "<tt>et*</tt>" will match
+ "et" and "etttttt", which is probably not what you want. </dd>
+ <dt>+</dt>
+ <dd>The plus sign is just like the asterisk, except that at least one
+ of the preceeding expression must be present in order to match.  Thus
+ a+ is just shorthand for aa*.</dd>
+</dl>
+
+<p>
+Note that Diogenes performs its own transformation of your input, so the
+full range of Perl regular expressions is not available to those who use
+the Perseus-style input, but what is available should be sufficient for
+many uses.
+</p>
+
+<p>
+There is no space here for an extensive description of regular
+expressions, but for a sense of their flexibility, consider the
+following pattern:
+</p>
+
+<p><tt>" re(x|g(is?(bus)?|e[ms]?|um)) "</tt></p>
+
+<p>
+This pattern matches the word "rex" in all of its cases while ignoring
+other related words (regnum, regina, etc.).  Note that the pattern
+begins and ends with a space, which means that the match must begin and
+end on a word boundary.  The pattern then stipulates that the beginning
+word boundary must be followed by the letters "r" and "e", and that
+this must be followed by a complex parenthesized sub-expression that defines
+the rest of the word.  This breaks down into: "Either the letter "x", or
+the letter "g" if it is followed in turn by another nested sub-expression in
+round parentheses. What must follow the "g" is defined as "Either the
+letter "i", followed optionally by the letter "s" or the letters "bus";
+or the letter "e", followed optionally by either the letter "m" or "s"
+(but not both), or by the letters "um".
+</p>
+
+<p>In this way, you can define searches quite narrowly, while not
+worrying about hyphenated words, upper and lower case, or
+in the case of Greek, accentuation.
+</p>
+
+<hr/>
+
+<p>
+  P. J. Heslin, 2001-7
+</p>
+</body>
+</html>

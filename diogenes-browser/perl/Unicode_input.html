@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Diogenes -- Unicode Input Help</title>
+  </head>
+  <body>
+      <h1>Typing Greek via Unicode</h1>
+
+      <h2>Unicode</h2>
+
+      <p>
+        Unicode is now the standard means of digital representation of
+        Ancient Greek.  Your computing platform or operating system
+        should provide a built-in and easy to use keyboard for
+        entering Greek Unicode.  Note that it is not always necessary
+        to install and use a <i>polytonic</i> or <i>Ancient Greek</i>
+        Unicode keyboard.  As explained below, you should not type in
+        any accents at all unless you want to specify all of them.  So
+        for some types of loosely-matching query, which will match
+        regardless of accentuation, a modern Greek Unicode keyboard
+        may be sufficient.  On the other hand, you may want to
+        indicate breathings, or you may wish to specify all accents.
+        In that case you will need a Unicode polytonic keyboard.
+        In any case, make sure that you are using a Unicode keyboard
+        (not all Greek keyboards are Unicode).
+      </p>
+     
+      <h2>Unicode input</h2>
+      <p>
+        The main issue to be aware of is that of entering accents and
+        breathings.  In general, it is best to start by not typing
+        these, and only add them when you need them for
+        disambiguation.
+
+        If you type in even one accent in a long phrase, then Diogenes
+        switches to strict accent matching.  The only variation that
+        is allowed for in strict mode is between acute and grave at
+        the end of the word.  But words often appear without accents,
+        for example when a whole word is capitalized as part of a
+        heading, and so in strict mode your accented pattern would not
+        match these.
+
+        It is best to start without breathings too, for these also
+        fail to appear in capitalized headings and when the word is
+        the second half of a compound, and so on.
+
+        If you want to mark the beginning or end of a word, do so with
+        spaces before and/or after the word you type in.  Thus
+        "ανθρωποσ" will match πολυάνθρωπος, but "&nbsp;ανθρωποσ" will not.
+
+      <h3>no accents, loose matching</h3>
+
+      <p>
+        If you want to search for words regardless of accents and
+        breathings fall, do not use any diacritics.  You may use
+        breathing marks (optionally, on initial vowels only) without
+        switching to strict mode for accent.  All searches are
+        case-insensitive, so to search for forms of "Heracles", you
+        could search for <tt>"&nbsp;ἡρακλ"</tt>.  Note the space at
+        the front of the pattern to indicate a word-boundary.
+      </p>
+      
+      <h3>with accents, strict matching</h3>
+
+      <p>
+        If you want to specify accents, then use a polytonic Greek
+        Unicode keyboard to type in <i>all</i> accents and
+        breathings.  If Diogenes sees a single accent in your query,
+        it switches to strict matching, so it's all or nothing.
+      </p>
+      
+      <h2>Latin Transliteration Schemes</h2>
+      <p>
+        If you cannot manage to enter Unicode Greek text on your
+        computer, Diogenes supports two schemes for typing in Greek
+        words via Latin transliteration: <a
+        href="Perseus_input.html">Perseus-style</a> (loose matching)
+        and <a href="Beta_input.html">Beta-style</a> (strict
+        matching).
+        </p>
+  </body>
+</html>
