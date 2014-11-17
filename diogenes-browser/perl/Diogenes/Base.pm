@@ -122,8 +122,6 @@ use constant LMASK    => hex '70';
 use constant OFF_MASK => hex '1fff';
 $| = 1;
 
-my $authtab = 'authtab.dir';
-
 # Default values for all Diogenes options.
 # Overridden by rc files and constructor args.
 my %defaults = (
@@ -144,6 +142,7 @@ my %defaults = (
     tlg_dir => '',
     phi_dir => '',
     ddp_dir => '',
+    authtab => 'authtab.dir',
     tlg_file_prefix => 'tlg',
     phi_file_prefix => 'lat',
     ddp_file_prefix => 'ddp',
@@ -508,12 +507,17 @@ sub new
         }
     }
 
+    if (not -e File::Spec->catfile($self->{cdrom_dir}, 'authtab.dir')
+        and -e File::Spec->catfile($self->{cdrom_dir}, 'AUTHTAB.DIR'))
+    {
+        $self->{uppercase_files} = 1;
+    }
+    
     # Evidently some like to mount their CD-Roms in uppercase
     if ($self->{uppercase_files})
     {
         $self->{$_} = uc $self->{$_} for 
-            qw(file_prefix txt_suffix idt_suffix);
-        $authtab = uc $authtab;
+            qw(file_prefix txt_suffix idt_suffix authtab);
     }  
     
     # min_matches_int is for "internal", since we have to munge it here
@@ -594,7 +598,7 @@ sub unicode_make_patterns {
 sub check_db
 {
     my $self= shift;
-    my $file = File::Spec->catfile($self->{cdrom_dir}, 'authtab.dir');
+    my $file = File::Spec->catfile($self->{cdrom_dir}, $self->{authtab});
     my $check = check_authtab($file);
 
     # Fix up the case where the "lat" prefix is wrong.
@@ -1143,10 +1147,10 @@ sub parse_authtab
     my (%authtab_entry, $file_num, $base_lang);
     
     # Maybe CD-Rom is not mounted yet
-    return undef unless -e $self->{cdrom_dir}."authtab.dir";
+    return undef unless -e $self->{cdrom_dir}.$self->{authtab};
     
-    open AUTHTAB, $self->{cdrom_dir}.$authtab or 
-        $self->barf("Couldn't open $self->{cdrom_dir}$authtab");
+    open AUTHTAB, $self->{cdrom_dir}.$self->{authtab} or 
+        $self->barf("Couldn't open $self->{cdrom_dir}$self->{authtab}");
     binmode AUTHTAB;
     local $/ = "\xff";
     

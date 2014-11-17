@@ -306,6 +306,12 @@ REQUEST:
         my $requested_file = ($request->url->path);
         warn "Requested file: $requested_file; cwd: ".cwd."\n" if $DEBUG;
         my $leading_slash = ($requested_file =~ m#^/#) ? 1 : 0;
+        if ($requested_file =~ m#\.\.#)
+        {
+            warn "Warning: attempted directory traversal: $requested_file \n";
+            $client->send_error(RC_FORBIDDEN);
+            last REQUEST
+        }
         $requested_file = $CGI_SCRIPT if $requested_file eq '/';
         # Internet exploder stupidity
         $requested_file =~ s#^\Q$root_dir\E##;  
