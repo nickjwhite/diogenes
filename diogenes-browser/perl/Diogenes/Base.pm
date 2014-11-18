@@ -507,7 +507,8 @@ sub new
         }
     }
 
-    if (not -e File::Spec->catfile($self->{cdrom_dir}, 'authtab.dir')
+    if (defined $self->{cdrom_dir}
+        and not -e File::Spec->catfile($self->{cdrom_dir}, 'authtab.dir')
         and -e File::Spec->catfile($self->{cdrom_dir}, 'AUTHTAB.DIR'))
     {
         $self->{uppercase_files} = 1;
