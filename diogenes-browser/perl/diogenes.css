@@ -66,17 +66,22 @@ a.perseus:visited {
 .sidebar-split {
          width: 45%;
          display: block;
-         float: right;
          background-color: #ffffff;
-         border-left: 1px grey solid;
-         padding-left: 4px;
+         position: fixed;
+         right: 0px;
+         top: 0px;
+         overflow: auto;
+         max-height: 99%; /* ensures scrollbar will appear */
+         border-left: 1px solid grey;
+         padding: 0em 1em;
 }
 .sidebar-full {
          width: 100%;
          display: block;             
          background-color: #ffffff;
 }
-.sidebar-hidden {
+.sidebar-hidden,
+.sidebar-newpage {
          display: none;             
 }
 .main-full {

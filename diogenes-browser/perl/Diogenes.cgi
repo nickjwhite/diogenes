@@ -260,13 +260,7 @@ my $print_title = sub
                       -override => 1 );
  
     # for Perseus data
-    if ($newpage) {
-        # For when what we show first is Perseus data (we don't want a
-        # perseus sidebar within a perseus page
-        print qq{<div id="sidebar" class="sidebar-newpage" style="font-family: '$font'"></div>};
-    } else {
-        print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}" style="font-family: '$font'"></div>};
-    }
+    print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}" style="font-family: '$font'"></div>};
     if ($font) {
         print qq{<div id="main_window" class="main-full" style="font-family: '$font'">};
     } else {
