@@ -1,3 +1,14 @@
+The project as a whole is licensed under the GPLv3 or later.
+
+The following icons are from the GNOME-Colors project
+<http://code.google.com/p/gnome-colors/>, and are licensed under GPLv2:
+ dialog-close.png
+ next.png
+ previous.png
+ splitscreen.gif
+ view-fullscreen.png
+ view-restore.png
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

@@ -1,3 +1,4 @@
+var picture_dir = 'images/';
 
 // Select All for the checkboxes
 function setAll() {
@@ -103,14 +104,17 @@ function sidebarControl () {
     var sidebarControl = document.getElementById("sidebar-control");
 
     if (sidebarClass == 'sidebar-split') {
-        sidebarControl.innerHTML = '<a onClick="sidebarDismiss();">Dismiss</a><br/>'+
-            '<a onClick="sidebarFullscreen();">Full Screen</a>';
+        sidebarControl.innerHTML = 
+            '<a onClick="sidebarFullscreen();">' +
+            '<img id="fullscreen" src="' + picture_dir + 'view-fullscreen.png" alt="Fullscreen" /></a>';
     } else if (sidebarClass == 'sidebar-full') {
-        sidebarControl.innerHTML = '<a onClick="sidebarDismiss();">Dismiss</a><br/>'+
-            '<a onClick="sidebarSplitscreen();">Split Screen</a>';
-    } else {
-        alert("Error: sidebar state -- "+sidebarClass);
+        sidebarControl.innerHTML =
+            '<a onClick="sidebarSplitscreen();">' +
+            '<img id="splitscreen" src="' + picture_dir + 'view-restore.png" alt="Split Screen" /></a>';
     }
+    sidebarControl.innerHTML +=
+        '<a onClick="sidebarDismiss();">' +
+        '<img id="dismiss" src="' + picture_dir + 'dialog-close.png" alt="Dismiss" /></a>';
 }
 
 function sidebarDismiss () {

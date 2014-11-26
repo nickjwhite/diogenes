@@ -63,22 +63,26 @@ a.perseus:visited {
          font-size: 120%;
 }
 
-.sidebar-split {
-         width: 45%;
+.sidebar-split,
+.sidebar-full {
          display: block;
-         background-color: #ffffff;
-         position: fixed;
-         right: 0px;
          top: 0px;
+         right: 0px;
          overflow: auto;
          max-height: 99%; /* ensures scrollbar will appear */
+}
+.sidebar-split {
+         width: 45%;
+         background-color: #ffffff;
+         position: fixed;
          border-left: 1px solid grey;
          padding: 0em 1em;
 }
 .sidebar-full {
-         width: 100%;
-         display: block;             
+         width: 96%;
          background-color: #ffffff;
+         position: absolute;
+         padding: 0em 2%;
 }
 .sidebar-hidden,
 .sidebar-newpage {
@@ -94,7 +98,7 @@ a.perseus:visited {
 }
 
 #sidebar-control {
-         color: red;             
+         color: red;
          display: block;
          float: right;
 }
@@ -127,4 +131,8 @@ a.perseus:visited {
          font-size: 80%;
          text-align: center;
          color: grey;
+}
+
+img.next {
+         float: right;
 }

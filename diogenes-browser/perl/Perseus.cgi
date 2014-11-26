@@ -17,6 +17,10 @@ my $debug = 0;
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 print STDERR "$Diogenes_Daemon::params\n" if $debug;
 
+# This is the directory whence the decorative images that come with
+# the script are served.
+my $picture_dir = 'images/';
+
 unless ($f->param('noheader')) {
     print $f->header(-charset=>'utf-8');
 }
@@ -460,7 +464,10 @@ $format_fn{xml} = sub {
     my $text = shift;
 #      print STDERR "\n\n$text\n\n";
     print $munge_xml->($text);
-    print qq{<hr><a onClick="prevEntry$lang($dict_offset)">Previous Entry</a>&nbsp;&nbsp;&nbsp;<a onClick="nextEntry$lang($dict_offset)">Next Entry</a><hr>};
+    print "<div>";
+    print qq{<a onClick="prevEntry$lang($dict_offset)"><img class="prev" src="${picture_dir}previous.png" alt="Previous Entry" /></a> };
+    print qq{<a onClick="nextEntry$lang($dict_offset)"><img class="next" src="${picture_dir}next.png" alt="Next Entry" /></a>};
+    print "</div><hr />";
 };
 
 $format_fn{dict} = sub {
