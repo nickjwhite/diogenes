@@ -201,19 +201,16 @@ my $essential_footer = sub
 
 my $my_footer = sub
 {                                                       
-    print $f->hr,
-    $f->center(
-
-        $f->p(qq(<font size="-1">All data is &copy; the <em>Thesaurus
+    print 
+        $f->p({class => 'footer'}, qq(All data is &copy; the <em>Thesaurus
         Linguae Graecae</em>, the Packard Humanities Institute, The Perseus Project and
         others. The information in these databases is subject to
         restrictions on access and use; consult your licenses.  <a
         href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/">Diogenes</a>
         (version $version) is <a
         href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/license.php">&copy;</a>
-        1999-2007 P.J. Heslin.  </font>)),
-
-        $f->p('<a href="Diogenes.cgi" title="New Diogenes Search">New Search</a>'));
+        1999-2007 P.J. Heslin.),
+        $f->p({style => 'text-align:center'}, '<a href="Diogenes.cgi" title="New Diogenes Search">New Search</a>'));
     $essential_footer->();
 };
 

@@ -122,3 +122,9 @@ a.perseus:visited {
 .form_span_visible {
          display: inline;             
 }
+
+.footer {
+         font-size: 80%;
+         text-align: center;
+         color: grey;
+}
