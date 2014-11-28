@@ -610,7 +610,7 @@ my $format_inflect = sub {
     my $link = qq{<a onClick="getEntry$lang('$dict');">}.
         ($lang eq "grk" ? $beta_to_utf8->($lem) : $lem).
         qq{</a>};
-    print qq{<h2><a onClick="toggleLemma('$lem_num');"><img src="images/opened.gif"
+    print qq{<h2><a onClick="toggleLemma('$lem_num');"><img src="${picture_dir}opened.gif"
 align="bottom" id="lemma_$lem_num" /></a>&nbsp;$link</h2>};
 
     print qq{<span class="lemma_span_visible" id="lemma_span_$lem_num">};
