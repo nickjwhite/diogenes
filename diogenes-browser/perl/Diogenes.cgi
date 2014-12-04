@@ -1059,16 +1059,20 @@ $output{browser_passage} = sub
     $st{levels} = $#labels;
 
     my $j = $#labels;
+    my %fields;
     foreach my $lev (@labels) 
     {
         my $lab = $lev;
         next if $lab =~ m#^\*#; 
         $lab =~ s#^(.)#\U$1\E#;
+        %fields = ( -default => '0', -name => "level_$j", -size => 25 );
+        # autofocus first input box (HTML5)
+        if ($j == $#labels) {
+            $fields{'-autofocus'} = 'autofocus';
+        }
         print
             "$lab: ", '</td><td>', 
-            $f->textfield( -default =>'0',
-                           -name => "level_$j",
-                           -size=>25 ),
+            $f->textfield( %fields ) ,
             '</td></tr><tr><td>';
         $j--;
     }
