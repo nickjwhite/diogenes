@@ -965,7 +965,9 @@ $output{browser} = sub
                     $f->scrolling_list( -name => 'author',
                                         -Values => [sort {author_sort($auths{$a}, $auths{$b})} keys %auths],
 #                                         -Values => [sort numerically keys %auths],
-                                        -labels => \%auths, -size=>$size)),
+                                        -labels => \%auths, -size=>$size,
+                                        -autofocus => 'autofocus',
+                                      )),
                 $f->p(
                     $f->submit(-name=>'submit',
                                -value=>'Show works by this author')));
@@ -1022,7 +1024,9 @@ $output{browser_works} = sub
                 $f->p(
                     $f->scrolling_list( -name => 'work',
                                         -Values => [sort numerically keys %works],
-                                        -labels => \%works)),
+                                        -labels => \%works,
+                                        -autofocus => 'autofocus',
+                                      )),
                 $f->p(
                     $f->submit( -name => 'submit',
                                 -value => 'Find a passage in this work')));
