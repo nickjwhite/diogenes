@@ -8,7 +8,10 @@ use FileHandle;
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
-use lib ($Bin, catdir($Bin,'CPAN') );
+
+# Use local CPAN
+use lib ($Bin, catdir($Bin, '..', '..', 'dependencies', 'CPAN') );
+
 use XML::Tiny;
 use CGI qw(:standard);
 
@@ -107,7 +110,7 @@ warn "I don't know about language $lang!\n" unless exists $dicts{$lang};
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
-my $perseus_dir = catdir($Bin, 'Perseus_Data');
+my $perseus_dir = catdir($Bin, '..', '..', 'dependencies', 'Perseus_Data');
 if (not -e $perseus_dir) {
     $perseus_dir = $ENV{Diogenes_Perseus_Dir} if $ENV{Diogenes_Perseus_Dir};
     if (not -e $perseus_dir) {

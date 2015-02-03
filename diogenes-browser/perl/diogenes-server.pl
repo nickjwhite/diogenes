@@ -35,7 +35,9 @@ my $PRE_FORK = 0;
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
-use lib ($Bin, catdir($Bin,'CPAN') );
+
+# Use local CPAN
+use lib ($Bin, catdir($Bin, '..', '..', 'dependencies', 'CPAN') );
 
 use HTTP::Daemon;  
 # use CGI qw(-nodebug -compile :standard);
