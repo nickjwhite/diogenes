@@ -3,7 +3,7 @@ use strict;
 my %words;
 my $chars = "a-zA-Z/";
 
-my $phidir = "/home/pj/Classics-Data/phi";
+my $phidir = shift @ARGV or die "Usage: $0 phidir\n";
 my @files;
 
 opendir my $dir, $phidir or die $!;
@@ -42,10 +42,7 @@ for my $file (@files) {
     close $fh or die $!;
 }
 
-open my $out, ">lat.words" or die $!;
 for my $word (sort keys %words) {
-    print $out "$word\n"
-};
-close $out or die $!;
-1;
+    print "$word\n"
+}
 
