@@ -26,3 +26,7 @@ check_tlg:
 $(PDIR)/lat.words: check_phi utils/make_latin_wordlist.pl
 	mkdir -p $(PDIR)
 	utils/make_latin_wordlist.pl $(PHIDIR) > $@
+
+$(PDIR)/tlg.words: check_tlg utils/make_greek_wordlist.pl
+	mkdir -p $(PDIR)
+	utils/make_greek_wordlist.pl $(TLGDIR) > $@
