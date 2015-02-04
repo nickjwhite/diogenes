@@ -9,6 +9,6 @@ $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
 	printf '%s  %s\n' $(UNICODESUM) $@ | sha256sum -c
 
-diogenes-browser/perl/Diogenes/unicode-equivs.pl: diogenes-browser/perl/Diogenes/make_unicode_compounds.pl $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
+diogenes-browser/perl/Diogenes/unicode-equivs.pl: utils/make_unicode_compounds.pl $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	@echo 'Building unicode equivalents table'
-	perl diogenes-browser/perl/Diogenes/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
+	perl utils/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
