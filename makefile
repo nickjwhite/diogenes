@@ -44,8 +44,12 @@ $(PDIR)/tlg.words: $(PDIR)/check_tlg utils/make_greek_wordlist.pl
 $(PDIR)/lat.morph: $(PDIR)/lat.words
 	MORPHLIB=$(STEMLIB) cruncher -L < $(PDIR)/lat.words > $@
 
+$(PDIR)/tlg.morph: $(PDIR)/tlg.words
+	MORPHLIB=$(STEMLIB) cruncher < $(PDIR)/tlg.words > $@
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
 	rm -f $(PDIR)/check_phi $(PDIR)/check_tlg
-	rm -f $(PDIR)/lat.words $(PDIR)/tlg.words $(PDIR)/lat.morph
+	rm -f $(PDIR)/lat.words $(PDIR)/tlg.words
+	rm -f $(PDIR)/lat.morph $(PDIR)/tlg.morph
