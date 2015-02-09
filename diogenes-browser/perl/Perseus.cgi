@@ -100,8 +100,8 @@ elsif ($inp_enc) {
 $query =~ tr/A-Z/a-z/;
 
 my %dicts = (
-    grk => ['1999.04.0057.xml', 'LSJ', 'xml'],
-    lat => ['1999.04.0059.xml', 'Lewis-Short', 'xml'],
+    grk => ['grc.lsj.perseus-eng0.xml', 'LSJ', 'xml'],
+    lat => ['lat.ls.perseus-eng1.xml', 'Lewis-Short', 'xml'],
     eng => ['gcide.txt', 'Gcide (based on 1913 Webster)', 'dict']
     );
 my %format_fn;

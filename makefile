@@ -26,6 +26,8 @@ UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl
 
+Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml
+
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
 	printf '%s  %s\n' $(UNICODESUM) $@ | sha256sum -c
@@ -77,12 +79,20 @@ $(PBUILD)/lsj-index-head.txt: $(LSJS) utils/index_lsj_head.pl
 $(PBUILD)/lsj-index-trans.txt: $(LSJS) utils/index_lsj_trans.pl
 	cat $(LSJS) | ./utils/index_lsj_trans.pl > $@
 
+$(PDIR)/lat.ls.perseus-eng1.xml: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
+	mkdir -p $(PDIR)
+	cp $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
+
+$(PDIR)/grc.lsj.perseus-eng0.xml: $(LSJS)
+	mkdir -p $(PDIR)
+	cat $(LSJS) > $@
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
 	rm -f $(PBUILD)/check_phi $(PBUILD)/check_tlg
 	rm -f $(PBUILD)/lat.words $(PBUILD)/tlg.words
 	rm -f $(PBUILD)/lat.morph $(PBUILD)/tlg.morph
-	rm -f $(PBUILD)/lewis-index.txt
-	rm -f $(PBUILD)/lewis-index-head.txt
-	rm -f $(PBUILD)/lewis-index-trans.txt
+	rm -f $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
+	rm -f $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
+	rm -f $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml
