@@ -65,6 +65,18 @@ $(PBUILD)/lewis-index-head.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.
 $(PBUILD)/lewis-index-trans.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis_trans.pl
 	./utils/index_lewis_trans.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
+LSJDIR = $(LEXICA)/CTS_XML_TEI/perseus/pdllex/grc/lsj
+LSJS = $(LSJDIR)/grc.lsj.perseus-eng1.xml $(LSJDIR)/grc.lsj.perseus-eng2.xml $(LSJDIR)/grc.lsj.perseus-eng3.xml $(LSJDIR)/grc.lsj.perseus-eng4.xml $(LSJDIR)/grc.lsj.perseus-eng5.xml $(LSJDIR)/grc.lsj.perseus-eng6.xml $(LSJDIR)/grc.lsj.perseus-eng7.xml $(LSJDIR)/grc.lsj.perseus-eng8.xml $(LSJDIR)/grc.lsj.perseus-eng9.xml $(LSJDIR)/grc.lsj.perseus-eng10.xml $(LSJDIR)/grc.lsj.perseus-eng11.xml $(LSJDIR)/grc.lsj.perseus-eng12.xml $(LSJDIR)/grc.lsj.perseus-eng13.xml $(LSJDIR)/grc.lsj.perseus-eng14.xml $(LSJDIR)/grc.lsj.perseus-eng15.xml $(LSJDIR)/grc.lsj.perseus-eng16.xml $(LSJDIR)/grc.lsj.perseus-eng17.xml $(LSJDIR)/grc.lsj.perseus-eng18.xml $(LSJDIR)/grc.lsj.perseus-eng19.xml $(LSJDIR)/grc.lsj.perseus-eng20.xml $(LSJDIR)/grc.lsj.perseus-eng21.xml $(LSJDIR)/grc.lsj.perseus-eng22.xml $(LSJDIR)/grc.lsj.perseus-eng23.xml $(LSJDIR)/grc.lsj.perseus-eng24.xml $(LSJDIR)/grc.lsj.perseus-eng25.xml $(LSJDIR)/grc.lsj.perseus-eng26.xml $(LSJDIR)/grc.lsj.perseus-eng27.xml
+
+$(PBUILD)/lsj-index.txt: $(LSJS) utils/index_lsj.pl
+	cat $(LSJS) | ./utils/index_lsj.pl > $@
+
+$(PBUILD)/lsj-index-head.txt: $(LSJS) utils/index_lsj_head.pl
+	cat $(LSJS) | ./utils/index_lsj_head.pl > $@
+
+$(PBUILD)/lsj-index-trans.txt: $(LSJS) utils/index_lsj_trans.pl
+	cat $(LSJS) | ./utils/index_lsj_trans.pl > $@
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
