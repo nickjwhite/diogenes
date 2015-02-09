@@ -23,7 +23,7 @@ $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 
 diogenes-browser/perl/Diogenes/unicode-equivs.pl: utils/make_unicode_compounds.pl $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	@echo 'Building unicode equivalents table'
-	perl utils/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
+	./utils/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
 
 $(PDIR)/check_phi:
 	sed 's:PREFIX:$(PHIDIR):g' < $(DEPDIR)/phisums | sha256sum -c
@@ -35,11 +35,11 @@ $(PDIR)/check_tlg:
 
 $(PDIR)/lat.words: $(PDIR)/check_phi utils/make_latin_wordlist.pl
 	mkdir -p $(PDIR)
-	utils/make_latin_wordlist.pl $(PHIDIR) > $@
+	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
 $(PDIR)/tlg.words: $(PDIR)/check_tlg utils/make_greek_wordlist.pl
 	mkdir -p $(PDIR)
-	utils/make_greek_wordlist.pl $(TLGDIR) > $@
+	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
 
 $(PDIR)/lat.morph: $(PDIR)/lat.words
 	MORPHLIB=$(STEMLIB) cruncher -L < $(PDIR)/lat.words > $@
@@ -47,9 +47,21 @@ $(PDIR)/lat.morph: $(PDIR)/lat.words
 $(PDIR)/tlg.morph: $(PDIR)/tlg.words
 	MORPHLIB=$(STEMLIB) cruncher < $(PDIR)/tlg.words > $@
 
+$(PDIR)/lewis-index.txt: $(DEPDIR)/1999.04.0059.xml utils/index_lewis.pl
+	./utils/index_lewis.pl < $(DEPDIR)/1999.04.0059.xml > $@
+
+$(PDIR)/lewis-index-head.txt: $(DEPDIR)/1999.04.0059.xml utils/index_lewis_head.pl
+	./utils/index_lewis_head.pl < $(DEPDIR)/1999.04.0059.xml > $@
+
+$(PDIR)/lewis-index-trans.txt: $(DEPDIR)/1999.04.0059.xml utils/index_lewis_trans.pl
+	./utils/index_lewis_trans.pl < $(DEPDIR)/1999.04.0059.xml > $@
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
 	rm -f $(PDIR)/check_phi $(PDIR)/check_tlg
 	rm -f $(PDIR)/lat.words $(PDIR)/tlg.words
 	rm -f $(PDIR)/lat.morph $(PDIR)/tlg.morph
+	rm -f $(PDIR)/lewis-index.txt
+	rm -f $(PDIR)/lewis-index-head.txt
+	rm -f $(PDIR)/lewis-index-trans.txt
