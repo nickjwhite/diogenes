@@ -1,13 +1,19 @@
-# Note: Perseus_Data building requires morpheus to be installed;
-#       get it from https://github.com/PerseusDL/morpheus
-#       build the latin stems, and and set the location of that
-#       stem library in STEMLIB below.
-#       It also requires the PHI and TLG datasets; specify their
-#       locations in PHIDIR and TLGDIR below.
+# Building Perseus_Data requires morpheus to be installed; get it
+# from the https://github.com/PerseusDL/morpheus repository, build
+# the latin stems, and and set the location of the stem library in
+# STEMLIB below.
+#
+# It also requires the Lewis Short and LSJ lexica from Perseus; get
+# them from the https://github.com/PerseusDL/lexica repository and
+# set the location of the repository in LEXICA below.
+#
+# It also requires the PHI and TLG datasets; specify their
+# locations in PHIDIR and TLGDIR below.
 
 PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
 STEMLIB = $(HOME)/morpheus/stemlib
+LEXICA = $(HOME)/lexica
 
 DEPDIR = dependencies
 PDIR = $(DEPDIR)/Perseus_Data
@@ -47,14 +53,14 @@ $(PDIR)/lat.morph: $(PDIR)/lat.words
 $(PDIR)/tlg.morph: $(PDIR)/tlg.words
 	MORPHLIB=$(STEMLIB) cruncher < $(PDIR)/tlg.words > $@
 
-$(PDIR)/lewis-index.txt: $(DEPDIR)/1999.04.0059.xml utils/index_lewis.pl
-	./utils/index_lewis.pl < $(DEPDIR)/1999.04.0059.xml > $@
+$(PDIR)/lewis-index.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis.pl
+	./utils/index_lewis.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
-$(PDIR)/lewis-index-head.txt: $(DEPDIR)/1999.04.0059.xml utils/index_lewis_head.pl
-	./utils/index_lewis_head.pl < $(DEPDIR)/1999.04.0059.xml > $@
+$(PDIR)/lewis-index-head.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis_head.pl
+	./utils/index_lewis_head.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
-$(PDIR)/lewis-index-trans.txt: $(DEPDIR)/1999.04.0059.xml utils/index_lewis_trans.pl
-	./utils/index_lewis_trans.pl < $(DEPDIR)/1999.04.0059.xml > $@
+$(PDIR)/lewis-index-trans.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis_trans.pl
+	./utils/index_lewis_trans.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
