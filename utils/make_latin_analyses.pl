@@ -1,45 +1,47 @@
 #!/usr/bin/perl -w
+# http://search.cpan.org/~xaerxess/Search-Binary-0.99/lib/Search/Binary.pm - this is deprecated, and not installed currently
+use FindBin qw($Bin);
+use File::Spec::Functions qw(:ALL);
+use lib (catdir($Bin, '..', 'dependencies', 'CPAN', '3.1.2') ); # not a sensible way to do this, but just for now...
+
 use strict;
-use Data::Dumper;
+use Search::Binary;
+
+my $usage = "Usage: $0 lewis-index.txt lewis-index-head.txt lewis-index-trans.txt < lat.morph\n";
+
+my $lsfile = shift @ARGV or die $usage;
+my $lsheadfile = shift @ARGV or die $usage;
+my $lstransfile = shift @ARGV or die $usage;
 
 my %ls;
-open LS, "<lewis-index.txt" or die $!;
+open LS, "<$lsfile" or die $!;
 while (<LS>) {
     if (m/^(\S+)\s+(\S+)$/) {
         my $l = $1; my $o = $2;
         $ls{$l} = $o;
     }
-    else {
-#         print $_;
-    }
 }
 close LS;
 
 my @ls;
-open HEAD, "<lewis-index-head.txt" or die $!;
+open HEAD, "<$lsheadfile" or die $!;
 while (<HEAD>) {
     chomp;
     if (m/^(\S+)\s+(\S+)$/) {
         push @ls, $_;
     }
-    else {
-#         print $_;
-    }
 }
 close HEAD;
 
 my %trans;
-open TRANS, "<lewis-index-trans.txt" or die $!;
+open TRANS, "<$lstransfile" or die $!;
 while (<TRANS>) {
     chomp;
     if (m/^(\d+)\s+(.+)$/) {
         $trans{$1} = $2;
     }
-    else {
-#         print $_;
-    }
 }
-close HEAD;
+close TRANS;
 
 my $old_pos;
 my $read = sub {
@@ -51,7 +53,6 @@ my $read = sub {
     $old_pos = $pos;
     my $result = compare($val, $rec);
     my @ret = ($result, $pos);
-#     print "@ret :$val, $rec\n";
     return @ret;
 };
 
@@ -59,26 +60,17 @@ sub compare {
     my ($a, $b) = @_;
     $a =~ s/ .*$//;
     $b =~ s/ .*$//;
-#       print "$a|$b|\n";
     return $a cmp $b;
 }
 
-use Search::Binary;
 sub proximity {
     my $target = shift;
     $target =~ s/[^a-z]//g;
     my $pos = binary_search(0, (scalar @ls), $target, $read, undef, 1);
     my $hit = $ls[$pos];
-#     print ">>$hit\n";
     return $hit
 }
 
-# print "?";
-# my $in = <>;
-# chomp $in;
-# my $p = proximity($in);
-# print ">$p\n";
-# exit;
 
 # Some odd word fragments that Morpheus peculiarly thinks it can parse.
 my @bad = qw{etae etai etarum etas ete etene eti etidem etine etior etius eto eton etu etura etus eui euit evi evit};
@@ -86,12 +78,10 @@ my %bad;
 $bad{$_}++ for @bad;
 
 
-open LAT, "<lat.morph" or die $1;
-open OUT, ">latin-analyses-unsorted.txt" or die $1;
-while (<LAT>) {
+while (<>) {
     my $form = $_;
     chomp $form;
-    my $nl = <LAT>;
+    my $nl = <>;
     die "Error 1" unless $nl;
     chomp $nl;
     die "Error 2" unless $nl =~ m#^<NL>.*</NL>$#;
@@ -112,8 +102,14 @@ while (<LAT>) {
             ($part, $lemma, $inflect, $dialect, $extra) = ($1, $2, $3, $4, $5);
             $dialect .= " $extra" if $extra;
         }
-        die "No match for $form\n$anal\n" unless $normal or $indecl;
-        die ("->$anal\n") unless defined $part and defined $lemma and defined $inflect;
+        if (!$normal and !$indecl) {
+            print STDERR "No match for $form\n$anal\n";
+            next;
+        }
+        if(!defined $part && !defined $lemma && !defined $inflect) {
+            print STDERR "->$anal\n";
+            next;
+        }
         my $info = $dialect ? "$inflect ($dialect)" : "$inflect";
         
         # the lemma sometimes is a comma-separated list
@@ -158,31 +154,8 @@ while (<LAT>) {
             my $pos = proximity($real_lemma);
             $pos =~ s/^\S+ //;
             $line_out .= "{$pos 0 $lemma\t$trans\t$info}";
-#             print $line_out."\n";
         }
         $seen{$info} = 1;
     }
-    print OUT $line_out."\n";
-#      print $line_out."\n";
+    print $line_out."\n";
 }
-close LAT or die $!;
-close OUT or die $!;
-#  exit;
-
-
-# install File::Sort from CPAN
-use File::Sort qw(sort_file);
-no locale;
-# get constants
-use POSIX 'locale_h';
-$ENV{LC_ALL} = $ENV{LANG} = '';
-# use new ENV settings
-setlocale(LC_CTYPE, '');
-setlocale(LC_COLLATE, '');
-
-sort_file({
-        t => "\t", k => 1,
-        o => 'latin-analyses.txt', I => 'latin-analyses-unsorted.txt'
-    });
-
-1;

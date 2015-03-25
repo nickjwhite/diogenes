@@ -26,7 +26,7 @@ UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl
 
-Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml
+Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt 
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -86,6 +86,11 @@ $(PDIR)/lat.ls.perseus-eng1.xml: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat
 $(PDIR)/grc.lsj.perseus-eng0.xml: $(LSJS)
 	mkdir -p $(PDIR)
 	cat $(LSJS) > $@
+
+$(PDIR)/latin-analyses.txt: $(PBUILD)/lat.morph $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
+	./utils/make_latin_analyses.pl \
+	    $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt \
+	    < $(PBUILD)/lat.morph | LC_ALL=C sort > $@
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
