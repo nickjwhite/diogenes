@@ -92,6 +92,11 @@ $(PDIR)/latin-analyses.txt: $(PBUILD)/lat.morph $(PBUILD)/lewis-index.txt $(PBUI
 	    $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt \
 	    < $(PBUILD)/lat.morph | LC_ALL=C sort > $@
 
+$(PDIR)/greek-analyses.txt: $(PBUILD)/tlg.morph $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
+	./utils/make_greek_analyses.pl \
+	    $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt \
+	    < $(PBUILD)/tlg.morph | LC_ALL=C sort > $@
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl

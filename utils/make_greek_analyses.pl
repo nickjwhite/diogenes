@@ -1,48 +1,51 @@
 #!/usr/bin/perl -w
+# Bug: doesn't seem to be outputing definitions properly yet
 use strict;
-use Data::Dumper;
+use FindBin qw($Bin);
+use File::Spec::Functions qw(catdir);
+
+# use local CPAN
+use lib (catdir($Bin, '..', 'dependencies', 'CPAN') );
+
+use Search::Binary;
 
 # [rtilde?]
 
+my $usage = "Usage: $0 lsj-index.txt lsj-index-head.txt lsj-index-trans.txt < tlg.morph\n";
+
+my $lsjfile = shift @ARGV or die $usage;
+my $lsjheadfile = shift @ARGV or die $usage;
+my $lsjtransfile = shift @ARGV or die $usage;
+
 my %lsj;
-open LSJX, "<lsj-index.txt" or die $!;
+open LSJX, "<$lsjfile" or die $!;
 while (<LSJX>) {
     if (m/^(\S+)\s+(\S+)$/) {
         my $l = $1; my $o = $2;
         $lsj{$l} = $o;
     }
-    else {
-#         print $_;
-    }
 }
 close LSJX;
 
 my @lsj;
-open HEAD, "<lsj-index-head.txt" or die $!;
+open HEAD, "<$lsjheadfile" or die $!;
 while (<HEAD>) {
     chomp;
     if (m/^(\S+)\s+(\S+)$/) {
         push @lsj, $_;
     }
-    else {
-#         print $_;
-    }
 }
 close HEAD;
 
 my %trans;
-open TRANS, "<lsj-index-trans.txt" or die $!;
+open TRANS, "<$lsjtransfile" or die $!;
 while (<TRANS>) {
     chomp;
     if (m/^(\d+)\s+(.+)$/) {
         $trans{$1} = $2;
     }
-    else {
-#         print $_;
-    }
 }
-close HEAD;
-
+close TRANS;
 
 my $old_pos;
 my $read = sub {
@@ -52,7 +55,7 @@ my $read = sub {
     }
     my $rec = $lsj[$pos];
     $old_pos = $pos;
-    my $result = compare ($val, $rec);
+    my $result = compare($val, $rec);
     my @ret = ($result, $pos);
     return @ret;
 };
@@ -66,13 +69,12 @@ for (@alphabet) {
     $i++;
 }
 
-use Search::Binary;
 sub proximity {
     my $target = shift;
     $target =~ s/[^a-z]//g;
-    my $pos = binary_search(0, (scalar @lsj), $target, $read, undef, 1);
+    # the - 2 is -1 for zero-terminated list size, and -1 as old_pos may overrun in read
+    my $pos = binary_search(0, (scalar @lsj) - 2, $target, $read, undef, 1);
     my $hit = $lsj[$pos];
-#     print ">>$hit\n";
     return $hit
 }
 
@@ -81,13 +83,11 @@ sub compare {
     my ($a, $b) = @_;
     $a =~ s/ .*$//;
     $b =~ s/ .*$//;
-#     print "$a|$b|\n";
     my $min = (length $a < length $b) ? length $a : length $b;
     for ($i = 0; $i < $min; $i++) {
         my $aa = substr $a, $i, 1;
         my $bb = substr $b, $i, 1;
         die "error: $aa, $bb" unless (exists $alph{$aa} and exists $alph{$bb});
-#         print "$aa, $bb, $alph{$aa}, $alph{$bb}\n";
         return 1  if $alph{$aa} > $alph{$bb};
         return -1 if $alph{$aa} < $alph{$bb};
     }
@@ -98,12 +98,10 @@ sub compare {
 
 my %rough_combos = (t => "q", p => "f", k => "x");
 
-open TLG, "<tlg.morph" or die $1;
-open OUT, ">greek-analyses-unsorted.txt" or die $1;
-while (<TLG>) {
+while (<>) {
     my $form = $_;
     chomp $form;
-    my $nl = <TLG>;
+    my $nl = <>;
     die "Error 1" unless $nl;
     chomp $nl;
     die "Error 2" unless $nl =~ m#^<NL>.*</NL>$#;
@@ -122,13 +120,15 @@ while (<TLG>) {
             ($part, $lemma, $inflect, $dialect, $extra) = ($1, $2, $3, $4, $5);
             $dialect .= " $extra" if $extra;
         }
-        die "No match for $form\n$anal\n" unless $normal or $indecl;
-        die ("->$anal\n") unless defined $part and defined $lemma and defined $inflect;
+        if (!$normal and !$indecl) {
+            print STDERR "No match for $form\n$anal\n";
+            next;
+        }
+        if(!defined $part && !defined $lemma && !defined $inflect) {
+            print STDERR "->$anal\n";
+            next;
+        }
         my $info = $dialect ? "$inflect ($dialect)" : "$inflect";
-#         print "$form -> $info\n"
-#         push @analyses, $info unless $seen{$info};
-
-#         $real_lemma =~ s/^.*,\s*//;
 
         # The analysis can be either a single lemma or a
         # comma-separated list.  If the former and the form is not
@@ -183,7 +183,10 @@ while (<TLG>) {
         else {
             die "Flow error!";
         }
-        die "Lemma? $lemma\n" unless $real_lemma;
+        if (!$real_lemma) {
+            print STDERR "Lemma? $lemma\n";
+            next;
+        }
 
         $conf=9;       
 
@@ -222,11 +225,9 @@ while (<TLG>) {
             $line_out .= "{$lsj{$real_lemma} $conf $lemma\t$trans\t$info}";
         } else {
             # desperation -- where it would appear, alphabetically.
-#             print "#$real_lemma $lemma\n";
             my $pos = proximity($real_lemma);
             $pos =~ s/^\S+ //;
             $line_out .= "{$pos 0 $lemma\t$trans\t$info}";
-#             print $line_out."\n";
         }
         if (@suppl_lemmata) {
             for (@suppl_lemmata) {
@@ -235,124 +236,7 @@ while (<TLG>) {
                 }
             }
         }
-        
         $seen{$info} = 1;
     }
-    print OUT $line_out."\n";
-#      print $line_out."\n";
+    print $line_out."\n";
 }
-close TLG or die $!;
-close OUT or die $!;
-# exit;
-
-
-# print "?";
-# my $in = <>;
-# chomp $in;
-# print ">$in\n";
-# proximity($in);
-# exit;
-
-
-
-
-# install File::Sort from CPAN
-use File::Sort qw(sort_file);
-no locale;
-# get constants
-use POSIX 'locale_h';
-$ENV{LC_ALL} = $ENV{LANG} = '';
-# use new ENV settings
-setlocale(LC_CTYPE, '');
-setlocale(LC_COLLATE, '');
-
-sort_file({
-        t => "\t", k => 1,
-        o => 'greek-analyses.txt', I => 'greek-analyses-unsorted.txt'
-    });
-
-1;
-
-#         unless ($lsj{$real_lemma}) {
-#             # desperation -- where it would appear, alphabetically.
-#             my $match;
-#             for (my $i=3; $i< length $reserve_lemma; $i++) {
-#                 my $try = substr $reserve_lemma, 0, $i;
-#                 if ($lsj{$try}) {
-#                     $real_lemma = $try;
-#                 }
-#             }
-#         }
-
-
-
-
-
-
-
-
-
-        # the lemma sometimes is a comma-separated list
-#         my $real_lemma = $lemma;
-#         $real_lemma =~ s/^.*,\s*//;
-        # hyphenated compounds sometimes exist unhyphenated in LSJ,
-        # but sometimes we make do with the last part
-#         if ($real_lemma =~ m/^(.+)-(.+)$/) {
-#             $conf=7;
-#             my $start = $1;
-#             my $end = $2;
-
-#             $real_lemma = $start.$end;
-
-#             unless ($lsj{$real_lemma}) {
-#                 $real_lemma =~ s/^(.*[\(\)].*)[\(\)](.*)$/$1$2/; # remove dupl breathings
-#                 $real_lemma =~ s/^(.*[\\\/=].*)[\\\/=](.*)$/$1$2/; # remove dupl accents (end)
-#             }
-#             unless ($lsj{$real_lemma}) {
-#                 $real_lemma = $start.$end;
-#                 $real_lemma =~ s/^(.*[\(\)].*)[\(\)](.*)$/$1$2/; # remove dupl breathings
-#                 $real_lemma =~ s/^(.*)[\\\/=](.*[\\\/=].*)$/$1$2/; # remove dupl accents (front)
-#             }
-#             unless ($lsj{$real_lemma}) {
-#                 $real_lemma = $start.$end;
-#                 if ($end =~ m/^[aeiouhw]*\(/) {
-#                     $start =~ m/(.)$/;
-#                     my $tail = $1;
-#                     if ($rough_combos{$tail}) {
-#                         $start =~ s/(.)$//;
-#                         $start .= $rough_combos{$tail};
-#                         $end =~ s/^([aeiouhw]*)\(/$1/;
-#                         $real_lemma = $start.$end;
-#                         print "~$lemma $real_lemma\n";
-#                     }
-#                 }
-#             }
-#                     
-#             if ($lsj{$real_lemma}) {
-#                 print "($real_lemma $lemma)";
-#             }
-            
-#             $real_lemma =~ s/^(.*[\\\/=].*)[\\\/=](.*)$/$1$2/; # remove dupl accents
-#             $real_lemma =~ s/^(.*[\(\)].*)[\(\)](.*)$/$1$2/; # remove dupl breathings
-
-#             unless ($lsj{$real_lemma}) {
-#                 print "($real_lemma $lemma)";
-#             }
-#             my $start = $1;
-#             my $end = $2;
-#             my $orig_end = $end;
-#             my @compound;
-#             push @compound, $real_lemma;
-#             push @compound, $start.$end;
-#             $start =~ s/[\\\/=]//;
-#             $end =~ s/([aeiouhw]+)\)/$1/;
-#             push @compound, $start.$end;
-#             push @compound, $orig_end;
-#             for my $c (@compound) {
-#             print ":$c\n";
-#                 if (exists $lsj{$c}) {
-#                     $real_lemma = $c;
-#                     last;
-#                 }
-#             }
-#         }
