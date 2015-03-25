@@ -1,10 +1,11 @@
 #!/usr/bin/perl -w
-# http://search.cpan.org/~xaerxess/Search-Binary-0.99/lib/Search/Binary.pm - this is deprecated, and not installed currently
-use FindBin qw($Bin);
-use File::Spec::Functions qw(:ALL);
-use lib (catdir($Bin, '..', 'dependencies', 'CPAN', '3.1.2') ); # not a sensible way to do this, but just for now...
-
 use strict;
+use FindBin qw($Bin);
+use File::Spec::Functions qw(catdir);
+
+# use local CPAN
+use lib (catdir($Bin, '..', 'dependencies', 'CPAN') );
+
 use Search::Binary;
 
 my $usage = "Usage: $0 lewis-index.txt lewis-index-head.txt lewis-index-trans.txt < lat.morph\n";
