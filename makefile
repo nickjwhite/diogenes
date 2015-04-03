@@ -30,7 +30,7 @@ UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl
 
-Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt 
+Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -40,20 +40,20 @@ diogenes-browser/perl/Diogenes/unicode-equivs.pl: utils/make_unicode_compounds.p
 	@echo 'Building unicode equivalents table'
 	./utils/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
 
-$(PBUILD)/check_phi:
+$(PBUILD)/check_phi: $(DEPDIR)/phisums
 	mkdir -p $(PBUILD)
 	sed 's:PREFIX:$(PHIDIR):g' < $(DEPDIR)/phisums | sha256sum -c
 	touch $@
 
-$(PBUILD)/check_tlg:
+$(PBUILD)/check_tlg: $(DEPDIR)/tlgsums
 	mkdir -p $(PBUILD)
 	sed 's:PREFIX:$(TLGDIR):g' < $(DEPDIR)/tlgsums | sha256sum -c
 	touch $@
 
-$(PBUILD)/lat.words: $(PBUILD)/check_phi utils/make_latin_wordlist.pl
+$(PBUILD)/lat.words: utils/make_latin_wordlist.pl $(PBUILD)/check_phi
 	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
-$(PBUILD)/tlg.words: $(PBUILD)/check_tlg utils/make_greek_wordlist.pl
+$(PBUILD)/tlg.words: utils/make_greek_wordlist.pl $(PBUILD)/check_tlg
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
 
 $(PBUILD)/lat.morph: $(PBUILD)/lat.words
@@ -62,13 +62,13 @@ $(PBUILD)/lat.morph: $(PBUILD)/lat.words
 $(PBUILD)/tlg.morph: $(PBUILD)/tlg.words
 	MORPHLIB=$(STEMLIB) cruncher < $(PBUILD)/tlg.words > $@
 
-$(PBUILD)/lewis-index.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis.pl
+$(PBUILD)/lewis-index.txt: utils/index_lewis.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	./utils/index_lewis.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
-$(PBUILD)/lewis-index-head.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis_head.pl
+$(PBUILD)/lewis-index-head.txt: utils/index_lewis_head.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	./utils/index_lewis_head.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
-$(PBUILD)/lewis-index-trans.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis_trans.pl
+$(PBUILD)/lewis-index-trans.txt: utils/index_lewis_trans.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	./utils/index_lewis_trans.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
 # It would be nice to use LSJ from lexica repo, but our tools don't
@@ -76,25 +76,25 @@ $(PBUILD)/lewis-index-trans.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat
 $(PDIR)/grc.lsj.perseus-eng0.xml: $(LSJDIR)/1999.04.0057.xml.xz
 	xzcat < $(LSJDIR)/1999.04.0057.xml.xz > $@
 
-$(PBUILD)/lsj-index.txt: $(PDIR)/grc.lsj.perseus-eng0.xml utils/index_lsj.pl
+$(PBUILD)/lsj-index.txt: utils/index_lsj.pl $(PDIR)/grc.lsj.perseus-eng0.xml
 	./utils/index_lsj.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
-$(PBUILD)/lsj-index-head.txt: $(PDIR)/grc.lsj.perseus-eng0.xml utils/index_lsj_head.pl
+$(PBUILD)/lsj-index-head.txt: utils/index_lsj_head.pl $(PDIR)/grc.lsj.perseus-eng0.xml
 	./utils/index_lsj_head.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
-$(PBUILD)/lsj-index-trans.txt: $(PDIR)/grc.lsj.perseus-eng0.xml utils/index_lsj_trans.pl
+$(PBUILD)/lsj-index-trans.txt: utils/index_lsj_trans.pl $(PDIR)/grc.lsj.perseus-eng0.xml
 	./utils/index_lsj_trans.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
 $(PDIR)/lat.ls.perseus-eng1.xml: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	mkdir -p $(PDIR)
 	cp $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
 
-$(PDIR)/latin-analyses.txt: $(PBUILD)/lat.morph $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
+$(PDIR)/latin-analyses.txt: utils/make_latin_analyses.pl $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt $(PBUILD)/lat.morph
 	./utils/make_latin_analyses.pl \
 	    $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt \
 	    < $(PBUILD)/lat.morph | LC_ALL=C sort > $@
 
-$(PDIR)/greek-analyses.txt: $(PBUILD)/tlg.morph $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
+$(PDIR)/greek-analyses.txt: utils/make_greek_analyses.pl $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt $(PBUILD)/tlg.morph
 	./utils/make_greek_analyses.pl \
 	    $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt \
 	    < $(PBUILD)/tlg.morph | LC_ALL=C sort > $@
@@ -108,3 +108,4 @@ clean:
 	rm -f $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
 	rm -f $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
 	rm -f $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml
+	rm -f $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt
