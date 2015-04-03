@@ -4,11 +4,9 @@ use strict;
 my $i = 0;
 my %seen;
 
-$/ = '>';
-
 while (<>) {
     my %orth;
-    if (/<entryFree[^>]*key\s*=\s*\"(.*?)\"/m)
+    if (m/<entryFree[^>]*key\s*=\s*\"(.*?)\"/)
     {
         my $key = $1;
 

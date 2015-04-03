@@ -3,10 +3,8 @@ use strict;
 
 my $i = 0;
 
-$/ = '>';
-
 while (<>) {
-    if (/<entryFree[^>]*key\s*=\s*\"(.*?)\"/m)
+    if (m/<entryFree[^>]*key\s*=\s*\"(.*?)\"/)
     {
         my $key = $1;
         $key =~ s/[^a-z]//g;

@@ -5,9 +5,12 @@
 #   https://github.com/PerseusDL/morpheus repository, and set the
 #   location of the stem libraries in STEMLIB below.
 #
-# - The Lewis-Short and LSJ lexica from Perseus; get them from the
+# - The Lewis-Short lexicon from Perseus; get it from the
 #   https://github.com/PerseusDL/lexica repository and set the
 #   location of the repository in LEXICA below.
+#
+# - The LSJ lexicon; get it from https://njw.name/1999.04.0057.xml.xz
+#   and set its location in LSJDIR below.
 #
 # - The PHI and TLG datasets; specify their locations in PHIDIR and
 #   TLGDIR below.
@@ -16,6 +19,7 @@ PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
 STEMLIB = $(HOME)/morpheus/stemlib
 LEXICA = $(HOME)/lexica
+LSJDIR = $(HOME)
 
 DEPDIR = dependencies
 PDIR = $(DEPDIR)/Perseus_Data
@@ -67,25 +71,23 @@ $(PBUILD)/lewis-index-head.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.
 $(PBUILD)/lewis-index-trans.txt: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml utils/index_lewis_trans.pl
 	./utils/index_lewis_trans.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
-LSJDIR = $(LEXICA)/CTS_XML_TEI/perseus/pdllex/grc/lsj
-LSJS = $(LSJDIR)/grc.lsj.perseus-eng1.xml $(LSJDIR)/grc.lsj.perseus-eng2.xml $(LSJDIR)/grc.lsj.perseus-eng3.xml $(LSJDIR)/grc.lsj.perseus-eng4.xml $(LSJDIR)/grc.lsj.perseus-eng5.xml $(LSJDIR)/grc.lsj.perseus-eng6.xml $(LSJDIR)/grc.lsj.perseus-eng7.xml $(LSJDIR)/grc.lsj.perseus-eng8.xml $(LSJDIR)/grc.lsj.perseus-eng9.xml $(LSJDIR)/grc.lsj.perseus-eng10.xml $(LSJDIR)/grc.lsj.perseus-eng11.xml $(LSJDIR)/grc.lsj.perseus-eng12.xml $(LSJDIR)/grc.lsj.perseus-eng13.xml $(LSJDIR)/grc.lsj.perseus-eng14.xml $(LSJDIR)/grc.lsj.perseus-eng15.xml $(LSJDIR)/grc.lsj.perseus-eng16.xml $(LSJDIR)/grc.lsj.perseus-eng17.xml $(LSJDIR)/grc.lsj.perseus-eng18.xml $(LSJDIR)/grc.lsj.perseus-eng19.xml $(LSJDIR)/grc.lsj.perseus-eng20.xml $(LSJDIR)/grc.lsj.perseus-eng21.xml $(LSJDIR)/grc.lsj.perseus-eng22.xml $(LSJDIR)/grc.lsj.perseus-eng23.xml $(LSJDIR)/grc.lsj.perseus-eng24.xml $(LSJDIR)/grc.lsj.perseus-eng25.xml $(LSJDIR)/grc.lsj.perseus-eng26.xml $(LSJDIR)/grc.lsj.perseus-eng27.xml
+# It would be nice to use LSJ from lexica repo, but our tools don't
+# yet handle the new format it uses
+$(PDIR)/grc.lsj.perseus-eng0.xml: $(LSJDIR)/1999.04.0057.xml.xz
+	xzcat < $(LSJDIR)/1999.04.0057.xml.xz > $@
 
-$(PBUILD)/lsj-index.txt: $(LSJS) utils/index_lsj.pl
-	cat $(LSJS) | ./utils/index_lsj.pl > $@
+$(PBUILD)/lsj-index.txt: $(PDIR)/grc.lsj.perseus-eng0.xml utils/index_lsj.pl
+	./utils/index_lsj.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
-$(PBUILD)/lsj-index-head.txt: $(LSJS) utils/index_lsj_head.pl
-	cat $(LSJS) | ./utils/index_lsj_head.pl > $@
+$(PBUILD)/lsj-index-head.txt: $(PDIR)/grc.lsj.perseus-eng0.xml utils/index_lsj_head.pl
+	./utils/index_lsj_head.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
-$(PBUILD)/lsj-index-trans.txt: $(LSJS) utils/index_lsj_trans.pl
-	cat $(LSJS) | ./utils/index_lsj_trans.pl > $@
+$(PBUILD)/lsj-index-trans.txt: $(PDIR)/grc.lsj.perseus-eng0.xml utils/index_lsj_trans.pl
+	./utils/index_lsj_trans.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
 $(PDIR)/lat.ls.perseus-eng1.xml: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	mkdir -p $(PDIR)
 	cp $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
-
-$(PDIR)/grc.lsj.perseus-eng0.xml: $(LSJS)
-	mkdir -p $(PDIR)
-	cat $(LSJS) > $@
 
 $(PDIR)/latin-analyses.txt: $(PBUILD)/lat.morph $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
 	./utils/make_latin_analyses.pl \
