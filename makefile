@@ -99,6 +99,9 @@ $(PDIR)/greek-analyses.txt: utils/make_greek_analyses.pl $(PBUILD)/lsj-index.txt
 	    $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt \
 	    < $(PBUILD)/tlg.morph | LC_ALL=C sort > $@
 
+$(PDIR)/greek-analyses.idt: utils/make_greek_index.pl $(PDIR)/greek-analyses.txt
+	./utils/make_greek_index.pl < $(PDIR)/greek-analyses.txt > $@
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
