@@ -28,9 +28,11 @@ PBUILD = $(DEPDIR)/Perseus_Build
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 
+.SUFFIXES: .txt .idt
+
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl
 
-Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt
+Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt $(PDIR)/latin-analyses.idt $(PDIR)/greek-analyses.idt
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -99,8 +101,8 @@ $(PDIR)/greek-analyses.txt: utils/make_greek_analyses.pl $(PBUILD)/lsj-index.txt
 	    $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt \
 	    < $(PBUILD)/tlg.morph | LC_ALL=C sort > $@
 
-$(PDIR)/greek-analyses.idt: utils/make_greek_index.pl $(PDIR)/greek-analyses.txt
-	./utils/make_greek_index.pl < $(PDIR)/greek-analyses.txt > $@
+.txt.idt:
+	./utils/make_index.pl < $< > $@
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
