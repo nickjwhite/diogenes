@@ -14,12 +14,16 @@
 #
 # - The PHI and TLG datasets; specify their locations in PHIDIR and
 #   TLGDIR below.
+#
+# - The gcide dictionary (dict-gcide on debian), specify its location
+#   in GCIDE below.
 
 PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
 STEMLIB = $(HOME)/morpheus/stemlib
 LEXICA = $(HOME)/lexica
 LSJDIR = $(HOME)
+GCIDE = /usr/share/dictd/gcide.dict.dz
 
 DEPDIR = dependencies
 PDIR = $(DEPDIR)/Perseus_Data
@@ -32,7 +36,7 @@ UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl
 
-Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt $(PDIR)/latin-analyses.idt $(PDIR)/greek-analyses.idt $(PDIR)/latin-lemmata.txt $(PDIR)/greek-lemmata.txt
+Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt $(PDIR)/latin-analyses.idt $(PDIR)/greek-analyses.idt $(PDIR)/latin-lemmata.txt $(PDIR)/greek-lemmata.txt $(PDIR)/gcide.txt
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -110,6 +114,10 @@ $(PDIR)/latin-lemmata.txt: utils/make_latin_lemmata.pl $(PBUILD)/lewis-index.txt
 $(PDIR)/greek-lemmata.txt: utils/make_greek_lemmata.pl $(PBUILD)/lsj-index.txt $(PBUILD)/check_tlg $(PDIR)/greek-analyses.txt
 	./utils/make_greek_lemmata.pl $(PBUILD)/lsj-index.txt $(TLGDIR) < $(PDIR)/greek-analyses.txt > $@
 
+# The sed below cuts out a notice at the start of the dictionary file
+$(PDIR)/gcide.txt: utils/munge_gcide.pl $(GCIDE)
+	zcat < $(GCIDE) | sed '1,102d' | ./utils/munge_gcide.pl > $@
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
@@ -120,4 +128,4 @@ clean:
 	rm -f $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
 	rm -f $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml
 	rm -f $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt
-	rm -f $(PDIR)/latin-lemmata.txt $(PDIR)/greek-lemmata.txt
+	rm -f $(PDIR)/latin-lemmata.txt $(PDIR)/greek-lemmata.txt $(PDIR)/gcide.txt

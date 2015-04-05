@@ -1,27 +1,28 @@
 #!/usr/bin/perl -w
 use strict;
 
-open my $gc, "<gcide.dict" or die $!;
 my $cur = '';
 my $n = 1;
 my $entry;
-while (<$gc>) {
+while (<>) {
     chomp;
     if (m/^(\S+)/) {
         my $hw = $1;
         if ($hw eq $cur) {
             s/^/\t/;
-        }
-        else {
+        } else {
             $cur = $hw;
-            print "\n", $entry if $entry;
+            if($entry) {
+                print "\n" if $n != 1;
+                print $entry;
+                $n++;
+            }
             $entry = '';
         }
-    }
-    else {
+    } else {
         s/^(\s+)/\t$1/;
     }
-    $entry .= $_
+    $entry .= $_;
 }
 print $entry;
 print "\n";
