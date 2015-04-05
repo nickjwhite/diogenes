@@ -1,17 +1,19 @@
 #!/usr/bin/perl -w
 use strict;
 
-my $indexfile = shift @ARGV or die "Usage: $0 index.txt < latin-analyses.txt\n";
+my $usage = "Usage: $0 index.txt < analyses.txt\n";
 
-my %ls;
-open LS, "<$indexfile" or die $!;
-while (<LS>) {
+my $indexfile = shift @ARGV or die $usage;
+
+my %dict_ref;
+open INDEX, "<$indexfile" or die $!;
+while (<INDEX>) {
     chomp;
     if (m/^(\S+)\s+(\S+)$/) {
-        $ls{$1} = $2;
+        $dict_ref{$1} = $2;
     }
 }
-close LS;
+close INDEX;
 
 my (%lemmata, %dicts, %prefixes);
 
@@ -34,12 +36,10 @@ for my $key (sort keys %lemmata) {
         $stem =~ s/^(.*)-(.*)$/$1$2/;
         $stem =~ s/#(\d)$//; # in-vulgo#2
 
-        my $dict_ref = \%ls;
-        if ($dict_ref->{$stem}) {
-            print "$key\t$dict_ref->{$stem}\t";
-            print STDERR "Using $dict_ref->{$stem} [$stem] for $key\n";
-        }
-        else {
+        if ($dict_ref{$stem}) {
+            print "$key\t$dict_ref{$stem}\t";
+            print STDERR "Using $dict_ref{$stem} [$stem] for $key\n";
+        } else {
             print "$key\t0\t";
             print STDERR "No dict for $key\n";
         }
@@ -72,14 +72,14 @@ sub scrub {
         if ($key =~ m/^(.*?),/) {
             my $pre = $1;
             if (exists $prefixes{$pre} and $prefixes{$pre} < 4) {
-                print "Axing unique prefix: $pre\n";
+                print STDERR "Axing unique prefix: $pre\n";
                 my $val = $lemmata{$key};
                 delete $lemmata{$key};
                 $key =~ s/^(.*),//;
                 push @{ $lemmata{$key} }, @{ $val };
             }
             elsif (exists $prefixes{$pre} and $prefixes{$pre} <= 4) {
-                print "Suspicious prefix: $pre\n";
+                print STDERR "Suspicious prefix: $pre\n";
             } 
             if (exists $prefixes{$pre} and $prefixes{$pre} < $min and $prefixes{$pre} > 4) {
                 $min = $prefixes{$pre};
@@ -87,7 +87,7 @@ sub scrub {
             }
         }
     }
-    print "Min prefix: $min_pre ($min)\n" if $min_pre;
+    print STDERR "Min prefix: $min_pre ($min)\n" if $min_pre;
 }
 
 sub process {
@@ -108,20 +108,18 @@ sub process {
             }
 
             my $infl = "$form ($info)";
-#             if ($conf > 1 and not $seen{$infl}) {
             if (not $seen{$infl}) {
 
                 if ($dicts{$lemma} and $dict != $dicts{$lemma}) {
                     # Should generally be LSJ with otherwise identical
                     # lower- and upper-case entries
-                    print "Conflicting lemma: $lemma $dict $dicts{$lemma}\n"
+                    print STDERR "Conflicting lemma: $lemma $dict $dicts{$lemma}\n"
                 }
                 $dicts{$lemma} = $dict unless $dicts{$lemma};
                 push @{ $lemmata{$lemma} }, $infl;
                 $seen{$infl}++;
             }
-        }
-        else {
+        } else {
             warn "Bad analysis: $entry";
         }
     }
