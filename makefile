@@ -32,11 +32,22 @@ PBUILD = $(DEPDIR)/Perseus_Build
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 
+DATAFILES = \
+	$(PDIR)/lat.ls.perseus-eng1.xml \
+	$(PDIR)/grc.lsj.perseus-eng0.xml \
+	$(PDIR)/latin-analyses.txt \
+	$(PDIR)/greek-analyses.txt \
+	$(PDIR)/latin-analyses.idt \
+	$(PDIR)/greek-analyses.idt \
+	$(PDIR)/latin-lemmata.txt \
+	$(PDIR)/greek-lemmata.txt \
+	$(PDIR)/gcide.txt
+
 .SUFFIXES: .txt .idt
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl
 
-Perseus_Data: $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt $(PDIR)/latin-analyses.idt $(PDIR)/greek-analyses.idt $(PDIR)/latin-lemmata.txt $(PDIR)/greek-lemmata.txt $(PDIR)/gcide.txt
+Perseus_Data: $(DATAFILES)
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -126,6 +137,4 @@ clean:
 	rm -f $(PBUILD)/lat.morph $(PBUILD)/tlg.morph
 	rm -f $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
 	rm -f $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
-	rm -f $(PDIR)/lat.ls.perseus-eng1.xml $(PDIR)/grc.lsj.perseus-eng0.xml
-	rm -f $(PDIR)/latin-analyses.txt $(PDIR)/greek-analyses.txt
-	rm -f $(PDIR)/latin-lemmata.txt $(PDIR)/greek-lemmata.txt $(PDIR)/gcide.txt
+	rm -f $(DATAFILES)
