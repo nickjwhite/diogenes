@@ -54,7 +54,6 @@ $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	printf '%s  %s\n' $(UNICODESUM) $@ | sha256sum -c
 
 diogenes-browser/perl/Diogenes/unicode-equivs.pl: utils/make_unicode_compounds.pl $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
-	@echo 'Building unicode equivalents table'
 	./utils/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
 
 $(DEPDIR)/PersXML.ent:
