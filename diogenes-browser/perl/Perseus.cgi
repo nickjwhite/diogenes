@@ -4,7 +4,9 @@
 package Diogenes::Perseus;
 use strict;
 use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %database @databases @filters);
+use Diogenes::EntityTable;
 use FileHandle;
+use Encode;
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
@@ -16,6 +18,8 @@ use XML::Tiny;
 use CGI qw(:standard);
 
 my $debug = 0;
+
+binmode select, ':utf8';
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 print STDERR "$Diogenes_Daemon::params\n" if $debug;
@@ -82,7 +86,6 @@ elsif ($inp_enc eq 'Unicode') {
 }
 elsif ($inp_enc eq 'utf8') {
     # Bytes that need to be 
-    eval "require Encode; 1; ";
     $query = Encode::decode(utf8=>$query);
     my $c = new Diogenes::UnicodeInput;
     $query = $c->unicode_greek_to_beta($query);
@@ -292,7 +295,9 @@ my $beta_to_utf8 = sub {
     $text =~ s/_/&nbsp;&#x304;/g;
     $text =~ s/([\x80-\xff])\^/$1&#x306;/g; # combining breve
     $text =~ s/\^/&nbsp;&#x306;/g; 
-    return $text;
+    # Decode from a 'binary string' to a UTF-8 'text string' so the
+    # UTF-8 strings from Diogenes::EntityTable can be mixed freely
+    return Encode::decode('utf-8', $text);
 };
 
 my $text_with_links = sub {
@@ -342,7 +347,6 @@ my $format_latin_analysis = sub {
     print $a;
 };
 
-use XML::Tiny;
 # Use global vars to avoid leaking memory with recursive anon subs
 use vars '$xml_lang', '$munge_tree', '$munge_content', '$munge_element', '$xml_ital';
 my ($out, $in_link);
@@ -360,6 +364,11 @@ my $munge_xml = sub {
                                     'input_is_string' => 1,
                                     'preserve_whitespace' => 1);
     $munge_tree->($tree);
+    
+    my $entity;
+    foreach $entity (%Diogenes::EntityTable::table) {
+        $out =~ s/&$entity;/$Diogenes::EntityTable::table{$entity}/g;
+    }
     return $out;
 };
 
