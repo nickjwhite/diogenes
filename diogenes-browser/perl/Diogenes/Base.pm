@@ -61,8 +61,8 @@ $Diogenes::Base::map_error = $@;
 $encoding{Beta} = {};
 $encoding{Ibycus} = {};
 $encoding{Transliteration} = {};
-# Make UTF-8 a platform-dependent alias
-$encoding{'UTF-8'} = ($OS eq 'mac') ? $encoding{'UTF-8-DB'} :  $encoding{'UTF-8-CB'};
+# UTF-8 is just an alias for -CB (precomposed characters)
+$encoding{'UTF-8'} = $encoding{'UTF-8-CB'};
 
 # Define some globals
 $context{g} = {
