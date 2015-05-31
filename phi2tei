@@ -783,8 +783,10 @@ sub is_work_verse {
 }
 
 sub strip_formatting{
-    # Remove illegal chars for use in TEI header
     my $x = shift;
+    $query->beta_formatting_to_ascii(\$x);
+
+    # Just in case: remove illegal chars for use in TEI header
     $x =~ s#\&\d*##g;
     $x =~ s#\$\d*##g;
     $x =~ s#\<\d*##g;
