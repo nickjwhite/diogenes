@@ -484,7 +484,7 @@ sub convert_chunk {
     $chunk =~ s/(?<!&)#/&#x0374;/g;
     
     # some punctuation
-    $chunk =~ s/_/\ \N{U+2013}\ /g;
+    $chunk =~ s/_/\ -\ /g;
     $chunk =~ s/!/./g;
 
     # "inverted dagger", used in Augustus imp., not in Unicode so use
