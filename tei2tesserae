@@ -1,0 +1,108 @@
+#!/usr/bin/perl -w
+
+use strict;
+use warnings;
+
+my $indir = 'output';
+my $outdir = 'tess';
+
+use File::Path qw(remove_tree);
+
+if (-e $outdir) {
+    remove_tree($outdir);
+}
+
+mkdir $outdir;
+
+opendir( my $dh, $indir ) or die "Could not open $indir\n";
+
+chdir $outdir;
+
+
+# process("phi1020002.xml");
+# exit;
+
+my ($author, $work);
+
+while(readdir $dh) {
+    my $file = $_;
+    next if $file =~ m/^\./;
+    next if $file =~ m/authtab/;
+    next if $file =~ m/tmp/;
+    next if $file =~ m/9999001/;
+    print "Checking $file\n";
+    open(my $fh, "<", "../$indir/$file")
+        or die "cannot open $file: $!";
+    undef $/; 
+    my $slurp = <$fh>;
+    if ($slurp =~ m#<l #) {
+
+        if ($slurp =~ m#<author>.*([A-Z][A-Za-z]+).*?</author>#) {
+            $author = $1;
+            print $author;
+        }
+        else {
+            die "No auth: $file";
+        }
+        if ($slurp =~ m#<title>.*?([A-Za-z]+).*?</title>#) {
+            $work = $1;
+#             print $work;
+        }
+        else {
+            die "No work: $file";
+        }
+        open(my $out_fh, ">", "$author.$work")
+            or die "cannot open $file: $!";        
+        process ($slurp, $out_fh);
+        close $out_fh;
+    }
+    else {
+        print "Skipping $file\n";
+    }
+    close $fh;
+}
+closedir $dh;
+
+#     process $_;
+
+
+
+my (%div, @levels);
+    
+sub process {
+    my $text = shift;
+    my $fh = shift;
+    while ($text =~ m#^(.*?)$#mg) {
+        $_ = $1;
+#         print $_;
+        if (m/<div/) {
+            if (m/type="([^"]+)"/) {
+                my $type = $1;
+                if (m/n="([^"]+)"/) {
+                    my $n = $1;
+                    #                     print "$type $n \n";
+                    $div{$type} = $n
+                }
+                push @levels, $type;
+            }
+        }
+        if (m#</div>#) {
+            pop @levels;
+        }
+        if (m#<l\s+n="([^"]+)">(.*)</l>#) {
+            my $linenum = $1;
+            my $content = $2;
+            my $out = "\n<$author.$work ";
+            foreach my $level ( @levels ) {
+                $out .= $div{$level}.".";
+            }
+            $out .= $linenum;
+#             print "$out\n";
+            $out .= "> ";
+            $content =~ s#<[^>]*>##g;
+            $content =~ s#\N{U+0096}##g;
+            $out .= $content;
+            print $fh $out;
+        }
+    }
+}
