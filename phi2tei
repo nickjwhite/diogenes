@@ -46,8 +46,10 @@ use if (-e '/usr/local/diogenes/perl'), lib => '/usr/local/diogenes/perl';
 # DigiLibLT; fixed a major bug in hanging divs introduced in version
 # 2.0.
 
+# phi2tei -- version 3.1 -- date: 3 June 2015
+# Fixed a small bug in hanging divs.
 
-sub VERSION_MESSAGE {print "phi2tei version 3.0\n"}
+sub VERSION_MESSAGE {print "phi2tei version 3.1\n"}
 
 use strict;
 use warnings;
