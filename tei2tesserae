@@ -3,106 +3,122 @@
 use strict;
 use warnings;
 
+use XML::LibXML;
+
+# output from phi2tei is input to us
 my $indir = 'output';
+opendir( my $dh, $indir ) or die "Could not open $indir\n";
+
 my $outdir = 'tess';
-
 use File::Path qw(remove_tree);
-
 if (-e $outdir) {
     remove_tree($outdir);
 }
-
 mkdir $outdir;
-
-opendir( my $dh, $indir ) or die "Could not open $indir\n";
-
 chdir $outdir;
-
-
-# process("phi1020002.xml");
-# exit;
 
 my ($author, $work);
 
 while(readdir $dh) {
     my $file = $_;
+     next unless $file =~ m/0448001/;
+#      next unless $file =~ m/1020003/;
     next if $file =~ m/^\./;
     next if $file =~ m/authtab/;
     next if $file =~ m/tmp/;
     next if $file =~ m/9999001/;
-    print "Checking $file\n";
-    open(my $fh, "<", "../$indir/$file")
-        or die "cannot open $file: $!";
-    undef $/; 
-    my $slurp = <$fh>;
-    if ($slurp =~ m#<l #) {
-
-        if ($slurp =~ m#<author>.*([A-Z][A-Za-z]+).*?</author>#) {
-            $author = $1;
-            print $author;
-        }
-        else {
-            die "No auth: $file";
-        }
-        if ($slurp =~ m#<title>.*?([A-Za-z]+).*?</title>#) {
-            $work = $1;
-#             print $work;
-        }
-        else {
-            die "No work: $file";
-        }
-        open(my $out_fh, ">", "$author.$work")
-            or die "cannot open $file: $!";        
-        process ($slurp, $out_fh);
-        close $out_fh;
-    }
-    else {
-        print "Skipping $file\n";
-    }
-    close $fh;
+    #     open(my $fh, "<", "../$indir/$file")
+    #         or die "cannot open $file: $!";
+    process("../$indir/$file");
 }
 closedir $dh;
 
-#     process $_;
-
-
-
-my (%div, @levels);
+my (%div);
     
 sub process {
-    my $text = shift;
-    my $fh = shift;
-    while ($text =~ m#^(.*?)$#mg) {
-        $_ = $1;
-#         print $_;
-        if (m/<div/) {
-            if (m/type="([^"]+)"/) {
-                my $type = $1;
-                if (m/n="([^"]+)"/) {
-                    my $n = $1;
-                    #                     print "$type $n \n";
-                    $div{$type} = $n
-                }
-                push @levels, $type;
-            }
-        }
-        if (m#</div>#) {
-            pop @levels;
-        }
-        if (m#<l\s+n="([^"]+)">(.*)</l>#) {
-            my $linenum = $1;
-            my $content = $2;
+    my $file = shift;
+
+    my $parser = XML::LibXML->new();
+    my $xmldoc = $parser->parse_file($file);
+
+    $author =
+        $xmldoc->getElementsByTagName('author')->[0]->textContent;
+    if ($author) {
+        print "$author\n";
+    }
+    else {
+        die "No author for $file";
+    }
+    $author =~ s/\s+/_/g;
+    $work = $xmldoc->getElementsByTagName('title')->[0]->textContent;
+    if ($work) {
+        print "  $work ($file)\n";
+#         return;
+    }
+    else {
+        die "No work for $file";
+    }
+    $work =~ s/\s+/_/g;
+    
+    foreach my $node ($xmldoc->getElementsByTagName('body')) {
+        process_node($node);
+        
+    }
+}
+
+my @levels;
+
+my ($state, $line);
+sub process_node {
+    my $node = shift;
+    my $name = $node->nodeName;
+    #     print "$name\n";
+    if ($name eq 'div') {
+        my $n = $node->getAttribute('n');
+        my $t = $node->getAttribute('type');
+        $div{$t} = $n;
+        push @levels, $t;
+        $state = 1;
+        #          print "Foo $t $n \n";
+#         print join ':', @levels, "\n";
+    }
+    elsif ($name eq 'l') {
+        $line = $node->getAttribute('n');
+        $state = 1;        
+    }
+    elsif ($name eq 'head') {
+        return;
+    }
+
+    # Text content
+    if ($node->nodeValue) {
+        if ($state) {
+#             print join ',', @levels;
             my $out = "\n<$author.$work ";
             foreach my $level ( @levels ) {
                 $out .= $div{$level}.".";
             }
-            $out .= $linenum;
-#             print "$out\n";
+            if ($line) {
+                $out .= $line
+            }
+            else {
+                chop $out;
+            }
             $out .= "> ";
-            $content =~ s#<[^>]*>##g;
-            $content =~ s#\N{U+0096}##g;
-            $out .= $content;
-            print $fh $out;
+            print "$out";
+            $state = 0;
+            $line = '';
         }
+        my $text = $node->nodeValue;
+        $text =~ s/\s*\n\s*/ /g;
+        print $text;
+    }
+    foreach my $child ($node->nonBlankChildNodes) {
+        process_node($child);
+    }
+    if ($name eq 'div') {
+        pop @levels;
     }
 }
+
+
