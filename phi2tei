@@ -207,7 +207,7 @@ AUTH: foreach my $auth_num (@all_auths) {
     my $filename_in = $query->{cdrom_dir}.$query->{file_prefix}.
         $auth_num.$query->{txt_suffix};
     my $lang = $Diogenes::Base::lang{$corpus}{$auth_num};
-    my $punct = q{.;:!?};
+    my $punct = q{_.;:!?};
     local undef $/;
     print "Converting $auth_name ($auth_num)\n" if $debug;
     open( IN, $filename_in ) or die "Could not open $filename_in\n";
@@ -252,6 +252,23 @@ AUTH: foreach my $auth_num (@all_auths) {
                 # from the previous line, close the div out at start
                 # of previous line.  This happens, e.g. when the div
                 # was not really hanging as for n="t" title sections.
+                if ($chunk =~ m/-\s*$/) {
+                    # But first we check to make sure there is no
+                    # hyphenation hanging over.  If so, break at a
+                    # comma, or, failing that, at the first space in
+                    # the line.
+                    if ($line =~ m/(.*?),(.*)/) {
+                        $chunk .= $1 . ',';
+                        $line = $2;
+                    }
+                    elsif ($line =~ m/(\S+)\s+(.*)/) {
+                        $chunk .= $1;
+                        $line = $2;
+                    }
+                    else {
+                        warn "No solution: $chunk \n\n$line\n";
+                    }
+                }
                 $body .= convert_chunk($chunk, $lang);
                 $chunk = '';
                 $body .= $hanging_div;
