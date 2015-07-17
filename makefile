@@ -5,12 +5,9 @@
 #   https://github.com/PerseusDL/morpheus repository, and set the
 #   location of the stem libraries in STEMLIB below.
 #
-# - The Lewis-Short lexicon from Perseus; get it from the
+# - The LSJ & Lewis-Short lexica from Perseus; get them from the
 #   https://github.com/PerseusDL/lexica repository and set the
 #   location of the repository in LEXICA below.
-#
-# - The LSJ lexicon; get it from https://njw.name/1999.04.0057.xml.xz
-#   and set its location in LSJDIR below.
 #
 # - The PHI and TLG datasets; specify their locations in PHIDIR and
 #   TLGDIR below.
@@ -22,7 +19,6 @@ PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
 STEMLIB = $(HOME)/morpheus/stemlib
 LEXICA = $(HOME)/lexica
-LSJDIR = $(HOME)
 GCIDE = /usr/share/dictd/gcide.dict.dz
 
 DEPDIR = dependencies
@@ -95,10 +91,16 @@ $(PBUILD)/lewis-index-head.txt: utils/index_lewis_head.pl $(LEXICA)/CTS_XML_TEI/
 $(PBUILD)/lewis-index-trans.txt: utils/index_lewis_trans.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	./utils/index_lewis_trans.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
-# It would be nice to use LSJ from lexica repo, but our tools don't
-# yet handle the new format it uses
-$(PDIR)/grc.lsj.perseus-eng0.xml: $(LSJDIR)/1999.04.0057.xml.xz
-	xzcat < $(LSJDIR)/1999.04.0057.xml.xz > $@
+LSJDIR = $(LEXICA)/CTS_XML_TEI/perseus/pdllex/grc/lsj
+LSJS = $(LSJDIR)/grc.lsj.perseus-eng1.xml $(LSJDIR)/grc.lsj.perseus-eng2.xml $(LSJDIR)/grc.lsj.perseus-eng3.xml $(LSJDIR)/grc.lsj.perseus-eng4.xml $(LSJDIR)/grc.lsj.perseus-eng5.xml $(LSJDIR)/grc.lsj.perseus-eng6.xml $(LSJDIR)/grc.lsj.perseus-eng7.xml $(LSJDIR)/grc.lsj.perseus-eng8.xml $(LSJDIR)/grc.lsj.perseus-eng9.xml $(LSJDIR)/grc.lsj.perseus-eng10.xml $(LSJDIR)/grc.lsj.perseus-eng11.xml $(LSJDIR)/grc.lsj.perseus-eng12.xml $(LSJDIR)/grc.lsj.perseus-eng13.xml $(LSJDIR)/grc.lsj.perseus-eng14.xml $(LSJDIR)/grc.lsj.perseus-eng15.xml $(LSJDIR)/grc.lsj.perseus-eng16.xml $(LSJDIR)/grc.lsj.perseus-eng17.xml $(LSJDIR)/grc.lsj.perseus-eng18.xml $(LSJDIR)/grc.lsj.perseus-eng19.xml $(LSJDIR)/grc.lsj.perseus-eng20.xml $(LSJDIR)/grc.lsj.perseus-eng21.xml $(LSJDIR)/grc.lsj.perseus-eng22.xml $(LSJDIR)/grc.lsj.perseus-eng23.xml $(LSJDIR)/grc.lsj.perseus-eng24.xml $(LSJDIR)/grc.lsj.perseus-eng25.xml $(LSJDIR)/grc.lsj.perseus-eng26.xml $(LSJDIR)/grc.lsj.perseus-eng27.xml
+
+$(PDIR)/grc.lsj.perseus-eng0.xml: utils/reformat_lsj.pl $(LSJS)
+	mkdir -p $(PDIR)
+	echo '<!-- Reformatted for Diogenes from the XML files in https://github.com/PerseusDL/lexica -->' > $@
+	for LSJ in $(LSJS); do sed '/<!DOCTYPE/d;/<!ENTITY/d;/%PersDict/d' < $$LSJ | ./utils/reformat_lsj.pl >> $@; done
+	# TODO: fix XML::Tiny to parse "internal subset declarations" of
+	# doctypes correctly (sed works around it here) - looks like it's
+	# the % part in particular that it borks at.
 
 $(PBUILD)/lsj-index.txt: utils/index_lsj.pl $(PDIR)/grc.lsj.perseus-eng0.xml
 	./utils/index_lsj.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
