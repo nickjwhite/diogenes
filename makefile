@@ -1,3 +1,10 @@
+# TODO: create get_build_prereqs build rule or script that checks
+#       out known good versions (from variables in makefile) of
+#       everything into a subdir and have default locations for
+#       things be that subdir, so then a make invocation will
+#       Just Work. See how freedombox does it (may not be clean,
+#       but worth checking)
+#
 # Building Perseus_Data requires several things to be in available:
 #
 # - Morpheus needs to be installed, and its Latin and Greek stem
