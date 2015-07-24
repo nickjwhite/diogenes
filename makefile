@@ -1,39 +1,31 @@
-# TODO: create get_build_prereqs build rule or script that checks
-#       out known good versions (from variables in makefile) of
-#       everything into a subdir and have default locations for
-#       things be that subdir, so then a make invocation will
-#       Just Work. See how freedombox does it (may not be clean,
-#       but worth checking)
-#
 # Building Perseus_Data requires several things to be in available:
 #
-# - Morpheus needs to be installed, and its Latin and Greek stem
-#   libraries built; download and build it from the
-#   https://github.com/PerseusDL/morpheus repository, and set the
-#   location of the stem libraries in STEMLIB below.
+# - Morpheus, Perseus' lexica repository, and the gcide dictionary,
+#   which are automatically fetched and built.
 #
-# - The LSJ & Lewis-Short lexica from Perseus; get them from the
-#   https://github.com/PerseusDL/lexica repository and set the
-#   location of the repository in LEXICA below.
+# - The PHI and TLG datasets, which are used to generate wordlists;
+#   specify their locations in PHIDIR and TLGDIR below or on the
+#   command line.
 #
-# - The PHI and TLG datasets; specify their locations in PHIDIR and
-#   TLGDIR below.
-#
-# - The gcide dictionary (dict-gcide on debian), specify its location
-#   in GCIDE below.
+# So the recommended way to build Perseus_Data would be like this:
+#   make PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e Perseus_Data
 
 PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
-STEMLIB = $(HOME)/morpheus/stemlib
-LEXICA = $(HOME)/lexica
-GCIDE = /usr/share/dictd/gcide.dict.dz
 
 DEPDIR = dependencies
 PDIR = $(DEPDIR)/Perseus_Data
 PBUILD = $(DEPDIR)/Perseus_Build
+STEMLIB = $(DEPDIR)/morpheus/stemlib
+LEXICA = $(DEPDIR)/lexica
+GCIDE = $(DEPDIR)/gcide/gcide.dict.dz
 
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
+GCIDEVERSION = 0.48.1
+GCIDESUM = e227f8f9e720eb0b1b805ecec4eb4e5c1045784ab3871cdebd19c237d1242311
+LEXICACOMMIT = ca0438681737e45f49facdb1b83d7256c0ff16c8
+MORPHEUSCOMMIT = 64c658c8b3462ca77000d931c1e99388c9ab87b6
 
 DATAFILES = \
 	$(PDIR)/lat.ls.perseus-eng1.xml \
@@ -50,11 +42,33 @@ DATAFILES = \
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm
 
-Perseus_Data: $(DATAFILES)
+Perseus_Data: $(DEPDIR)/morpheus/.git/HEAD $(DEPDIR)/lexica/.git/HEAD $(GCIDE) $(DATAFILES)
+
+$(GCIDE):
+	rm -rf $(DEPDIR)/gcide
+	mkdir -p $(DEPDIR)/gcide
+	wget -O $(DEPDIR)/gcide/dict-gcide_$(GCIDEVERSION)_all.deb http://http.us.debian.org/debian/pool/main/d/dict-gcide/dict-gcide_$(GCIDEVERSION)_all.deb
+	printf '%s\t%s\n' $(GCIDESUM) $(DEPDIR)/gcide/dict-gcide_$(GCIDEVERSION)_all.deb | sha256sum -c
+	cd $(DEPDIR)/gcide && ar x dict-gcide_$(GCIDEVERSION)_all.deb data.tar.gz
+	cd $(DEPDIR)/gcide && zcat < data.tar.gz | tar x ./usr/share/dictd/gcide.dict.dz
+	mv $(DEPDIR)/gcide/usr/share/dictd/gcide.dict.dz $@
+
+$(DEPDIR)/lexica/.git/HEAD:
+	rm -rf $(DEPDIR)/lexica
+	cd $(DEPDIR) && git clone https://github.com/PerseusDL/lexica
+	cd $(DEPDIR)/lexica && git checkout $(LEXICACOMMIT)
+
+$(DEPDIR)/morpheus/.git/HEAD:
+	rm -rf $(DEPDIR)/morpheus
+	cd $(DEPDIR) && git clone https://github.com/PerseusDL/morpheus
+	cd $(DEPDIR)/morpheus && git checkout $(MORPHEUSCOMMIT)
+	cd $(DEPDIR)/morpheus/src && make && make install
+	cd $(DEPDIR)/morpheus/stemlib/Latin && PATH=$$PATH:../../bin MORPHLIB=.. make
+	cd $(DEPDIR)/morpheus/stemlib/Greek && PATH=$$PATH:../../bin MORPHLIB=.. make
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
-	printf '%s  %s\n' $(UNICODESUM) $@ | sha256sum -c
+	printf '%s\t%s\n' $(UNICODESUM) $@ | sha256sum -c
 
 diogenes-browser/perl/Diogenes/unicode-equivs.pl: utils/make_unicode_compounds.pl $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	./utils/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
@@ -84,10 +98,10 @@ $(PBUILD)/tlg.words: utils/make_greek_wordlist.pl $(PBUILD)/check_tlg
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
 
 $(PBUILD)/lat.morph: $(PBUILD)/lat.words
-	MORPHLIB=$(STEMLIB) cruncher -L < $(PBUILD)/lat.words > $@
+	MORPHLIB=$(STEMLIB) dependencies/morpheus/bin/cruncher -L < $(PBUILD)/lat.words > $@
 
 $(PBUILD)/tlg.morph: $(PBUILD)/tlg.words
-	MORPHLIB=$(STEMLIB) cruncher < $(PBUILD)/tlg.words > $@
+	MORPHLIB=$(STEMLIB) dependencies/morpheus/bin/cruncher < $(PBUILD)/tlg.words > $@
 
 $(PBUILD)/lewis-index.txt: utils/index_lewis.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	./utils/index_lewis.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
@@ -153,4 +167,5 @@ clean:
 	rm -f $(PBUILD)/lat.morph $(PBUILD)/tlg.morph
 	rm -f $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
 	rm -f $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
+	rm -rf $(GCIDE) $(DEPDIR)/gcide $(DEPDIR)/lexica $(DEPDIR)/morpheus
 	rm -f $(DATAFILES)
