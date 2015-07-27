@@ -102,14 +102,14 @@ $(PBUILD)/check_tlg: $(DEPDIR)/tlgsums
 $(PBUILD)/lat.words: utils/make_latin_wordlist.pl $(PBUILD)/check_phi
 	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
-$(PBUILD)/tlg.words: utils/make_greek_wordlist.pl $(PBUILD)/check_tlg
+$(PBUILD)/grc.words: utils/make_greek_wordlist.pl $(PBUILD)/check_tlg
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
 
 $(PBUILD)/lat.morph: $(PBUILD)/lat.words
 	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher -L < $(PBUILD)/lat.words > $@
 
-$(PBUILD)/tlg.morph: $(PBUILD)/tlg.words
-	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(PBUILD)/tlg.words > $@
+$(PBUILD)/grc.morph: $(PBUILD)/grc.words
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(PBUILD)/grc.words > $@
 
 $(PBUILD)/lewis-index.txt: utils/index_lewis.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
 	./utils/index_lewis.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
@@ -149,10 +149,10 @@ $(PDIR)/latin-analyses.txt: utils/make_latin_analyses.pl $(PBUILD)/lewis-index.t
 	    $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt \
 	    < $(PBUILD)/lat.morph | LC_ALL=C sort > $@
 
-$(PDIR)/greek-analyses.txt: utils/make_greek_analyses.pl $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt $(PBUILD)/tlg.morph
+$(PDIR)/greek-analyses.txt: utils/make_greek_analyses.pl $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt $(PBUILD)/grc.morph
 	./utils/make_greek_analyses.pl \
 	    $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt \
-	    < $(PBUILD)/tlg.morph | LC_ALL=C sort > $@
+	    < $(PBUILD)/grc.morph | LC_ALL=C sort > $@
 
 .txt.idt:
 	./utils/make_index.pl < $< > $@
@@ -171,8 +171,8 @@ clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
 	rm -f $(PBUILD)/check_phi $(PBUILD)/check_tlg
-	rm -f $(PBUILD)/lat.words $(PBUILD)/tlg.words
-	rm -f $(PBUILD)/lat.morph $(PBUILD)/tlg.morph
+	rm -f $(PBUILD)/lat.words $(PBUILD)/grc.words
+	rm -f $(PBUILD)/lat.morph $(PBUILD)/grc.morph
 	rm -f $(PBUILD)/lewis-index.txt $(PBUILD)/lewis-index-head.txt $(PBUILD)/lewis-index-trans.txt
 	rm -f $(PBUILD)/lsj-index.txt $(PBUILD)/lsj-index-head.txt $(PBUILD)/lsj-index-trans.txt
 	rm -rf $(DEPDIR)/gcide $(GCIDE) $(LEXICA) $(MORPHEUS)
