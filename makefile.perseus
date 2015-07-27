@@ -11,12 +11,12 @@ wordlists: $(PBUILD)/lat.words $(PBUILD)/tlg.words
 $(GREEKLIT)/.git/HEAD:
 	rm -rf $(GREEKLIT)
 	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-greekLit
-	cd $(GREEKLIT) && git checkout $(GREEKLIT)
+	cd $(GREEKLIT) && git checkout $(GREEKLITCOMMIT)
 
 $(LATINLIT)/.git/HEAD:
 	rm -rf $(LATINLIT)
 	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-latinLit
-	cd $(LATINLIT) && git checkout $(LATINLIT)
+	cd $(LATINLIT) && git checkout $(LATINLITCOMMIT)
 
 $(PBUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
 	./utils/make_latin_wordlist_perseus.pl $(LATINLIT) > $@
