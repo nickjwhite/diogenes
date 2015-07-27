@@ -1,0 +1,29 @@
+DEPDIR = dependencies
+PBUILD = $(DEPDIR)/Perseus_Build
+GREEKLIT = $(DEPDIR)/greeklit
+LATINLIT = $(DEPDIR)/latinlit
+
+GREEKLITCOMMIT = 5d069b29bd9dd40c8bb1dc1b9e2623236ebb22b9
+LATINLITCOMMIT = 5b1e32979179c5e92aefe59e43a15cae7f3d1b3b
+
+wordlists: $(PBUILD)/lat.words $(PBUILD)/tlg.words
+
+$(GREEKLIT)/.git/HEAD:
+	rm -rf $(GREEKLIT)
+	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-greekLit
+	cd $(GREEKLIT) && git checkout $(GREEKLIT)
+
+$(LATINLIT)/.git/HEAD:
+	rm -rf $(LATINLIT)
+	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-latinLit
+	cd $(LATINLIT) && git checkout $(LATINLIT)
+
+$(PBUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
+	./utils/make_latin_wordlist_perseus.pl $(LATINLIT) > $@
+
+$(PBUILD)/grc.words: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
+	./utils/make_greek_wordlist_perseus.pl $(GREEKLIT) > $@
+
+clean:
+	rm -rf $(GREEKLIT) $(LATINLIT)
+	rm -f $(PBUILD)/lat.words $(PBUILD)/grc.words

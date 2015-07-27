@@ -9,6 +9,12 @@
 #
 # So the recommended way to build Perseus_Data would be like this:
 #   make PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e Perseus_Data
+#
+# It is also possible to build Perseus_Data without the PHI and TLG
+# datasets, extracting wordlists from Perseus' repositories. To do
+# that run this:
+#   make -f makefile.perseus wordlists
+#   make Perseus_Data
 
 PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
@@ -19,8 +25,6 @@ PBUILD = $(DEPDIR)/Perseus_Build
 GCIDE = $(DEPDIR)/gcide/gcide.dict.dz
 LEXICA = $(DEPDIR)/lexica
 MORPHEUS = $(DEPDIR)/morpheus
-LATINLIT = $(DEPDIR)/latinlit
-GREEKLIT = $(DEPDIR)/greeklit
 
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
@@ -29,8 +33,6 @@ GCIDEVERSION = 0.48.1
 GCIDESUM = e227f8f9e720eb0b1b805ecec4eb4e5c1045784ab3871cdebd19c237d1242311
 LEXICACOMMIT = ca0438681737e45f49facdb1b83d7256c0ff16c8
 MORPHEUSCOMMIT = 64c658c8b3462ca77000d931c1e99388c9ab87b6
-GREEKLITCOMMIT = 5d069b29bd9dd40c8bb1dc1b9e2623236ebb22b9
-LATINLITCOMMIT = 5b1e32979179c5e92aefe59e43a15cae7f3d1b3b
 
 DATAFILES = \
 	$(PDIR)/lat.ls.perseus-eng1.xml \
@@ -70,16 +72,6 @@ $(MORPHEUS)/.git/HEAD:
 	cd $(MORPHEUS)/src && make && make install
 	cd $(MORPHEUS)/stemlib/Latin && PATH=$$PATH:../../bin MORPHLIB=.. make
 	cd $(MORPHEUS)/stemlib/Greek && PATH=$$PATH:../../bin MORPHLIB=.. make
-
-$(GREEKLIT)/.git/HEAD:
-	rm -rf $(GREEKLIT)
-	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-greekLit
-	cd $(GREEKLIT) && git checkout $(GREEKLIT)
-
-$(LATINLIT)/.git/HEAD:
-	rm -rf $(LATINLIT)
-	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-latinLit
-	cd $(LATINLIT) && git checkout $(LATINLIT)
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt

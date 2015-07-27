@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# TODO: read wordlist from extracted wordlist rather than tlgwlist.inx
 use strict;
 
 my $usage = "Usage: $0 index.txt tlgdir < analyses.txt\n";
