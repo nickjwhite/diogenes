@@ -160,8 +160,8 @@ $(PDIR)/greek-analyses.txt: utils/make_greek_analyses.pl $(PBUILD)/lsj-index.txt
 $(PDIR)/latin-lemmata.txt: utils/make_latin_lemmata.pl $(PBUILD)/lewis-index.txt $(PDIR)/latin-analyses.txt
 	./utils/make_latin_lemmata.pl $(PBUILD)/lewis-index.txt < $(PDIR)/latin-analyses.txt > $@
 
-$(PDIR)/greek-lemmata.txt: utils/make_greek_lemmata.pl $(PBUILD)/lsj-index.txt $(PBUILD)/check_tlg $(PDIR)/greek-analyses.txt
-	./utils/make_greek_lemmata.pl $(PBUILD)/lsj-index.txt $(TLGDIR) < $(PDIR)/greek-analyses.txt > $@
+$(PDIR)/greek-lemmata.txt: utils/make_greek_lemmata.pl $(PBUILD)/lsj-index.txt $(PBUILD)/grc.words $(PDIR)/greek-analyses.txt
+	./utils/make_greek_lemmata.pl $(PBUILD)/lsj-index.txt $(PBUILD)/grc.words < $(PDIR)/greek-analyses.txt > $@
 
 # The sed below cuts out a notice at the start of the dictionary file
 $(PDIR)/gcide.txt: utils/munge_gcide.pl $(GCIDE)

@@ -1,11 +1,10 @@
 #!/usr/bin/perl -w
-# TODO: read wordlist from extracted wordlist rather than tlgwlist.inx
 use strict;
 
-my $usage = "Usage: $0 index.txt tlgdir < analyses.txt\n";
+my $usage = "Usage: $0 index.txt wordlist.txt < analyses.txt\n";
 
 my $indexfile = shift @ARGV or die $usage;
-my $tlgdir = shift @ARGV or die $usage;
+my $wordlist = shift @ARGV or die $usage;
 
 my %dict_ref;
 open INDEX, "<$indexfile" or die $!;
@@ -18,7 +17,12 @@ while (<INDEX>) {
 close INDEX;
 
 my %wlist;
-$wlist{"\L$_"}++ for split /[\x80-\xff]/, `cat $tlgdir/tlgwlist.inx`;
+open WORDLIST, "<$wordlist" or die $!;
+while (<WORDLIST>) {
+    chomp;
+    $wlist{$_} = 1;
+}
+close WORDLIST;
 
 my (%lemmata, %dicts, %prefixes);
 
