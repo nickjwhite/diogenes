@@ -94,9 +94,11 @@ $(PBUILD)/check_tlg: $(DEPDIR)/tlgsums
 	touch $@
 
 $(PBUILD)/lat.words: utils/make_latin_wordlist.pl $(PBUILD)/check_phi
+	mkdir -p $(PBUILD)
 	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
 $(PBUILD)/tlg.words: utils/make_greek_wordlist.pl $(PBUILD)/check_tlg
+	mkdir -p $(PBUILD)
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
 
 $(PBUILD)/lat.morph: $(PBUILD)/lat.words
@@ -106,12 +108,15 @@ $(PBUILD)/tlg.morph: $(PBUILD)/tlg.words
 	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(PBUILD)/tlg.words > $@
 
 $(PBUILD)/lewis-index.txt: utils/index_lewis.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
+	mkdir -p $(PBUILD)
 	./utils/index_lewis.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
 $(PBUILD)/lewis-index-head.txt: utils/index_lewis_head.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
+	mkdir -p $(PBUILD)
 	./utils/index_lewis_head.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
 $(PBUILD)/lewis-index-trans.txt: utils/index_lewis_trans.pl $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
+	mkdir -p $(PBUILD)
 	./utils/index_lewis_trans.pl < $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml > $@
 
 LSJDIR = $(LEXICA)/CTS_XML_TEI/perseus/pdllex/grc/lsj
@@ -126,12 +131,15 @@ $(PDIR)/grc.lsj.perseus-eng0.xml: utils/reformat_lsj.pl $(LSJS)
 	# the % part in particular that it borks at.
 
 $(PBUILD)/lsj-index.txt: utils/index_lsj.pl $(PDIR)/grc.lsj.perseus-eng0.xml
+	mkdir -p $(PBUILD)
 	./utils/index_lsj.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
 $(PBUILD)/lsj-index-head.txt: utils/index_lsj_head.pl $(PDIR)/grc.lsj.perseus-eng0.xml
+	mkdir -p $(PBUILD)
 	./utils/index_lsj_head.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
 $(PBUILD)/lsj-index-trans.txt: utils/index_lsj_trans.pl $(PDIR)/grc.lsj.perseus-eng0.xml
+	mkdir -p $(PBUILD)
 	./utils/index_lsj_trans.pl < $(PDIR)/grc.lsj.perseus-eng0.xml > $@
 
 $(PDIR)/lat.ls.perseus-eng1.xml: $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml
