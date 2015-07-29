@@ -1,3 +1,8 @@
+# Rules to make wordlists from the Perseus Latin and Greek corpora.
+#
+# See comments in the main makefile for the recommended way to
+# build Perseus_Data using these corpora.
+
 DEPDIR = dependencies
 PBUILD = $(DEPDIR)/Perseus_Build
 GREEKLIT = $(DEPDIR)/canonical-greekLit
