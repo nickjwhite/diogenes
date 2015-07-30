@@ -1,10 +1,7 @@
 # Rules to make wordlists from the Perseus Latin and Greek corpora.
-#
-# See comments in the main makefile for the recommended way to
-# build Perseus_Data using these corpora.
 
-DEPDIR = dependencies
-PBUILD = $(DEPDIR)/Perseus_Build
+include mk.commondata
+
 GREEKLIT = $(DEPDIR)/canonical-greekLit
 LATINLIT = $(DEPDIR)/canonical-latinLit
 
@@ -28,7 +25,3 @@ $(PBUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
 
 $(PBUILD)/grc.words: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
 	./utils/make_greek_wordlist_perseus.pl $(GREEKLIT) > $@
-
-clean:
-	rm -rf $(GREEKLIT) $(LATINLIT)
-	rm -f $(PBUILD)/lat.words $(PBUILD)/grc.words

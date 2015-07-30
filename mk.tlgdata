@@ -1,0 +1,26 @@
+# Rules to make wordlists from the TLG and PHI datasets.
+#
+# Specify their locations in PHIDIR and TLGDIR below or on the
+# command line, e.g. like this:
+#   make -f tlgdata.mk PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e Perseus_Data
+
+PHIDIR = $(HOME)/phi
+TLGDIR = $(HOME)/tlg_e
+
+include mk.commondata
+
+$(PBUILD)/check_phi: $(DEPDIR)/phisums
+	mkdir -p $(PBUILD)
+	sed 's:PREFIX:$(PHIDIR):g' < $(DEPDIR)/phisums | sha256sum -c
+	touch $@
+
+$(PBUILD)/check_tlg: $(DEPDIR)/tlgsums
+	mkdir -p $(PBUILD)
+	sed 's:PREFIX:$(TLGDIR):g' < $(DEPDIR)/tlgsums | sha256sum -c
+	touch $@
+
+$(PBUILD)/lat.words: utils/make_latin_wordlist.pl $(PBUILD)/check_phi
+	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
+
+$(PBUILD)/grc.words: utils/make_greek_wordlist.pl $(PBUILD)/check_tlg
+	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
