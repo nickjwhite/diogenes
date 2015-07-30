@@ -4,9 +4,9 @@
 #
 # So to build Perseus_Data you have two options:
 # Deriving wordlists from Perseus' open Latin and Greek corpora:
-#   make -f mk.perseusdata Perseus_Data
+#   make -f mk.perseusdata
 # Deriving wordlists from the TLG and PHI wordlists:
-#   make -f mk.tlgdata Perseus_Data
+#   make -f mk.tlgdata
 
 DEPDIR = dependencies
 PDIR = $(DEPDIR)/Perseus_Data
@@ -34,7 +34,7 @@ DATAFILES = \
 
 .SUFFIXES: .txt .idt
 
-Perseus_Data: $(MORPHEUS)/.git/HEAD $(LEXICA)/.git/HEAD $(GCIDE) $(DATAFILES)
+all: $(MORPHEUS)/.git/HEAD $(LEXICA)/.git/HEAD $(GCIDE) $(DATAFILES)
 
 $(GCIDE):
 	rm -rf $(DEPDIR)/gcide
