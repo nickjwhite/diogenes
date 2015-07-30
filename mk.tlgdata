@@ -20,7 +20,9 @@ $(PBUILD)/check_tlg: $(DEPDIR)/tlgsums
 	touch $@
 
 $(PBUILD)/lat.words: utils/make_latin_wordlist.pl $(PBUILD)/check_phi
+	mkdir -p $(PBUILD)
 	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
 $(PBUILD)/grc.words: utils/make_greek_wordlist.pl $(PBUILD)/check_tlg
+	mkdir -p $(PBUILD)
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@

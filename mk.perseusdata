@@ -19,7 +19,9 @@ $(LATINLIT)/.git/HEAD:
 	cd $(LATINLIT) && git checkout $(LATINLITCOMMIT)
 
 $(PBUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
+	mkdir -p $(PBUILD)
 	./utils/make_latin_wordlist_perseus.pl $(LATINLIT) > $@
 
 $(PBUILD)/grc.words: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
+	mkdir -p $(PBUILD)
 	./utils/make_greek_wordlist_perseus.pl $(GREEKLIT) > $@
