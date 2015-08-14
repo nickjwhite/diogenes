@@ -11,10 +11,10 @@ include mk.commondata
 
 $(PBUILD)/lat.words: utils/make_latin_wordlist.pl
 	mkdir -p $(PBUILD)
-	find $(PHIDIR) -type f -exec sha256sum '{}' ';' > $(PDIR)/phisums
+	find $(PHIDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(PHIDIR):  :g' > $(PDIR)/phisums
 	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
 $(PBUILD)/grc.words: utils/make_greek_wordlist.pl
 	mkdir -p $(PBUILD)
-	find $(TLGDIR) -type f -exec sha256sum '{}' ';' > $(PDIR)/tlgsums
+	find $(TLGDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(TLGDIR):  :g' > $(PDIR)/tlgsums
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
