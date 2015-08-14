@@ -113,7 +113,7 @@ warn "I don't know about language $lang!\n" unless exists $dicts{$lang};
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
-my $perseus_dir = catdir($Bin, '..', '..', 'dependencies', 'Perseus_Data');
+my $perseus_dir = catdir($Bin, '..', '..', 'dependencies', 'data');
 if (not -e $perseus_dir) {
     $perseus_dir = $ENV{Diogenes_Perseus_Dir} if $ENV{Diogenes_Perseus_Dir};
     if (not -e $perseus_dir) {
