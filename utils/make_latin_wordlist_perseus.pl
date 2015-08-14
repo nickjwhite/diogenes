@@ -15,7 +15,6 @@ find "$1" -type f -name '*-lat?.xml' | sort | while read i; do
 	| sed '1,/<body>/ d; /<\/body>/,$ d' \
 	| sed 's/<[^>]*>//g; s/\&[^;]*;//g' \
 	| awk '{for(i=1;i<=NF;i++) {printf("%s\n", $i)}}' \
-	| sed 's/[^A-z]//g' \
-	| sed 's/\\//g' \
+	| sed 's/[^A-Za-z]//g' \
 	| sed '/^$/d'
 done | sort | uniq
