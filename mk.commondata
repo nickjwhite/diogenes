@@ -1,12 +1,8 @@
 # This makefile is not intended to be used directly, but included
 # by mk.perseusdata or mk.tlgdata, which provide the rules to
-# generate the wordlists needed by targets provided here.
-#
-# So to build Perseus_Data you have two options:
-# Deriving wordlists from Perseus' open Latin and Greek corpora:
-#   make -f mk.perseusdata
-# Deriving wordlists from the TLG and PHI wordlists:
-#   make -f mk.tlgdata
+# generate the wordlists needed by targets provided here. Read the
+# README for details on how to build the dictionaries and
+# morphology data.
 
 DEPDIR = dependencies
 DATA = $(DEPDIR)/data

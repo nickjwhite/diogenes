@@ -1,8 +1,7 @@
-# This builds the needed files to run Diogenes.
+# This builds the files needed to run Diogenes.
 #
-# The dictionaries and morphological data are built using different
-# makefiles; read the comments at the top of mk.commondata for
-# details.
+# Note that the dictionaries and morphological data are built using
+# different makefiles; read the README for details.
 
 DEPDIR = dependencies
 
