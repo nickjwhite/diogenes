@@ -18,10 +18,10 @@ $(LATINLIT)/.git/HEAD:
 	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-latinLit
 	cd $(LATINLIT) && git checkout $(LATINLITCOMMIT)
 
-$(PBUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
-	mkdir -p $(PBUILD)
+$(BUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
+	mkdir -p $(BUILD)
 	./utils/make_latin_wordlist_perseus.pl $(LATINLIT) > $@
 
-$(PBUILD)/grc.words: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
-	mkdir -p $(PBUILD)
+$(BUILD)/grc.words: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
+	mkdir -p $(BUILD)
 	./utils/make_greek_wordlist_perseus.pl $(GREEKLIT) > $@

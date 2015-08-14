@@ -9,12 +9,12 @@ TLGDIR = $(HOME)/tlg_e
 
 include mk.commondata
 
-$(PBUILD)/lat.words: utils/make_latin_wordlist.pl
-	mkdir -p $(PBUILD)
-	find $(PHIDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(PHIDIR):  :g' > $(PDIR)/phisums
+$(BUILD)/lat.words: utils/make_latin_wordlist.pl
+	mkdir -p $(BUILD)
+	find $(PHIDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(PHIDIR):  :g' > $(DATA)/phisums
 	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
-$(PBUILD)/grc.words: utils/make_greek_wordlist.pl
-	mkdir -p $(PBUILD)
-	find $(TLGDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(TLGDIR):  :g' > $(PDIR)/tlgsums
+$(BUILD)/grc.words: utils/make_greek_wordlist.pl
+	mkdir -p $(BUILD)
+	find $(TLGDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(TLGDIR):  :g' > $(DATA)/tlgsums
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
