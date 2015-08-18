@@ -31,10 +31,11 @@ Building the morphology data & dictionaries
 -------------------------------------------
 
 Diogenes uses several dictionaries, as well as pre-computed
-morphology tables, which need to be built before use. These are
-available separately from the diogenes website, or you can build them
-yourself. Be aware though that they require a lot of memory to
-generate (around 25GiB).
+morphology tables, which need to be built before use. You can build
+them yourself, or download prebuilt copies from:
+  https://gitlab.com/diogenes/diogenes-prebuilt
+Be aware that a lot of memory is required to build the morphology
+tables (around 25GiB).
 
 There are two options in building the morphology data, either using
 wordlists from Perseus' free corpus, or using the TLG and PHI
