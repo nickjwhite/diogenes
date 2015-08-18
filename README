@@ -33,7 +33,7 @@ Building the morphology data & dictionaries
 Diogenes uses several dictionaries, as well as pre-computed
 morphology tables, which need to be built before use. You can build
 them yourself, or download prebuilt copies from:
-  https://gitlab.com/diogenes/diogenes-prebuilt
+  https://gitlab.com/diogenes/diogenes-prebuilt/tree/master
 Be aware that a lot of memory is required to build the morphology
 tables (around 25GiB).
 
