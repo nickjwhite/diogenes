@@ -90,7 +90,7 @@ sub scrub {
             }
             elsif (exists $prefixes{$pre} and $prefixes{$pre} <= 4) {
                 print STDERR "Suspicious prefix: $pre\n";
-            } 
+            }
             if (exists $prefixes{$pre} and $prefixes{$pre} < $min and $prefixes{$pre} > 4) {
                 $min = $prefixes{$pre};
                 $min_pre = $pre;
@@ -115,7 +115,7 @@ sub process {
             $lemma = munge_greek_lemma($lemma, $form);
 
             $lemma = lower_case($lemma);
-            
+
             if ($lemma =~ m/^(.*),/) {
                 $prefixes{$1}++;
             }
@@ -154,7 +154,7 @@ sub lower_case {
 
 sub lower_case_helper {
     my $word = shift;
-    
+
     # Perseus error
     $word = "*(=wrai" if $word eq "*=(wrai";
 
@@ -164,10 +164,10 @@ sub lower_case_helper {
     }
     if ($word =~ m/^\*([\\\/=|)(]+)([aeiouhw])(.*)$/) {
         print STDERR "$2$1\n" if $word eq "*)/|asoi";
-        return "$2$1$3" if exists $wlist{"$2$1$3"} or exists $dict_ref{"$2$1$3"}; 
+        return "$2$1$3" if exists $wlist{"$2$1$3"} or exists $dict_ref{"$2$1$3"};
     }
     if ($word =~ m/^\*([\\\/=|)(]+)([aeiouhw][aeiouhw])(.*)$/) {
-        return "$2$1$3" if exists $wlist{"$2$1$3"} or exists $dict_ref{"$2$1$3"}; 
+        return "$2$1$3" if exists $wlist{"$2$1$3"} or exists $dict_ref{"$2$1$3"};
     }
     # Sometimes Morpheus throws up a lemma that is not in the word-list.
     print STDERR "Guessing at lower-case of $word -- ";
@@ -190,8 +190,8 @@ sub munge_greek_lemma {
         $f1 =~ s/[\\\/=+_^]//g;
         $f2 =~ s/[\\\/=+_^]//g;
 
-        $f1 = substr $f1, 1, -1; 
-        $f2 = substr $f2, 1, -1; 
+        $f1 = substr $f1, 1, -1;
+        $f2 = substr $f2, 1, -1;
 
         if (($f1 eq $f2) or
             (length $f1 > 4 and substr $f1, 1, -1 eq substr $f2, 1, -1)) {

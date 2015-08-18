@@ -112,7 +112,7 @@ while (<>) {
             next;
         }
         my $info = $dialect ? "$inflect ($dialect)" : "$inflect";
-        
+
         # the lemma sometimes is a comma-separated list
         my $real_lemma = $lemma;
         $real_lemma =~ s/^.*,\s*//;
@@ -147,7 +147,7 @@ while (<>) {
         if ($conf > 4 and exists $trans{$ls{$real_lemma}}) {
             $trans = $trans{$ls{$real_lemma}}
         }
-        
+
         if ($ls{$real_lemma}) {
             $line_out .= "{$ls{$real_lemma} $conf $lemma\t$trans\t$info}";
         } else {

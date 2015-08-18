@@ -10,7 +10,7 @@ my $big_one;
 my $index_max;
 while (<>){
     die unless m#^([^\t]+)#;
-    my $form = $1; 
+    my $form = $1;
     my $key = substr($1, 0, 3);
     if ($key ne $current)
     {

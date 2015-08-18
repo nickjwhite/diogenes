@@ -15,9 +15,9 @@
 
   <!--  For goDoCommand() -->
   <script src="chrome://global/content/globalOverlay.js"/>
-  <script src="chrome://venkman/content/venkman-overlay.js"/> 
-  
-  
+  <script src="chrome://venkman/content/venkman-overlay.js"/>
+
+
     <menubar id="main-menubar">
       <menu id="file-menu" label="&dio.file;" accesskey="F">
         <menupopup id="file-popup">
@@ -26,7 +26,7 @@
           <menuitem label="&dio.about;" oncommand="showAbout();"
                     accesskey="A" key="key_about" id="aboutName"/>
           <menuseparator id="menu_FileQuitSeparator"/>
-          <menuitem label="&dio.quit;" id="menu_FileQuitItem" 
+          <menuitem label="&dio.quit;" id="menu_FileQuitItem"
                     oncommand="quitHiddenDiogenes();"
                     key="key_quit" accesskey="Q"/>
         </menupopup>
@@ -38,5 +38,5 @@
       <key id="key_new" modifiers="accel" key="N" oncommand="newWindow();"/>
       <key id="key_about" modifiers="accel" key="B" oncommand="showAbout();"/>
     </keyset>
-    
+
 </window>

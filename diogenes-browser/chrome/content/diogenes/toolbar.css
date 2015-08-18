@@ -89,7 +89,7 @@ toolbar:not([iconsize="small"]) .toolbarbutton-1 .toolbarbutton-icon {
 /* back button-- */
 
 #back-button {
-  -moz-image-region: rect(0px 24px 24px 0px); 
+  -moz-image-region: rect(0px 24px 24px 0px);
 }
 
 #back-button:not([disabled="true"]):hover,

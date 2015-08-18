@@ -3,13 +3,13 @@ Diogenes
 
 Diogenes is a tool for searching, browsing and reading the databases
 of ancient texts, primarily in Latin and Greek, that are published by
-the Thesaurus Linguae Graecae and the Packard Humanities Institute. 
+the Thesaurus Linguae Graecae and the Packard Humanities Institute.
 
 
 Building
 --------
 
-There are a few files that need to be built before Diogenes can be 
+There are a few files that need to be built before Diogenes can be
 run. To do that run this command:
 
   make
@@ -30,16 +30,16 @@ For full usage details run it like this:
 Building the morphology data & dictionaries
 -------------------------------------------
 
-Diogenes uses several dictionaries, as well as pre-computed 
-morphology tables, which need to be built before use. These are 
-available separately from the diogenes website, or you can build them 
-yourself. Be aware though that they require a lot of memory to 
+Diogenes uses several dictionaries, as well as pre-computed
+morphology tables, which need to be built before use. These are
+available separately from the diogenes website, or you can build them
+yourself. Be aware though that they require a lot of memory to
 generate (around 25GiB).
 
-There are two options in building the morphology data, either using 
-wordlists from Perseus' free corpus, or using the TLG and PHI 
-wordlists. The latter has the advantage of greater coverage when 
-reading TLG and PHI texts, while the former has the advantage of 
+There are two options in building the morphology data, either using
+wordlists from Perseus' free corpus, or using the TLG and PHI
+wordlists. The latter has the advantage of greater coverage when
+reading TLG and PHI texts, while the former has the advantage of
 being freely available.
 
 To build morphology and dictionaries using the Perseus corpus:

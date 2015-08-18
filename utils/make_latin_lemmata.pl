@@ -80,7 +80,7 @@ sub scrub {
             }
             elsif (exists $prefixes{$pre} and $prefixes{$pre} <= 4) {
                 print STDERR "Suspicious prefix: $pre\n";
-            } 
+            }
             if (exists $prefixes{$pre} and $prefixes{$pre} < $min and $prefixes{$pre} > 4) {
                 $min = $prefixes{$pre};
                 $min_pre = $pre;
@@ -102,7 +102,7 @@ sub process {
             my ($dict, $conf, $lemma, $trans, $info) = ($1, $2, $3, $4, $5);
 
             $lemma = munge_latin_lemma($lemma);
-            
+
             if ($lemma =~ m/^(.*),/) {
                 $prefixes{$1}++;
             }
@@ -128,10 +128,10 @@ sub process {
 sub munge_latin_lemma {
     my $lemma = shift;
     $lemma =~ s/^.*,\s*//;
-    
+
     # the lemma has qui#1, while lewis has qui1
     $lemma =~ s/#(\d)$/$1/;
-    
+
     # Hyphenated compounds should just be joined together --
     # unlike Greek, all compounds should be in the dict.
     if ($lemma =~ m/^(.+)-(.+)$/) {

@@ -20,9 +20,9 @@
 
   <!--  For goDoCommand() -->
   <script src="chrome://global/content/globalOverlay.js"/>
-  <script src="chrome://venkman/content/venkman-overlay.js"/> 
-  
-  
+  <script src="chrome://venkman/content/venkman-overlay.js"/>
+
+
     <menubar id="main-menubar">
       <menu id="file-menu" label="&dio.file;" accesskey="F">
         <menupopup id="file-popup">
@@ -37,7 +37,7 @@
           <menuitem label="&dio.close;" oncommand="windowClose();"
                     key="key_close" accesskey="C"/>
           <menuseparator id="menu_FileQuitSeparator"/>
-          <menuitem label="&dio.quit;" id="menu_FileQuitItem" 
+          <menuitem label="&dio.quit;" id="menu_FileQuitItem"
                     oncommand="quitDiogenes();"
                     key="key_quit" accesskey="Q"/>
         </menupopup>

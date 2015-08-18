@@ -16,16 +16,16 @@ QueryInterface: function(iid) {
             iid.equals(Components.interfaces.nsISupportsWeakReference) ||
             iid.equals(Components.interfaces.nsISupports))
             return this;
-        
+
         throw Components.results.NS_ERROR_NO_INTERFACE;
     },
 
 // This method is called to indicate state changes.
 onStateChange: function(webProgress, request, stateFlags, status) {
         const WPL = Components.interfaces.nsIWebProgressListener;
-        
+
 //         var progress = document.getElementById("progress");
-        
+
         if (stateFlags & WPL.STATE_IS_REQUEST) {
             if (stateFlags & WPL.STATE_START) {
                 this._requestsStarted++;
@@ -38,7 +38,7 @@ onStateChange: function(webProgress, request, stateFlags, status) {
 //                 progress.setAttribute("value", value + "%");
             }
         }
-        
+
         if (stateFlags & WPL.STATE_IS_NETWORK) {
             var stop = document.getElementById("stop-button");
             var stopMenu = document.getElementById("stop-menuitem");
@@ -73,7 +73,7 @@ onProgressChange: function(webProgress, request, curSelf, maxSelf,
 
 // This method is called to indicate a change to the current location.
 onLocationChange: function(webProgress, request, location) {
-        
+
         var browser = document.getElementById("browser");
         var back = document.getElementById("back-button");
         var backMenu = document.getElementById("back-menuitem");
@@ -116,7 +116,7 @@ function go() {
     {
         dump("ERROR: port unknown!\n");
     } else {
-        browser.loadURI("http:127.0.0.1:" + port + "/", null, null); 
+        browser.loadURI("http:127.0.0.1:" + port + "/", null, null);
     }
 }
 
@@ -210,14 +210,14 @@ function warnUser(message) {
     alert(message);
 }
 
-function getOS() { 
+function getOS() {
     var platform;
     var OS;
     if (typeof(window.navigator.platform) != 'undefined')
     {
         platform = window.navigator.platform.toLowerCase();
         if (platform.indexOf('win') != -1) {
-            OS = 'win'; 
+            OS = 'win';
         } else if (platform.indexOf('mac') != -1) {
             OS = 'mac';
         } else if (platform.indexOf('unix') != -1 || platform.indexOf('linux') != -1 || platform.indexOf('sun') != -1) {
@@ -297,7 +297,7 @@ function ensureDirectory (dir) {
     return (dir.charAt(dir.length - 1) == sep) ? dir : dir + sep;
 }
 
-const FileFactory = new Components.Constructor("@mozilla.org/file/local;1","nsILocalFile","initWithPath"); 
+const FileFactory = new Components.Constructor("@mozilla.org/file/local;1","nsILocalFile","initWithPath");
 
 function getPerlExecutable() {
     var perlpath;
@@ -361,15 +361,15 @@ function runServerKiller() {
 
 function runPerlScript (filename, blocking) {
     var perlfile = getPerlExecutable();
-    try { 
+    try {
         var perl = new FileFactory(perlfile);
     } catch (e) { alert(e) }
-    //try to create process 
-    try { 
+    //try to create process
+    try {
         var perlProcess = Components.classes["@mozilla.org/process/util;1"].
-            createInstance(Components.interfaces.nsIProcess); 
+            createInstance(Components.interfaces.nsIProcess);
     } catch (e) { alert(e); }
-    perlProcess.init(perl); 
+    perlProcess.init(perl);
     perlProcess.run(blocking, [getScriptPath(filename)], 1);
 }
 
@@ -400,7 +400,7 @@ function getSettingsFile () {
     if (!dir.exists()) {
         try {
             dir.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0777);
-        } catch (e) { 
+        } catch (e) {
             warnUser("Unable to create preferences dir: aborting ("+userDir+"). "+e);
             quitDiogenes();
         }
@@ -416,13 +416,13 @@ var serverStopTries;
 function waitForLock () {
     dump("Looking for " + getLockFile() + "\n");
     serverStartTries = 0;
-    startIntervalID = setInterval(waitForLockHelper, 100); 
+    startIntervalID = setInterval(waitForLockHelper, 100);
 }
 
 function waitForNoLockAndStartServer () {
     dump("Waiting for " + getLockFile() + " to disappear.");
     serverStopTries = 0;
-    stopIntervalID = setInterval(waitForNoLockHelper, 100); 
+    stopIntervalID = setInterval(waitForNoLockHelper, 100);
 }
 
 function waitForLockHelper () {
@@ -439,7 +439,7 @@ function waitForLockHelper () {
         clearInterval(startIntervalID);
         var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
             .getService(Components.interfaces.nsIPromptService);
-        var ok = prompts.alert(window, "Diogenes Error", 
+        var ok = prompts.alert(window, "Diogenes Error",
                                "Unable to start perl server. Aborting.");
         quitDiogenes();
     }
@@ -484,8 +484,8 @@ function readLockFile() {
         else if (line.value.substring(0,3) == 'pid') {
             pid = line.value.substring(4);
         }
-        else { 
-            warnUser ("Bad diogenes.run file!"); 
+        else {
+            warnUser ("Bad diogenes.run file!");
         }
     }
     istream.close();
@@ -580,13 +580,13 @@ function saveAs () {
 }
 
 function saveDoc (file) {
-    
+
     var persist = Components.classes["@mozilla.org/embedding/browser/nsWebBrowserPersist;1"]
         .createInstance(Components.interfaces.nsIWebBrowserPersist);
-  
+
     persist.persistFlags = Components.interfaces.nsIWebBrowserPersist.PERSIST_FLAGS_REPLACE_EXISTING_FILES;
     persist.persistFlags |= Components.interfaces.nsIWebBrowserPersist.PERSIST_FLAGS_AUTODETECT_APPLY_CONVERSION;
-    
+
     var browser = document.getElementById("browser");
     try {
         var rv= persist.saveDocument(browser.contentWindow.document, file, null, null, null, null);
@@ -594,7 +594,7 @@ function saveDoc (file) {
 }
 
 function printDoc () {
-    
+
     var browser = document.getElementById("browser");
     browser.contentWindow.print();
 }
@@ -644,7 +644,7 @@ function browserOnLoad () {
         getDatabaseDirectory(err.getAttribute("type"), err.getAttribute("long-type"), true);
     }
     wentBack = false;
-    
+
     var corpus = browser.contentWindow.document.getElementById("corpus_menu");
     var pref = getPrefCorpus();
     if (corpus) {
@@ -715,7 +715,7 @@ function maybeSetPrefAction () {
         setPrefAction(action.options[action.selectedIndex].value);
     }
 }
- 
+
 // wentBack is to avoid the situation where the user has entered a
 // correct db location, and then uses the back key to come across the
 // error page and so is prompted again.  The submit listener ensures
@@ -732,7 +732,7 @@ function setupEnv() {
     var environment = Components.classes["@mozilla.org/process/environment;1"].
         getService(Components.interfaces.nsIEnvironment);
     environment.set('Diogenes-Browser', 'yes');
-    
+
     var appInfo = Components.classes["@mozilla.org/xre/app-info;1"]
         .getService(Components.interfaces.nsIXULAppInfo);
     environment.set('Xulrunner-version', appInfo.platformVersion);
@@ -744,8 +744,8 @@ function getDatabaseDirectory (type, longType, prompt) {
     if (prompt) {
         var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
             .getService(Components.interfaces.nsIPromptService);
-        var ok = prompts.alert(window, "Database Error", 
-"Database not found. You must give the location of the "+longType+" database."); 
+        var ok = prompts.alert(window, "Database Error",
+"Database not found. You must give the location of the "+longType+" database.");
     }
     var nsIFilePicker = Components.interfaces.nsIFilePicker;
     var fp = Components.classes["@mozilla.org/filepicker;1"]
@@ -764,7 +764,7 @@ function getDatabaseDirectory (type, longType, prompt) {
         } else {
             var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                 .getService(Components.interfaces.nsIPromptService);
-            var ok = prompts.confirm(window, "Database Not Found", 
+            var ok = prompts.confirm(window, "Database Not Found",
  "Error: No TLG/PHI/DDP database was found in the location you specified.  Click OK to try a new location.");
             if (ok) {
                 getDatabaseDirectory (type, longType, false);
@@ -782,17 +782,17 @@ function saveDiogenesSetting (key, value) {
             .createInstance(Components.interfaces.nsIFileInputStream);
         istream.init(file, -1, 0664, 0);
         istream.QueryInterface(Components.interfaces.nsILineInputStream);
-        
+
         var line = {}, hasmore = true;
         while (hasmore) {
             hasmore = istream.readLine(line);
             var re = new RegExp('^' + key);
             if (re.test(line.value)) {
-                output += key + ' "' + value + '"' + "\n"; 
+                output += key + ' "' + value + '"' + "\n";
                 oldline = true;
             }
             else {
-                output += line.value + "\n"; 
+                output += line.value + "\n";
             }
         }
         istream.close();
@@ -819,7 +819,7 @@ function selectFont () {
     var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
         .getService(Components.interfaces.nsIPromptService);
     var selected = {};
-    var ok = prompts.select(window, "Font Chooser", "Choose the font to use for Diogenes:", 
+    var ok = prompts.select(window, "Font Chooser", "Choose the font to use for Diogenes:",
                         allFonts.length, allFonts, selected);
     if (ok) {
 //         Macs didn't respect the default font, so we set it in the HTML instead
@@ -836,13 +836,13 @@ function selectFont () {
 function gotoSettings () {
     var browser = document.getElementById("browser");
     var port = get_port();
-    browser.loadURI("http:127.0.0.1:" + port + "/Settings.cgi", null, null); 
+    browser.loadURI("http:127.0.0.1:" + port + "/Settings.cgi", null, null);
 }
 
 function showAbout () {
         var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
             .getService(Components.interfaces.nsIPromptService);
-        var ok = prompts.alert(window, "About Diogenes", 
+        var ok = prompts.alert(window, "About Diogenes",
                                "Diogenes is an application for searching and browsing databases in the fomat used by the Packard Humanities Institute and the Thesaurus Linguae Gracae. Diogenes is free software by Peter Heslin.");
 
 }
@@ -868,16 +868,16 @@ function quitHiddenDiogenes () {
 }
 
 var shortcuts = new Object;
-shortcuts['l'] = 'PHI Latin'; 
-shortcuts['g'] = 'TLG Texts'; 
-shortcuts['o'] = 'word_list'; 
-shortcuts['d'] = 'Duke'; 
-shortcuts['e'] = 'Coptic'; 
-shortcuts['.'] = 'search'; 
-shortcuts['u'] = 'multiple'; 
-shortcuts['m'] = 'morphological'; 
-shortcuts['b'] = 'browse'; 
-shortcuts['r'] = 'filters'; 
+shortcuts['l'] = 'PHI Latin';
+shortcuts['g'] = 'TLG Texts';
+shortcuts['o'] = 'word_list';
+shortcuts['d'] = 'Duke';
+shortcuts['e'] = 'Coptic';
+shortcuts['.'] = 'search';
+shortcuts['u'] = 'multiple';
+shortcuts['m'] = 'morphological';
+shortcuts['b'] = 'browse';
+shortcuts['r'] = 'filters';
 
 function doShortcut(key) {
     var browser = document.getElementById("browser");
@@ -904,6 +904,6 @@ function doShortcut(key) {
 function showShortcuts () {
     var browser = document.getElementById("browser");
     var port = get_port();
-    browser.loadURI("http:127.0.0.1:" + port + "/Shortcuts.html", null, null); 
+    browser.loadURI("http:127.0.0.1:" + port + "/Shortcuts.html", null, null);
 }
 

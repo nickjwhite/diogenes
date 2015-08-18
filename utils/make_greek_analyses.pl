@@ -151,7 +151,7 @@ while (<>) {
         # compound a word that does have an entry in LSJ:
         # e.g. su/n-perigra/fw when there is an entry for
         # sumperigra/fw
-        
+
         my $real_lemma;
         my @suppl_lemmata;
         if ($lemma !~ m/-/ and $lemma !~ m/,/) {
@@ -168,8 +168,8 @@ while (<>) {
             $real_lemma = pop @suppl_lemmata;
             $real_lemma =~ m/^(.+)-(.+)$/;
             push @suppl_lemmata, $1;
-            $real_lemma = $2;          
-            
+            $real_lemma = $2;
+
             my $f1 = $suppl_lemmata[0];
             my $f2 = $form;
             $f1 =~ s/[\\\/=+]//g;
@@ -179,7 +179,7 @@ while (<>) {
                 # The first sub-part is not part of the compound
                 shift @suppl_lemmata;
             }
-        }            
+        }
         else {
             die "Flow error!";
         }
@@ -188,7 +188,7 @@ while (<>) {
             next;
         }
 
-        $conf=9;       
+        $conf=9;
 
         unless ($lsj{$real_lemma}) {
             # try without long/short vowel markers
@@ -220,7 +220,7 @@ while (<>) {
         if ($conf > 4 and exists $trans{$lsj{$real_lemma}}) {
             $trans = $trans{$lsj{$real_lemma}}
         }
-        
+
         if ($lsj{$real_lemma}) {
             $line_out .= "{$lsj{$real_lemma} $conf $lemma\t$trans\t$info}";
         } else {
