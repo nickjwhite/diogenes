@@ -6,11 +6,11 @@ TLGDIR = $(HOME)/tlg_e
 include mk.commondata
 
 $(BUILD)/lat.words: utils/make_latin_wordlist.pl
-	mkdir -p $(BUILD)
+	mkdir -p $(BUILD) $(DATA)
 	find $(PHIDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(PHIDIR):  :g' > $(DATA)/phisums
 	./utils/make_latin_wordlist.pl $(PHIDIR) > $@
 
 $(BUILD)/grc.words: utils/make_greek_wordlist.pl
-	mkdir -p $(BUILD)
+	mkdir -p $(BUILD) $(DATA)
 	find $(TLGDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(TLGDIR):  :g' > $(DATA)/tlgsums
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
