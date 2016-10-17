@@ -1,0 +1,10 @@
+{
+    "name" : "Diogenes",
+    "main" : "index.html",
+    "window" : {
+        "title" : "Diogenes Startup",
+        "toolbar" : false,
+        "show": false,
+        "icon" : "diogenes.ico"
+    }
+}

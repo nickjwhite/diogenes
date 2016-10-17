@@ -27,6 +27,16 @@ diogenes-browser/perl/Diogenes/EntityTable.pm: utils/ent_to_array.pl $(DEPDIR)/P
 	printf 'package Diogenes::EntityTable;\n\n' >> $@
 	./utils/ent_to_array.pl < $(DEPDIR)/PersXML.ent >> $@
 
+# Note: should package this the recommended nwjs way
+linux64: all
+	mkdir -p linux64
+	cd linux64 && zcat < ../dist/nwjs-sdk-v0.18.0-linux-x64.tar.gz | tar x
+	cp -r diogenes-browser linux64
+	cp -r dependencies linux64
+	cp -r dist linux64
+	printf '#/bin/sh\n./nwjs-sdk-v0.18.0-linux-x64/nw dist/nwjs\n' > linux64/diogenes
+	chmod +x linux64/diogenes
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
