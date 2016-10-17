@@ -92,14 +92,8 @@ server.on('close', function (code) {
 // Config for new windows
 var winConfig = {
     "title": "Diogenes",
-    "show": true,
-//     "toolbar": false,
-    "toolbar": true,
     "frame": true,
-//     "node-remote": "<local>",
-    "node-remote": "*",
-    "icon": "diogenes.ico",
-    "nodejs": true
+    "icon": "diogenes.ico"
 };
 
 

@@ -3,8 +3,7 @@
     "main" : "index.html",
     "window" : {
         "title" : "Diogenes Startup",
-        "toolbar" : false,
-        "show": false,
+        "show": true,
         "icon" : "diogenes.ico"
     }
 }
