@@ -1,4 +1,4 @@
 Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
 Installer / packaging, & clean up paths http://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/
 Tabs(?)
-
+Close (hidden) main window when real window is closed, or have main window take location of diogenes, as appropriate

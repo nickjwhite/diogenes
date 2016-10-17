@@ -30,7 +30,7 @@ diogenes-browser/perl/Diogenes/EntityTable.pm: utils/ent_to_array.pl $(DEPDIR)/P
 # Note: should package this the recommended nwjs way
 linux64: all
 	mkdir -p linux64
-	cd linux64 && zcat < ../dist/nwjs-sdk-v0.18.0-linux-x64.tar.gz | tar x
+	cp -r nw/nwjs-sdk-v0.18.0-linux-x64 linux64
 	cp -r diogenes-browser linux64
 	cp -r dependencies linux64
 	cp -r dist linux64
