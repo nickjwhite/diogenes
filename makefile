@@ -42,7 +42,7 @@ mac: all
 	cp -r nw/nwjs.app mac/Diogenes.app
 	mkdir -p mac/Diogenes.app/Contents/Resources/app.nw
 	cp -r diogenes-browser mac/Diogenes.app/Contents
-	cp -r dependencies mac/Diogenes.app/Contents/Resources/app.nw
+	cp -r dependencies mac/Diogenes.app/Contents
 	cp -r dist/nwjs/* mac/Diogenes.app/Contents/Resources/app.nw
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/document.icns
