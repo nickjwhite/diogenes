@@ -96,6 +96,11 @@ var winConfig = {
     "icon": "diogenes.ico"
 };
 
+function initMenu(mywin){
+    var menu = new gui.Menu({type:"menubar"});
+    menu.append(new gui.MenuItem({ label: 'Item A', click: function() {} }));
+    mywin.menu = menu;
+}
 
 var newWin;
 
@@ -116,9 +121,10 @@ fs.watch(settingsPath, function (event, filename) {
                 var localURL = 'http://127.0.0.1:' + dio_port;
                 // Load splash page
                 //         newWin.location.href = localURL;
-                //newWin = gui.Window.open(localURL, winConfig);
-                newWin = gui.Window.open(localURL);
-                mainWin.close();
+                gui.Window.open(localURL, winConfig, function(newWin) {
+                    newWin.on('load', initMenu(newWin));
+                });
+                mainWin.hide();
             } 
             else {
                 alert ("ERROR: disappearing lockfile!");
