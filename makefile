@@ -37,6 +37,16 @@ linux64: all
 	printf '#/bin/sh\n./nwjs-sdk-v0.18.0-linux-x64/nw dist/nwjs\n' > linux64/diogenes
 	chmod +x linux64/diogenes
 
+mac: all
+	mkdir -p mac
+	cp -r nw/nwjs.app mac/Diogenes.app
+	mkdir -p mac/Diogenes.app/Contents/Resources/app.nw
+	cp -r diogenes-browser mac/Diogenes.app/Contents
+	cp -r dependencies mac/Diogenes.app/Contents/Resources/app.nw
+	cp -r dist/nwjs/* mac/Diogenes.app/Contents/Resources/app.nw
+	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/
+	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/document.icns
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
