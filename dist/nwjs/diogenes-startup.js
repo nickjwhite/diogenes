@@ -127,7 +127,7 @@ fs.watch(settingsPath, function (event, filename) {
                 mainWin.hide();
             } 
             else {
-                window.alert ("ERROR: disappearing lockfile!");
+                alert ("ERROR: disappearing lockfile!");
                 gui.App.quit();     
             }
         }
