@@ -1,3 +1,4 @@
+Document better where the data should go from -prebuilt repo
 Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
 Installer / packaging, & clean up paths http://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/
 Tabs(?)

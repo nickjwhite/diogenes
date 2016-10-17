@@ -5,6 +5,7 @@
 
 DEPDIR = dependencies
 
+NWJSVERSION = 0.14.7
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
@@ -27,19 +28,28 @@ diogenes-browser/perl/Diogenes/EntityTable.pm: utils/ent_to_array.pl $(DEPDIR)/P
 	printf 'package Diogenes::EntityTable;\n\n' >> $@
 	./utils/ent_to_array.pl < $(DEPDIR)/PersXML.ent >> $@
 
-# Note: should package this the recommended nwjs way
-linux64: all
+nw/nwjs-v$(NWJSVERSION)-linux-x64:
+	mkdir -p nw
+	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-linux-x64.tar.gz
+	cd nw && zcat < nwjs-v$(NWJSVERSION)-linux-x64.tar.gz | tar x
+
+linux64: all nw/nwjs-v$(NWJSVERSION)-linux-x64
 	mkdir -p linux64
-	cp -r nw/nwjs-sdk-v0.18.0-linux-x64 linux64
+	cp -r nw/nwjs-v$(NWJSVERSION)-linux-x64 linux64
 	cp -r diogenes-browser linux64
 	cp -r dependencies linux64
 	cp -r dist linux64
-	printf '#/bin/sh\n./nwjs-sdk-v0.18.0-linux-x64/nw dist/nwjs\n' > linux64/diogenes
+	printf '#/bin/sh\n./nwjs-v$(NWJSVERSION)-linux-x64/nw dist/nwjs\n' > linux64/diogenes
 	chmod +x linux64/diogenes
 
-mac: all
+nw/nwjs-v$(NWJSVERSION)-osx-x64:
+	mkdir -p nw
+	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-osx-x64.tar.gz
+	cd nw && zcat < nwjs-v$(NWJSVERSION)-osx-x64.tar.gz | tar x
+
+mac: all nw/nwjs-v$(NWJSVERSION)-osx-x64
 	mkdir -p mac
-	cp -r nw/nwjs.app mac/Diogenes.app
+	cp -r nw/nwjs-v$(NWJSVERSION)-osx-x64/nwjs.app mac/Diogenes.app
 	mkdir -p mac/Diogenes.app/Contents/Resources/app.nw
 	cp -r diogenes-browser mac/Diogenes.app/Contents
 	cp -r dependencies mac/Diogenes.app/Contents
