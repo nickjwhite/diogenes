@@ -110,7 +110,7 @@ fs.watch(settingsPath, function (event, filename) {
         // Other actions happen in this directory around this time:
         // e.g. cache clearance
         console.log('filename provided: ' + filename);
-        if (filename == '.diogenes.run') {
+        if (filename == '.diogenes.run' && event == 'change') {
             if (fs.existsSync(lockFile)) {
                 var ar = readLockFile();
                 var dio_port = ar[0];
