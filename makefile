@@ -44,8 +44,8 @@ linux64: all nw/nwjs-v$(NWJSVERSION)-linux-x64
 
 nw/nwjs-v$(NWJSVERSION)-osx-x64:
 	mkdir -p nw
-	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-osx-x64.tar.gz
-	cd nw && zcat < nwjs-v$(NWJSVERSION)-osx-x64.tar.gz | tar x
+	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-osx-x64.zip
+	cd nw && unzip nwjs-v$(NWJSVERSION)-osx-x64.zip
 
 mac: all nw/nwjs-v$(NWJSVERSION)-osx-x64
 	mkdir -p mac
