@@ -2,4 +2,8 @@ Document better where the data should go from -prebuilt repo
 Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
 Installer / packaging, & clean up paths http://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/
 Tabs(?)
-Close (hidden) main window when real window is closed, or have main window take location of diogenes, as appropriate
+Close (hidden) main window when real window is closed (using hook), or have main window take location of diogenes, as appropriate
+Use hires/vector icon
+Clean up diogenes-startup.js, removing commented out tests etc.
+Decide on whether to use lts or stable nwjs
+Use a fancy font (linux-libertine or junicode, maybe)
