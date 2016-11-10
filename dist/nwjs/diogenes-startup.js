@@ -85,6 +85,8 @@ var winConfig = {
 
 function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
+    if (osName == 'darwin')
+        menu.createMacBuiltin("Diogenes");
     menu.append(new gui.MenuItem({ label: 'Item A', click: function() {} }));
     mywin.menu = menu;
 }
@@ -130,51 +132,3 @@ fs.watch(settingsPath, function (event, filename) {
         console.log('filename not provided');
     }
 });
-
-////////////////////////// Menus
-
-// Mac standard menus with modifications
-
-var mb = new gui.Menu({type:"menubar"});
-if (osName == 'darwin') {
-    mb.createMacBuiltin("Diogenes");
-    mb.items[0].submenu.append(
-        new gui.MenuItem({
-            label: 'Do Something',
-            click: function () { alert('Doing something'); }
-        })
-    );    
-    gui.Window.get().menu = mb;
-}
-
-// Create an menu
-
-// var dioMenubar = new gui.Menu({ type: 'menubar' });
-// dioMenubar.append(new gui.MenuItem({ label: 'Diogenes'}));
-// mainWin.menu = dioMenubar;
-
-// var menu = new gui.Menu();
-// Add some items
-// menu.append(new gui.MenuItem({ label: 'Item A' }));
-// menu.append(new gui.MenuItem({ label: 'Item B' }));
-// menu.append(new gui.MenuItem({ type: 'separator' }));
-// menu.append(new gui.MenuItem({ label: 'Item C' }));
-
-
-// empty var DiogenesMenu = new gui.Menu();
-// DiogenesMenu.append(new gui.MenuItem({ label: 'Item 1' }));
-// DiogenesMenu.append(new gui.MenuItem({ label: 'Item 2' }));
-// DiogenesMenu.append(new gui.MenuItem({ label: 'Item 3' }));
-
-
-// Add some items
-// gui.Window.get().menu = dioMenubar;
-
-
-//                                      submenu: DiogenesMenu}));
-// dioMenubar.append(new gui.MenuItem({ label: 'File' }));
-// dioMenubar.append(new gui.MenuItem({ type: 'Edit' }));
-// dioMenubar.append(new gui.MenuItem({ label: 'Window' }));
-
-// You can have submenu!
-// item.submenu = submenu;
