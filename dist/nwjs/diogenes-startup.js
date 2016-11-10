@@ -94,41 +94,32 @@ function initMenu(mywin){
 var newWin;
 
 fs.watch(settingsPath, function (event, filename) {
-    console.log('event is: ' + event);
-    if (filename) {
-        // Other actions happen in this directory around this time:
-        // e.g. cache clearance
-        console.log('filename provided: ' + filename);
-        if (filename == '.diogenes.run' && event == 'change') {
-            if (fs.existsSync(lockFile)) {
-                var ar = readLockFile();
-                var dio_port = ar[0];
-                if (!dio_port) {
-                    window.alert ("ERROR: port unknown! " + dio_port);
-                    gui.App.quit();     
-                }
-                var localURL = 'http://127.0.0.1:' + dio_port;
-
-                // Hide the mainWin, open our real browser window, and ensure the mainWin is
-                // closed and everything quits once the real window is closed.
-                mainWin.hide();
-                gui.Window.open(localURL, winConfig, function(newWin) {
-                    newWin.on('load', initMenu(newWin));
-                    newWin.on('close', function() {
-                        this.close(true);
-                        server.kill();
-                        fs.unlinkSync(lockFile);
-                        gui.App.quit();
-                    });
-                });
-            } 
-            else {
-                alert ("ERROR: disappearing lockfile!");
-                gui.App.quit();     
+    if (filename && filename == '.diogenes.run' && event == 'change') {
+        if (fs.existsSync(lockFile)) {
+            var ar = readLockFile();
+            var dio_port = ar[0];
+            if (!dio_port) {
+                window.alert("ERROR: port unknown!");
+                gui.App.quit();
             }
+            var localURL = 'http://127.0.0.1:' + dio_port;
+
+            // Hide the mainWin, open our real browser window, and ensure the mainWin is
+            // closed and everything quits once the real window is closed.
+            mainWin.hide();
+            gui.Window.open(localURL, winConfig, function(newWin) {
+                newWin.on('load', initMenu(newWin));
+                newWin.on('close', function() {
+                    this.close(true);
+                    server.kill();
+                    fs.unlinkSync(lockFile);
+                    gui.App.quit();
+                });
+            });
         }
-    } 
-    else {
-        console.log('filename not provided');
+        else {
+            alert ("ERROR: disappearing lockfile!");
+            gui.App.quit();
+        }
     }
 });
