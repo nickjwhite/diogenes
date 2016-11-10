@@ -63,12 +63,6 @@ var serverPath = path.join(curDir, '../../diogenes-browser/perl/', 'diogenes-ser
 var spawn = require('child_process').spawn;
 var server = spawn(perlName, [serverPath]);
 
-// Clean up children on exit
-process.on('exit', function () {
-    server.kill();
-    fs.unlinkSync(lockFile);
-});
-
 // Capture server output
 server.stdout.on('data', function (data) {
   console.log('server stdout: ' + data);
@@ -112,12 +106,19 @@ fs.watch(settingsPath, function (event, filename) {
                     gui.App.quit();     
                 }
                 var localURL = 'http://127.0.0.1:' + dio_port;
-                // Load splash page
-                //         newWin.location.href = localURL;
+
+                // Hide the mainWin, open our real browser window, and ensure the mainWin is
+                // closed and everything quits once the real window is closed.
+                mainWin.hide();
                 gui.Window.open(localURL, winConfig, function(newWin) {
                     newWin.on('load', initMenu(newWin));
+                    newWin.on('close', function() {
+                        this.close(true);
+                        server.kill();
+                        fs.unlinkSync(lockFile);
+                        gui.App.quit();
+                    });
                 });
-                mainWin.hide();
             } 
             else {
                 alert ("ERROR: disappearing lockfile!");
