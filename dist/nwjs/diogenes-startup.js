@@ -85,9 +85,29 @@ var winConfig = {
 
 function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
-    if (osName == 'darwin')
-        menu.createMacBuiltin("Diogenes");
-    menu.append(new gui.MenuItem({ label: 'Item A', click: function() {} }));
+    var submenu;
+    modkey = osName == "darwin" ? "cmd" : "ctrl";
+
+    if (osName == "darwin") {
+        menu.createMacBuiltin("Diogenes", false, false);
+    } else {
+        submenu = new gui.Menu();
+        submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
+        menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
+    }
+
+    submenu = new gui.Menu();
+    // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
+    submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
+    submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
+    // BUG: paste isn't working at the moment
+    submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
+    menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
+
+    submenu = new gui.Menu();
+    submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
+    menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));
+
     mywin.menu = menu;
 }
 
