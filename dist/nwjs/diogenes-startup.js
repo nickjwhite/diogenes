@@ -11,6 +11,7 @@ var gui = require('nw.gui');
 var fs = require('fs');
 var path = require('path');
 var mainWin = gui.Window.get();
+var console = require('console');
 
 
 //////////////////////// Set up environment and launch server
@@ -47,19 +48,12 @@ function readLockFile () {
 // port if the current one is still in use.
 if (fs.existsSync(lockFile)) {
     var ar = readLockFile();
-//     var port = ar[0];
     var pid = ar[1];
     console.log("Lockfile exists. Killing pid: " + pid);
     try {
-        process.kill(pid, 0);
+        process.kill(pid);
     } catch (e) {
-        console.log("Process did not exist!");
-    }
-    try {
-        process.kill(pid, 9);
-    }
-    catch (e) {
-        console.log("Error while killing process!");
+        console.log("Failed to kill old server process (perhaps it no longer exists): " + e);
     }
     fs.unlinkSync(lockFile);
 }
@@ -76,7 +70,6 @@ process.on('exit', function () {
 });
 
 // Capture server output
-var console = require('console');
 server.stdout.on('data', function (data) {
   console.log('server stdout: ' + data);
 });
