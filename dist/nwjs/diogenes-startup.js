@@ -11,6 +11,7 @@ var gui = require('nw.gui');
 var fs = require('fs');
 var path = require('path');
 var mainWin = gui.Window.get();
+var console = require('console');
 
 
 //////////////////////// Set up environment and launch server
@@ -47,19 +48,12 @@ function readLockFile () {
 // port if the current one is still in use.
 if (fs.existsSync(lockFile)) {
     var ar = readLockFile();
-//     var port = ar[0];
     var pid = ar[1];
     console.log("Lockfile exists. Killing pid: " + pid);
     try {
-        process.kill(pid, 0);
+        process.kill(pid);
     } catch (e) {
-        console.log("Process did not exist!");
-    }
-    try {
-        process.kill(pid, 9);
-    }
-    catch (e) {
-        console.log("Error while killing process!");
+        console.log("Failed to kill old server process (perhaps it no longer exists): " + e);
     }
     fs.unlinkSync(lockFile);
 }
@@ -69,14 +63,7 @@ var serverPath = path.join(curDir, '../../diogenes-browser/perl/', 'diogenes-ser
 var spawn = require('child_process').spawn;
 var server = spawn(perlName, [serverPath]);
 
-// Clean up children on exit
-process.on('exit', function () {
-    server.kill();
-    fs.unlinkSync(lockFile);
-});
-
 // Capture server output
-var console = require('console');
 server.stdout.on('data', function (data) {
   console.log('server stdout: ' + data);
 });
@@ -98,89 +85,61 @@ var winConfig = {
 
 function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
-    menu.append(new gui.MenuItem({ label: 'Item A', click: function() {} }));
+    var submenu;
+    modkey = osName == "darwin" ? "cmd" : "ctrl";
+
+    if (osName == "darwin") {
+        menu.createMacBuiltin("Diogenes", false, false);
+    } else {
+        submenu = new gui.Menu();
+        submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
+        menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
+    }
+
+    submenu = new gui.Menu();
+    // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
+    submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
+    submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
+    // BUG: paste isn't working at the moment
+    submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
+    menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
+
+    submenu = new gui.Menu();
+    submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
+    menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));
+
     mywin.menu = menu;
 }
 
 var newWin;
 
 fs.watch(settingsPath, function (event, filename) {
-    console.log('event is: ' + event);
-    if (filename) {
-        // Other actions happen in this directory around this time:
-        // e.g. cache clearance
-        console.log('filename provided: ' + filename);
-        if (filename == '.diogenes.run') {
-            if (fs.existsSync(lockFile)) {
-                var ar = readLockFile();
-                var dio_port = ar[0];
-                if (!dio_port) {
-                    window.alert ("ERROR: port unknown! " + dio_port);
-                    gui.App.quit();     
-                }
-                var localURL = 'http://127.0.0.1:' + dio_port;
-                // Load splash page
-                //         newWin.location.href = localURL;
-                gui.Window.open(localURL, winConfig, function(newWin) {
-                    newWin.on('load', initMenu(newWin));
-                });
-                mainWin.hide();
-            } 
-            else {
-                alert ("ERROR: disappearing lockfile!");
-                gui.App.quit();     
+    if (filename && filename == '.diogenes.run' && event == 'change') {
+        if (fs.existsSync(lockFile)) {
+            var ar = readLockFile();
+            var dio_port = ar[0];
+            if (!dio_port) {
+                window.alert("ERROR: port unknown!");
+                gui.App.quit();
             }
+            var localURL = 'http://127.0.0.1:' + dio_port;
+
+            // Hide the mainWin, open our real browser window, and ensure the mainWin is
+            // closed and everything quits once the real window is closed.
+            mainWin.hide();
+            gui.Window.open(localURL, winConfig, function(newWin) {
+                newWin.on('load', initMenu(newWin));
+                newWin.on('close', function() {
+                    this.close(true);
+                    server.kill();
+                    fs.unlinkSync(lockFile);
+                    gui.App.quit();
+                });
+            });
         }
-    } 
-    else {
-        console.log('filename not provided');
+        else {
+            alert ("ERROR: disappearing lockfile!");
+            gui.App.quit();
+        }
     }
 });
-
-////////////////////////// Menus
-
-// Mac standard menus with modifications
-
-var mb = new gui.Menu({type:"menubar"});
-if (osName == 'darwin') {
-    mb.createMacBuiltin("Diogenes");
-    mb.items[0].submenu.append(
-        new gui.MenuItem({
-            label: 'Do Something',
-            click: function () { alert('Doing something'); }
-        })
-    );    
-    gui.Window.get().menu = mb;
-}
-
-// Create an menu
-
-// var dioMenubar = new gui.Menu({ type: 'menubar' });
-// dioMenubar.append(new gui.MenuItem({ label: 'Diogenes'}));
-// mainWin.menu = dioMenubar;
-
-// var menu = new gui.Menu();
-// Add some items
-// menu.append(new gui.MenuItem({ label: 'Item A' }));
-// menu.append(new gui.MenuItem({ label: 'Item B' }));
-// menu.append(new gui.MenuItem({ type: 'separator' }));
-// menu.append(new gui.MenuItem({ label: 'Item C' }));
-
-
-// empty var DiogenesMenu = new gui.Menu();
-// DiogenesMenu.append(new gui.MenuItem({ label: 'Item 1' }));
-// DiogenesMenu.append(new gui.MenuItem({ label: 'Item 2' }));
-// DiogenesMenu.append(new gui.MenuItem({ label: 'Item 3' }));
-
-
-// Add some items
-// gui.Window.get().menu = dioMenubar;
-
-
-//                                      submenu: DiogenesMenu}));
-// dioMenubar.append(new gui.MenuItem({ label: 'File' }));
-// dioMenubar.append(new gui.MenuItem({ type: 'Edit' }));
-// dioMenubar.append(new gui.MenuItem({ label: 'Window' }));
-
-// You can have submenu!
-// item.submenu = submenu;
