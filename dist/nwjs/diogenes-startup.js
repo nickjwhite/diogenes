@@ -126,7 +126,7 @@ var winConfig = {
     "icon": "diogenes.ico"
 };
 
-function initMenu(mywin){
+function initWindow(mywin){
     var menu = new gui.Menu({type:"menubar"});
     var submenu;
     modkey = osName == "darwin" ? "cmd" : "ctrl";
@@ -137,16 +137,17 @@ function initMenu(mywin){
         submenu = new gui.Menu();
         submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
         menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
+
+        // We already get an Edit menu by default on Mac
+        submenu = new gui.Menu();
+        // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
+        submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
+        submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
+        // BUG: paste isn't working at the moment
+        submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
+        menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
     }
-
-    submenu = new gui.Menu();
-    // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
-    submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
-    submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
-    // BUG: paste isn't working at the moment
-    submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
-    menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
-
+    
     submenu = new gui.Menu();
     submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
     menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));
