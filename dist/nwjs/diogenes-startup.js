@@ -76,17 +76,11 @@ fs.watch(settingsPath, function (event, filename) {
                 }
                 var localURL = 'http://127.0.0.1:' + dio_port;
                 
-                // Hide the mainWin, open our real browser window, and ensure the mainWin is
-                // closed and everything quits once the real window is closed.
+                // Hide the mainWin, then open our real browser window.
+                initMenu(mainWin);
                 mainWin.hide();
                 gui.Window.open(localURL, winConfig, function(newWin) {
-                    newWin.on('load', initWindow(newWin));
-//                newWin.on('close', function() {
-//                  this.close(true);
-//                    server.kill();
-//                    fs.unlinkSync(lockFile);
-//                    gui.App.quit();
-//                });
+                    newWin.on('loaded', checkLoaded(newWin));
                 });
             }
             else {
@@ -126,7 +120,7 @@ var winConfig = {
     "icon": "diogenes.ico"
 };
 
-function initWindow(mywin){
+function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
     var submenu;
     modkey = osName == "darwin" ? "cmd" : "ctrl";
@@ -155,3 +149,11 @@ function initWindow(mywin){
     mywin.menu = menu;
 }
 
+
+function checkLoaded(mywin){
+
+    // Catch missing database error
+
+    // Make choices persistent when navigating away.
+    // FIXME
+}
