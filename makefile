@@ -57,7 +57,7 @@ mac: all nw/nwjs-v$(NWJSVERSION)-osx-x64
 	cp -r dist/nwjs/* mac/Diogenes.app/Contents/Resources/app.nw
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/document.icns
-	sed -i 's/CFBundleName = "nwjs"/CFBundleName = "Diogenes"/g' mac/Diogenes.app/Contents/Resources/*.lproj/InfoPlist.strings
+	perl -pi -e 's/CFBundleName = "nwjs"/CFBundleName = "Diogenes"/g' mac/Diogenes.app/Contents/Resources/*.lproj/InfoPlist.strings
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
