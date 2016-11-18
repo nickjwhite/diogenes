@@ -78,12 +78,12 @@ fs.watch(settingsPath, function (event, filename) {
             mainWin.hide();
             gui.Window.open(localURL, winConfig, function(newWin) {
                 newWin.on('load', initMenu(newWin));
-                newWin.on('close', function() {
-                    this.close(true);
-                    server.kill();
-                    fs.unlinkSync(lockFile);
-                    gui.App.quit();
-                });
+//                newWin.on('close', function() {
+//                  this.close(true);
+//                    server.kill();
+//                    fs.unlinkSync(lockFile);
+//                    gui.App.quit();
+//                });
             });
         }
         else {
@@ -128,7 +128,6 @@ function initMenu(mywin){
     modkey = osName == "darwin" ? "cmd" : "ctrl";
 
     if (osName == "darwin") {
-        alert(osName);
         menu.createMacBuiltin("Diogenes", false, false);
     } else {
         submenu = new gui.Menu();
