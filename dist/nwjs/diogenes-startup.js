@@ -13,7 +13,6 @@ var path = require('path');
 var mainWin = gui.Window.get();
 var console = require('console');
 
-
 //////////////////////// Set up environment and launch server
 
 var osName = process.platform.toLowerCase();
@@ -43,9 +42,7 @@ function readLockFile () {
     return [port, pid];
 }
 
-// First we delete any existing lock file and kill the associated
-// process.  No need to wait, as the new server will choose a different
-// port if the current one is still in use.
+// First we delete any existing lock file and kill the associated process.  No need to wait, as the new server will choose a different port if the current one is still in use.
 if (fs.existsSync(lockFile)) {
     var ar = readLockFile();
     var pid = ar[1];
@@ -58,63 +55,13 @@ if (fs.existsSync(lockFile)) {
     fs.unlinkSync(lockFile);
 }
 
-var curDir = process.cwd();
-var serverPath = path.join(curDir, '../../diogenes-browser/perl/', 'diogenes-server.pl');
-var spawn = require('child_process').spawn;
-var server = spawn(perlName, [serverPath]);
-
-// Capture server output
-server.stdout.on('data', function (data) {
-  console.log('server stdout: ' + data);
-});
-server.stderr.on('data', function (data) {
-  console.log('server stderr: ' + data);
-});
-server.on('close', function (code) {
-  console.log('Diogenes server exited with code ' + code);
-});
-
-//////////////// Wait for server to start and then load splash page
-
-// Config for new windows
-var winConfig = {
-    "title": "Diogenes",
-    "frame": true,
-    "icon": "diogenes.ico"
-};
-
-function initMenu(mywin){
-    var menu = new gui.Menu({type:"menubar"});
-    var submenu;
-    modkey = osName == "darwin" ? "cmd" : "ctrl";
-
-    if (osName == "darwin") {
-        menu.createMacBuiltin("Diogenes", false, false);
-    } else {
-        submenu = new gui.Menu();
-        submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
-        menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
-    }
-
-    submenu = new gui.Menu();
-    // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
-    submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
-    submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
-    // BUG: paste isn't working at the moment
-    submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
-    menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
-
-    submenu = new gui.Menu();
-    submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
-    menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));
-
-    mywin.menu = menu;
-}
+// To avoid race condition, we set up fs.watch before trying to start server.  (NB: this callback may be triggered by the act of unlinking the lockfile above.) 
 
 var newWin;
 
 fs.watch(settingsPath, function (event, filename) {
-    if (filename && filename == '.diogenes.run' && event == 'change') {
+    console.log("fs.watch: " + filename + event);
+    if (filename && filename == '.diogenes.run' && (event == 'change' || event == 'rename')) {
         if (fs.existsSync(lockFile)) {
             var ar = readLockFile();
             var dio_port = ar[0];
@@ -138,8 +85,65 @@ fs.watch(settingsPath, function (event, filename) {
             });
         }
         else {
-            alert ("ERROR: disappearing lockfile!");
-            gui.App.quit();
+            // Probably we caught our own act of unlinking
+            console.log ("Lockfile has been deleted.");
         }
     }
 });
+
+var curDir = process.cwd();
+var serverPath = path.join(curDir, '../../diogenes-browser/perl/', 'diogenes-server.pl');
+var spawn = require('child_process').spawn;
+var server = spawn(perlName, [serverPath]);
+
+// Capture server output
+server.stdout.on('data', function (data) {
+  console.log('server stdout: ' + data);
+});
+server.stderr.on('data', function (data) {
+  console.log('server stderr: ' + data);
+});
+server.on('close', function (code) {
+  console.log('Diogenes server exited with code ' + code);
+});
+
+
+//////////////// Wait for server to start and then load splash page
+
+// Config for new windows
+var winConfig = {
+    "title": "Diogenes",
+    "frame": true,
+    "icon": "diogenes.ico"
+};
+
+function initMenu(mywin){
+    var menu = new gui.Menu({type:"menubar"});
+    var submenu;
+    modkey = osName == "darwin" ? "cmd" : "ctrl";
+
+    if (osName == "darwin") {
+        alert(osName);
+//        menu.createMacBuiltin("Diogenes", false, false);
+        menu.createMacBuiltin("Diogenes");
+    } else {
+        submenu = new gui.Menu();
+        submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
+        menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
+    }
+
+    submenu = new gui.Menu();
+    // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
+    submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
+    submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
+    // BUG: paste isn't working at the moment
+    submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
+    menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
+
+    submenu = new gui.Menu();
+    submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
+    menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));
+
+    mywin.menu = menu;
+}
+
