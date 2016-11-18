@@ -55,6 +55,8 @@ if (fs.existsSync(lockFile)) {
     fs.unlinkSync(lockFile);
 }
 
+//////////////// Wait for server to start and then load splash page
+
 // To avoid race condition, we set up fs.watch before trying to start server.  (NB: this callback may be triggered by the act of unlinking the lockfile above.) 
 
 var newWin;
@@ -107,8 +109,11 @@ server.on('close', function (code) {
   console.log('Diogenes server exited with code ' + code);
 });
 
-
-//////////////// Wait for server to start and then load splash page
+// Just in case of unexpected exit, try to clean up server
+process.on('exit', function () {
+    server.kill();
+    fs.unlinkSync(lockFile);
+});
 
 // Config for new windows
 var winConfig = {
@@ -124,8 +129,7 @@ function initMenu(mywin){
 
     if (osName == "darwin") {
         alert(osName);
-//        menu.createMacBuiltin("Diogenes", false, false);
-        menu.createMacBuiltin("Diogenes");
+        menu.createMacBuiltin("Diogenes", false, false);
     } else {
         submenu = new gui.Menu();
         submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
