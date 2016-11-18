@@ -59,36 +59,40 @@ if (fs.existsSync(lockFile)) {
 
 // To avoid race condition, we set up fs.watch before trying to start server.  (NB: this callback may be triggered by the act of unlinking the lockfile above.) 
 
-var newWin;
+var startupDone = false;
 
 fs.watch(settingsPath, function (event, filename) {
-    console.log("fs.watch: " + filename + event);
-    if (filename && filename == '.diogenes.run' && (event == 'change' || event == 'rename')) {
-        if (fs.existsSync(lockFile)) {
-            var ar = readLockFile();
-            var dio_port = ar[0];
-            if (!dio_port) {
-                window.alert("ERROR: port unknown!");
-                gui.App.quit();
-            }
-            var localURL = 'http://127.0.0.1:' + dio_port;
-
-            // Hide the mainWin, open our real browser window, and ensure the mainWin is
-            // closed and everything quits once the real window is closed.
-            mainWin.hide();
-            gui.Window.open(localURL, winConfig, function(newWin) {
-                newWin.on('load', initMenu(newWin));
+    // Only run this once
+    if (!startupDone) {
+        startupDone = true;
+        console.log("fs.watch: " + filename + ": " + event);
+        if (filename && filename == '.diogenes.run' && (event == 'change' || event == 'rename')) {
+            if (fs.existsSync(lockFile)) {
+                var ar = readLockFile();
+                var dio_port = ar[0];
+                if (!dio_port) {
+                    window.alert("ERROR: port unknown!");
+                    gui.App.quit();
+                }
+                var localURL = 'http://127.0.0.1:' + dio_port;
+                
+                // Hide the mainWin, open our real browser window, and ensure the mainWin is
+                // closed and everything quits once the real window is closed.
+                mainWin.hide();
+                gui.Window.open(localURL, winConfig, function(newWin) {
+                    newWin.on('load', initWindow(newWin));
 //                newWin.on('close', function() {
 //                  this.close(true);
 //                    server.kill();
 //                    fs.unlinkSync(lockFile);
 //                    gui.App.quit();
 //                });
-            });
-        }
-        else {
-            // Probably we caught our own act of unlinking
-            console.log ("Lockfile has been deleted.");
+                });
+            }
+            else {
+                // Probably we caught our own act of unlinking
+                console.log ("Lockfile has been deleted.");
+            }
         }
     }
 });
