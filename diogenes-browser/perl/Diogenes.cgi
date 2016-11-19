@@ -233,12 +233,22 @@ my $print_title = sub
 {
     print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
-    my $newpage = shift;
+    my $extra_script = shift;
+    my $script;
+    if ($extra_script) {
+        $script = [{-type=>'text/javascript',
+                    -src=>'diogenes-cgi.js'},
+                   {-type=>'text/javascript',
+                    -src=>$extra_script}];
+    }
+    else {
+        $script = {-type=>'text/javascript',
+                   -src=>'diogenes-cgi.js'};
+    }
     print
         $f->start_html(-title=>$title,
                        -encoding=>$charset,
-                       -script=>{-type=>'text/javascript',
-                                 -src=>'diogenes-cgi.js'},
+                       -script=>$script,
                        -style=>{ -type=>'text/css',
                                  -src=>'diogenes.css'},
                        -meta=>{'content' => 'text/html;charset=utf-8'}
@@ -304,7 +314,7 @@ my $database_error = sub
     elsif ($disk_type eq 'bib') {
         $disk_type = 'tlg';
     }
-    $print_title->('Database Error');
+    $print_title->('Database Error', 'database-error.js');
     print qq(<center>
               <div style="display: block; width: 50%; text-align: center;">
                   <h2 id="database-error" type="$disk_type"
@@ -359,7 +369,7 @@ $output{splash} = sub
     my @filter_names;
     push @filter_names, $_->{name} for @filters;
 
-    $print_title->('Diogenes');
+    $print_title->('Diogenes', 'splash.js');
     $st{current_page} = 'splash';
     
     print $f->center(
@@ -657,7 +667,7 @@ my $use_and_show_filter = sub
 
 $output{lookup} = sub {
     my $action = shift;
-    $print_title->('Diogenes Perseus Lookup Page', 1);
+    $print_title->('Diogenes Perseus Lookup Page');
     $print_header->();
     $st{current_page} = 'lookup';
 
