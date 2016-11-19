@@ -3,15 +3,19 @@
 // splash page from the cgi script.  This window stays open and
 // hidden, because node-webkit gets upset if it disappears.
 
-///// attic
-// window.alert('Current directory: ' + process.cwd());
-// window.alert(path.dirname(process.execPath));
-
 var gui = require('nw.gui');
 var fs = require('fs');
 var path = require('path');
 var mainWin = gui.Window.get();
 var console = require('console');
+
+// Config for new windows
+var winConfig = {
+    "title": "Diogenes",
+    "frame": true,
+    "icon": "diogenes.ico",
+    "id": "Diogenes"
+};
 
 //////////////////////// Set up environment and launch server
 
@@ -65,7 +69,7 @@ fs.watch(settingsPath, function (event, filename) {
     // Only run this once
     if (!startupDone) {
         startupDone = true;
-        console.log("fs.watch: " + filename + ": " + event);
+//        console.log("fs.watch: " + filename + ": " + event);
         if (filename && filename == '.diogenes.run' && (event == 'change' || event == 'rename')) {
             if (fs.existsSync(lockFile)) {
                 var ar = readLockFile();
@@ -79,9 +83,7 @@ fs.watch(settingsPath, function (event, filename) {
                 // Hide the mainWin, then open our real browser window.
                 initMenu(mainWin);
                 mainWin.hide();
-                gui.Window.open(localURL, winConfig, function(newWin) {
-                    newWin.on('loaded', checkLoaded(newWin));
-                });
+                gui.Window.open(localURL, winConfig);
             }
             else {
                 // Probably we caught our own act of unlinking
@@ -113,13 +115,6 @@ process.on('exit', function () {
     fs.unlinkSync(lockFile);
 });
 
-// Config for new windows
-var winConfig = {
-    "title": "Diogenes",
-    "frame": true,
-    "icon": "diogenes.ico"
-};
-
 function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
     var submenu;
@@ -150,10 +145,3 @@ function initMenu(mywin){
 }
 
 
-function checkLoaded(mywin){
-
-    // Catch missing database error
-
-    // Make choices persistent when navigating away.
-    // FIXME
-}
