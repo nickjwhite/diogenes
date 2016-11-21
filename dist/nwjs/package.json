@@ -1,10 +1,10 @@
 {
     "name" : "Diogenes",
     "main" : "index.html",
-    "node-remote" : "http://127.0.0.1:*/*",
     "window" : {
         "title" : "Diogenes Startup",
         "show": true,
-        "icon" : "diogenes.ico"
+        "icon" : "diogenes.ico",
+        "node-remote" : "file:///dbPopup.html"
     }
 }

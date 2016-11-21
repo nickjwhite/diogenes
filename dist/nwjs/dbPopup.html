@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Diogenes Database Settings</title>
+    <style type="text/css">
+      .button {
+      border: 2px solid #AAA;
+      border-radius: 4px;
+      padding: 2px 5px;
+      margin: 6px;
+      background: #DDD;
+      display: inline-block;
+      }
+      .button:hover {
+      background: #CCC;
+      }
+      .button:active {
+      background: #CCF;
+      }
+      .button :invalid + span {
+      color: #A44;
+      }      
+    </style>
+  </head>
+  <body>
+    <h1>Set Database Locations</h1>
+    <p>Diogenes needs to know where on your computer the databases of ancient texts are located.  These are not distributed with Diogenes; they must be acquired separately.</p>
+    <p>Click the buttons below to set the locations of the databases.</p>
+    <label for="PHI" class="button">
+      <input type="file" id="PHI" style="display: none;" nwdirectory />
+      <span>PHI (Latin)</span>
+    </label>
+    <span id="PHIpath"></span>
+    <br/>
+    <label for="TLG" class="button">
+      <input type="file" id="TLG" style="display: none;" nwdirectory />
+      <span>TLG (Greek)</span>
+    </label>
+    <span id="TLGpath"></span>
+    <br/>
+    <label for="DDP" class="button">
+      <input type="file" id="DDP" style="display: none;" nwdirectory />
+      <span>DDP (Papyri, etc.)</span>
+    </label>
+    <span id="DDPpath"></span>
+    <script>
+      // Get the native path of the file selected by user
+      function foo () {
+var fileinput = document.querySelector('#PHI');
+var path = fileinput.value;
+alert(path);
+}
+    </script>
+<span onclick="foo()">foo</span>
+    
+  </body>
+</html>

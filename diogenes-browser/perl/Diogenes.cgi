@@ -314,8 +314,7 @@ my $database_error = sub
     elsif ($disk_type eq 'bib') {
         $disk_type = 'tlg';
     }
-    $print_title->('Database Error', 'database-error.js');
-    print q{<input style="display:none;" id="fileDialog" type="file" />};
+    $print_title->('Database Error');
     print qq(<center>
               <div style="display: block; width: 50%; text-align: center;">
                   <h2 id="database-error" type="$disk_type"

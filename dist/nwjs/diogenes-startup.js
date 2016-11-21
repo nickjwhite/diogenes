@@ -64,6 +64,7 @@ if (fs.existsSync(lockFile)) {
 // To avoid race condition, we set up fs.watch before trying to start server.  (NB: this callback may be triggered by the act of unlinking the lockfile above.) 
 
 var startupDone = false;
+var localURL, dio_port;
 
 fs.watch(settingsPath, function (event, filename) {
     // Only run this once
@@ -73,13 +74,12 @@ fs.watch(settingsPath, function (event, filename) {
         if (filename && filename == '.diogenes.run' && (event == 'change' || event == 'rename')) {
             if (fs.existsSync(lockFile)) {
                 var ar = readLockFile();
-                var dio_port = ar[0];
+                dio_port = ar[0];
                 if (!dio_port) {
                     window.alert("ERROR: port unknown!");
                     gui.App.quit();
                 }
-                var localURL = 'http://127.0.0.1:' + dio_port;
-                
+                localURL = 'http://127.0.0.1:' + dio_port;
                 // Hide the mainWin, then open our real browser window.
                 initMenu(mainWin);
                 mainWin.hide();
@@ -115,6 +115,16 @@ process.on('exit', function () {
     fs.unlinkSync(lockFile);
 });
 
+function dbPopup() {
+    var popupConfig = {
+        // frame:false triggers a segfault: https://github.com/nwjs/nw.js/issues/4336
+//        "frame" : false, 
+        "focus" : true,
+        "show" : true };
+    gui.Window.open('dbPopup.html', popupConfig);
+}
+
+
 function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
     var submenu;
@@ -138,10 +148,23 @@ function initMenu(mywin){
     }
     
     submenu = new gui.Menu();
+    submenu.append(new gui.MenuItem
+                   ({ label: "Databases",
+                      click: function (){
+                          dbPopup();
+                      }}));
+    submenu.append(new gui.MenuItem
+                   ({ label: "All Settings",
+                      click: function (){
+                          var settingsURL = localURL + "/Settings.cgi"; 
+                          gui.Window.open(settingsURL);
+                      }}));
+    menu.append(new gui.MenuItem({ label: 'Settings', submenu: submenu }));
+        
+    submenu = new gui.Menu();
     submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
     menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));
 
     mywin.menu = menu;
 }
-
 
