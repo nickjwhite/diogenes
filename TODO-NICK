@@ -1,7 +1,8 @@
+make installer for windows version using innosetup
+process.on('exit') not triggered on linux, either killing nwjs or quitting the application from the menu
+add tabs
 Document better where the data should go from -prebuilt repo
 Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
-Installer / packaging, & clean up paths http://docs.nwjs.io/en/latest/For%20Users/Package%20and%20Distribute/
-Tabs(?)
 Use hires/vector icon
 Clean up diogenes-startup.js, removing commented out tests etc.
 Use a fancy font (linux-libertine or junicode, maybe)

@@ -5,11 +5,14 @@
 
 DEPDIR = dependencies
 
-#NWJSVERSION = 0.14.7
-NWJSVERSION = 0.18.0
+DIOGENESVERSION = 4.0.0
+
+NWJSVERSION = 0.14.7
+#NWJSVERSION = 0.18.0
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
+STRAWBERRYPERLVERSION=5.24.0.1
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm
 
@@ -42,6 +45,41 @@ linux64: all nw/nwjs-v$(NWJSVERSION)-linux-x64
 	cp -r dist linux64
 	printf '#/bin/sh\n./nwjs-v$(NWJSVERSION)-linux-x64/nw dist/nwjs\n' > linux64/diogenes
 	chmod +x linux64/diogenes
+
+nw/nwjs-v$(NWJSVERSION)-win-ia32:
+	mkdir -p nw
+	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-win-ia32.zip
+	cd nw && unzip nwjs-v$(NWJSVERSION)-win-ia32.zip
+
+w32perl:
+	mkdir -p w32perl/strawberry
+	cd w32perl && wget http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	cd w32perl/strawberry && unzip ../strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+
+w32: all nw/nwjs-v$(NWJSVERSION)-win-ia32 w32perl
+	rm -rf w32
+	mkdir -p w32
+	cp -r nw/nwjs-v$(NWJSVERSION)-win-ia32/* w32
+	mkdir -p w32/package.nw
+	cp -r diogenes-browser w32/package.nw
+	cp -r dependencies w32/package.nw
+	cp dist/nwjs/* w32/package.nw
+	sed -i -e 's/..\/..\/diogenes-browser\/perl\//diogenes-browser\/perl\//g' w32/package.nw/diogenes-startup.js
+	cp -r w32perl/strawberry w32/package.nw
+	mv w32/nw.exe w32/diogenes.exe
+
+# TODO: put a nice icon on the diogenes.exe
+# BUG: this fails with an error "invalid file descriptor to ICU data"
+diogenes.exe: w32
+	cd w32 && zip -r ../w32.zip . -x diogenes.exe
+	cat nw/nwjs-v$(NWJSVERSION)-win-ia32/nw.exe w32.zip > $@
+	rm w32.zip
+
+diogenes.zip: w32
+	mkdir -p diogenes-$(DIOGENESVERSION)
+	cp -r w32/* diogenes-$(DIOGENESVERSION)
+	zip -r diogenes.zip diogenes-$(DIOGENESVERSION)
+	rm -rf diogenes-$(DIOGENESVERSION)
 
 nw/nwjs-v$(NWJSVERSION)-osx-x64:
 	mkdir -p nw
