@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use XML::LibXML;
+binmode(STDOUT, ':utf8');
 
 # output from phi2tei is input to us
 my $indir = 'output';
@@ -19,23 +20,21 @@ chdir $outdir;
 
 my ($author, $work);
 
-while(readdir $dh) {
-    my $file = $_;
-     next unless $file =~ m/0448001/;
-#      next unless $file =~ m/1020003/;
+for my $file (readdir $dh) {
+#      next unless $file =~ m/0448001/;
+#        next unless $file =~ m/1020/;
     next if $file =~ m/^\./;
     next if $file =~ m/authtab/;
     next if $file =~ m/tmp/;
     next if $file =~ m/9999001/;
-    #     open(my $fh, "<", "../$indir/$file")
-    #         or die "cannot open $file: $!";
-    process("../$indir/$file");
+    print "Processing $file\n";
+    process_file("../$indir/$file");
 }
 closedir $dh;
 
 my (%div);
     
-sub process {
+sub process_file {
     my $file = shift;
 
     my $parser = XML::LibXML->new();
@@ -50,6 +49,7 @@ sub process {
         die "No author for $file";
     }
     $author =~ s/\s+/_/g;
+    $author =~ s/\.//g;
     $work = $xmldoc->getElementsByTagName('title')->[0]->textContent;
     if ($work) {
         print "  $work ($file)\n";
@@ -59,11 +59,18 @@ sub process {
         die "No work for $file";
     }
     $work =~ s/\s+/_/g;
+
+    my $outfile = "$author.$work.tess";
+    open(OUT_FH, ">:utf8", $outfile)
+        or die "cannot open $outfile: $!";
     
     foreach my $node ($xmldoc->getElementsByTagName('body')) {
         process_node($node);
-        
     }
+
+    close OUT_FH or die $!;
+
+        
 }
 
 my @levels;
@@ -76,6 +83,7 @@ sub process_node {
     if ($name eq 'div') {
         my $n = $node->getAttribute('n');
         my $t = $node->getAttribute('type');
+        return if $t eq 'explicit'; # Weirdness in Porphyry on Horace
         $div{$t} = $n;
         push @levels, $t;
         $state = 1;
@@ -105,13 +113,13 @@ sub process_node {
                 chop $out;
             }
             $out .= "> ";
-            print "$out";
+            print OUT_FH "$out";
             $state = 0;
             $line = '';
         }
         my $text = $node->nodeValue;
         $text =~ s/\s*\n\s*/ /g;
-        print $text;
+        print OUT_FH $text;
     }
     foreach my $child ($node->nonBlankChildNodes) {
         process_node($child);

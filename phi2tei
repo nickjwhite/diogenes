@@ -205,10 +205,14 @@ AUTH: foreach my $auth_num (@all_auths) {
     $auth_num = $opt_n if $opt_n and $opt_n =~ m/^\d+$/;
     $real_num = $query->parse_idt ($auth_num);
     $query->{auth_num} = $auth_num;
-    $auth_name = strip_formatting($Diogenes::Base::auths{$corpus}{$auth_num});
+    $auth_name = $Diogenes::Base::auths{$corpus}{$auth_num};
+    my $lang = $Diogenes::Base::lang{$corpus}{$auth_num};
+    if ($lang eq 'g') {
+        $query->latin_with_greek(\$auth_name);
+    }
+    $auth_name = strip_formatting($auth_name);
     my $filename_in = $query->{cdrom_dir}.$query->{file_prefix}.
         $auth_num.$query->{txt_suffix};
-    my $lang = $Diogenes::Base::lang{$corpus}{$auth_num};
     my $punct = q{_.;:!?};
     local undef $/;
     print "Converting $auth_name ($auth_num)\n" if $debug;
@@ -308,13 +312,18 @@ AUTH: foreach my $auth_num (@all_auths) {
                 $work_num = $query->{work_num};
 
                 my %works =  %{ $work{$corpus}{$real_num} };
-                $work_name = strip_formatting($works{$work_num});
+                $work_name = $works{$work_num};
+                if ($lang eq 'g') {
+                    $query->latin_with_greek(\$work_name);
+                }
+                $work_name = strip_formatting($work_name);
                 $query->{work_num} = $work_num;
                 $filename_out = $corpus.$auth_num.$work_num.'.xml';
-                my $source = strip_formatting(
-                      $query->get_biblio_info($corpus, $auth_num, $work_num));
-                #         print "\n$filename_out: $auth_name: $work_name\n$source\n";
-        
+                my $source = $query->get_biblio_info($corpus, $auth_num, $work_num);
+                if ($lang eq 'g') {
+                    $query->latin_with_greek(\$source);
+                }
+                $source = strip_formatting($source);
                 $body = '';
                 $hanging_div = '';
                 my @time = localtime(time);
@@ -487,8 +496,12 @@ sub convert_chunk {
     $chunk =~ s#\$\d*##g;
 
     # {} titles, marginalia, misc.
-    $chunk =~ s#\{1((?:[^\}]|\}[^1]|\})*?)(?:\}1|$)#<head>$1</head>#g;
-    $chunk =~ s#\{2((?:[^\}]|\}[^2]|\})*?)(?:\}2|$)#<hi rend="marginalia">$1</hi>#g;
+
+    # Fix unbalanced markup
+    $chunk =~ s/{2\@{2#10}2/{2#10/g;
+
+    $chunk =~ s#\{1((?:[^\}]|\}[^1])*?)(?:\}1|$)#<head>$1</head>#g;
+    $chunk =~ s#\{2((?:[^\}]|\}[^2])*?)(?:\}2|$)#<hi rend="marginalia">$1</hi>#g;
     # Servius
     $chunk =~ s#\{43((?:[^\}]|\}[^4]|\}4[^3])*?)(?:\}43|$)#<seg type="Danielis" rend="italic">$1</seg>#g;
     $chunk =~ s#((?:[^\}]|\}[^4]|\}4[^3])*?)\}43#<seg type="Danielis" rend="italic">$1</seg>#g;
@@ -497,6 +510,18 @@ sub convert_chunk {
     # Speakers in e.g. Eclogues: {M.}
     $chunk =~ s#\{([^\}]+)\}#<label style="speaker">$1</label>#g;
 
+#     $chunk =~
+#         s#(<hi rend[^>]+>)(.*)<head>(.*)</hi>(.*)</head>#$1$2<head>$3</head>$4</hi>#gs;
+#         s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
+#     $chunk =~
+#         s#<head>(.*)(<hi rend[^>]+>)(.*)</head>(.*)</hi>#<head>$1$2$3</hi>$4</head>#gs;
+#         s#(<head>.*?)(<hi .*?)</head>(.*?)</hi>#$1foo$2</hi>$3</head>#gs;
+#      $chunk =~
+#          s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
+
+
+
+    
     # # and *#
     $chunk =~ s/\*#(\d+)/$Diogenes::BetaHtml::starhash{$1}/g;
     $chunk =~ s/(?<!&)#(\d+)/$Diogenes::BetaHtml::hash{$1}||'??'/ge;
@@ -617,7 +642,7 @@ sub post_process_xml {
     my $in = shift;
     my $file = shift;
     
-    my $parser = XML::LibXML->new();
+    my $parser = XML::LibXML->new({huge=>1});
     my $xmldoc = $parser->parse_string($in);
     # Remove all div and l elements with n="t", remove all tags and
     # put the text in <head>s instead (unless element has only whitespace)
