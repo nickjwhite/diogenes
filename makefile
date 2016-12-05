@@ -81,7 +81,7 @@ w32/diogenes.exe: w32 rcedit.exe
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
-diogenes.zip: w32/diogenes.exe
+diogenes-windows.zip: w32/diogenes.exe
 	cd w32 && zip -r ../$@ .
 
 nw/nwjs-v$(NWJSVERSION)-osx-x64:
