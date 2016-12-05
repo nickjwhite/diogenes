@@ -66,20 +66,23 @@ w32: all nw/nwjs-v$(NWJSVERSION)-win-ia32 w32perl
 	cp dist/nwjs/* w32/package.nw
 	sed -i -e 's/..\/..\/diogenes-browser\/perl\//diogenes-browser\/perl\//g' w32/package.nw/diogenes-startup.js
 	cp -r w32perl/strawberry w32/package.nw
+
+rcedit.exe:
+	wget https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
+
+w32/diogenes.exe: w32 rcedit.exe
+	echo "Setting .exe resources. Note that this requires wine to be installed."
 	mv w32/nw.exe w32/diogenes.exe
+	wine rcedit.exe w32/diogenes.exe \
+	    --set-icon dist/nwjs/diogenes.ico \
+	    --set-product-version $(DIOGENESVERSION) \
+	    --set-file-version $(DIOGENESVERSION) \
+	    --set-version-string CompanyName "The Diogenes Team" \
+	    --set-version-string ProductName Diogenes \
+	    --set-version-string FileDescription Diogenes
 
-# TODO: put a nice icon on the diogenes.exe
-# BUG: this fails with an error "invalid file descriptor to ICU data"
-diogenes.exe: w32
-	cd w32 && zip -r ../w32.zip . -x diogenes.exe
-	cat nw/nwjs-v$(NWJSVERSION)-win-ia32/nw.exe w32.zip > $@
-	rm w32.zip
-
-diogenes.zip: w32
-	mkdir -p diogenes-$(DIOGENESVERSION)
-	cp -r w32/* diogenes-$(DIOGENESVERSION)
-	zip -r diogenes.zip diogenes-$(DIOGENESVERSION)
-	rm -rf diogenes-$(DIOGENESVERSION)
+diogenes.zip: w32/diogenes.exe
+	cd w32 && zip -r ../$@ .
 
 nw/nwjs-v$(NWJSVERSION)-osx-x64:
 	mkdir -p nw
