@@ -4,6 +4,6 @@
     "window" : {
         "title" : "Diogenes Startup",
         "show": true,
-        "icon" : "diogenes.ico"
+        "icon" : "icon256.png"
     }
 }
