@@ -1,8 +1,11 @@
-process.on('exit') not triggered on linux, either killing nwjs or quitting the application from the menu
-add tabs
-Document better where the data should go from -prebuilt repo
+2 windows open in windows & linux now, since changing the watch rules for osx. actually doesn't seem to happen for windows (at least not reliably)
+need to ensure osx build uses new icon too - have asked peter
+lots more for the make clean rule
+build to package.nw, to simplify and unify the mac / windows / linux packaging around that
 Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
-Use hires/vector icon
+process.on('exit') not triggered on linux, either killing nwjs or quitting the application from the menu
+add tabs - https://github.com/nwjs/nw.js/issues/242
+Document better where the data should go from -prebuilt repo
 Clean up diogenes-startup.js, removing commented out tests etc.
 Use a fancy font (linux-libertine or junicode, maybe)
 Disable proxy for localhost, if possible
