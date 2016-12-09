@@ -1,3 +1,32 @@
+var fs = require('fs');
+var path = require('path');
+
+// The config files usually go into a directory like "foobar/Default/default/" The first level (Default) is the default user of the nw.js app.  The second level (default) is the default user of the diogenes-server.  Other users of the server have other setting dirs, set by cookie.  It is possible (though unlikely) that both use cases might be mixed at the same time, so we need both levels.
+
+var settingsPath = gui.App.dataPath;
+var settingsDir = path.join(settingsPath, 'default');
+var settingsFile = path.join(settingsDir, 'diogenes.prefs');
+
+if (! fs.existsSync(settingsDir)) {
+    fs.mkdir(path, function (e) {
+        if (e) throw e;
+        console.log("Created directory " + path);
+    });
+}
+
+fs.readFile(SettingsFile, (err, data) => {
+    if (!err) {
+        console.log(data);
+    }
+});
+
+var contents = fs.readFileSync(lockFile, {encoding: 'ascii'});
+    var rePid  = /^pid (.*)$/m;
+    var rePort = /^port (.*)$/m;
+    var ar = rePid.exec(contents);
+    var pid = ar[1];
+
+
 function setPath (dbName, folderPath) {
     var showPath = document.querySelector('#'+dbName+'path');
     showPath.innerHTML = folderPath;
@@ -38,25 +67,3 @@ window.onload = function () {
     });
 };
 
-
-// var fileinput = document.querySelector('#PHI');
-// var path;
-// function foo () {
-//     path = fileinput.value;
-//     alert(path);
-// }
-// fileinput.onchange = function(e) { 
-//     console.log("foo"+path);
-// };
-// fileinput.addEventListener("change", function(evt) {
-//     console.log("Bar"+path);
-// }, false);
-// function bindEvent () {
-//     var button = document.querySelector('#TLG');
-//     button.addEventListener('click', function () {
-//         alert(button.value);
-//     });
-// }
-// window.onload = function () {
-//     bindEvent();
-// };
