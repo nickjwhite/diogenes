@@ -5,13 +5,16 @@
 
 DEPDIR = dependencies
 
-#NWJSVERSION = 0.14.7
-NWJSVERSION = 0.18.0
+DIOGENESVERSION = 4.0.0
+
+NWJSVERSION = 0.14.7
+#NWJSVERSION = 0.18.0
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
+STRAWBERRYPERLVERSION=5.24.0.1
 
-all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm
+all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm dist/nwjs/icon256.png
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -43,12 +46,68 @@ linux64: all nw/nwjs-v$(NWJSVERSION)-linux-x64
 	printf '#/bin/sh\n./nwjs-v$(NWJSVERSION)-linux-x64/nw dist/nwjs\n' > linux64/diogenes
 	chmod +x linux64/diogenes
 
+nw/nwjs-v$(NWJSVERSION)-win-ia32:
+	mkdir -p nw
+	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-win-ia32.zip
+	cd nw && unzip nwjs-v$(NWJSVERSION)-win-ia32.zip
+
+w32perl:
+	mkdir -p w32perl/strawberry
+	cd w32perl && wget http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	cd w32perl/strawberry && unzip ../strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+
+rcedit.exe:
+	wget https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
+
+icons: dist/icon.svg
+	echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
+	mkdir -p icons
+	rsvg-convert -w 256 -h 256 dist/icon.svg > icons/256.png
+	rsvg-convert -w 128 -h 128 dist/icon.svg > icons/128.png
+	rsvg-convert -w 64 -h 64 dist/icon.svg > icons/64.png
+	rsvg-convert -w 48 -h 48 dist/icon.svg > icons/48.png
+	rsvg-convert -w 32 -h 32 dist/icon.svg > icons/32.png
+	rsvg-convert -w 16 -h 16 dist/icon.svg > icons/16.png
+
+dist/nwjs/diogenes.ico: icons
+	icotool -c icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png > $@
+
+dist/nwjs/icon256.png: icons
+	cp -f icons/256.png $@
+
+dist/app.icns: icons
+	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
+
+w32: all nw/nwjs-v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes.ico rcedit.exe
+	echo "Making windows package. Note that this requires wine to be"
+	echo "installed, to edit the .exe resources."
+	rm -rf w32
+	mkdir -p w32
+	cp -r nw/nwjs-v$(NWJSVERSION)-win-ia32/* w32
+	mkdir -p w32/package.nw
+	cp -r diogenes-browser w32/package.nw
+	cp -r dependencies w32/package.nw
+	cp dist/nwjs/* w32/package.nw
+	sed -i -e 's/..\/..\/diogenes-browser\/perl\//diogenes-browser\/perl\//g' w32/package.nw/diogenes-startup.js
+	cp -r w32perl/strawberry w32/package.nw
+	mv w32/nw.exe w32/diogenes.exe
+	wine rcedit.exe w32/diogenes.exe \
+	    --set-icon dist/nwjs/diogenes.ico \
+	    --set-product-version $(DIOGENESVERSION) \
+	    --set-file-version $(DIOGENESVERSION) \
+	    --set-version-string CompanyName "The Diogenes Team" \
+	    --set-version-string ProductName Diogenes \
+	    --set-version-string FileDescription Diogenes
+
+diogenes-windows.zip: w32
+	cd w32 && zip -r ../$@ .
+
 nw/nwjs-v$(NWJSVERSION)-osx-x64:
 	mkdir -p nw
 	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-osx-x64.zip
 	cd nw && unzip nwjs-v$(NWJSVERSION)-osx-x64.zip
 
-mac: all nw/nwjs-v$(NWJSVERSION)-osx-x64
+mac: all nw/nwjs-v$(NWJSVERSION)-osx-x64 dist/app.icns
 	mkdir -p mac
 	cp -r nw/nwjs-v$(NWJSVERSION)-osx-x64/nwjs.app mac/Diogenes.app
 	mkdir -p mac/Diogenes.app/Contents/Resources/app.nw
