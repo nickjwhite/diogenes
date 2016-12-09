@@ -3,6 +3,9 @@
 # Note that the dictionaries and morphological data are built using
 # different makefiles; read the README for details.
 
+# The v. 0.14 Mac distribution of nwjs.app has Info.plist in UTF-16, which is contrary to Apple spec and breaks this makefile, so do:
+# iconv -f UTF-16 -t UTF-8 InfoPlist.strings.orig >InfoPlist.strings
+
 DEPDIR = dependencies
 
 DIOGENESVERSION = 4.0.0
@@ -116,7 +119,7 @@ mac: all nw/nwjs-v$(NWJSVERSION)-osx-x64 dist/app.icns
 	cp -r dist/nwjs/* mac/Diogenes.app/Contents/Resources/app.nw
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/document.icns
-	perl -pi -e 's/CFBundleName = "nwjs"/CFBundleName = "Diogenes"/g' mac/Diogenes.app/Contents/Resources/*.lproj/InfoPlist.strings
+	perl -pi -e 's/CFBundleName = "nwjs"/CFBundleName = "Diogenes"/g; s/CFBundleDisplayName = "nwjs"/CFBundleDisplayName = "Diogenes"/g' mac/Diogenes.app/Contents/Resources/*.lproj/InfoPlist.strings
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
