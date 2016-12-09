@@ -26,7 +26,7 @@ my $q = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 # Don't bother with cookies when the browser runs the server -- this
 # allows the cli tool to pick up the settings made with the web tool.
 my $d;
-if ($ENV{'Diogenes-Browser'})
+if ($ENV{'Diogenes_Config_Dir'})
 {
     print $q->header(-type=>"text/html; charset=utf-8");
     $d = new Diogenes::Base(-type => 'none');
@@ -159,7 +159,7 @@ my $display_splash = sub
                                           -name=>'Write'),
                            )));
     # Don't suggest that remote users edit server config files
-    if ($ENV{'Diogenes-Browser'}) {
+    if ($ENV{'Diogenes_Config_Dir'}) {
         print
             $q->hr,
             $q->h2('For experts'),

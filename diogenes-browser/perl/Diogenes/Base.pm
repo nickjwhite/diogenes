@@ -225,10 +225,7 @@ sub validate
 };
 
 
-# We use the env var if it has been set by the browser, just to make
-# sure.  If not, we try to guess at the prefs dir used by Mozilla, as
-# this will allow the cli tool to pick up the settings made by the gui
-# tool.
+# nw.js sets the environment variable.
 sub get_user_config_dir_base
 {
     if ($ENV{'Diogenes_Config_Dir'})
