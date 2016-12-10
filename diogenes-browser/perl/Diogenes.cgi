@@ -316,11 +316,10 @@ my $database_error = sub
     }
     $print_title->('Database Error');
     print qq(<center>
-               <div style="display: block; width: 50%; text-align: center;">
+               <div style="display: block; width: 50%;">
                  <h2 id="database-error">Error: Database not found</h2>
-                 <p>The $disk_type database was not found.  For much of its functionality, Diogenes needs access to externally supplied databases. These must be acquired separately.</p>
-                 <p>To tell Diogenes where on your computer the databases are located, select the Settings menu item on the Diogenes desktop application and choose the Databases item.</p>
-                 <p>If you are not using the desktop application and you are viewing this in a browser, you will have to enter the paths manually on the main settings page.
+                 <p>The <b>$disk_type</b> database was not found.  Diogenes does not come with databases of texts; these must be acquired separately.</p>
+                 <p>To tell Diogenes where on your computer the text are located, go to Settings -> Databases.</p>
                </div>
              </center>
                 );

@@ -245,7 +245,7 @@ sub get_user_config_dir_base
     {
         if ($ENV{HOME})
         {
-            return "$ENV{HOME}/Library/Application Support/Diogenes-Browser/";
+            return "$ENV{HOME}/Library/Application Support/Diogenes/";
         }
         else { warn "Could not find user profile dir! \n" }
     }
