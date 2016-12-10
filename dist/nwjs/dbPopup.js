@@ -1,6 +1,7 @@
 var gui = require('nw.gui');
 var fs = require('fs');
 var path = require('path');
+var console = require('console');
 
 // The config files usually go into a directory like "foobar/Default/default/" The first level (Default) is the default user of the nw.js app.  The second level (default) is the default user of the diogenes-server.  Other users of the server have other setting dirs, set by cookie.  It is possible (though unlikely) that both use cases might be mixed at the same time, so we need both levels.
 
@@ -9,20 +10,21 @@ var settingsDir = path.join(settingsPath, 'default');
 var settingsFile = path.join(settingsDir, 'diogenes.prefs');
 
 function setPath(dbName, folderPath) {
-    fs.readFile(settingsFile, (err, data) => {
+    fs.readFile(settingsFile, 'utf8', (err, data) => {
         if (err) throw err;
         var dir = dbName.toLowerCase() + '_dir';
         var newLine = dir + ' "' + folderPath + '"';
-        var re = new RegExp('^'+dir+'\s+"?(.*)"?$', 'm');
+        var re = new RegExp('^'+dir+'\\s+"?(.*?)"?$', 'm');
         var newData;
         if (re.test(data)) {
             newData = data.replace(re, newLine);
         }
         else {
-            newData = data + "\n" + newLine;
+            newData = data + "\n" + newLine + "\n";
         }
         fs.writeFile(settingsFile, newData, (err) => {
             if (err) throw err;
+            console.log("Written " + settingsFile);
         });
     });
     showPath(dbName, folderPath);
@@ -70,10 +72,9 @@ window.onload = function () {
     fs.readFile(settingsFile, (err, data) => {
         if (!err) {
             console.log("Reading " + settingsFile);
-            console.log(data);
-            var reTLG = /^tlg_dir\s+"?(.*)"?$/m;
-            var rePHI = /^phi_dir\s+"?(.*)"?$/m;
-            var reDDP = /^ddp_dir\s+"?(.*)"?$/m;
+            var reTLG = /^tlg_dir\s+"?(.*?)"?$/m;
+            var rePHI = /^phi_dir\s+"?(.*?)"?$/m;
+            var reDDP = /^ddp_dir\s+"?(.*?)"?$/m;
             var ar;
             ar = reTLG.exec(data);
             showPath('TLG', ar[1]);

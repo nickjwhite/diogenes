@@ -32,6 +32,7 @@ if (osName == 'win32') {
 var settingsPath = gui.App.dataPath;
 // window.alert(settingsPath);
 process.env.Diogenes_Config_Dir = settingsPath;
+console.log("Settings: " + settingsPath);
 var lockFile = path.join(settingsPath, ".diogenes.run");
 
 function readLockFile () {
