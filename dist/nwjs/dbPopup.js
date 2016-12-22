@@ -81,11 +81,17 @@ window.onload = function () {
             var reDDP = /^ddp_dir\s+"?(.*?)"?$/m;
             var ar;
             ar = reTLG.exec(data);
-            showPath('TLG', ar[1]);
+            if (ar) {
+                showPath('TLG', ar[1]);
+            }
             ar = rePHI.exec(data);
-            showPath('PHI', ar[1]);
+            if (ar) {
+                showPath('PHI', ar[1]);
+            }
             ar = reDDP.exec(data);
-            showPath('DDP', ar[1]);
+            if (ar) {
+                showPath('DDP', ar[1]);
+            }
         }
 });
 
