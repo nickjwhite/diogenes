@@ -7,11 +7,15 @@ var settingsDir = gui.App.dataPath;
 var settingsFile = path.join(settingsDir, 'diogenes.prefs');
 
 function setPath(dbName, folderPath) {
+    // check if folderPath is defined.
     fs.readFile(settingsFile, 'utf8', (err, data) => {
-        if (err) throw err;
+        if (err) {
+            console.log('No prefs file found at ' + settingsFile);
+            data = '';
+        }
         var dir = dbName.toLowerCase() + '_dir';
         var newLine = dir + ' "' + folderPath + '"';
-        var re = new RegExp('^'+dir+'\\s+"?(.*?)"?$', 'm');
+        var re = new RegExp('^'+dir+'.*$', 'm');
         var newData;
         if (re.test(data)) {
             newData = data.replace(re, newLine);
@@ -20,7 +24,10 @@ function setPath(dbName, folderPath) {
             newData = data + "\n" + newLine + "\n";
         }
         fs.writeFile(settingsFile, newData, (err) => {
-            if (err) throw err;
+            if (err) {
+                alert ("Writing settings failed!");
+                throw err;
+            }
             console.log("Written " + settingsFile);
         });
     });
