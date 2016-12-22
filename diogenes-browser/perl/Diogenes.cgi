@@ -29,13 +29,11 @@ use Encode;
 $Diogenes::Base::cgi_flag = 1;
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
-my $user = $f->cookie('userID');
 
 # binmode STDOUT, ':utf8';
 
 # Force read of config files 
 my %args_init = (-type => 'none');
-$args_init{user} = $user if $user;
 my $init = new Diogenes::Base(%args_init);
 my $filter_file = $init->{filter_file};
 my $font = $init->{cgi_font};
@@ -624,7 +622,6 @@ my $get_args = sub
         output_format => 'html',
         highlight => 1,
         );
-    $args{user} = $user if $user;
 
     # These don't matter for indexed searches
     if (exists $st{query_list})
@@ -1362,7 +1359,6 @@ $output{simple_filter} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     $st{short_type} = $st{database};
     $st{type} = $database{$st{database}};
     my $q = new Diogenes::Search(%args);
@@ -1516,7 +1512,6 @@ $output{refine_works} = sub
     my %args = ( -type => $st{database},
                  -output_format => 'html',
                  -encoding => $default_encoding );
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search( %args );
     $database_error->($q) if not $q->check_db;
 
@@ -1607,7 +1602,6 @@ $output{tlg_filter} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     $st{short_type} = 'tlg';
     $st{type} = 'TLG Texts';
     my $q = new Diogenes::Search(%args);
@@ -1715,7 +1709,6 @@ $handler{tlg_filter} = sub
 my $get_args_for_tlg_filter = sub
 {
     my %args;
-    $args{user} = $user if $user;
     for (qw(epithet genre_clx location gender))
     {
         next if not defined $st{$_} or $st{$_} eq '--';
@@ -1747,7 +1740,6 @@ $output{tlg_filter_results} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
@@ -1807,7 +1799,6 @@ $handler{tlg_filter_output} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
@@ -1835,7 +1826,6 @@ $output{list_filter} = sub
     $st{type} = $database{$type};
 
     my %args = ( -type => $type );
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search( %args );
     $database_error->($q) if not $q->check_db;
 
@@ -1917,7 +1907,6 @@ $output{delete_filter_items} = sub {
     my $filter = $get_filter->($st{filter_choice});
     my $type = $filter->{type};
     my %args = ( -type => $type );
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search( %args );
     $database_error->($q) if not $q->check_db;
     my $work_nums = $filter->{authors};
