@@ -11,7 +11,7 @@ function setPath(dbName, folderPath) {
     fs.readFile(settingsFile, 'utf8', (err, data) => {
         if (err) {
             console.log('No prefs file found at ' + settingsFile);
-            data = '';
+            data = '# Created by nw.js';
         }
         var dir = dbName.toLowerCase() + '_dir';
         var newLine = dir + ' "' + folderPath + '"';
@@ -21,7 +21,7 @@ function setPath(dbName, folderPath) {
             newData = data.replace(re, newLine);
         }
         else {
-            newData = data + "\n" + newLine + "\n";
+            newData = data + "\n" + newLine;
         }
         fs.writeFile(settingsFile, newData, (err) => {
             if (err) {
