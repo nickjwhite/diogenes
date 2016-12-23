@@ -118,13 +118,10 @@ process.on('exit', function () {
 
 function dbPopup() {
     var popupConfig = {
-        // frame:false triggers a segfault: https://github.com/nwjs/nw.js/issues/4336
-//        "frame" : false, 
         "focus" : true,
         "show" : true };
     gui.Window.open('dbPopup.html', popupConfig);
 }
-
 
 function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
