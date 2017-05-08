@@ -85,7 +85,9 @@ fs.watch(settingsPath, function (event, filename) {
                 initMenu(mainWin);
                 mainWin.hide();
                 gui.Window.open(localURL, winConfig, function(newWin) {
-                    newWin.on('loaded', initMenu(newWin));
+                    if (osName != "darwin") {
+                        initMenu(newWin);
+                    }
                 });
             }
             else {
