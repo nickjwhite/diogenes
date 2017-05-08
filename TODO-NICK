@@ -1,9 +1,9 @@
 process.on('exit') not triggered on linux, either killing nwjs or quitting the application from the menu
-add tabs
-Document better where the data should go from -prebuilt repo
 Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
-Use hires/vector icon
-Clean up diogenes-startup.js, removing commented out tests etc.
+
+Document better where the data should go from -prebuilt repo
 Use a fancy font (linux-libertine or junicode, maybe)
+
+Clean up diogenes-startup.js, removing commented out tests etc.
 Disable proxy for localhost, if possible
 i18n - https://gist.github.com/martinheidegger/89a29b9893433aba32d1 https://www.npmjs.com/package/i18n https://hacks.mozilla.org/2013/04/localize-your-node-js-service-part-1-of-3-a-node-js-holiday-season-part-9/
