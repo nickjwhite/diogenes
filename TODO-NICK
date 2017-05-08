@@ -1,3 +1,7 @@
+file -> quit doesn't work in further info page, browse page, does on context page... seems to be every other page; perseus-style (from further info) works. the loading event is only fired on this every other pages, too
+	add web inspector opening so we can see the web console, to debug this. note that sdk version is now easily enable-able in makefile
+	(working on this in local fixquit branch)
+
 2 windows open in windows & linux now, since changing the watch rules for osx. actually doesn't seem to happen for windows (at least not reliably)
 need to ensure osx build uses new icon too - have asked peter
 lots more for the make clean rule
