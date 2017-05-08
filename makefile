@@ -11,6 +11,7 @@ DEPDIR = dependencies
 DIOGENESVERSION = 4.0.0
 
 NWJSVERSION = 0.14.7
+#NWJSEXTRA = sdk-
 #NWJSVERSION = 0.18.0
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
@@ -35,24 +36,24 @@ diogenes-browser/perl/Diogenes/EntityTable.pm: utils/ent_to_array.pl $(DEPDIR)/P
 	printf 'package Diogenes::EntityTable;\n\n' >> $@
 	./utils/ent_to_array.pl < $(DEPDIR)/PersXML.ent >> $@
 
-nw/nwjs-v$(NWJSVERSION)-linux-x64:
+nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64:
 	mkdir -p nw
-	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-linux-x64.tar.gz
-	cd nw && zcat < nwjs-v$(NWJSVERSION)-linux-x64.tar.gz | tar x
+	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64.tar.gz
+	cd nw && zcat < nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64.tar.gz | tar x
 
-linux64: all nw/nwjs-v$(NWJSVERSION)-linux-x64
+linux64: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64
 	mkdir -p linux64
-	cp -r nw/nwjs-v$(NWJSVERSION)-linux-x64 linux64
+	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64 linux64
 	cp -r diogenes-browser linux64
 	cp -r dependencies linux64
 	cp -r dist linux64
-	printf '#/bin/sh\n./nwjs-v$(NWJSVERSION)-linux-x64/nw dist/nwjs\n' > linux64/diogenes
+	printf '#/bin/sh\n./nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64/nw dist/nwjs\n' > linux64/diogenes
 	chmod +x linux64/diogenes
 
-nw/nwjs-v$(NWJSVERSION)-win-ia32:
+nw/nwjs-$(NWJSVERSION)-win-ia32:
 	mkdir -p nw
-	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-win-ia32.zip
-	cd nw && unzip nwjs-v$(NWJSVERSION)-win-ia32.zip
+	cd nw && wget https://dl.nwjs.io/$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32.zip
+	cd nw && unzip nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32.zip
 
 w32perl:
 	mkdir -p w32perl/strawberry
@@ -63,7 +64,7 @@ rcedit.exe:
 	wget https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
 icons: dist/icon.svg
-	echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
+	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
 	mkdir -p icons
 	rsvg-convert -w 256 -h 256 dist/icon.svg > icons/256.png
 	rsvg-convert -w 128 -h 128 dist/icon.svg > icons/128.png
@@ -81,12 +82,12 @@ dist/nwjs/icon256.png: icons
 dist/app.icns: icons
 	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
 
-w32: all nw/nwjs-v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes.ico rcedit.exe
-	echo "Making windows package. Note that this requires wine to be"
-	echo "installed, to edit the .exe resources."
+w32: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes.ico rcedit.exe
+	@echo "Making windows package. Note that this requires wine to be"
+	@echo "installed, to edit the .exe resources."
 	rm -rf w32
 	mkdir -p w32
-	cp -r nw/nwjs-v$(NWJSVERSION)-win-ia32/* w32
+	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32/* w32
 	mkdir -p w32/package.nw
 	cp -r diogenes-browser w32/package.nw
 	cp -r dependencies w32/package.nw
@@ -105,14 +106,14 @@ w32: all nw/nwjs-v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes.ico rcedit.
 diogenes-windows.zip: w32
 	cd w32 && zip -r ../$@ .
 
-nw/nwjs-v$(NWJSVERSION)-osx-x64:
+nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64:
 	mkdir -p nw
-	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-v$(NWJSVERSION)-osx-x64.zip
-	cd nw && unzip nwjs-v$(NWJSVERSION)-osx-x64.zip
+	cd nw && wget https://dl.nwjs.io/$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64.zip
+	cd nw && unzip nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64.zip
 
-mac: all nw/nwjs-v$(NWJSVERSION)-osx-x64 dist/app.icns
+mac: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64 dist/app.icns
 	mkdir -p mac
-	cp -r nw/nwjs-v$(NWJSVERSION)-osx-x64/nwjs.app mac/Diogenes.app
+	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64/nwjs.app mac/Diogenes.app
 	mkdir -p mac/Diogenes.app/Contents/Resources/app.nw
 	cp -r diogenes-browser mac/Diogenes.app/Contents
 	cp -r dependencies mac/Diogenes.app/Contents
