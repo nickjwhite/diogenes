@@ -137,6 +137,11 @@ function initMenu(mywin){
         submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
         menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
 
+        submenu = new gui.Menu();
+        submenu.append(new gui.MenuItem({ label: "Back", key: "left", modifiers: modkey, click: function() {mywin.window.history.back()} }));
+        submenu.append(new gui.MenuItem({ label: "Forward", key: "right", modifiers: modkey, click: function() {mywin.window.history.forward()} }));
+        menu.append(new gui.MenuItem({ label: "Go", submenu: submenu }));
+
         // We already get an Edit menu by default on Mac
         submenu = new gui.Menu();
         // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
