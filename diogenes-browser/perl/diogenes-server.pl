@@ -57,7 +57,7 @@ use Socket;
 use Getopt::Std;
 use vars qw/$opt_d $opt_p $opt_h $opt_H $opt_l $opt_m $opt_D $opt_P/;
 
-my $config_dir = $Diogenes::Base::config_dir_base;
+my $config_dir = $Diogenes::Base::config_dir;
 unlink $config_dir if (-e $config_dir and not -d $config_dir);
 mkdir $config_dir unless (-e $config_dir and -d $config_dir);
 my $lock_file = File::Spec->catfile($config_dir, '.diogenes.run');

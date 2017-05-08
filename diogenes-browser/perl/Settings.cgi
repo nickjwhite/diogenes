@@ -8,41 +8,10 @@ use Cwd;
 use File::Spec;
 $| = 1;
 
-sub generate_user_id {
-    # Create a 11 character random string (Perl cookbook)
-    my @chars = ( "A" .. "Z", "a" .. "z", 0 .. 9 );
-    my $user_id = join("", @chars[ map { rand @chars } (1 .. 11) ]);
-    my $user_dir = File::Spec->catdir($Diogenes::Base::config_dir_base, $user_id);
-    if (-e $user_dir) {
-        print STDERR "Odd -- dir for $user_id already exists;\n";
-        return generate_user_id();
-    }
-    return $user_id;
-};
-
 my $q = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
-# my $q = new CGI;
- 
-# Don't bother with cookies when the browser runs the server -- this
-# allows the cli tool to pick up the settings made with the web tool.
-my $d;
-if ($ENV{'Diogenes-Browser'})
-{
-    print $q->header(-type=>"text/html; charset=utf-8");
-    $d = new Diogenes::Base(-type => 'none');
-}
-else
-{
-    my $user = $q->cookie('userID');
-    unless ($user) {
-        $user = generate_user_id();
-    }
-    my $cookie = $q->cookie(-name=>'userID',
-                            -value=>$user,
-                            -expires=>'+20y');
-    print $q->header(-type=>"text/html; charset=utf-8", -cookie=>$cookie);
-    $d = new Diogenes::Base(-type => 'none', -user =>$user);
-}
+
+print $q->header(-type=>"text/html; charset=utf-8");
+my $d = new Diogenes::Base(-type => 'none');
 
 my $rcfile = $d->{auto_config};
 my $config_file = $d->{user_config};
@@ -159,7 +128,7 @@ my $display_splash = sub
                                           -name=>'Write'),
                            )));
     # Don't suggest that remote users edit server config files
-    if ($ENV{'Diogenes-Browser'}) {
+    if ($ENV{'Diogenes_Config_Dir'}) {
         print
             $q->hr,
             $q->h2('For experts'),
@@ -211,10 +180,6 @@ my $display_current = sub
 
 my $write_changes = sub
 {
-    my $user_dir = File::Spec->catdir($Diogenes::Base::config_dir_base, $d->{user});
-    unless (-e $user_dir) {
-        mkdir $user_dir or die $!;
-    }
 
     my $file = $begin_comment;
     for my $field (@fields)

@@ -3,15 +3,19 @@
 // splash page from the cgi script.  This window stays open and
 // hidden, because node-webkit gets upset if it disappears.
 
-///// attic
-// window.alert('Current directory: ' + process.cwd());
-// window.alert(path.dirname(process.execPath));
-
 var gui = require('nw.gui');
 var fs = require('fs');
 var path = require('path');
 var mainWin = gui.Window.get();
 var console = require('console');
+
+// Config for new windows
+var winConfig = {
+    "title": "Diogenes",
+    "frame": true,
+    "icon": "diogenes.ico",
+    "id": "Diogenes"
+};
 
 //////////////////////// Set up environment and launch server
 
@@ -28,6 +32,7 @@ if (osName == 'win32') {
 var settingsPath = gui.App.dataPath;
 // window.alert(settingsPath);
 process.env.Diogenes_Config_Dir = settingsPath;
+console.log("Settings: " + settingsPath);
 var lockFile = path.join(settingsPath, ".diogenes.run");
 
 function readLockFile () {
@@ -59,36 +64,32 @@ if (fs.existsSync(lockFile)) {
 
 // To avoid race condition, we set up fs.watch before trying to start server.  (NB: this callback may be triggered by the act of unlinking the lockfile above.) 
 
-var newWin;
+var startupDone = false;
+var localURL, dio_port;
 
 fs.watch(settingsPath, function (event, filename) {
-    console.log("fs.watch: " + filename + event);
-    if (filename && filename == '.diogenes.run' && (event == 'change' || event == 'rename')) {
-        if (fs.existsSync(lockFile)) {
-            var ar = readLockFile();
-            var dio_port = ar[0];
-            if (!dio_port) {
-                window.alert("ERROR: port unknown!");
-                gui.App.quit();
-            }
-            var localURL = 'http://127.0.0.1:' + dio_port;
-
-            // Hide the mainWin, open our real browser window, and ensure the mainWin is
-            // closed and everything quits once the real window is closed.
-            mainWin.hide();
-            gui.Window.open(localURL, winConfig, function(newWin) {
-                newWin.on('load', initMenu(newWin));
-                newWin.on('close', function() {
-                    this.close(true);
-                    server.kill();
-                    fs.unlinkSync(lockFile);
+    // Only run this once
+    if (!startupDone) {
+        startupDone = true;
+//        console.log("fs.watch: " + filename + ": " + event);
+        if (filename && filename == '.diogenes.run' && (event == 'change' || event == 'rename')) {
+            if (fs.existsSync(lockFile)) {
+                var ar = readLockFile();
+                dio_port = ar[0];
+                if (!dio_port) {
+                    window.alert("ERROR: port unknown!");
                     gui.App.quit();
-                });
-            });
-        }
-        else {
-            // Probably we caught our own act of unlinking
-            console.log ("Lockfile has been deleted.");
+                }
+                localURL = 'http://127.0.0.1:' + dio_port;
+                // Hide the mainWin, then open our real browser window.
+                initMenu(mainWin);
+                mainWin.hide();
+                gui.Window.open(localURL, winConfig);
+            }
+            else {
+                // Probably we caught our own act of unlinking
+                console.log ("Lockfile has been deleted.");
+            }
         }
     }
 });
@@ -115,12 +116,12 @@ process.on('exit', function () {
     fs.unlinkSync(lockFile);
 });
 
-// Config for new windows
-var winConfig = {
-    "title": "Diogenes",
-    "frame": true,
-    "icon": "diogenes.ico"
-};
+function dbPopup() {
+    var popupConfig = {
+        "focus" : true,
+        "show" : true };
+    gui.Window.open('dbPopup.html', popupConfig);
+}
 
 function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
@@ -128,22 +129,36 @@ function initMenu(mywin){
     modkey = osName == "darwin" ? "cmd" : "ctrl";
 
     if (osName == "darwin") {
-        alert(osName);
         menu.createMacBuiltin("Diogenes", false, false);
     } else {
         submenu = new gui.Menu();
         submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
         menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
+
+        // We already get an Edit menu by default on Mac
+        submenu = new gui.Menu();
+        // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
+        submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
+        submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
+        // BUG: paste isn't working at the moment
+        submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
+        menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
     }
-
+    
     submenu = new gui.Menu();
-    // We don't set keys for these, as they intefere with the default clipboard functions, which are more robust
-    submenu.append(new gui.MenuItem({ label: "Cut", click: function() {mywin.window.document.execCommand("cut")} }));
-    submenu.append(new gui.MenuItem({ label: "Copy", click: function() {mywin.window.document.execCommand("copy")} }));
-    // BUG: paste isn't working at the moment
-    submenu.append(new gui.MenuItem({ label: "Paste", click: function() {mywin.window.document.execCommand("paste")} }));
-    menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
-
+    submenu.append(new gui.MenuItem
+                   ({ label: "Databases",
+                      click: function (){
+                          dbPopup();
+                      }}));
+    submenu.append(new gui.MenuItem
+                   ({ label: "All Settings",
+                      click: function (){
+                          var settingsURL = localURL + "/Settings.cgi"; 
+                          gui.Window.open(settingsURL);
+                      }}));
+    menu.append(new gui.MenuItem({ label: 'Settings', submenu: submenu }));
+        
     submenu = new gui.Menu();
     submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
     menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));

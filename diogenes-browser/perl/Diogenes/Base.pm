@@ -49,7 +49,7 @@ use Exporter;
 @Diogenes::Base::EXPORT_OK = qw(%encoding %context @contexts
     %choices %work %author %last_work %work_start_block %level_label
     %top_levels %last_citation %database @databases @filters);
-our($RC_DEBUG, $OS, $config_dir_base);
+our($RC_DEBUG, $OS, $config_dir);
 $RC_DEBUG = 0;
 
 $OS = ($^O=~/MSWin/i or $^O =~/dos/) ? 'windows' :
@@ -212,6 +212,7 @@ my %defaults = (
 
     line_print_modulus => 5,
 
+    # obsolete
     user => 'default'
     
     );
@@ -225,11 +226,8 @@ sub validate
 };
 
 
-# We use the env var if it has been set by the browser, just to make
-# sure.  If not, we try to guess at the prefs dir used by Mozilla, as
-# this will allow the cli tool to pick up the settings made by the gui
-# tool.
-sub get_user_config_dir_base
+# nw.js sets the environment variable.
+sub get_user_config_dir
 {
     if ($ENV{'Diogenes_Config_Dir'})
     {
@@ -248,7 +246,7 @@ sub get_user_config_dir_base
     {
         if ($ENV{HOME})
         {
-            return "$ENV{HOME}/Library/Application Support/Diogenes-Browser/";
+            return "$ENV{HOME}/Library/Application Support/Diogenes/";
         }
         else { warn "Could not find user profile dir! \n" }
     }
@@ -272,21 +270,8 @@ sub get_user_config_dir_base
     }
 }
 
-$config_dir_base = get_user_config_dir_base();
-
-sub get_user_config_dir
-{
-    my $user = shift;
-    my $base = $config_dir_base;
-    if ($user) {
-        return File::Spec->catdir($base, $user);
-    }
-    else {
-        return $base;
-    }
-}
-
-
+# Global var for diogenes-server.pl
+$config_dir = get_user_config_dir();
 
 sub read_config_files
 {
@@ -294,6 +279,8 @@ sub read_config_files
     my %configuration = ();
     
     my @rc_files;
+    
+    # System-wide config files, in case they are needed.
     if ($OS eq 'unix')
     {
         @rc_files = ('/etc/diogenes.config');
@@ -350,9 +337,8 @@ sub new
 
     $args{ validate($_) } = $passed{$_} foreach keys %passed;
 
-    my $user = $args{user} || $defaults{user};
-    my $user_config_dir = get_user_config_dir($user);
-    # For prefs saved by diogenes.js and Diogenes.cgi
+    my $user_config_dir = get_user_config_dir;
+    # For prefs saved by nw.js and Settings.cgi
     $self->{auto_config} = File::Spec->catfile($user_config_dir, 'diogenes.prefs');
     # For manual editing by the user
     $self->{user_config} = File::Spec->catfile($user_config_dir, 'diogenes.config');

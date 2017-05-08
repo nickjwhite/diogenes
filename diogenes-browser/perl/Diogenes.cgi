@@ -29,13 +29,11 @@ use Encode;
 $Diogenes::Base::cgi_flag = 1;
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
-my $user = $f->cookie('userID');
 
 # binmode STDOUT, ':utf8';
 
 # Force read of config files 
 my %args_init = (-type => 'none');
-$args_init{user} = $user if $user;
 my $init = new Diogenes::Base(%args_init);
 my $filter_file = $init->{filter_file};
 my $font = $init->{cgi_font};
@@ -233,12 +231,22 @@ my $print_title = sub
 {
     print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
-    my $newpage = shift;
+    my $extra_script = shift;
+    my $script;
+    if ($extra_script) {
+        $script = [{-type=>'text/javascript',
+                    -src=>'diogenes-cgi.js'},
+                   {-type=>'text/javascript',
+                    -src=>$extra_script}];
+    }
+    else {
+        $script = {-type=>'text/javascript',
+                   -src=>'diogenes-cgi.js'};
+    }
     print
         $f->start_html(-title=>$title,
                        -encoding=>$charset,
-                       -script=>{-type=>'text/javascript',
-                                 -src=>'diogenes-cgi.js'},
+                       -script=>$script,
                        -style=>{ -type=>'text/css',
                                  -src=>'diogenes.css'},
                        -meta=>{'content' => 'text/html;charset=utf-8'}
@@ -272,7 +280,7 @@ my $print_header = sub
     print qq(
         <center>
              <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
-               <img src="${picture_dir}Diogenes_Logo_Small.gif" alt="Logo"
+               <img src="${picture_dir}Diogenes_Logo_Small.png" alt="Logo"
                 height="38" width="109" align="center" hspace="24" border="0"
                 /></a>
        </center>);
@@ -306,11 +314,12 @@ my $database_error = sub
     }
     $print_title->('Database Error');
     print qq(<center>
-              <div style="display: block; width: 50%; text-align: center;">
-                  <h2 id="database-error" type="$disk_type"
-                      long-type="$st{type}">Error: Database not found</h2>
-         </div>
-         </center>
+               <div style="display: block; width: 50%;">
+                 <h2 id="database-error">Error: Database not found</h2>
+                 <p>The <b>$disk_type</b> database was not found.  Diogenes does not come with databases of texts; these must be acquired separately.</p>
+                 <p>To tell Diogenes where on your computer the text are located, go to Settings -> Databases.</p>
+               </div>
+             </center>
                 );
 
     $st{current_page} = 'splash';
@@ -359,11 +368,11 @@ $output{splash} = sub
     my @filter_names;
     push @filter_names, $_->{name} for @filters;
 
-    $print_title->('Diogenes');
+    $print_title->('Diogenes', 'splash.js');
     $st{current_page} = 'splash';
     
     print $f->center(
-        $f->img({-src=>$picture_dir.'Diogenes_Logo.gif',
+        $f->img({-src=>$picture_dir.'Diogenes_Logo.png',
                  -alt=>'Diogenes', 
                  -height=>'137', 
                  -width=>'383'})),
@@ -613,7 +622,6 @@ my $get_args = sub
         output_format => 'html',
         highlight => 1,
         );
-    $args{user} = $user if $user;
 
     # These don't matter for indexed searches
     if (exists $st{query_list})
@@ -657,7 +665,7 @@ my $use_and_show_filter = sub
 
 $output{lookup} = sub {
     my $action = shift;
-    $print_title->('Diogenes Perseus Lookup Page', 1);
+    $print_title->('Diogenes Perseus Lookup Page');
     $print_header->();
     $st{current_page} = 'lookup';
 
@@ -1351,7 +1359,6 @@ $output{simple_filter} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     $st{short_type} = $st{database};
     $st{type} = $database{$st{database}};
     my $q = new Diogenes::Search(%args);
@@ -1505,7 +1512,6 @@ $output{refine_works} = sub
     my %args = ( -type => $st{database},
                  -output_format => 'html',
                  -encoding => $default_encoding );
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search( %args );
     $database_error->($q) if not $q->check_db;
 
@@ -1596,7 +1602,6 @@ $output{tlg_filter} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     $st{short_type} = 'tlg';
     $st{type} = 'TLG Texts';
     my $q = new Diogenes::Search(%args);
@@ -1704,7 +1709,6 @@ $handler{tlg_filter} = sub
 my $get_args_for_tlg_filter = sub
 {
     my %args;
-    $args{user} = $user if $user;
     for (qw(epithet genre_clx location gender))
     {
         next if not defined $st{$_} or $st{$_} eq '--';
@@ -1736,7 +1740,6 @@ $output{tlg_filter_results} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
@@ -1796,7 +1799,6 @@ $handler{tlg_filter_output} = sub
     $args{type} = $st{database};
     $args{output_format} = 'html';
     $args{encoding} = $default_encoding;
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
@@ -1824,7 +1826,6 @@ $output{list_filter} = sub
     $st{type} = $database{$type};
 
     my %args = ( -type => $type );
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search( %args );
     $database_error->($q) if not $q->check_db;
 
@@ -1906,7 +1907,6 @@ $output{delete_filter_items} = sub {
     my $filter = $get_filter->($st{filter_choice});
     my $type = $filter->{type};
     my %args = ( -type => $type );
-    $args{user} = $user if $user;
     my $q = new Diogenes::Search( %args );
     $database_error->($q) if not $q->check_db;
     my $work_nums = $filter->{authors};
