@@ -84,7 +84,9 @@ fs.watch(settingsPath, function (event, filename) {
                 // Hide the mainWin, then open our real browser window.
                 initMenu(mainWin);
                 mainWin.hide();
-                gui.Window.open(localURL, winConfig);
+                gui.Window.open(localURL, winConfig, function(newWin) {
+                    newWin.on('loaded', initMenu(newWin));
+                });
             }
             else {
                 // Probably we caught our own act of unlinking
