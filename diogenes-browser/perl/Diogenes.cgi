@@ -204,8 +204,7 @@ my $my_footer = sub
         Linguae Graecae</em>, the Packard Humanities Institute, The Perseus Project and
         others. The information in these databases is subject to
         restrictions on access and use; consult your licenses. Diogenes
-        (version $version) is &copy; 1999-2017 P.J. Heslin.),
-        $f->p({style => 'text-align:center'}, '<a href="Diogenes.cgi" title="New Diogenes Search">New Search</a>'));
+        (version $version) is &copy; 1999-2017 P.J. Heslin.));
     $essential_footer->();
 };
 

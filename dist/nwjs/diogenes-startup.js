@@ -134,6 +134,7 @@ function initMenu(mywin){
         menu.createMacBuiltin("Diogenes", false, false);
     } else {
         submenu = new gui.Menu();
+        submenu.append(new gui.MenuItem({ label: "New Search", key: "n", modifiers: modkey, click: function() {mywin.window.location.href = "http://127.0.0.1:" + dio_port} }));
         submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
         menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
 
