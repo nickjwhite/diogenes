@@ -3,27 +3,31 @@ var fs = require('fs');
 var path = require('path');
 var console = require('console');
 
-// The config files usually go into a directory like "foobar/Default/default/" The first level (Default) is the default user of the nw.js app.  The second level (default) is the default user of the diogenes-server.  Other users of the server have other setting dirs, set by cookie.  It is possible (though unlikely) that both use cases might be mixed at the same time, so we need both levels.
-
-var settingsPath = gui.App.dataPath;
-var settingsDir = path.join(settingsPath, 'default');
+var settingsDir = gui.App.dataPath;
 var settingsFile = path.join(settingsDir, 'diogenes.prefs');
 
 function setPath(dbName, folderPath) {
+    // check if folderPath is defined.
     fs.readFile(settingsFile, 'utf8', (err, data) => {
-        if (err) throw err;
+        if (err) {
+            console.log('No prefs file found at ' + settingsFile);
+            data = '# Created by nw.js';
+        }
         var dir = dbName.toLowerCase() + '_dir';
         var newLine = dir + ' "' + folderPath + '"';
-        var re = new RegExp('^'+dir+'\\s+"?(.*?)"?$', 'm');
+        var re = new RegExp('^'+dir+'.*$', 'm');
         var newData;
         if (re.test(data)) {
             newData = data.replace(re, newLine);
         }
         else {
-            newData = data + "\n" + newLine + "\n";
+            newData = data + "\n" + newLine;
         }
         fs.writeFile(settingsFile, newData, (err) => {
-            if (err) throw err;
+            if (err) {
+                alert ("Writing settings failed!");
+                throw err;
+            }
             console.log("Written " + settingsFile);
         });
     });
@@ -77,11 +81,17 @@ window.onload = function () {
             var reDDP = /^ddp_dir\s+"?(.*?)"?$/m;
             var ar;
             ar = reTLG.exec(data);
-            showPath('TLG', ar[1]);
+            if (ar) {
+                showPath('TLG', ar[1]);
+            }
             ar = rePHI.exec(data);
-            showPath('PHI', ar[1]);
+            if (ar) {
+                showPath('PHI', ar[1]);
+            }
             ar = reDDP.exec(data);
-            showPath('DDP', ar[1]);
+            if (ar) {
+                showPath('DDP', ar[1]);
+            }
         }
 });
 

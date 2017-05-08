@@ -475,11 +475,11 @@ local $munge_element = sub {
 $format_fn{xml} = sub {
     my $text = shift;
 #      print STDERR "\n\n$text\n\n";
-    print $munge_xml->($text);
     print "<div>";
     print qq{<a onClick="prevEntry$lang($dict_offset)"><img class="prev" src="${picture_dir}previous.png" alt="Previous Entry" /></a> };
     print qq{<a onClick="nextEntry$lang($dict_offset)"><img class="next" src="${picture_dir}next.png" alt="Next Entry" /></a>};
     print "</div><hr />";
+    print $munge_xml->($text);
 };
 
 $format_fn{dict} = sub {
