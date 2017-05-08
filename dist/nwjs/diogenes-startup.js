@@ -132,16 +132,17 @@ function initMenu(mywin){
 
     if (osName == "darwin") {
         menu.createMacBuiltin("Diogenes", false, false);
+
+	for(i in menu.items) {
+		if(menu.items[i].label == "Diogenes") {
+                    menu.items[i].submenu.insert(new gui.MenuItem({ label: "New Search", key: "n", modifiers: modkey, click: function() {mywin.window.location.href = "http://127.0.0.1:" + dio_port} }), 0);
+		}
+	}
     } else {
         submenu = new gui.Menu();
         submenu.append(new gui.MenuItem({ label: "New Search", key: "n", modifiers: modkey, click: function() {mywin.window.location.href = "http://127.0.0.1:" + dio_port} }));
         submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {mywin.close()} }));
         menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
-
-        submenu = new gui.Menu();
-        submenu.append(new gui.MenuItem({ label: "Back", key: "left", modifiers: modkey, click: function() {mywin.window.history.back()} }));
-        submenu.append(new gui.MenuItem({ label: "Forward", key: "right", modifiers: modkey, click: function() {mywin.window.history.forward()} }));
-        menu.append(new gui.MenuItem({ label: "Go", submenu: submenu }));
 
         // We already get an Edit menu by default on Mac
         submenu = new gui.Menu();
@@ -153,6 +154,11 @@ function initMenu(mywin){
         menu.append(new gui.MenuItem({ label: 'Edit', submenu: submenu }));
     }
     
+    submenu = new gui.Menu();
+    submenu.append(new gui.MenuItem({ label: "Back", key: "left", modifiers: modkey, click: function() {mywin.window.history.back()} }));
+    submenu.append(new gui.MenuItem({ label: "Forward", key: "right", modifiers: modkey, click: function() {mywin.window.history.forward()} }));
+    menu.append(new gui.MenuItem({ label: "Go", submenu: submenu }));
+
     submenu = new gui.Menu();
     submenu.append(new gui.MenuItem
                    ({ label: "Databases",
