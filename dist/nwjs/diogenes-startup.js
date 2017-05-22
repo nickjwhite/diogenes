@@ -89,10 +89,6 @@ fs.watch(settingsPath, function (event, filename) {
                     if (osName != "darwin") {
                         initMenu(newWin);
                     }
-                    //newWin.on('loaded', function() {initMenu(newWin)});
-                    newWin.on('loading', function() {console.log("loading")});
-                    newWin.on('loaded', function() {console.log("loaded")});
-                    newWin.on('closed', function() {this.close(); console.log("closing...");});
                 });
             }
             else {
@@ -133,7 +129,6 @@ function dbPopup() {
 }
 
 function initMenu(mywin){
-console.log("initing a menu");
     var menu = new gui.Menu({type:"menubar"});
     var submenu;
     modkey = osName == "darwin" ? "cmd" : "ctrl";
@@ -149,7 +144,7 @@ console.log("initing a menu");
     } else {
         submenu = new gui.Menu();
         submenu.append(new gui.MenuItem({ label: "New Search", key: "n", modifiers: modkey, click: function() {mywin.window.location.href = "http://127.0.0.1:" + dio_port} }));
-        submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() {console.log("about to close"); console.log(mywin); console.log("really close to"); mywin.hide(); console.log("Really really..."); mywin.close()} }));
+        submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() { mywin.close(); process.exit(); } }));
         menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
 
         // We already get an Edit menu by default on Mac
