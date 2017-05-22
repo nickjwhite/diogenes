@@ -3,6 +3,7 @@
 // splash page from the cgi script.  This window stays open and
 // hidden, because node-webkit gets upset if it disappears.
 
+var debug = false;
 var gui = require('nw.gui');
 var fs = require('fs');
 var path = require('path');
@@ -182,6 +183,9 @@ console.log("initing a menu");
         
     submenu = new gui.Menu();
     submenu.append(new gui.MenuItem({ label: "Website", click: function() {nw.Shell.openExternal("https://community.dur.ac.uk/p.j.heslin/Software/Diogenes/")} }));
+    if(debug) {
+        submenu.append(new gui.MenuItem({ label: "Dev Tools", click: function() {mainWin.showDevTools()} }));
+    }
     menu.append(new gui.MenuItem({ label: 'Help', submenu: submenu }));
 
     mywin.menu = menu;
