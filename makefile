@@ -127,3 +127,5 @@ clean:
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
 	rm -f $(DEPDIR)/PersXML.ent
 	rm -f diogenes-browser/perl/Diogenes/EntityTable.pm
+	rm -rf icons nw linux64 mac w32 w32perl
+	rm -f rcedit.exe diogenes-windows.zip
