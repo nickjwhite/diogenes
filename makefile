@@ -47,7 +47,7 @@ linux64: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64
 	cp -r diogenes-browser linux64
 	cp -r dependencies linux64
 	cp -r dist linux64
-	printf '#/bin/sh\n./nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64/nw dist/nwjs\n' > linux64/diogenes
+	printf '#/bin/sh\nd=`dirname $$0`\n"$$d/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64/nw" "$$d/dist/nwjs"\n' > linux64/diogenes
 	chmod +x linux64/diogenes
 
 nw/nwjs-$(NWJSVERSION)-win-ia32:
