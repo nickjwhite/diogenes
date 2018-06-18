@@ -5,6 +5,9 @@ Diogenes is a tool for searching, browsing and reading the databases
 of ancient texts, primarily in Latin and Greek, that are published by
 the Thesaurus Linguae Graecae and the Packard Humanities Institute.
 
+Diogenes can either be built and run as a HTTP server application, or
+as a standalone application.
+
 
 Building
 --------
@@ -13,6 +16,17 @@ There are a few files that need to be built before Diogenes can be
 run. To do that run this command:
 
   make
+
+
+Building Diogenes standalone
+----------------------------
+
+To build standalone diogenes, use one of these make commands
+according to the platform you're building for:
+
+  make linux64   # for linux (64 bit) build
+  make w32       # for windows build
+  make mac       # for mac osx build
 
 
 Running the server
