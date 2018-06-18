@@ -82,14 +82,27 @@ fs.watch(settingsPath, function (event, filename) {
                     gui.App.quit();
                 }
                 localURL = 'http://127.0.0.1:' + dio_port;
+                if (osName == "darwin") {
+                    initMenu(mainWin);
+                }
                 // Hide the mainWin, then open our real browser window.
-                initMenu(mainWin);
                 mainWin.hide();
                 gui.Window.open(localURL, winConfig, function(newWin) {
                     if (osName != "darwin") {
                         initMenu(newWin);
                     }
+                    //newWin.on('close', function() {console.log("exiting"); process.exit(); console.log("exited"); this.close(true);});
+                    newWin.on('close', function() {
+                        console.log("fyi newwin is about to close");
+                        this.close(true);
+                        mainWin.close();
+                    });
+                    //newWin.on('new-win-policy', function(frame, url, policy) {
+                    //    policy.forceCurrent();
+                    //});
+                    newWin.on('loaded', function() { console.log("loaded"); console.log(this.title); });
                 });
+                mainWin.on('close', function() {console.log("fyi mainwin is about to close"); mainWin.close(true);});
             }
             else {
                 // Probably we caught our own act of unlinking
@@ -132,6 +145,8 @@ function initMenu(mywin){
     var menu = new gui.Menu({type:"menubar"});
     var submenu;
     modkey = osName == "darwin" ? "cmd" : "ctrl";
+    console.log("initing menu for:");
+    console.log(mywin.title);
 
     if (osName == "darwin") {
         menu.createMacBuiltin("Diogenes", false, false);
@@ -144,7 +159,7 @@ function initMenu(mywin){
     } else {
         submenu = new gui.Menu();
         submenu.append(new gui.MenuItem({ label: "New Search", key: "n", modifiers: modkey, click: function() {mywin.window.location.href = "http://127.0.0.1:" + dio_port} }));
-        submenu.append(new gui.MenuItem({ label: "Quit", key: "q", modifiers: modkey, click: function() { mywin.close(); process.exit(); } }));
+        submenu.append(new gui.MenuItem({ label: "Close", key: "w", modifiers: modkey, click: function() { mywin.hide(); console.log("about to close "); mywin.close(); console.log("closed"); } }));
         menu.append(new gui.MenuItem({ label: "File", submenu: submenu }));
 
         // We already get an Edit menu by default on Mac
