@@ -24,6 +24,12 @@ a:active {
 a:hover {
   text-decoration: underline;
 }
+a::after {
+	content: " ";
+}
+a::before {
+	content: " ";
+}
 
 a.perseus:link {
   color: #000000;
