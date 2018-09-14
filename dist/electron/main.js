@@ -1,5 +1,5 @@
 const {app, BrowserWindow} = require('electron')
-const {execFile} = require('child-process')
+const {execFile} = require('child_process')
 const path = require('path')
 const process = require('process')
 const fs = require('fs')
@@ -71,21 +71,21 @@ app.on('activate', () => {
 
 function startServer () {
 	// For Mac and Unix, we assume perl is in the path
-	var perlName = 'perl'
+	let perlName = 'perl'
 	if (process.platform == 'win32') {
 		perlName = path.join('strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
-	var serverPath = path.join(process.cwd(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
+	const serverPath = path.join(process.cwd(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
+		console.log(serverPath);
 
-	// TODO: write lock file appropriately
-
-	return execFile(perlName, serverPath, {'windowsHide': true}, (error, stdout, stderr) => {
+	return execFile(perlName, [serverPath], {'windowsHide': true}, (error, stdout, stderr) => {
 		if (error) {
 			throw error;
 		}
 		console.log(stdout);
 	});
+	// TODO: probably hook into stderr and stdout of the server to print them on the main console
 }
 
 function settingsFromLockFile(fn) {
