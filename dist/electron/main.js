@@ -106,8 +106,12 @@ function settingsFromLockFile(fn) {
 }
 
 function watchForLockFile(lockFile) {
-	fs.watch(lockFile, function(event, filename) {
+	fs.watch(path.dirname(lockFile), function(event, filename) {
 		if(startupDone) {
+			return
+		}
+
+		if(filename != path.basename(lockFile)) {
 			return
 		}
 
