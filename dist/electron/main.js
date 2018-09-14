@@ -29,18 +29,17 @@ function createWindow () {
 		win = null
 	})
 
-	// and load the index.html of the app.
 	win.loadFile('index.html')
 
 	const settingsPath = app.getPath('userData')
 	const lockFile = path.join(settingsPath, '.diogenes.run')
 	process.env.Diogenes_Config_Dir = settingsPath
 
-	// TODO: also check if process is running, if not delete the lockfile and spawn, if so assign server var to it
 	if (!fs.existsSync(lockFile)) {
 		watchForLockFile(lockFile)
 		server = startServer()
 	} else {
+		// TODO: also check if process is running, if not delete the lockfile and spawn, if so assign server var to it
 		dioSettings = settingsFromLockFile(lockFile)
 		loadDioIndex()
 	}
@@ -58,6 +57,8 @@ app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
+
+	// TODO: kill the server
 })
 
 app.on('activate', () => {
@@ -77,13 +78,13 @@ function startServer () {
 	}
 
 	const serverPath = path.join(process.cwd(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
-		console.log(serverPath);
 
 	return execFile(perlName, [serverPath], {'windowsHide': true}, (error, stdout, stderr) => {
 		if (error) {
 			throw error;
 		}
 		console.log(stdout);
+		console.log(stderr);
 	});
 	// TODO: probably hook into stderr and stdout of the server to print them on the main console
 }
@@ -133,5 +134,5 @@ function loadDioIndex() {
 		return false
 	}
 
-	win.loadURL('localhost:' + dioSettings.port)
+	win.loadURL('http://localhost:' + dioSettings.port)
 }
