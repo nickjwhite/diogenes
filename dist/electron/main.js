@@ -80,7 +80,7 @@ function startServer () {
 
 	// TODO: write lock file appropriately
 
-	return execFile(perlName, serverPath, {'windowsHide' = true}, (error, stdout, stderr) => {
+	return execFile(perlName, serverPath, {'windowsHide': true}, (error, stdout, stderr) => {
 		if (error) {
 			throw error;
 		}
