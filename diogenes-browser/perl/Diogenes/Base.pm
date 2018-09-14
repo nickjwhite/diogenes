@@ -2757,7 +2757,7 @@ sub beta_to_latex
     # record separators
     if ($self->{latex_counter})
     {
-        $$ref =~ s#xxbeginsamepage(?:\n\\nrm{} \n)?#\\begin{samepage}\x06counter#g;
+        $$ref =~ s#xxbeginsamepage(?:\n\\nrm\{} \n)?#\\begin{samepage}\x06counter#g;
     }
     else
     {
