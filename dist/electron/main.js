@@ -7,6 +7,8 @@ const fs = require('fs')
 // TODO: consider using win.webContents.executeJavascript('alert("blabla"')
 //       to print errors, rather than console
 
+// TODO: probably can trigger diogenes start earlier, before electron's app.ready
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
