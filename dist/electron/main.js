@@ -4,9 +4,6 @@ const path = require('path')
 const process = require('process')
 const fs = require('fs')
 
-// TODO: consider using win.webContents.executeJavascript('alert("blabla"')
-//       to print errors, rather than console
-
 // TODO: probably can trigger diogenes start earlier, before electron's app.ready
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -90,11 +87,17 @@ function startServer () {
 
 	const serverPath = path.join(process.cwd(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
 
-	return execFile(perlName, [serverPath], {'windowsHide': true}, (error, stdout, stderr) => {
-		console.log(stdout);
-		console.log(stderr);
-	});
-	// TODO: probably hook into stderr and stdout of the server to print them on the main console
+	let server = execFile(perlName, [serverPath], {'windowsHide': true})
+	server.stdout.on('data', (data) => {
+		console.log('server stdout: ' + data)
+	})
+	server.stderr.on('data', (data) => {
+		console.log('server stderr: ' + data)
+	})
+	server.on('close', (code) => {
+		console.log('Diogenes server exited')
+	})
+	return server
 }
 
 function settingsFromLockFile(fn) {
