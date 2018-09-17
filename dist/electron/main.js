@@ -16,6 +16,7 @@ let win
 let server
 
 let dioSettings = {}
+let lockFile
 
 let startupDone = false
 
@@ -34,7 +35,7 @@ function createWindow () {
 	win.loadFile('index.html')
 
 	const settingsPath = app.getPath('userData')
-	const lockFile = path.join(settingsPath, '.diogenes.run')
+	lockFile = path.join(settingsPath, '.diogenes.run')
 	process.env.Diogenes_Config_Dir = settingsPath
 
 	if (!fs.existsSync(lockFile)) {
@@ -59,8 +60,11 @@ app.on('window-all-closed', () => {
 	if (process.platform !== 'darwin') {
 		app.quit()
 	}
+})
 
-	// TODO: kill the server
+app.on('will-quit', () => {
+	server.kill()
+	fs.unlink(lockFile)
 })
 
 app.on('activate', () => {
@@ -82,9 +86,6 @@ function startServer () {
 	const serverPath = path.join(process.cwd(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
 
 	return execFile(perlName, [serverPath], {'windowsHide': true}, (error, stdout, stderr) => {
-		if (error) {
-			throw error;
-		}
 		console.log(stdout);
 		console.log(stderr);
 	});
