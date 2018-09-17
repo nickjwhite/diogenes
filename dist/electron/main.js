@@ -38,14 +38,20 @@ function createWindow () {
 	lockFile = path.join(settingsPath, '.diogenes.run')
 	process.env.Diogenes_Config_Dir = settingsPath
 
-	if (!fs.existsSync(lockFile)) {
-		watchForLockFile(lockFile)
-		server = startServer()
-	} else {
-		// TODO: also check if process is running, if not delete the lockfile and spawn, if so assign server var to it
-		dioSettings = settingsFromLockFile(lockFile)
-		loadDioIndex()
+	// Kill any stale server process
+	if (fs.existsSync(lockFile)) {
+		let {pid} = settingsFromLockFile(lockFile)
+		try {
+			process.kill(pid)
+		} catch(e) {
+			console.log("Warning: failed to kill stale server process")
+		}
+		console.log("Removing stale lockfile")
+		fs.unlinkSync(lockFile)
 	}
+
+	watchForLockFile(lockFile)
+	server = startServer()
 }
 
 // This method will be called when Electron has finished
@@ -63,8 +69,14 @@ app.on('window-all-closed', () => {
 })
 
 app.on('will-quit', () => {
-	server.kill()
-	fs.unlink(lockFile)
+	if(server) {
+		try {
+			server.kill()
+		} catch(e) {
+			console.log("Couldn't kill server")
+		}
+	}
+	fs.unlinkSync(lockFile)
 })
 
 app.on('activate', () => {
@@ -96,14 +108,23 @@ function settingsFromLockFile(fn) {
 	var s = fs.readFileSync(fn, {'encoding': 'utf8'})
 	var rePid  = /^pid (.*)$/m;
 	var rePort = /^port (.*)$/m;
-	var ar = rePid.exec(s);
-	var pid = ar[1];
-	var ar = rePort.exec(s);
-	var port = ar[1];
+	var ar
+	ar = rePid.exec(s)
+	var pid
+	if(ar === null || !(1 in ar)) {
+		console.log("No pid settings found in lockFile")
+		pid = null
+	} else {
+		pid = ar[1];
+	}
 
-	if(!port || !pid) {
-		console.error("Error, no port or pid settings found in lockFile")
-		return {}
+	var port
+	ar = rePort.exec(s)
+	if(ar === null || !(1 in ar)) {
+		console.log("No port settings found in lockFile")
+		port = null
+	} else {
+		port = ar[1];
 	}
 
 	return {"port": port, "pid": pid};
@@ -124,6 +145,12 @@ function watchForLockFile(lockFile) {
 		}
 
 		dioSettings = settingsFromLockFile(lockFile)
+
+		if(dioSettings.port === null || dioSettings.pid === null) {
+			console.error("Error, no port or pid settings found in lockFile")
+			app.quit()
+		}
+
 		loadDioIndex()
 
 		startupDone = true
@@ -131,11 +158,5 @@ function watchForLockFile(lockFile) {
 }
 
 function loadDioIndex() {
-	if(!dioSettings.port) {
-		console.error("Error, no port known")
-		// TODO: kill server if possible and exit
-		return false
-	}
-
 	win.loadURL('http://localhost:' + dioSettings.port)
 }
