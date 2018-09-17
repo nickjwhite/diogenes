@@ -38,15 +38,8 @@ function createWindow () {
 	lockFile = path.join(settingsPath, '.diogenes.run')
 	process.env.Diogenes_Config_Dir = settingsPath
 
-	// Kill any stale server process
+	// Remove any stale lockfile
 	if (fs.existsSync(lockFile)) {
-		let {pid} = settingsFromLockFile(lockFile)
-		try {
-			process.kill(pid)
-		} catch(e) {
-			console.log("Warning: failed to kill stale server process")
-		}
-		console.log("Removing stale lockfile")
 		fs.unlinkSync(lockFile)
 	}
 
