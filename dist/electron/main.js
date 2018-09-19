@@ -17,9 +17,13 @@ let lockFile
 let startupDone = false
 
 function createWindow () {
-	let win = new BrowserWindow({width: 800, height: 600, backgroundColor: 'white'})
+	let win = new BrowserWindow({width: 800, height: 600, show: false})
 
-	win.loadFile('index.html')
+	// Hide window until everything has loaded
+	win.on('ready-to-show', function() {
+		win.show();
+		win.focus();
+	});
 
 	const settingsPath = app.getPath('userData')
 	lockFile = path.join(settingsPath, 'diogenes-lock.json')
@@ -112,6 +116,8 @@ function settingsFromLockFile(fn) {
 }
 
 function loadWhenLocked(lockFile, win) {
+	// TODO: consider setting a timeout for this, in case the server
+	//       doesn't start correctly for some reason.
 	fs.watch(path.dirname(lockFile), function(event, filename) {
 		if(startupDone) {
 			return
