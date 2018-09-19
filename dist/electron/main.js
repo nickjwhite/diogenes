@@ -4,10 +4,11 @@ const path = require('path')
 const process = require('process')
 const fs = require('fs')
 
-// Keep a global reference of the window object, if you don't, the window will
+// Keep a global reference of the window objects, to ensure they won't
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+let windows = []
 
+// Same for server, keep it globally to ensure it isn't garbage collected.
 let server
 
 let dioSettings = {}
@@ -16,16 +17,7 @@ let lockFile
 let startupDone = false
 
 function createWindow () {
-	// Create the browser window.
-	win = new BrowserWindow({width: 800, height: 600})
-
-	// Emitted when the window is closed.
-	win.on('closed', () => {
-		// Dereference the window object, usually you would store windows
-		// in an array if your app supports multi windows, this is the time
-		// when you should delete the corresponding element.
-		win = null
-	})
+	let win = new BrowserWindow({width: 800, height: 600, backgroundColor: 'white'})
 
 	win.loadFile('index.html')
 
@@ -41,6 +33,22 @@ function createWindow () {
 	loadWhenLocked(lockFile, win)
 	server = startServer()
 }
+
+app.on('browser-window-created', (event, win) => {
+	// Track window in global windows object
+	windows.push(win)
+
+	win.on('closed', () => {
+		// Delete window id from list of windows
+		windows.splice(windows.indexOf(win), 1)
+
+		// Dereference the windows object if there are no more windows
+		if(windows.length == 0) {
+			windows = null
+		}
+	})
+
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -70,7 +78,7 @@ app.on('will-quit', () => {
 app.on('activate', () => {
 	// On macOS it's common to re-create a window in the app when the
 	// dock icon is clicked and there are no other windows open.
-	if (win === null) {
+	if (Object.keys(windows).length == 0) {
 		createWindow()
 	}
 })
