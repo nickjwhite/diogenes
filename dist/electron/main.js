@@ -30,7 +30,7 @@ function createWindow () {
 	win.loadFile('index.html')
 
 	const settingsPath = app.getPath('userData')
-	lockFile = path.join(settingsPath, '.diogenes.run')
+	lockFile = path.join(settingsPath, 'diogenes-lock.json')
 	process.env.Diogenes_Config_Dir = settingsPath
 
 	// Remove any stale lockfile
@@ -99,29 +99,8 @@ function startServer () {
 }
 
 function settingsFromLockFile(fn) {
-	var s = fs.readFileSync(fn, {'encoding': 'utf8'})
-	var rePid  = /^pid (.*)$/m;
-	var rePort = /^port (.*)$/m;
-	var ar
-	ar = rePid.exec(s)
-	var pid
-	if(ar === null || !(1 in ar)) {
-		console.log("No pid settings found in lockFile")
-		pid = null
-	} else {
-		pid = ar[1];
-	}
-
-	var port
-	ar = rePort.exec(s)
-	if(ar === null || !(1 in ar)) {
-		console.log("No port settings found in lockFile")
-		port = null
-	} else {
-		port = ar[1];
-	}
-
-	return {"port": port, "pid": pid};
+	let s = fs.readFileSync(fn, {'encoding': 'utf8'})
+	return JSON.parse(s)
 }
 
 function watchForLockFile(lockFile) {
@@ -140,7 +119,7 @@ function watchForLockFile(lockFile) {
 
 		dioSettings = settingsFromLockFile(lockFile)
 
-		if(dioSettings.port === null || dioSettings.pid === null) {
+		if(dioSettings.port === undefined || dioSettings.pid === undefined) {
 			console.error("Error, no port or pid settings found in lockFile")
 			app.quit()
 		}
