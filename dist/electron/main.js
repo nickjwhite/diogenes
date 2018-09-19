@@ -38,7 +38,7 @@ function createWindow () {
 		fs.unlinkSync(lockFile)
 	}
 
-	watchForLockFile(lockFile)
+	loadWhenLocked(lockFile, win)
 	server = startServer()
 }
 
@@ -103,7 +103,7 @@ function settingsFromLockFile(fn) {
 	return JSON.parse(s)
 }
 
-function watchForLockFile(lockFile) {
+function loadWhenLocked(lockFile, win) {
 	fs.watch(path.dirname(lockFile), function(event, filename) {
 		if(startupDone) {
 			return
@@ -124,12 +124,8 @@ function watchForLockFile(lockFile) {
 			app.quit()
 		}
 
-		loadDioIndex()
+		win.loadURL('http://localhost:' + dioSettings.port)
 
 		startupDone = true
 	})
-}
-
-function loadDioIndex() {
-	win.loadURL('http://localhost:' + dioSettings.port)
 }
