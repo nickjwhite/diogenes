@@ -1,8 +1,9 @@
-const {app, BrowserWindow} = require('electron')
+const {app, BrowserWindow, ipcMain} = require('electron')
 const {execFile} = require('child_process')
 const path = require('path')
 const process = require('process')
 const fs = require('fs')
+const console = require('console')
 
 // Keep a global reference of the window objects, to ensure they won't
 // be closed automatically when the JavaScript object is garbage collected.
@@ -21,12 +22,13 @@ function createWindow () {
 
 	// Hide window until everything has loaded
 	win.on('ready-to-show', function() {
-		win.show();
-		win.focus();
-	});
+		win.show()
+		win.focus()
+	})
 
 	const settingsPath = app.getPath('userData')
 	lockFile = path.join(settingsPath, 'diogenes-lock.json')
+	const prefsFile = path.join(settingsPath, 'diogenes.prefs')
 	process.env.Diogenes_Config_Dir = settingsPath
 
 	// Remove any stale lockfile
@@ -34,7 +36,7 @@ function createWindow () {
 		fs.unlinkSync(lockFile)
 	}
 
-	loadWhenLocked(lockFile, win)
+	loadWhenLocked(lockFile, prefsFile, win)
 	server = startServer()
 }
 
@@ -87,7 +89,6 @@ app.on('activate', () => {
 	}
 })
 
-
 function startServer () {
 	// For Mac and Unix, we assume perl is in the path
 	let perlName = 'perl'
@@ -115,7 +116,7 @@ function settingsFromLockFile(fn) {
 	return JSON.parse(s)
 }
 
-function loadWhenLocked(lockFile, win) {
+function loadWhenLocked(lockFile, prefsFile, win) {
 	// TODO: consider setting a timeout for this, in case the server
 	//       doesn't start correctly for some reason.
 	fs.watch(path.dirname(lockFile), function(event, filename) {
@@ -138,8 +139,21 @@ function loadWhenLocked(lockFile, win) {
 			app.quit()
 		}
 
-		win.loadURL('http://localhost:' + dioSettings.port)
+		loadFirstPage(prefsFile, win)
 
 		startupDone = true
 	})
+}
+
+ipcMain.on('getport', (event, arg) => {
+	event.returnValue = dioSettings.port
+})
+
+function loadFirstPage(prefsFile, win) {
+	// TODO: also load this if prefsFile exists but no db settings are present
+	if(!fs.existsSync(prefsFile)) {
+		win.loadFile("dbsettings.html")
+	} else {
+		win.loadURL('http://localhost:' + dioSettings.port)
+	}
 }
