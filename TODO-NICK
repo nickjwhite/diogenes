@@ -1,3 +1,21 @@
+dbsettings - have each entry check for the appropriate index file or whatever and show a tick or warning symbol as appropriate
+	if dir/authtab.dir is present is the test. ensure it's case insensitive
+	can use unicode check-mark for this; see https://en.wikipedia.org/wiki/Check_mark
+	also need to clean up the "Done" button to make things prettier somehow
+make app single-instance; see main.js of electron-api-demos
+If main window is closed all other windows are closed
+	hmmm. window-all-closed is sent when the main window is closed, even if others are still open. however even if it's prevented from running app.quit() the other windows are closed moments later.
+	maybe they're child windows?
+		doesn't seem to be, setting parent: false in main window, and using setParentWindow(null) for new windows, didn't make any difference
+		double-checked with getChildWindows, def. not.
+Menu needs populating
+make dist should exist and do what all does
+have settings page come up first if not set
+https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff
+
+
+-----
+
 file -> quit doesn't work in further info page, browse page, does on context page... seems to be every other page; perseus-style (from further info) works. the loading event is only fired on this every other pages, too
 	add web inspector opening so we can see the web console, to debug this. note that sdk version is now easily enable-able in makefile
 	(working on this in local fixquit branch)
