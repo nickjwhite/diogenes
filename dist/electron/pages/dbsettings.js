@@ -1,13 +1,13 @@
-const console = require('console');
+//const console = require('console');
 const {ipcRenderer} = require('electron')
 const path = require('path');
 const fs = require('fs');
 
 function setPath(dbName, folderPath) {
     // check if folderPath is defined.
-    fs.readFile(settingsFile, 'utf8', (err, data) => {
+    fs.readFile(window.dioSettingsFile, 'utf8', (err, data) => {
         if (err) {
-            console.log('No prefs file found at ' + settingsFile);
+            console.log('No prefs file found at ' + window.dioSettingsFile);
             data = '# Created by electron';
         }
         var dir = dbName.toLowerCase() + '_dir';
@@ -20,20 +20,19 @@ function setPath(dbName, folderPath) {
         else {
             newData = data + "\n" + newLine;
         }
-        fs.writeFile(settingsFile, newData, (err) => {
+        fs.writeFile(window.dioSettingsFile, newData, (err) => {
             if (err) {
                 alert ("Writing settings failed!");
                 throw err;
             }
-            console.log("Written " + settingsFile);
+            console.log("Written " + window.dioSettingsFile);
         });
     });
     showPath(dbName, folderPath);
 }
 
 function showPath (dbName, folderPath) {
-    var showPath = document.querySelector('#'+dbName+'path');
-    showPath.innerHTML = folderPath;
+    document.getElementById(`${dbName}path`).innerHTML = folderPath;
 }
 
 function bindClickEvent (dbName) {
@@ -42,9 +41,8 @@ function bindClickEvent (dbName) {
     button.addEventListener('click', () => {
         input.click();
     });
-    input.addEventListener('change', () => {
-        var folderPath = this.value;
-        setPath(dbName, folderPath);
+    input.addEventListener('change', function () {
+        setPath(dbName, this.value);
     });
 }
 
@@ -53,7 +51,7 @@ function setup() {
     document.getElementById('diolink').href = `http://localhost:${dioport}`
 
     const settingsDir = ipcRenderer.sendSync('getsettingsdir')
-    const settingsFile = path.join(settingsDir, 'diogenes.prefs');
+    window.dioSettingsFile = path.join(settingsDir, 'diogenes.prefs');
 
     // Set up click events
     bindClickEvent('PHI');
@@ -72,9 +70,9 @@ function setup() {
         });
     }
     // Read existing db settings
-    fs.readFile(settingsFile, (err, data) => {
+    fs.readFile(window.dioSettingsFile, (err, data) => {
         if (!err) {
-            console.log("Reading " + settingsFile);
+            console.log("Reading " + window.dioSettingsFile);
             var reTLG = /^tlg_dir\s+"?(.*?)"?$/m;
             var rePHI = /^phi_dir\s+"?(.*?)"?$/m;
             var reDDP = /^ddp_dir\s+"?(.*?)"?$/m;
