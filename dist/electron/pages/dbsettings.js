@@ -36,19 +36,15 @@ function showPath (dbName, folderPath) {
     showPath.innerHTML = folderPath;
 }
 
-function bindChangeEvent (dbName) {
-    var inputField = document.querySelector('#'+dbName);
-    inputField.addEventListener('change', function () {
+function bindClickEvent (dbName) {
+    let button = document.getElementById(`${dbName}button`);
+    let input = document.getElementById(`${dbName}`);
+    button.addEventListener('click', () => {
+        input.click();
+    });
+    input.addEventListener('change', () => {
         var folderPath = this.value;
         setPath(dbName, folderPath);
-    }, false);
-    inputField.click();
-}
-
-function bindClickEvent (dbName) {
-    var button = document.querySelector('#'+dbName+'button');
-    button.addEventListener('click', function () {
-        bindChangeEvent(dbName);
     });
 }
 
@@ -97,12 +93,6 @@ function setup() {
             }
         }
     });
-
-
-
-    //////////
-
-    //document.getElementById('PHI').addEventListener('click'
 
 };
 
