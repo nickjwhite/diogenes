@@ -1,10 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <title>Diogenes Database Settings</title>
-    <script type="text/javascript">
 const console = require('console');
 const {ipcRenderer} = require('electron')
 const path = require('path');
@@ -59,7 +52,6 @@ function bindClickEvent (dbName) {
     });
 }
 
-//window.onload = function () {
 function setup() {
     var dioport = ipcRenderer.sendSync('getport')
     document.getElementById('diolink').href = `http://localhost:${dioport}`
@@ -106,64 +98,12 @@ function setup() {
         }
     });
 
+
+
+    //////////
+
+    //document.getElementById('PHI').addEventListener('click'
+
 };
 
 window.addEventListener('load', setup, false);
-    </script> 
-    <style type="text/css">
-      .pathArea {
-      overflow-x: scroll;
-      white-space: nowrap;
-      }
-      .button {
-      border: 2px solid #AAA;
-      border-radius: 4px;
-      padding: 2px 5px;
-      margin: 6px;
-      background: #DDD;
-      display: inline-block;
-      }
-      .button:hover {
-      background: #CCC;
-      }
-      .button:active {
-      background: #CCF;
-      }
-      .button:invalid + span {
-      color: #A44;
-      }
-      .path {
-      color: #999;
-      }      
-    </style>
-  </head>
-  <body>
-    <input type="file" id="PHI" style="display: none;" />
-    <input type="file" id="TLG" style="display: none;" />
-    <input type="file" id="DDP" style="display: none;" />
-    <h1>Set Database Locations</h1>
-    <p>Diogenes needs to know where on your computer the databases of ancient texts are located.  These are not distributed with Diogenes; they must be acquired separately.</p>
-    <p>Click the buttons below to set the locations of the databases.</p>
-    <div class="pathArea">
-      <div class="button" id="PHIbutton">
-        PHI (Latin)
-      </div>
-      <span class ="path" id="PHIpath"></span>
-      <br/>
-      <div class="button" id="TLGbutton">
-        TLG (Greek)
-      </div>
-      <span class ="path" id="TLGpath"></span>
-      <br/>
-      <div class="button" id="DDPbutton">
-        DDP (Papyri, etc.)
-      </div>
-      <span class ="path" id="DDPpath"></span>
-    </div>
-    &nbsp;<br/>
-    <center>
-      <input type="submit" value="Close" id="close" />
-    </center>
-    <a id="diolink" href="http://localhost:8888">To Diogenes!</a>
-  </body>
-</html>

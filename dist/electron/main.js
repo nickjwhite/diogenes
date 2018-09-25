@@ -156,7 +156,7 @@ ipcMain.on('getsettingsdir', (event, arg) => {
 function loadFirstPage(prefsFile, win) {
 	// TODO: also load this if prefsFile exists but no db settings are present
 	if(!fs.existsSync(prefsFile)) {
-		win.loadFile("dbsettings.html")
+		win.loadFile("pages/dbsettings.html")
 	} else {
 		win.loadURL('http://localhost:' + dioSettings.port)
 	}
