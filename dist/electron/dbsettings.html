@@ -5,13 +5,10 @@
   <head>
     <title>Diogenes Database Settings</title>
     <script type="text/javascript">
-const {app} = require('electron')
+const console = require('console');
+const {ipcRenderer} = require('electron')
 const path = require('path');
 const fs = require('fs');
-const console = require('console');
-
-var settingsDir = app.getPath('userData')
-var settingsFile = path.join(settingsDir, 'diogenes.prefs');
 
 function setPath(dbName, folderPath) {
     // check if folderPath is defined.
@@ -62,7 +59,14 @@ function bindClickEvent (dbName) {
     });
 }
 
-window.onload = function () {
+//window.onload = function () {
+function setup() {
+    var dioport = ipcRenderer.sendSync('getport')
+    document.getElementById('diolink').href = `http://localhost:${dioport}`
+
+    const settingsDir = ipcRenderer.sendSync('getsettingsdir')
+    const settingsFile = path.join(settingsDir, 'diogenes.prefs');
+
     // Set up click events
     bindClickEvent('PHI');
     bindClickEvent('TLG');
@@ -102,10 +106,9 @@ window.onload = function () {
         }
     });
 
-    console.log('loaded');
-
-    
 };
+
+window.addEventListener('load', setup, false);
     </script> 
     <style type="text/css">
       .pathArea {
@@ -161,6 +164,6 @@ window.onload = function () {
     <center>
       <input type="submit" value="Close" id="close" />
     </center>
-    <a href="http://localhost:8888">To Diogenes!</a><!-- TODO: set this to the correct port with js -->
+    <a id="diolink" href="http://localhost:8888">To Diogenes!</a>
   </body>
 </html>

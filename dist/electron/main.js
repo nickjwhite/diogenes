@@ -149,6 +149,10 @@ ipcMain.on('getport', (event, arg) => {
 	event.returnValue = dioSettings.port
 })
 
+ipcMain.on('getsettingsdir', (event, arg) => {
+	event.returnValue = app.getPath('userData')
+})
+
 function loadFirstPage(prefsFile, win) {
 	// TODO: also load this if prefsFile exists but no db settings are present
 	if(!fs.existsSync(prefsFile)) {
