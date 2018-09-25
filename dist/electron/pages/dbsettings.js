@@ -1,5 +1,5 @@
-//const console = require('console');
 const {ipcRenderer} = require('electron')
+const {dialog} = require('electron').remote
 const path = require('path');
 const fs = require('fs');
 
@@ -36,13 +36,11 @@ function showPath (dbName, folderPath) {
 }
 
 function bindClickEvent (dbName) {
-    let button = document.getElementById(`${dbName}button`);
-    let input = document.getElementById(`${dbName}`);
-    button.addEventListener('click', () => {
-        input.click();
-    });
-    input.addEventListener('change', function () {
-        setPath(dbName, this.value);
+    document.getElementById(`${dbName}button`).addEventListener('click', () => {
+        setPath(dbName, dialog.showOpenDialog({
+            title: `Set ${dbName} location`,
+            properties: ['openDirectory']
+            }))
     });
 }
 
