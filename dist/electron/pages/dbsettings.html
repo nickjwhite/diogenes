@@ -13,26 +13,21 @@
     <p>Diogenes needs to know where on your computer the databases of ancient texts are located.  These are not distributed with Diogenes; they must be acquired separately.</p>
     <p>Click the buttons below to set the locations of the databases.</p>
 
-    <div class="pathArea">
-      <div class="button" id="PHIbutton">
-        PHI (Latin)
-      </div>
-      <span class ="path" id="PHIpath"></span>
-      <br/>
-      <div class="button" id="TLGbutton">
-        TLG (Greek)
-      </div>
-      <span class ="path" id="TLGpath"></span>
-      <br/>
-      <div class="button" id="DDPbutton">
-        DDP (Papyri, etc.)
-      </div>
-      <span class ="path" id="DDPpath"></span>
+    <div class="dbpath">
+      <input id="PHIbutton" type="submit" value="PHI (Latin)" />
+      <span class="path" id="PHIpath"></span>
     </div>
-    &nbsp;<br/>
-    <center>
-      <input type="submit" value="Close" id="close" />
-    </center>
-    <a id="diolink" href="http://localhost:8888">To Diogenes!</a>
+
+    <div class="dbpath">
+      <input id="TLGbutton" type="submit" value="TLG (Greek)" />
+      <span class="path" id="TLGpath"></span>
+    </div>
+
+    <div class="dbpath">
+      <input id="DDPbutton" type="submit" value="DDP (Papyri, etc)" />
+      <span class="path" id="DDPpath"></span>
+    </div>
+
+    <p><a id="diolink" href="http://localhost:8888">Done</a></p>
   </body>
 </html>
