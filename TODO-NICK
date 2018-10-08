@@ -1,8 +1,5 @@
-dbsettings - have each entry check for the appropriate index file or whatever and show a tick or warning symbol as appropriate
-	if dir/authtab.dir is present is the test. ensure it's case insensitive
-	can use unicode check-mark for this; see https://en.wikipedia.org/wiki/Check_mark
-	also need to clean up the "Done" button to make things prettier somehow
 make app single-instance; see main.js of electron-api-demos
+add right-click option for links to open in new window
 If main window is closed all other windows are closed
 	hmmm. window-all-closed is sent when the main window is closed, even if others are still open. however even if it's prevented from running app.quit() the other windows are closed moments later.
 	maybe they're child windows?

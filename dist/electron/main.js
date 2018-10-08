@@ -153,9 +153,24 @@ ipcMain.on('getsettingsdir', (event, arg) => {
 	event.returnValue = app.getPath('userData')
 })
 
+// Check if a database folder has been set
+function checkDbSet(prefsFile) {
+	let s
+	try {
+		s = fs.readFileSync(prefsFile, 'utf8')
+	} catch(e) {
+		return false
+	}
+	let re = new RegExp('_dir .*')
+	console.log(s)
+	if(re.test(s)) {
+		return true
+	}
+	return false
+}
+
 function loadFirstPage(prefsFile, win) {
-	// TODO: also load this if prefsFile exists but no db settings are present
-	if(!fs.existsSync(prefsFile)) {
+	if(!fs.existsSync(prefsFile) || !checkDbSet(prefsFile)) {
 		win.loadFile("pages/dbsettings.html")
 	} else {
 		win.loadURL('http://localhost:' + dioSettings.port)

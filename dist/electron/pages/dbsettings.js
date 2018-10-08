@@ -4,6 +4,10 @@ const path = require('path');
 const fs = require('fs');
 
 function setPath(dbName, folderPath) {
+    if(typeof folderPath === "undefined") {
+        return
+    }
+
     // check if folderPath is defined.
     fs.readFile(window.dioSettingsFile, 'utf8', (err, data) => {
         if (err) {
@@ -33,6 +37,13 @@ function setPath(dbName, folderPath) {
 
 function showPath (dbName, folderPath) {
     document.getElementById(`${dbName}path`).innerHTML = folderPath;
+
+    checkmark = document.getElementById(`${dbName}ok`)
+    if(fs.existsSync(`${folderPath}/authtab.dir`)) {
+        checkmark.innerHTML = '✓'
+    } else {
+        checkmark.innerHTML = '✕ No authtab.dir found; this may not be a valid database location'
+    }
 }
 
 function bindClickEvent (dbName) {
@@ -46,7 +57,6 @@ function bindClickEvent (dbName) {
 
 function setup() {
     var dioport = ipcRenderer.sendSync('getport')
-    document.getElementById('diolink').href = `http://localhost:${dioport}`
 
     const settingsDir = ipcRenderer.sendSync('getsettingsdir')
     window.dioSettingsFile = path.join(settingsDir, 'diogenes.prefs');
@@ -55,9 +65,9 @@ function setup() {
     bindClickEvent('PHI');
     bindClickEvent('TLG');
     bindClickEvent('DDP');
-    button = document.querySelector('#close');
-    button.addEventListener('click', function () {
-        window.close()
+
+    document.getElementById('done').addEventListener('click', () => {
+        window.location.href = `http://localhost:${dioport}`
     });
 
     // Create settings dir, if necessary
