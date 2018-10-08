@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, Menu, MenuItem, ipcMain} = require('electron')
 const {execFile} = require('child_process')
 const path = require('path')
 const process = require('process')
@@ -16,6 +16,27 @@ let dioSettings = {}
 let lockFile
 
 let startupDone = false
+
+let currentLinkURL = null
+
+// Set up Open Link context menu
+// TODO: there is probably a better way to open links than using the
+//       currentLinkURL global variable
+const linkContextMenu = new Menu()
+linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
+	if(currentLinkURL) {
+		win.loadURL(currentLinkURL)
+		currentLinkURL = null
+	}
+}}))
+linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
+	console.log(`link url: ${currentLinkURL}`)
+	if(currentLinkURL) {
+		let newwin = new BrowserWindow({width: 800, height: 600, show: true})
+		newwin.loadURL(currentLinkURL)
+		currentLinkURL = null
+	}
+}}))
 
 function createWindow () {
 	let win = new BrowserWindow({width: 800, height: 600, show: false})
@@ -54,6 +75,16 @@ app.on('browser-window-created', (event, win) => {
 		}
 	})
 
+	// Load context menu
+	win.webContents.on('context-menu', (e, params) => {
+		// Only load on links, which aren't javascript links
+		if(params.linkURL != "" && params.linkURL.indexOf("javascript:") != 0) {
+			currentLinkURL = params.linkURL
+			linkContextMenu.popup(win, params.x, params.y)
+		} else {
+			currentLinkURL = null
+		}
+	})
 })
 
 // This method will be called when Electron has finished

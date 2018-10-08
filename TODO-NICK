@@ -1,5 +1,6 @@
 make app single-instance; see main.js of electron-api-demos
-add right-click option for links to open in new window
+allow "Go to Context" links (at least) to be opened in a new window - find out how the js is set and make it standard enough that the context-menu event in electron's params.linkURL can find it.
+embed a good font
 If main window is closed all other windows are closed
 	hmmm. window-all-closed is sent when the main window is closed, even if others are still open. however even if it's prevented from running app.quit() the other windows are closed moments later.
 	maybe they're child windows?
