@@ -162,7 +162,6 @@ function checkDbSet(prefsFile) {
 		return false
 	}
 	let re = new RegExp('_dir .*')
-	console.log(s)
 	if(re.test(s)) {
 		return true
 	}

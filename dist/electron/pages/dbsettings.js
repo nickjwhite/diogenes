@@ -39,7 +39,7 @@ function showPath (dbName, folderPath) {
     document.getElementById(`${dbName}path`).innerHTML = folderPath;
 
     checkmark = document.getElementById(`${dbName}ok`)
-    if(fs.existsSync(`${folderPath}/authtab.dir`)) {
+    if(fs.existsSync(`${folderPath}/authtab.dir`) || fs.existsSync(`${folderPath}/AUTHTAB.DIR`)) {
         checkmark.innerHTML = '✓'
     } else {
         checkmark.innerHTML = '✕ No authtab.dir found; this may not be a valid database location'
