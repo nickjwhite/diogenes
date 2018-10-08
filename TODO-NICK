@@ -7,8 +7,6 @@ If main window is closed all other windows are closed
 	this isn't true of windows created using the context menu new window option, only windows created with shift-click-ing on links
 Menu needs populating
 make dist should exist and do what all does
-hidpi logo and small logo
-have settings page come up first if not set
 https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff
 
 

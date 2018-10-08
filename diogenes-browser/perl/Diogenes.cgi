@@ -268,6 +268,7 @@ my $print_header = sub
         <center>
              <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
                <img src="${picture_dir}Diogenes_Logo_Small.png" alt="Logo"
+                srcset="${picture_dir}Diogenes_Logo_Small.hidpi.png 2x"
                 height="38" width="109" align="center" hspace="24" border="0"
                 /></a>
        </center>);
@@ -360,6 +361,7 @@ $output{splash} = sub
     
     print $f->center(
         $f->img({-src=>$picture_dir.'Diogenes_Logo.png',
+                 -srcset=>$picture_dir.'Diogenes_Logo.hidpi.png 2x',
                  -alt=>'Diogenes', 
                  -height=>'137', 
                  -width=>'383'})),
