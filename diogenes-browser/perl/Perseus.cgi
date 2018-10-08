@@ -46,15 +46,7 @@ if ($f->param('popup')) {
     print $f->hidden( -name => 'JumpTo',
                       -default => "",
                       -override => 1 );
-    my $font = $f->param('font') || '';
-    print $f->hidden( -name => 'FontName',
-                      -default => "$font",
-                      -override => 1 );
-    if ($font and $font =~ m/\S/) {
-        print qq{<div style="font-family: '$font'">};
-    } else {
-        print qq{<div>};
-    }
+    print qq{<div>};
 
     # Subsequent pages should use this same pop-up
     print qq{<div id="sidebar" class="sidebar-newpage"></div>}

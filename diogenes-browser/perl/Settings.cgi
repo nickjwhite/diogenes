@@ -16,7 +16,7 @@ my $d = new Diogenes::Base(-type => 'none');
 my $rcfile = $d->{auto_config};
 my $config_file = $d->{user_config};
 
-my @fields = qw(context cgi_default_encoding perseus_show cgi_font browse_lines 
+my @fields = qw(context cgi_default_encoding perseus_show browse_lines
                 input_encoding tlg_dir phi_dir ddp_dir) ;
 
 my %perseus_labels = (popup => "Pop up a new window",
@@ -74,14 +74,6 @@ my $display_splash = sub
                                 -values=>[keys %perseus_labels],
                                 -labels=>\%perseus_labels,
                                 -default=>$d->{perseus_show}))
-         ),
-         $q->Tr
-         (
-          $q->th({align=>'right'}, 'Font for user interface:'),
-          $q->td($q->textfield(-name=>'cgi_font',
-                               -size=>40,
-                               -maxlength=>100,
-                               -Default=>$d->{cgi_font}))
          ),
          $q->Tr
          (

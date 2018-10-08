@@ -26,7 +26,7 @@ function onActionChange() {
 var req = null;
 
 function new_page (action, lang, query){
-    window.location.href = "Perseus.cgi?do="+action+"&lang="+lang+"&q="+query+"&popup=1"+"&font="+getFont();
+    window.location.href = "Perseus.cgi?do="+action+"&lang="+lang+"&q="+query+"&popup=1"+";
 }
 
 function sendRequest(action, lang, query) {
