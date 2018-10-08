@@ -1,5 +1,6 @@
 make app single-instance; see main.js of electron-api-demos
 allow "Go to Context" links (at least) to be opened in a new window - find out how the js is set and make it standard enough that the context-menu event in electron's params.linkURL can find it.
+	 jumpTo(tlg,1430,001:28:3) -> http://localhost:8888/Diogenes.cgi?JumpTo=tlg%2C1307%2C003%3A11%3A1&FontName=&queryXXstate=homer&JumpToXXstate=&actionXXstate=search&short_typeXXstate=tlg&corpusXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=doing_search&typeXXstate=TLG+Texts&FontNameXXstate=&greek_output_formatXXstate=UTF-8
 embed a good font
 If main window is closed all other windows are closed
 	hmmm. window-all-closed is sent when the main window is closed, even if others are still open. however even if it's prevented from running app.quit() the other windows are closed moments later.

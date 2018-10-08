@@ -30,7 +30,6 @@ linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
 	}
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
-	console.log(`link url: ${currentLinkURL}`)
 	if(currentLinkURL) {
 		let newwin = new BrowserWindow({width: 800, height: 600, show: true})
 		newwin.loadURL(currentLinkURL)
