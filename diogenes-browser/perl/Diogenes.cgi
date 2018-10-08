@@ -318,8 +318,8 @@ my $database_error = sub
 
 my %input_blurb = (
 
-    'Unicode' => qq{<strong>NB. Unicode input is new.</strong> You
-    must type Greek using your computer's facility to type Greek
+    'Unicode' => qq{
+    You must type Greek using your computer's facility to type Greek
     letters in Unicode, and you should either type all accents or none
     at all.  <a href="Unicode_input.html">Further info.</a>},
 
@@ -373,11 +373,7 @@ $output{splash} = sub
         for, or the name of an author whose work you wish to
         <strong>browse</strong> through.)),
 
-        $f->p({class => "homewelcome"}, qq(The Greek input method you have currently selected is:
-        $init->{input_encoding}.  .$input_blurb{$init->{input_encoding}} .
-
-        This and other settings can be displayed and changed via the <a href=\"Settings.cgi\"> current settings
-        page</a>.));
+        $f->p({class => "homewelcome"}, qq($input_blurb{$init->{input_encoding}}));
 
 
     print $f->center(

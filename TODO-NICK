@@ -5,7 +5,6 @@ If main window is closed all other windows are closed
 		doesn't seem to be, setting parent: false in main window, and using setParentWindow(null) for new windows, didn't make any difference
 		double-checked with getChildWindows, def. not.
 	this isn't true of windows created using the context menu new window option, only windows created with shift-click-ing on links
-remove "unicode input is new" bit on homepage
 Menu needs populating
 make dist should exist and do what all does
 hidpi logo and small logo
