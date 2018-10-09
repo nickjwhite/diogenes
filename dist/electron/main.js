@@ -19,7 +19,7 @@ let startupDone = false
 
 let currentLinkURL = null
 
-const webprefs = {nodeIntegration: false, preload: app.getAppPath() + '/pages/dbsettingspreload.js'}
+const webprefs = {nodeIntegration: false, preload: app.getAppPath() + '/preload.js'}
 
 
 // Ensure the app is single-instance (see 'second-instance' event

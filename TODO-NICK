@@ -7,6 +7,7 @@ https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-a
 it's easy to get perl warnings from diogenes; use it a bit and fix what's found
 save and reload window dimensions and placement
 make dbsettings page more of a "welcome, just do these things to get started" page
+phi db seems to claim it isn't found even when phi_dir is set
 
 
 -----
