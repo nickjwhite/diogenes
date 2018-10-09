@@ -161,6 +161,16 @@ app.on('second-instance', () => {
 	windows[0].focus()
 })
 
+// Only allow loading content from localhost
+app.on('web-contents-created', (event, contents) => {
+	contents.on('will-navigate', (event, navigationUrl) => {
+		const url = new URL(navigationUrl)
+		if (url.hostname !== 'localhost') {
+			event.preventDefault()
+		}
+	})
+})
+
 // Start diogenes-server.pl
 function startServer () {
 	// For Mac and Unix, we assume perl is in the path
