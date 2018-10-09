@@ -1,4 +1,4 @@
-const {app, BrowserWindow, ipcMain} = require('electron')
+const {app, BrowserWindow, ipcMain, Menu} = require('electron')
 const {execFile} = require('child_process')
 const path = require('path')
 const process = require('process')
@@ -37,7 +37,11 @@ function createWindow () {
 	}
 
 	loadWhenLocked(lockFile, prefsFile, win)
-	server = startServer()
+        server = startServer()
+
+    const menu = Menu.buildFromTemplate(initializeMenuTemplate())
+    Menu.setApplicationMenu(menu)
+
 }
 
 app.on('browser-window-created', (event, win) => {
@@ -59,7 +63,14 @@ app.on('browser-window-created', (event, win) => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+
 app.on('ready', createWindow)
+
+// app.on('ready', () => {
+//     const menu = Menu.buildFromTemplate(initializeMenuTemplate())
+//     Menu.setApplicationMenu(menu)
+//     createWindow
+// })
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -160,4 +171,96 @@ function loadFirstPage(prefsFile, win) {
 	} else {
 		win.loadURL('http://localhost:' + dioSettings.port)
 	}
+}
+
+function initializeMenuTemplate () {
+    
+    const template = [
+        {
+            label: 'Edit',
+            submenu: [
+                {role: 'copy'},
+                {role: 'paste'},
+                {role: 'selectall'},
+   //             {role: 'find'}  <- needs implementing
+      ]
+    },
+    {
+        label: 'View',
+        submenu: [
+            {role: 'resetzoom'},
+            {role: 'zoomin'},
+            {role: 'zoomout'},
+            {type: 'separator'},
+            {role: 'togglefullscreen'},
+            {type: 'separator'},
+            {role: 'toggledevtools'}
+      ]
+    },
+    {
+        role: 'window',
+        submenu: [
+            {role: 'minimize'},
+            {role: 'close'},
+            {
+                label:'New Window',
+                click () { createWindow() }
+            }
+      ]
+    },
+    {
+      role: 'help',
+      submenu: [
+        {
+          label: 'Learn More',
+          click () { require('electron').shell.openExternal('https://electronjs.org') }
+        }
+      ]
+    }
+  ]
+  
+  if (process.platform === 'darwin') {
+    template.unshift({
+      label: app.getName(),
+      submenu: [
+        {role: 'about'},
+        {type: 'separator'},
+        {role: 'services', submenu: []},
+        {type: 'separator'},
+        {role: 'hide'},
+        {role: 'hideothers'},
+        {role: 'unhide'},
+        {type: 'separator'},
+        {role: 'quit'}
+      ]
+    })
+  
+    // Edit menu
+    template[1].submenu.push(
+      {type: 'separator'},
+      {
+        label: 'Speech',
+        submenu: [
+          {role: 'startspeaking'},
+          {role: 'stopspeaking'}
+        ]
+      }
+    )
+  
+    // Window menu
+      template[3].submenu = [
+          {
+              label:'New Window',
+              click () {
+                  let win = new BrowserWindow({width: 800, height: 600, show: true})
+              }
+          },
+          {role: 'close'},
+          {role: 'minimize'},
+          {role: 'zoom'},
+          {type: 'separator'},
+          {role: 'front'}
+    ]
+  }
+    return template
 }
