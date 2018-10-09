@@ -18,7 +18,7 @@ UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 STRAWBERRYPERLVERSION=5.24.0.1
 
-all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm dist/nwjs/icon256.png
+all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm dist/nwjs/icon256.png diogenes-browser/perl/fonts/GentiumPlus-I.woff diogenes-browser/perl/fonts/GentiumPlus-R.woff
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -26,6 +26,20 @@ $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 
 diogenes-browser/perl/Diogenes/unicode-equivs.pl: utils/make_unicode_compounds.pl $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	./utils/make_unicode_compounds.pl < $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt > $@
+
+build/GentiumPlus-5.000-web.zip:
+	mkdir -p build
+	curl -o $@ https://software.sil.org/downloads/r/gentium/GentiumPlus-5.000-web.zip
+
+diogenes-browser/perl/fonts/GentiumPlus-I.woff: build/GentiumPlus-5.000-web.zip
+	unzip -n build/GentiumPlus-5.000-web.zip -d build
+	mkdir -p diogenes-browser/perl/fonts
+	cp build/GentiumPlus-5.000-web/web/GentiumPlus-I.woff $@
+
+diogenes-browser/perl/fonts/GentiumPlus-R.woff: build/GentiumPlus-5.000-web.zip
+	unzip -n build/GentiumPlus-5.000-web.zip -d build
+	mkdir -p diogenes-browser/perl/fonts
+	cp build/GentiumPlus-5.000-web/web/GentiumPlus-R.woff $@
 
 $(DEPDIR)/PersXML.ent:
 	wget -O $@ http://www.perseus.tufts.edu/DTD/1.0/PersXML.ent

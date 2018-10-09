@@ -1,6 +1,26 @@
 body { 
   background-color: #ffffff;
   color: #000000;
+  font-family: 'Gentium Plus';
+}
+
+@font-face {
+  font-family: 'Gentium Plus';
+  src: url('/fonts/GentiumPlus-I.woff');
+  font-weight: normal;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Gentium Plus';
+  src: url('/fonts/GentiumPlus-R.woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Use OS fonts for UI elements */
+.gotocontext, .homesearch, .homewelcome, .footer {
+  font: caption;
+  -webkit-user-select: none;
 }
 
 /* Fix problem where sub/super-scripts increases the line spacing for

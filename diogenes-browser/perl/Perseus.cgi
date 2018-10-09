@@ -46,15 +46,7 @@ if ($f->param('popup')) {
     print $f->hidden( -name => 'JumpTo',
                       -default => "",
                       -override => 1 );
-    my $font = $f->param('font') || '';
-    print $f->hidden( -name => 'FontName',
-                      -default => "$font",
-                      -override => 1 );
-    if ($font and $font =~ m/\S/) {
-        print qq{<div style="font-family: '$font'">};
-    } else {
-        print qq{<div>};
-    }
+    print qq{<div>};
 
     # Subsequent pages should use this same pop-up
     print qq{<div id="sidebar" class="sidebar-newpage"></div>}
@@ -476,8 +468,8 @@ $format_fn{xml} = sub {
     my $text = shift;
 #      print STDERR "\n\n$text\n\n";
     print "<div>";
-    print qq{<a onClick="prevEntry$lang($dict_offset)"><img class="prev" src="${picture_dir}previous.png" alt="Previous Entry" /></a> };
-    print qq{<a onClick="nextEntry$lang($dict_offset)"><img class="next" src="${picture_dir}next.png" alt="Next Entry" /></a>};
+    print qq{<a onClick="prevEntry$lang($dict_offset)"><img class="prev" src="${picture_dir}go-previous.png" srcset="${picture_dir}go-previous.hidpi.png 2x" alt="Previous Entry" /></a> };
+    print qq{<a onClick="nextEntry$lang($dict_offset)"><img class="next" src="${picture_dir}go-next.png" srcset="${picture_dir}go-next.hidpi.png 2x" alt="Next Entry" /></a>};
     print "</div><hr />";
     print $munge_xml->($text);
 };
@@ -622,7 +614,7 @@ my $format_inflect = sub {
     my $link = qq{<a onClick="getEntry$lang('$dict');">}.
         ($lang eq "grk" ? $beta_to_utf8->($lem) : $lem).
         qq{</a>};
-    print qq{<h2><a onClick="toggleLemma('$lem_num');"><img src="${picture_dir}opened.gif"
+    print qq{<h2><a onClick="toggleLemma('$lem_num');"><img src="${picture_dir}opened.png" srcset="${picture_dir}opened.hidpi.png 2x"
 align="bottom" id="lemma_$lem_num" /></a>&nbsp;$link</h2>};
 
     print qq{<span class="lemma_span_visible" id="lemma_span_$lem_num">};
