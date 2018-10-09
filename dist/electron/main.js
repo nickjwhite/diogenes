@@ -19,6 +19,18 @@ let startupDone = false
 
 let currentLinkURL = null
 
+// Ensure the app is single-instance (see 'second-instance' event
+// handler below)
+function initialise() {
+	const gotTheLock = app.requestSingleInstanceLock()
+
+	if (!gotTheLock) {
+		return app.quit()
+	}
+}
+
+initialise()
+
 // Set up Open Link context menu
 // TODO: there is probably a better way to open links than using the
 //       currentLinkURL global variable
@@ -119,6 +131,19 @@ app.on('activate', () => {
 	}
 })
 
+// If a user tries to open a second instance of diogenes, catch that
+// and focus an existing window instead
+app.on('second-instance', () => {
+	if(windows.length == 0) {
+		return false
+	}
+	if(windows[0].isMinimized()) {
+		windows[0].restore()
+	}
+	windows[0].focus()
+})
+
+// Start diogenes-server.pl
 function startServer () {
 	// For Mac and Unix, we assume perl is in the path
 	let perlName = 'perl'
