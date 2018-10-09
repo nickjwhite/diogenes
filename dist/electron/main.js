@@ -1,4 +1,4 @@
-const {app, BrowserWindow, Menu, MenuItem, ipcMain} = require('electron')
+const {app, BrowserWindow, Menu, MenuItem, ipcMain, session} = require('electron')
 const {execFile} = require('child_process')
 const path = require('path')
 const process = require('process')
@@ -18,6 +18,9 @@ let lockFile
 let startupDone = false
 
 let currentLinkURL = null
+
+const webprefs = {nodeIntegration: false, preload: app.getAppPath() + '/pages/dbsettingspreload.js'}
+
 
 // Ensure the app is single-instance (see 'second-instance' event
 // handler below)
@@ -43,7 +46,7 @@ linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
 	if(currentLinkURL) {
-		let newwin = new BrowserWindow({width: 800, height: 600, show: true})
+		let newwin = new BrowserWindow({width: 800, height: 600, show: true, webPreferences: webprefs})
 		newwin.loadURL(currentLinkURL)
 		currentLinkURL = null
 	}
@@ -51,7 +54,13 @@ linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, 
 
 // Create the initial window and start the diogenes server
 function createWindow () {
-	let win = new BrowserWindow({width: 800, height: 600, show: false})
+	// Set the Content Security Policy headers
+	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+		callback({ responseHeaders: Object.assign({
+			"Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
+		}, details.responseHeaders)});
+	})
+	let win = new BrowserWindow({width: 800, height: 600, show: false, webPreferences: webprefs})
 
 	// Hide window until everything has loaded
 	win.on('ready-to-show', function() {
@@ -97,7 +106,7 @@ app.on('browser-window-created', (event, win) => {
 	// do so may result in unexpected behavior" but I haven't seen any yet.
 	win.webContents.on('new-window', (event, url) => {
 		event.preventDefault()
-		const win = new BrowserWindow({show: false})
+		const win = new BrowserWindow({show: false, webPreferences: webprefs})
 		win.once('ready-to-show', () => win.show())
 		win.loadURL(url)
 		//event.newGuest = win
