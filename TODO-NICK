@@ -5,7 +5,6 @@ If main window is closed all other windows are closed
 		double-checked with getChildWindows, def. not.
 	this isn't true of windows created using the context menu new window option, only windows created with shift-click-ing on links
 add app icons (for each platform)
-hidpi options for other images diogenes serves, such as in the perseus popup
 Menu needs populating
 make dist should exist and do what all does
 see github issues
