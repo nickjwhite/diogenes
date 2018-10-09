@@ -89,6 +89,20 @@ app.on('browser-window-created', (event, win) => {
 		}
 	})
 
+	// Intercept and handle new-window requests (e.g. from shift-click), to
+	// prevent child windows being created which would die if the parent was
+	// killed. This was something to do with the new window being a "guest"
+	// window, which I am intentionally setting here, to fix the issue. The
+	// Electron documentation states that it should be set for "failing to
+	// do so may result in unexpected behavior" but I haven't seen any yet.
+	win.webContents.on('new-window', (event, url) => {
+		event.preventDefault()
+		const win = new BrowserWindow({show: false})
+		win.once('ready-to-show', () => win.show())
+		win.loadURL(url)
+		//event.newGuest = win
+	})
+
 	// Load context menu
 	win.webContents.on('context-menu', (e, params) => {
 		// Only load on links, which aren't javascript links
