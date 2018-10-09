@@ -49,6 +49,7 @@ linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, 
 	}
 }}))
 
+// Create the initial window and start the diogenes server
 function createWindow () {
 	let win = new BrowserWindow({width: 800, height: 600, show: false})
 
@@ -72,6 +73,8 @@ function createWindow () {
 	server = startServer()
 }
 
+// Track each window in a global 'windows' array, and set up the
+// context menu
 app.on('browser-window-created', (event, win) => {
 	// Track window in global windows object
 	windows.push(win)
@@ -112,6 +115,7 @@ app.on('window-all-closed', () => {
 	}
 })
 
+// Try to kill the server when the app being closed
 app.on('will-quit', () => {
 	if(server) {
 		try {
@@ -166,11 +170,14 @@ function startServer () {
 	return server
 }
 
+// Load settings in lockfile into an object
 function settingsFromLockFile(fn) {
 	let s = fs.readFileSync(fn, {'encoding': 'utf8'})
 	return JSON.parse(s)
 }
 
+// Watch for the lockfile diogenes-server sets, and once it's there
+// load the first page.
 function loadWhenLocked(lockFile, prefsFile, win) {
 	// TODO: consider setting a timeout for this, in case the server
 	//       doesn't start correctly for some reason.
@@ -200,10 +207,12 @@ function loadWhenLocked(lockFile, prefsFile, win) {
 	})
 }
 
+// IPC used by dbsettings page
 ipcMain.on('getport', (event, arg) => {
 	event.returnValue = dioSettings.port
 })
 
+// IPC used by dbsettings page
 ipcMain.on('getsettingsdir', (event, arg) => {
 	event.returnValue = app.getPath('userData')
 })
@@ -223,6 +232,7 @@ function checkDbSet(prefsFile) {
 	return false
 }
 
+// Load either the Diogenes homepage or the dbsettings page
 function loadFirstPage(prefsFile, win) {
 	if(!fs.existsSync(prefsFile) || !checkDbSet(prefsFile)) {
 		win.loadFile("pages/dbsettings.html")
