@@ -20,6 +20,7 @@ let startupDone = false
 let currentLinkURL = null
 
 const webprefs = {nodeIntegration: false, preload: app.getAppPath() + '/preload.js'}
+const winopts = {icon: app.getAppPath() + '../../diogenes-browser/perl/images/icon.png'}
 
 
 // Ensure the app is single-instance (see 'second-instance' event
@@ -46,7 +47,7 @@ linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
 	if(currentLinkURL) {
-		let newwin = new BrowserWindow({width: 800, height: 600, show: true, webPreferences: webprefs})
+		let newwin = new BrowserWindow({width: 800, height: 600, show: true, webPreferences: webprefs, winopts})
 		newwin.loadURL(currentLinkURL)
 		currentLinkURL = null
 	}
@@ -60,7 +61,7 @@ function createWindow () {
 			"Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
 		}, details.responseHeaders)});
 	})
-	let win = new BrowserWindow({width: 800, height: 600, show: false, webPreferences: webprefs})
+	let win = new BrowserWindow({width: 800, height: 600, show: false, webPreferences: webprefs, winopts})
 
 	// Hide window until everything has loaded
 	win.on('ready-to-show', function() {
@@ -106,7 +107,7 @@ app.on('browser-window-created', (event, win) => {
 	// do so may result in unexpected behavior" but I haven't seen any yet.
 	win.webContents.on('new-window', (event, url) => {
 		event.preventDefault()
-		const win = new BrowserWindow({show: false, webPreferences: webprefs})
+		const win = new BrowserWindow({show: false, webPreferences: webprefs, winopts})
 		win.once('ready-to-show', () => win.show())
 		win.loadURL(url)
 		//event.newGuest = win
