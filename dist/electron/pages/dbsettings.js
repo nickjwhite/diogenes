@@ -1,5 +1,7 @@
 // This relies on nodejs functionality exposed by preload.js
 
+let dbs = ['PHI', 'TLG', 'DDP']
+
 function setPath(dbName, folderPath) {
 	if(typeof folderPath === "undefined") {
 		return
@@ -22,6 +24,7 @@ function setPath(dbName, folderPath) {
 	}
 	window.dioWriteSettings(newData)
 	showPath(dbName, folderPath);
+	readyDoneButton();
 }
 
 function showPath(dbName, folderPath) {
@@ -30,8 +33,26 @@ function showPath(dbName, folderPath) {
 	checkmark = document.getElementById(`${dbName}ok`)
 	if(window.dioExistsSync(`${folderPath}/authtab.dir`) || window.dioExistsSync(`${folderPath}/AUTHTAB.DIR`)) {
 		checkmark.innerHTML = '✓'
+		checkmark.classList.remove('warn')
+		checkmark.classList.add('valid')
 	} else {
 		checkmark.innerHTML = '✕ No authtab.dir found; this may not be a valid database location'
+		checkmark.classList.remove('valid')
+		checkmark.classList.add('warn')
+	}
+}
+
+function readyDoneButton() {
+	let anyset = 0
+	for(let i = 0; i < dbs.length; i++) {
+		let d = `${dbs[i]}path`
+		if(document.getElementById(d).innerHTML.length > 0) {
+			anyset = 1
+		}
+	}
+
+	if(anyset) {
+		document.getElementById('donesection').style.display = 'block'
 	}
 }
 
@@ -59,7 +80,7 @@ function dbSettingsSetup() {
 		window.dioMkSettingsDir
 	}
 	// Read existing db settings
-	data = window.dioReadSettings()
+	let data = window.dioReadSettings()
 	if(data === null) {
 		return
 	}
@@ -79,6 +100,8 @@ function dbSettingsSetup() {
 	if(ar) {
 		showPath('DDP', ar[1]);
 	}
+
+	readyDoneButton();
 };
 
 window.addEventListener('load', dbSettingsSetup, false);

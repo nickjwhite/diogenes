@@ -2,10 +2,17 @@
 * {
 	-webkit-user-select: none;
 }
+html {
+	background-color: Window;
+}
 body {
 	color: WindowText;
-	background-color: Window;
+	background-color: #eeeeee;
+	border: thin solid #cccccc;
 	font-family: sans-serif;
+	max-width: 80em;
+	margin: 5%;
+	padding: 4ex 2em 3ex;
 }
 p, span {
 	font: caption;
@@ -23,4 +30,36 @@ p, span {
 }      
 #diolink {
 	margin-top: 2ex;
+}
+#biglogo {
+	display: block;
+	margin: auto;
+}
+.dbbuttons {
+	padding: 1em 2em;
+	background-color: Window;
+	border: thin solid #cccccc;
+}
+.dbbuttons input {
+	min-width: 10em;
+	text-align: left;
+}
+.valid {
+	color: #00ee00;
+}
+.warn {
+	color: #ee0000;
+}
+#done img {
+	height: 1.5ex;
+	vertical-align: middle
+}
+#donesection {
+	/* unhidden by js once at least one db is set */
+	display: none;
+	padding: 1ex 2em 0ex;
+	text-align: center;
+}
+button#done {
+	padding: 1ex 1em;
 }
