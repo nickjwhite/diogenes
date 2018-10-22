@@ -6,7 +6,7 @@ function setPath(dbName, folderPath) {
 	}
 
 	// check if folderPath is defined.
-	data = window.dioReadSettings()
+	let data = window.dioReadSettings()
 	if(data === null) {
 		console.log('No prefs file found at ' + window.dioSettingsFile);
 		data = '# Created by electron';

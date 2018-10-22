@@ -14,7 +14,7 @@ window.dioWriteSettings = function(s) {
 }
 window.dioReadSettings = function() {
 	try {
-		return fs.readFileSync(window.dioSettingsFile)
+		return fs.readFileSync(window.dioSettingsFile, 'utf8')
 	} catch(e) {
 		return null
 	}
