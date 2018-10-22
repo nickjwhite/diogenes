@@ -1,10 +1,9 @@
-add app icons (for each platform)
+add a makefile rule to package the app easily - looks very similar to nwjs; see http://electronjs.org/docs/tutorial/application-distribution
 Menu needs populating
 make dist should exist and do what all does
 see github issues
 https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff
 it's easy to get perl warnings from diogenes; use it a bit and fix what's found
 save and reload window dimensions and placement
-make dbsettings page more of a "welcome, just do these things to get started" page
 phi db seems to claim it isn't found even when phi_dir is set
 

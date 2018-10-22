@@ -59,7 +59,7 @@ function createWindow () {
 	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 		callback({ responseHeaders: Object.assign({
 			"Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
-		}, details.responseHeaders)});
+		}, details.responseHeaders)})
 	})
 	let win = new BrowserWindow({width: 800, height: 600, show: false, webPreferences: webprefs, winopts})
 
