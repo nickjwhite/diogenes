@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 
-// Export these for the dbsettings page
+// Export these for the firstrun page
 window.dioPort = ipcRenderer.sendSync('getport')
 window.dioSettingsDir = ipcRenderer.sendSync('getsettingsdir')
 window.dioSettingsFile = path.join(window.dioSettingsDir, 'diogenes.prefs')

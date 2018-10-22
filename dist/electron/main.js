@@ -241,12 +241,12 @@ function loadWhenLocked(lockFile, prefsFile, win) {
 	})
 }
 
-// IPC used by dbsettings page
+// IPC used by firstrun page
 ipcMain.on('getport', (event, arg) => {
 	event.returnValue = dioSettings.port
 })
 
-// IPC used by dbsettings page
+// IPC used by firstrun page
 ipcMain.on('getsettingsdir', (event, arg) => {
 	event.returnValue = app.getPath('userData')
 })
@@ -266,10 +266,10 @@ function checkDbSet(prefsFile) {
 	return false
 }
 
-// Load either the Diogenes homepage or the dbsettings page
+// Load either the Diogenes homepage or the firstrun page
 function loadFirstPage(prefsFile, win) {
 	if(!fs.existsSync(prefsFile) || !checkDbSet(prefsFile)) {
-		win.loadFile("pages/dbsettings.html")
+		win.loadFile("pages/firstrun.html")
 	} else {
 		win.loadURL('http://localhost:' + dioSettings.port)
 	}
