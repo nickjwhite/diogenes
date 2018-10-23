@@ -432,7 +432,7 @@ my $swap_element = sub {
         }
     }
     if ($e->{name} eq "bibl" and exists $e->{attrib}->{n}
-        and $e->{attrib}->{n} =~ m/^Perseus:abo:(.+)$/) {
+        and $e->{attrib}->{n} =~ m/^(?:Perseus:abo:|urn:cts:latinLit:|urn:cts:greekLit:)(.+)$/) {
         if ($close) {
             $out .= '</a>';
             $in_link = 0;
@@ -440,23 +440,9 @@ my $swap_element = sub {
         else {
             my $jump = $1;
             $jump = $translate_abo->($jump);
-            $out .= qq{<a onClick="jumpTo('$jump');">};
-            $in_link = 1;
-        }
-    }
-    # DEBUGGING
-    # issue is that newer perseus data uses different urns, so need to process them differently
-    # TODO: have this match greekLit too (rest should just work for it, hopefully)
-    if ($e->{name} eq "bibl" and exists $e->{attrib}->{n}
-        and $e->{attrib}->{n} =~ m/^urn:cts:latinLit:(.+)$/) {
-        if ($close) {
-            $out .= '</a>';
-            $in_link = 0;
-        }
-        else {
-            my $jump = $1;
-            $jump = $translate_abo->($jump);
-            $out .= qq{<a class="attribis $e->{attrib}->{n}" onClick="jumpTo('$jump');">};
+            # DEBUGGING
+            $out .= qq{<a class="origjump $e->{attrib}->{n}" onClick="jumpTo('$jump');">};
+            #$out .= qq{<a onClick="jumpTo('$jump');">};
             $in_link = 1;
         }
     }
