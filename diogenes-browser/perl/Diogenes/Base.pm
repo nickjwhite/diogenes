@@ -594,7 +594,7 @@ sub check_db
         my $pre;
         # Look for Cicero
         foreach (qw(lat LAT phi PHI)) {
-            if (-e File::Spec->catfile($self->{cdrom_dir}, $_.'0474.txt')) {
+            if (-e File::Spec->catfile($self->{cdrom_dir}, $_.'0474'.$self->{txt_suffix})) {
                 $pre = $_;
                 last;
             }
