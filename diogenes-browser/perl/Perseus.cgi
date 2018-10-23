@@ -312,7 +312,6 @@ my $text_with_links = sub {
         if ($form) {
             # Escape backslashes for Javascript
             $form =~ s/\\/\\\\/g;
-#             $out .= qq{<a onClick="parse_$text_lang}.qq{_page('$form');">$word</a>};
             $out .= qq{<a onClick="parse_$text_lang}.qq{('$form');">$word</a>};
         }
         else {
@@ -378,14 +377,16 @@ my $munge_text = sub {
         if ($xml_lang eq 'greek' or $xml_lang eq 'la') {
             $text = $text_with_links->($text, $xml_lang);
         }
-        elsif ($lang eq 'lat' and $text =~ m/^, (?:v\.|=) /) {
-            # Hack for L-S cross refs (not identified as Latin).
-            $text = $text_with_links->($text, 'lat');
-        }
-        elsif ($lang eq 'lat' and not $xml_ital) {
-            # Hack to make all non-italicized L-S text Latin
-            $text = $text_with_links->($text, 'lat');
-        }
+        # BUG: These hacks cause much that is English to be misidentified
+        #      as Latin. Not sure yet what cases it's needed for.
+        #elsif ($lang eq 'lat' and $text =~ m/^, (?:v\.|=) /) {
+        #    # Hack for L-S cross refs (not identified as Latin).
+        #    $text = $text_with_links->($text, 'lat');
+        #}
+        #elsif ($lang eq 'lat' and not $xml_ital) {
+        #    # Hack to make all non-italicized L-S text Latin
+        #    $text = $text_with_links->($text, 'lat');
+        #}
         else {
             $text = $text_with_links->($text, 'eng');
         }
@@ -440,6 +441,22 @@ my $swap_element = sub {
             my $jump = $1;
             $jump = $translate_abo->($jump);
             $out .= qq{<a onClick="jumpTo('$jump');">};
+            $in_link = 1;
+        }
+    }
+    # DEBUGGING
+    # issue is that newer perseus data uses different urns, so need to process them differently
+    # TODO: have this match greekLit too (rest should just work for it, hopefully)
+    if ($e->{name} eq "bibl" and exists $e->{attrib}->{n}
+        and $e->{attrib}->{n} =~ m/^urn:cts:latinLit:(.+)$/) {
+        if ($close) {
+            $out .= '</a>';
+            $in_link = 0;
+        }
+        else {
+            my $jump = $1;
+            $jump = $translate_abo->($jump);
+            $out .= qq{<a class="attribis $e->{attrib}->{n}" onClick="jumpTo('$jump');">};
             $in_link = 1;
         }
     }

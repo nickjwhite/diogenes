@@ -34,6 +34,14 @@ $Diogenes::Perseus::translate_abo = sub{
     my $abo = shift;
     if ($abo =~ m/^([^:]+)(.+)$/) {
         my ($work, $loc) = ($1, $2);
+
+        # manipulate urn to be old-school as we expect
+        $work =~ s/.perseus-lat1//;
+        $work =~ s/.perseus-grc1//;
+        # todo: do this for tlg too
+        $work =~ s/^phi/phi,/;
+        $work =~ s/\.phi/,/g;
+
         if ($work =~ m/^tlg,0059/) {
             # Plato needs the part of Stephanus page broken off
             if ($loc =~ m/^:(\d+)([a-z])$/) {
@@ -75,7 +83,6 @@ $Diogenes::Perseus::translate_abo = sub{
                 }
             }
         }
-
         $abo = $abo_map{$work}.$loc if exists $abo_map{$work};
     }
     return $abo;
