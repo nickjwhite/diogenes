@@ -238,6 +238,10 @@ sub seek_passage
     my $starting_point = ($block - $start_block) << 13 if $block;
     $i = $starting_point || 0;
     $i--;
+    # BUG: there's a denial-of-service bug here, in that $buf can be empty, at least if
+    #      a bad jumpTo address is asked for, which results in this server-killing error:
+    #      substr outside of string at diogenes-browser/perl/Diogenes/Browser.pm line 244.
+    #      diogenes-server.pl: Use of uninitialized value in ord at /home/nick/diogenes/diogenes-browser/perl/Diogenes/Browser.pm line 244
     # seek through first block to the beginning of the work we want
     while ( 0 + $self->{work_num} < 0 + $work) 
     {

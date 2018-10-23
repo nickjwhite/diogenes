@@ -1,3 +1,8 @@
+Suetonius bibliographical references are incorrectly handled, resulting in an invalid jump
+	perseus seem to have changed their referencing of him, from: Perseus:abo:phi,1348,001:life=gal.:16 to: urn:cts:latinLit:phi1348.phi017:16
+	therefore need to add a mapping, either to the jumpTo part of diogenes or just in perseus-abo.pl.
+	there may be other authors for whom this applies; ask Perseus / look for other 'strange' patterns in the original urns that may have been changed
+see BUG in diogenes-browser/perl/Diogenes/Browser.pm
 add a makefile rule to package the app easily - looks very similar to nwjs; see http://electronjs.org/docs/tutorial/application-distribution
 Menu needs populating
 make dist should exist and do what all does
@@ -5,4 +10,9 @@ see github issues
 https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff
 it's easy to get perl warnings from diogenes; use it a bit and fix what's found
 save and reload window dimensions and placement
-
+make settings page shorter and clearer - probably just a variant of firstrun page
+consider changing the homepage interface so the 'what do you want to do' combobox is split out into a more sensible design
+remove chrome/ dir and rename diogenes-browser/ to server/ or similar
+headword in word lookup used to include macrons etc. probably don't want that now, but would be good to check with Peter what's most desirable.
+try to restart diogenes-server if it is killed
+title of work has disappeared from poem reader; see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
