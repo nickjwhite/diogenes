@@ -9,7 +9,6 @@ make dist should exist and do what all does
 see github issues
 https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff
 it's easy to get perl warnings from diogenes; use it a bit and fix what's found
-save and reload window dimensions and placement
 make settings page shorter and clearer - probably just a variant of firstrun page
 consider changing the homepage interface so the 'what do you want to do' combobox is split out into a more sensible design
 remove chrome/ dir and rename diogenes-browser/ to server/ or similar

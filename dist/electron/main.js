@@ -55,13 +55,39 @@ linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, 
 
 // Create the initial window and start the diogenes server
 function createWindow () {
+	const settingsPath = app.getPath('userData')
+	lockFile = path.join(settingsPath, 'diogenes-lock.json')
+	const winStatePath = path.join(settingsPath, 'windowstate.json')
+	const prefsFile = path.join(settingsPath, 'diogenes.prefs')
+	process.env.Diogenes_Config_Dir = settingsPath
+
 	// Set the Content Security Policy headers
 	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 		callback({ responseHeaders: Object.assign({
 			"Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
 		}, details.responseHeaders)})
 	})
-	let win = new BrowserWindow({width: 800, height: 600, show: false, webPreferences: webprefs, winopts})
+
+	// Use saved window state if available
+	let winstate = getWindowState(winStatePath)
+	if(winstate && winstate.bounds) {
+		x = winstate.bounds.x
+		y = winstate.bounds.y
+		w = winstate.bounds.width
+		h = winstate.bounds.height
+	} else {
+		x = undefined
+		y = undefined
+		w = 800
+		h = 600
+	}
+
+	let win = new BrowserWindow({x: x, y: y, width: w, height: h,
+	                             show: false, webPreferences: webprefs, winopts})
+
+	if(winstate && winstate.maximzed) {
+		win.maximize()
+	}
 
 	// Hide window until everything has loaded
 	win.on('ready-to-show', function() {
@@ -69,10 +95,13 @@ function createWindow () {
 		win.focus()
 	})
 
-	const settingsPath = app.getPath('userData')
-	lockFile = path.join(settingsPath, 'diogenes-lock.json')
-	const prefsFile = path.join(settingsPath, 'diogenes.prefs')
-	process.env.Diogenes_Config_Dir = settingsPath
+	// Save window state whenever it changes
+	let changestates = ['resize', 'move', 'close']
+	changestates.forEach(function(e) {
+		win.on(e, function() {
+			saveWindowState(win, winStatePath)
+		})
+	})
 
 	// Remove any stale lockfile
 	if (fs.existsSync(lockFile)) {
@@ -264,6 +293,32 @@ function checkDbSet(prefsFile) {
 		return true
 	}
 	return false
+}
+
+// Save window dimensions and state to a file
+function saveWindowState(win, path) {
+	let s = {}
+	s.maximized = win.isMaximized()
+	if(!s.maximized) {
+		s.bounds = win.getBounds()
+	}
+	try {
+		fs.writeFileSync(path, JSON.stringify(s))
+	} catch(e) {
+		return false
+	}
+	return true
+}
+
+// Load window dimensions and state from a file
+function getWindowState(path) {
+	let s
+	try {
+		s = fs.readFileSync(path, {'encoding': 'utf8'})
+	} catch(e) {
+		return false
+	}
+	return JSON.parse(s)
 }
 
 // Load either the Diogenes homepage or the firstrun page
