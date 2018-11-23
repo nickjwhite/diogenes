@@ -19,8 +19,8 @@ let startupDone = false
 
 let currentLinkURL = null
 
-const webprefs = {nodeIntegration: false, preload: app.getAppPath() + '/preload.js'}
-const winopts = {icon: app.getAppPath() + '../../diogenes-browser/perl/images/icon.png'}
+const webprefs = {nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
+const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
 
 // Ensure the app is single-instance (see 'second-instance' event
@@ -218,7 +218,7 @@ function startServer () {
 		perlName = path.join('strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
-	const serverPath = path.join(process.cwd(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
+	const serverPath = path.join(app.getAppPath(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
 
 	let server = execFile(perlName, [serverPath], {'windowsHide': true})
 	server.stdout.on('data', (data) => {

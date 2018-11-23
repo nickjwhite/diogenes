@@ -13,6 +13,7 @@ DIOGENESVERSION = 4.0.0
 NWJSVERSION = 0.14.7
 #NWJSEXTRA = sdk-
 #NWJSVERSION = 0.18.0
+ELECTRONVERSION = 3.0.10
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
@@ -50,12 +51,34 @@ diogenes-browser/perl/Diogenes/EntityTable.pm: utils/ent_to_array.pl $(DEPDIR)/P
 	printf 'package Diogenes::EntityTable;\n\n' >> $@
 	./utils/ent_to_array.pl < $(DEPDIR)/PersXML.ent >> $@
 
+electron/electron-v$(ELECTRONVERSION)-linux-x64:
+	mkdir -p electron
+	curl -L https://github.com/electron/electron/releases/download/v$(ELECTRONVERSION)/electron-v$(ELECTRONVERSION)-linux-x64.zip > electron/electron-v$(ELECTRONVERSION)-linux-x64.zip
+	unzip -d electron/electron-v$(ELECTRONVERSION)-linux-x64 electron/electron-v$(ELECTRONVERSION)-linux-x64.zip
+	rm electron/electron-v$(ELECTRONVERSION)-linux-x64.zip
+
+linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
+	mkdir -p linux64
+	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64 linux64
+	cp -r diogenes-browser linux64
+	cp -r dependencies linux64
+	cp -r dist linux64
+	printf '#/bin/sh\nd=`dirname $$0`\n"$$d/electron-v$(ELECTRONVERSION)-linux-x64/electron" "$$d/dist/electron"\n' > linux64/diogenes
+	chmod +x linux64/diogenes
+	# TODO: add makefiles, readmes, etc
+
+electron/electron-v$(ELECTRONVERSION)-win32-ia32:
+	mkdir -p electron
+	curl -L https://github.com/electron/electron/releases/download/v$(ELECTRONVERSION)/electron-v$(ELECTRONVERSION)-win32-ia32.zip > electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
+	unzip -d electron/electron-v$(ELECTRONVERSION)-win32-ia32 electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
+	rm electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
+
 nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64:
 	mkdir -p nw
 	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64.tar.gz
 	cd nw && zcat < nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64.tar.gz | tar x
 
-linux64: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64
+linux64-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64
 	mkdir -p linux64
 	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64 linux64
 	cp -r diogenes-browser linux64
@@ -71,8 +94,8 @@ nw/nwjs-$(NWJSVERSION)-win-ia32:
 
 w32perl:
 	mkdir -p w32perl/strawberry
-	cd w32perl && wget http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
-	cd w32perl/strawberry && unzip ../strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	unzip -d w32perl/strawberry w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 
 rcedit.exe:
 	wget https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
@@ -96,7 +119,7 @@ dist/nwjs/icon256.png: icons
 dist/app.icns: icons
 	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
 
-w32: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes.ico rcedit.exe
+w32-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes.ico rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w32
@@ -117,15 +140,21 @@ w32: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
-diogenes-windows.zip: w32
-	cd w32 && zip -r ../$@ .
+w32:
+	echo TODO
+
+electron/electron-v$(ELECTRONVERSION)-darwin-x64:
+	mkdir -p electron
+	curl -L https://github.com/electron/electron/releases/download/v$(ELECTRONVERSION)/electron-v$(ELECTRONVERSION)-darwin-x64.zip > electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
+	unzip -d electron/electron-v$(ELECTRONVERSION)-darwin-x64 electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
+	rm electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 
 nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64:
 	mkdir -p nw
 	cd nw && wget https://dl.nwjs.io/$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64.zip
 	cd nw && unzip nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64.zip
 
-mac: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64 dist/app.icns
+mac-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64 dist/app.icns
 	mkdir -p mac
 	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64/nwjs.app mac/Diogenes.app
 	mkdir -p mac/Diogenes.app/Contents/Resources/app.nw
@@ -135,6 +164,18 @@ mac: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64 dist/app.icns
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/
 	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/document.icns
 	perl -pi -e 's/CFBundleName = "nwjs"/CFBundleName = "Diogenes"/g; s/CFBundleDisplayName = "nwjs"/CFBundleDisplayName = "Diogenes"/g' mac/Diogenes.app/Contents/Resources/*.lproj/InfoPlist.strings
+
+mac:
+	echo TODO
+
+#pkgs: linux64 mac win32
+pkgs: linux64
+	rm -rf diogenes-linux-$(DIOGENESVERSION) diogenes-mac-$(DIOGENESVERSION) diogenes-win32-$(DIOGENESVERSION)
+	mv linux64 diogenes-linux-$(DIOGENESVERSION)
+	tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
+	rm -rf diogenes-linux-$(DIOGENESVERSION)
+	echo TODO: package mac
+	echo TODO: package win32
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
