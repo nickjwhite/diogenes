@@ -19,7 +19,7 @@ UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 STRAWBERRYPERLVERSION=5.24.0.1
 
-all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm dist/nwjs/icon256.png diogenes-browser/perl/fonts/GentiumPlus-I.woff diogenes-browser/perl/fonts/GentiumPlus-R.woff
+all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm diogenes-browser/perl/fonts/GentiumPlus-I.woff diogenes-browser/perl/fonts/GentiumPlus-R.woff
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	wget -O $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -65,27 +65,13 @@ linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	cp -r dist linux64
 	printf '#/bin/sh\nd=`dirname $$0`\n"$$d/electron-v$(ELECTRONVERSION)-linux-x64/electron" "$$d/dist/electron"\n' > linux64/diogenes
 	chmod +x linux64/diogenes
-	# TODO: add makefiles, readmes, etc
+	cp COPYING README linux64
 
 electron/electron-v$(ELECTRONVERSION)-win32-ia32:
 	mkdir -p electron
 	curl -L https://github.com/electron/electron/releases/download/v$(ELECTRONVERSION)/electron-v$(ELECTRONVERSION)-win32-ia32.zip > electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
 	unzip -d electron/electron-v$(ELECTRONVERSION)-win32-ia32 electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
 	rm electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
-
-nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64:
-	mkdir -p nw
-	cd nw && wget https://dl.nwjs.io/v$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64.tar.gz
-	cd nw && zcat < nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64.tar.gz | tar x
-
-linux64-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64
-	mkdir -p linux64
-	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64 linux64
-	cp -r diogenes-browser linux64
-	cp -r dependencies linux64
-	cp -r dist linux64
-	printf '#/bin/sh\nd=`dirname $$0`\n"$$d/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-linux-x64/nw" "$$d/dist/nwjs"\n' > linux64/diogenes
-	chmod +x linux64/diogenes
 
 nw/nwjs-$(NWJSVERSION)-win-ia32:
 	mkdir -p nw
@@ -110,16 +96,13 @@ icons: dist/icon.svg
 	rsvg-convert -w 32 -h 32 dist/icon.svg > icons/32.png
 	rsvg-convert -w 16 -h 16 dist/icon.svg > icons/16.png
 
-dist/nwjs/diogenes.ico: icons
+icons/diogenes.ico: icons
 	icotool -c icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png > $@
-
-dist/nwjs/icon256.png: icons
-	cp -f icons/256.png $@
 
 dist/app.icns: icons
 	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
 
-w32-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diogenes.ico rcedit.exe
+w32-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl icons/diogenes.ico rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w32
@@ -133,7 +116,7 @@ w32-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl dist/nwjs/diog
 	cp -r w32perl/strawberry w32/package.nw
 	mv w32/nw.exe w32/diogenes.exe
 	wine rcedit.exe w32/diogenes.exe \
-	    --set-icon dist/nwjs/diogenes.ico \
+	    --set-icon icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
 	    --set-version-string CompanyName "The Diogenes Team" \
