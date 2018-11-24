@@ -215,7 +215,7 @@ function startServer () {
 	// For Mac and Unix, we assume perl is in the path
 	let perlName = 'perl'
 	if (process.platform == 'win32') {
-		perlName = path.join('strawberry', 'perl', 'bin', 'perl.exe')
+		perlName = path.join(app.getAppPath(), '..', '..', 'strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
 	const serverPath = path.join(app.getAppPath(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')

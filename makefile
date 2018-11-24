@@ -8,7 +8,7 @@
 
 DEPDIR = dependencies
 
-DIOGENESVERSION = 4.0.0
+DIOGENESVERSION = 4.0.0pr
 
 NWJSVERSION = 0.14.7
 #NWJSEXTRA = sdk-
@@ -17,7 +17,7 @@ ELECTRONVERSION = 3.0.10
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
-STRAWBERRYPERLVERSION=5.24.0.1
+STRAWBERRYPERLVERSION=5.28.0.1
 
 all: diogenes-browser/perl/Diogenes/unicode-equivs.pl diogenes-browser/perl/Diogenes/EntityTable.pm diogenes-browser/perl/fonts/GentiumPlus-I.woff diogenes-browser/perl/fonts/GentiumPlus-R.woff
 
@@ -73,15 +73,23 @@ electron/electron-v$(ELECTRONVERSION)-win32-ia32:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-win32-ia32 electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
 	rm electron/electron-v$(ELECTRONVERSION)-win32-ia32.zip
 
-nw/nwjs-$(NWJSVERSION)-win-ia32:
-	mkdir -p nw
-	cd nw && wget https://dl.nwjs.io/$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32.zip
-	cd nw && unzip nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32.zip
+electron/electron-v$(ELECTRONVERSION)-win32-x64:
+	mkdir -p electron
+	curl -L https://github.com/electron/electron/releases/download/v$(ELECTRONVERSION)/electron-v$(ELECTRONVERSION)-win32-x64.zip > electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
+	unzip -d electron/electron-v$(ELECTRONVERSION)-win32-x64 electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
+	rm electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 
 w32perl:
 	mkdir -p w32perl/strawberry
 	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	unzip -d w32perl/strawberry w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	rm w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+
+w64perl:
+	mkdir -p w64perl/strawberry
+	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip > w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+	unzip -d w64perl/strawberry w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+	rm w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 
 rcedit.exe:
 	wget https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
@@ -102,19 +110,19 @@ icons/diogenes.ico: icons
 dist/app.icns: icons
 	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
 
-w32-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl icons/diogenes.ico rcedit.exe
+w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes.ico rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w32
 	mkdir -p w32
-	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32/* w32
-	mkdir -p w32/package.nw
-	cp -r diogenes-browser w32/package.nw
-	cp -r dependencies w32/package.nw
-	cp dist/nwjs/* w32/package.nw
-	sed -i -e 's/..\/..\/diogenes-browser\/perl\//diogenes-browser\/perl\//g' w32/package.nw/diogenes-startup.js
-	cp -r w32perl/strawberry w32/package.nw
-	mv w32/nw.exe w32/diogenes.exe
+	cp -r electron/electron-v$(ELECTRONVERSION)-win32-ia32/* w32
+	cp -r dist/electron w32/resources/app
+	mv w32/electron.exe w32/diogenes.exe
+	cp -r diogenes-browser w32
+	cp -r dependencies w32
+	cp -r w32perl/strawberry w32
+	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
+	sed 's/$$/\r/g' < README > w32/README.txt
 	wine rcedit.exe w32/diogenes.exe \
 	    --set-icon icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
@@ -123,8 +131,26 @@ w32-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-win-ia32 w32perl icons/diogenes
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
-w32:
-	echo TODO
+w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl icons/diogenes.ico rcedit.exe
+	@echo "Making windows package. Note that this requires wine to be"
+	@echo "installed, to edit the .exe resources."
+	rm -rf w64
+	mkdir -p w64
+	cp -r electron/electron-v$(ELECTRONVERSION)-win32-x64/* w64
+	cp -r dist/electron w64/resources/app
+	mv w64/electron.exe w64/diogenes.exe
+	cp -r diogenes-browser w64
+	cp -r dependencies w64
+	cp -r w64perl/strawberry w64
+	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
+	sed 's/$$/\r/g' < README > w64/README.txt
+	wine rcedit.exe w64/diogenes.exe \
+	    --set-icon icons/diogenes.ico \
+	    --set-product-version $(DIOGENESVERSION) \
+	    --set-file-version $(DIOGENESVERSION) \
+	    --set-version-string CompanyName "The Diogenes Team" \
+	    --set-version-string ProductName Diogenes \
+	    --set-version-string FileDescription Diogenes
 
 electron/electron-v$(ELECTRONVERSION)-darwin-x64:
 	mkdir -p electron
@@ -152,13 +178,18 @@ mac:
 	echo TODO
 
 #pkgs: linux64 mac win32
-pkgs: linux64
+pkgs: linux64 w32 w64
 	rm -rf diogenes-linux-$(DIOGENESVERSION) diogenes-mac-$(DIOGENESVERSION) diogenes-win32-$(DIOGENESVERSION)
 	mv linux64 diogenes-linux-$(DIOGENESVERSION)
 	tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
 	rm -rf diogenes-linux-$(DIOGENESVERSION)
+	mv w32 diogenes-win32-$(DIOGENESVERSION)
+	zip -r diogenes-win32-$(DIOGENESVERSION).zip diogenes-win32-$(DIOGENESVERSION)
+	rm -rf diogenes-win32-$(DIOGENESVERSION)
+	mv w64 diogenes-win64-$(DIOGENESVERSION)
+	zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
+	rm -rf diogenes-win64-$(DIOGENESVERSION)
 	echo TODO: package mac
-	echo TODO: package win32
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
