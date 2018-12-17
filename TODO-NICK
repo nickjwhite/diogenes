@@ -3,11 +3,12 @@ Suetonius bibliographical references are incorrectly handled, resulting in an in
 	therefore need to add a mapping, either to the jumpTo part of diogenes or just in perseus-abo.pl.
 	there may be other authors for whom this applies; ask Perseus / look for other 'strange' patterns in the original urns that may have been changed
 see BUG in diogenes-browser/perl/Diogenes/Browser.pm
-add a makefile rule to package the app easily - looks very similar to nwjs; see http://electronjs.org/docs/tutorial/application-distribution
+add a .desktop entry for linux
+think about how best to enable installation on linux systems; will work from the directory, but ideally the diogenes script could be told a location it was installed to, so it could be elsewhere
+add make install rule to install onto unix-like systems into system folders (so the diogenes-linux64 is an alternative, precompiled version, for people to stick on /opt or home, compared to this which is more for sysadmins / packagers)
+add contributions / thanks prominently to diogenes
 Menu needs populating
-make dist should exist and do what all does
 see github issues
-https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff
 it's easy to get perl warnings from diogenes; use it a bit and fix what's found
 make settings page shorter and clearer - probably just a variant of firstrun page
 consider changing the homepage interface so the 'what do you want to do' combobox is split out into a more sensible design

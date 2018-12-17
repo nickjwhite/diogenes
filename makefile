@@ -3,16 +3,10 @@
 # Note that the dictionaries and morphological data are built using
 # different makefiles; read the README for details.
 
-# The v. 0.14 Mac distribution of nwjs.app has Info.plist in UTF-16, which is contrary to Apple spec and breaks this makefile, so do:
-# iconv -f UTF-16 -t UTF-8 InfoPlist.strings.orig >InfoPlist.strings
-
 DEPDIR = dependencies
 
 DIOGENESVERSION = 4.0.0pr
 
-NWJSVERSION = 0.14.7
-#NWJSEXTRA = sdk-
-#NWJSVERSION = 0.18.0
 ELECTRONVERSION = 3.0.10
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
@@ -58,7 +52,8 @@ electron/electron-v$(ELECTRONVERSION)-linux-x64:
 	rm electron/electron-v$(ELECTRONVERSION)-linux-x64.zip
 
 linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
-	mkdir -p linux64
+	rm -rf linux64
+	mkdir linux64
 	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64 linux64
 	cp -r diogenes-browser linux64
 	cp -r dependencies linux64
@@ -107,7 +102,7 @@ icons: dist/icon.svg
 icons/diogenes.ico: icons
 	icotool -c icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png > $@
 
-dist/app.icns: icons
+dist/diogenes.icns: icons
 	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
 
 w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes.ico rcedit.exe
@@ -158,43 +153,61 @@ electron/electron-v$(ELECTRONVERSION)-darwin-x64:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-darwin-x64 electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 
-nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64:
-	mkdir -p nw
-	cd nw && wget https://dl.nwjs.io/$(NWJSVERSION)/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64.zip
-	cd nw && unzip nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64.zip
-
-mac-old: all nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64 dist/app.icns
+mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 dist/diogenes.icns
+	rm -rf mac
 	mkdir -p mac
-	cp -r nw/nwjs-$(NWJSEXTRA)v$(NWJSVERSION)-osx-x64/nwjs.app mac/Diogenes.app
-	mkdir -p mac/Diogenes.app/Contents/Resources/app.nw
-	cp -r diogenes-browser mac/Diogenes.app/Contents
-	cp -r dependencies mac/Diogenes.app/Contents
-	cp -r dist/nwjs/* mac/Diogenes.app/Contents/Resources/app.nw
-	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/
-	cp -r dist/app.icns mac/Diogenes.app/Contents/Resources/document.icns
-	perl -pi -e 's/CFBundleName = "nwjs"/CFBundleName = "Diogenes"/g; s/CFBundleDisplayName = "nwjs"/CFBundleDisplayName = "Diogenes"/g' mac/Diogenes.app/Contents/Resources/*.lproj/InfoPlist.strings
+	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* mac
+	cp -r dist/electron mac/Electron.app/Contents/Resources/app
+	cp -r diogenes-browser mac/Electron.app/Contents
+	cp -r dependencies mac/Electron.app/Contents
+	cp dist/diogenes.icns mac/Electron.app/Contents/Resources/
+	perl -pi -e 's/electron.icns/diogenes.icns/g' mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/Electron/Diogenes/g' mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/com.github.electron/com.gitlab.diogenes/g' mac/Electron.app/Contents/Info.plist
+	mv mac/Electron.app mac/Diogenes.app
+	mv mac/Diogenes.app/Contents/MacOS/Electron mac/Diogenes.app/Contents/MacOS/Diogenes
+	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
+	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
+	sed 's/$$/\r/g' < COPYING > mac/COPYING.txt
+	sed 's/$$/\r/g' < README > mac/README.txt
 
-mac:
-	echo TODO
-
-#pkgs: linux64 mac win32
-pkgs: linux64 w32 w64
-	rm -rf diogenes-linux-$(DIOGENESVERSION) diogenes-mac-$(DIOGENESVERSION) diogenes-win32-$(DIOGENESVERSION)
+pkg-linux64: linux64
+	rm -rf diogenes-linux-$(DIOGENESVERSION)
 	mv linux64 diogenes-linux-$(DIOGENESVERSION)
 	tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
 	rm -rf diogenes-linux-$(DIOGENESVERSION)
+
+pkg-mac: mac
+	rm -rf diogenes-mac-$(DIOGENESVERSION)
+	mv mac diogenes-mac-$(DIOGENESVERSION)
+	zip -r diogenes-mac-$(DIOGENESVERSION).zip diogenes-mac-$(DIOGENESVERSION)
+	rm -rf diogenes-mac-$(DIOGENESVERSION)
+
+pkg-w32: w32
+	rm -rf diogenes-win32-$(DIOGENESVERSION)
 	mv w32 diogenes-win32-$(DIOGENESVERSION)
 	zip -r diogenes-win32-$(DIOGENESVERSION).zip diogenes-win32-$(DIOGENESVERSION)
 	rm -rf diogenes-win32-$(DIOGENESVERSION)
+
+pkg-w64: w64
+	rm -rf diogenes-win64-$(DIOGENESVERSION)
 	mv w64 diogenes-win64-$(DIOGENESVERSION)
 	zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
 	rm -rf diogenes-win64-$(DIOGENESVERSION)
-	echo TODO: package mac
+
+pkg-all: pkg-linux64 pkg-mac pkg-w32 pkg-w64
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f diogenes-browser/perl/Diogenes/unicode-equivs.pl
 	rm -f $(DEPDIR)/PersXML.ent
 	rm -f diogenes-browser/perl/Diogenes/EntityTable.pm
-	rm -rf icons nw linux64 mac w32 w32perl
-	rm -f rcedit.exe diogenes-windows.zip
+	rm -rf diogenes-browser/perl/fonts
+	rm -rf icons app/diogenes.icns
+	rm -f rcedit.exe
+	rm -rf build
+	rm -rf electron
+	rm -rf mac diogenes-mac-$(DIOGENESVERSION)
+	rm -rf linux64 diogenes-linux64-$(DIOGENESVERSION)
+	rm -rf w32 w32perl diogenes-w32-$(DIOGENESVERSION)
+	rm -rf w64 w64perl diogenes-w64-$(DIOGENESVERSION)
