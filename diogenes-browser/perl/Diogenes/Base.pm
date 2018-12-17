@@ -590,11 +590,11 @@ sub check_db
 
     # Fix up the case where the "lat" prefix is wrong.
     if ($check and $self->{type} eq 'phi'
-        and not -e File::Spec->catfile($self->{cdrom_dir}, $self->{file_prefix}.'0474.txt')) {
+        and not -e File::Spec->catfile($self->{cdrom_dir}, $self->{file_prefix}.'0474'.$self->{txt_suffix})) {
         my $pre;
         # Look for Cicero
         foreach (qw(lat LAT phi PHI)) {
-            if (-e File::Spec->catfile($self->{cdrom_dir}, $_.'0474.txt')) {
+            if (-e File::Spec->catfile($self->{cdrom_dir}, $_.'0474'.$self->{txt_suffix})) {
                 $pre = $_;
                 last;
             }
@@ -2422,7 +2422,7 @@ sub beta_to_html
     # record separators
     if ($Diogenes::Base::cgi_flag and $self->{cgi_buttons})
     {
-        $$ref =~ s#~~~(.+?)~~~#<p><a onClick="jumpTo('$1');">$self->{cgi_buttons}</a></p><hr>#g;
+        $$ref =~ s#~~~(.+?)~~~#<p class="gotocontext"><a href="/Diogenes.cgi?JumpTo=$1">$self->{cgi_buttons}</a></p><hr>#g;
         
     }
     else

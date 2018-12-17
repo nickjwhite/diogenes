@@ -36,7 +36,6 @@ my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 my %args_init = (-type => 'none');
 my $init = new Diogenes::Base(%args_init);
 my $filter_file = $init->{filter_file};
-my $font = $init->{cgi_font};
 
 # my @choices = reverse sort keys %choices;
 my @choices = (
@@ -203,12 +202,8 @@ my $my_footer = sub
         $f->p({class => 'footer'}, qq(All data is &copy; the <em>Thesaurus
         Linguae Graecae</em>, the Packard Humanities Institute, The Perseus Project and
         others. The information in these databases is subject to
-        restrictions on access and use; consult your licenses.  <a
-        href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/">Diogenes</a>
-        (version $version) is <a
-        href="http://www.durham.ac.uk/p.j.heslin/Software/Diogenes/license.php">&copy;</a>
-        1999-2007 P.J. Heslin.),
-        $f->p({style => 'text-align:center'}, '<a href="Diogenes.cgi" title="New Diogenes Search">New Search</a>'));
+        restrictions on access and use; consult your licenses. Diogenes
+        (version $version) is &copy; 1999-2017 P.J. Heslin.));
     $essential_footer->();
 };
 
@@ -259,18 +254,10 @@ my $print_title = sub
     print $f->hidden( -name => 'JumpTo',
                       -default => "",
                       -override => 1 );
-    # So that Perseus.cgi can use this value when making a pop-up
-    print $f->hidden( -name => 'FontName',
-                      -default => "$font" || '',
-                      -override => 1 );
  
     # for Perseus data
-    print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}" style="font-family: '$font'"></div>};
-    if ($font) {
-        print qq{<div id="main_window" class="main-full" style="font-family: '$font'">};
-    } else {
-        print '<div id="main_window" class="main-full">';
-    }
+    print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}"></div>};
+    print '<div id="main_window" class="main-full">';
     
 };
 
@@ -281,6 +268,7 @@ my $print_header = sub
         <center>
              <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
                <img src="${picture_dir}Diogenes_Logo_Small.png" alt="Logo"
+                srcset="${picture_dir}Diogenes_Logo_Small.hidpi.png 2x"
                 height="38" width="109" align="center" hspace="24" border="0"
                 /></a>
        </center>);
@@ -331,8 +319,8 @@ my $database_error = sub
 
 my %input_blurb = (
 
-    'Unicode' => qq{<strong>NB. Unicode input is new.</strong> You
-    must type Greek using your computer's facility to type Greek
+    'Unicode' => qq{
+    You must type Greek using your computer's facility to type Greek
     letters in Unicode, and you should either type all accents or none
     at all.  <a href="Unicode_input.html">Further info.</a>},
 
@@ -373,28 +361,25 @@ $output{splash} = sub
     
     print $f->center(
         $f->img({-src=>$picture_dir.'Diogenes_Logo.png',
+                 -srcset=>$picture_dir.'Diogenes_Logo.hidpi.png 2x',
                  -alt=>'Diogenes', 
                  -height=>'137', 
                  -width=>'383'})),
         $f->start_form(-id=>'form', -method=> 'get');
 
 
-    print $f->p('Welcome to Diogenes, a tool for searching and
+    print $f->p({class => "homewelcome"}, qq(Welcome to Diogenes, a tool for searching and
         browsing through databases of ancient texts. Choose your type
         of query, then the corpus, then type in the query itself: this
         can be either some Greek or Latin to <strong>search</strong>
         for, or the name of an author whose work you wish to
-        <strong>browse</strong> through.'),
+        <strong>browse</strong> through.)),
 
-        $f->p("The Greek input method you have currently selected is:
-        $init->{input_encoding}.  ".$input_blurb{$init->{input_encoding}} .
-
-        "  This and other settings can be displayed and changed via the <a href=\"Settings.cgi\"> current settings
-        page</a>.");
+        $f->p({class => "homewelcome"}, qq($input_blurb{$init->{input_encoding}}));
 
 
     print $f->center(
-        $f->table({cellspacing=>'10px'},
+        $f->table({cellspacing=>'10px',class=>'homesearch'},
             $f->Tr(
                 $f->th({align=>'right'}, 'Action: '),
                 $f->td($f->popup_menu(

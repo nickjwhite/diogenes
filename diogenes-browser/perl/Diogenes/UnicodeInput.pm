@@ -5,7 +5,7 @@ use vars '%unicode_equivs', '%upper_to_lower';
 no bytes;
 
 # do "unicode-equivs.pl" or die ($! or $@);
-do "Diogenes/unicode-equivs.pl" or die ($! or $@);
+do "Diogenes/unicode-equivs.pl" or die ("Couldn't open unicode-equivs.pl; Run 'make' to build it. (error: $!)");
 
 sub new {
     my $self = {};

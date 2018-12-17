@@ -26,7 +26,7 @@ function onActionChange() {
 var req = null;
 
 function new_page (action, lang, query){
-    window.location.href = "Perseus.cgi?do="+action+"&lang="+lang+"&q="+query+"&popup=1"+"&font="+getFont();
+    window.location.href = `Perseus.cgi?do=${action}&lang=${lang}&q=${query}&popup=1`;
 }
 
 function sendRequest(action, lang, query) {
@@ -106,15 +106,15 @@ function sidebarControl () {
     if (sidebarClass == 'sidebar-split') {
         sidebarControl.innerHTML = 
             '<a onClick="sidebarFullscreen();">' +
-            '<img id="fullscreen" src="' + picture_dir + 'view-fullscreen.png" alt="Fullscreen" /></a>';
+            `<img id="fullscreen" src="${picture_dir}view-fullscreen.png" srcset="${picture_dir}view-fullscreen.hidpi.png 2x" alt="Fullscreen" /></a>`;
     } else if (sidebarClass == 'sidebar-full') {
         sidebarControl.innerHTML =
             '<a onClick="sidebarSplitscreen();">' +
-            '<img id="splitscreen" src="' + picture_dir + 'view-restore.png" alt="Split Screen" /></a>';
+            `<img id="splitscreen" src="${picture_dir}view-restore.png" srcset="${picture_dir}view-restore.hidpi.png 2x" alt="Split Screen" /></a>`;
     }
     sidebarControl.innerHTML +=
         '<a onClick="sidebarDismiss();">' +
-        '<img id="dismiss" src="' + picture_dir + 'dialog-close.png" alt="Dismiss" /></a>';
+        `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /></a>`;
 }
 
 function sidebarDismiss () {
@@ -214,14 +214,16 @@ function getFont () {
 
 function toggleLemma (num) {
     var img = document.getElementById("lemma_"+num);
-    if (img.getAttribute("src") == picture_dir + "opened.gif") {
-        img.setAttribute("src",picture_dir + "closed.gif");
+    if (img.getAttribute("src") == picture_dir + "opened.png") {
+        img.setAttribute("src",picture_dir + "closed.png");
+        img.setAttribute("srcset",picture_dir + "closed.hidpi.png 2x");
         var span = document.getElementById("lemma_span_"+num);
         span.setAttribute("class", "lemma_span_invisible");
 
     }
-    else if (img.getAttribute("src") == picture_dir + "closed.gif") {
-        img.setAttribute("src",picture_dir + "opened.gif");
+    else if (img.getAttribute("src") == picture_dir + "closed.png") {
+        img.setAttribute("src",picture_dir + "opened.png");
+        img.setAttribute("srcset",picture_dir + "opened.hidpi.png");
         var span = document.getElementById("lemma_span_"+num);
         span.setAttribute("class", "lemma_span_visible");
     }
