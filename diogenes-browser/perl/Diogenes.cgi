@@ -377,6 +377,9 @@ $output{splash} = sub
 
         $f->p({class => "homewelcome"}, qq($input_blurb{$init->{input_encoding}}));
 
+        $f->p(qq(This and other settings can be displayed and changed via the <a href=\"Settings.cgi\"> current settings
+        page</a>.));
+
 
     print $f->center(
         $f->table({cellspacing=>'10px',class=>'homesearch'},
