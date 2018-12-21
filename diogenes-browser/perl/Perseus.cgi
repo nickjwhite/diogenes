@@ -95,7 +95,7 @@ elsif ($inp_enc) {
 $query =~ tr/A-Z/a-z/;
 
 my %dicts = (
-    grk => ['grc.lsj.perseus-eng0.xml', 'LSJ', 'xml'],
+    grk => ['grc.lsj.greatscott.xml', 'LSJ', 'xml'],
     lat => ['lat.ls.perseus-eng1.xml', 'Lewis-Short', 'xml'],
     eng => ['gcide.txt', 'Gcide (based on 1913 Webster)', 'dict']
     );
@@ -176,7 +176,9 @@ my $beta_comp_fn = sub {
 my $xml_key_fn = sub {
     my $line = shift;
     my $key;
-    if ($line =~ m/<entryFree[^>]*key\s*=\s*\"([^"]*)\"/)
+    # will need to incorporate this for lat
+    #if ($line =~ m/<entryFree[^>]*key\s*=\s*\"([^"]*)\"/)
+    if ($line =~ m/<div2[^>]*key\s*=\s*\"([^"]*)\"/)
     {
         $key = $1;
         $key =~ s/[^a-zA-Z]//g;
@@ -344,8 +346,10 @@ my ($out, $in_link);
 my $munge_xml = sub {
     my $text = shift;
     # Tiny.pm will complain if not well-formed -- get rid of stray divs and milestones
-    $text =~ s/^.*?<entryFree /<entryFree /;
-    $text =~ s/<\/entryFree>.*$/<\/entryFree>/;
+    #$text =~ s/^.*?<entryFree /<entryFree /;
+    #$text =~ s/<\/entryFree>.*$/<\/entryFree>/;
+    $text =~ s/^.*?<div2 /<div2 /;
+    $text =~ s/<\/div2>.*$/<\/div2>/;
     return $text if $xml_out;
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
@@ -452,7 +456,7 @@ my $swap_element = sub {
 local $munge_element = sub {
     my $e = shift;
     $swap_element->($e, 0); # open it
-    if ($e->{name} eq 'entryFree') {
+    if ($e->{name} eq 'entryFree' || $e->{name} eq 'div2') {
         my $key = $e->{attrib}->{key};
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';

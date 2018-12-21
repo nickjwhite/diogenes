@@ -6,7 +6,7 @@ my %seen;
 
 while (<>) {
     my %orth;
-    if (m/<entryFree[^>]*key\s*=\s*\"(.*?)\"/)
+    if (m/<div2[^>]*key\s*=\s*\"(.*?)\"/)
     {
         my $key = $1;
 

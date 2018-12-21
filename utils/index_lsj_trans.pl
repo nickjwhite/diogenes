@@ -4,9 +4,9 @@ use strict;
 my $i = 0;
 
 while (<>) {
-    if (m/<entryFree[^>]*key\s*=\s*\"(.*?)\"/)
+    if (m/<div2[^>]*key\s*=\s*\"(.*?)\"/)
     {
-        if (m/<tr\s[^>]*>(.*?)<\/tr>/) {
+        if (m/<i>(.*?)<\/i>/) {
             my $trans = $1;
             $trans =~ s/[,;:].*$//;
             print "$i $trans\n";
