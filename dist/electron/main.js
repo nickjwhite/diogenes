@@ -1,4 +1,4 @@
-const {app, BrowserWindow, Menu, MenuItem, ipcMain} = require('electron')
+const {app, BrowserWindow, Menu, MenuItem, ipcMain, session} = require('electron')
 const {execFile} = require('child_process')
 const path = require('path')
 const process = require('process')
@@ -18,6 +18,10 @@ let lockFile
 let startupDone = false
 
 let currentLinkURL = null
+
+const webprefs = {nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
+const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
+
 
 // Ensure the app is single-instance (see 'second-instance' event
 // handler below)
@@ -43,7 +47,7 @@ linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
 	if(currentLinkURL) {
-		let newwin = new BrowserWindow({width: 800, height: 600, show: true})
+		let newwin = new BrowserWindow({width: 800, height: 600, show: true, webPreferences: webprefs, winopts})
 		newwin.loadURL(currentLinkURL)
 		currentLinkURL = null
 	}
@@ -51,7 +55,39 @@ linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, 
 
 // Create the initial window and start the diogenes server
 function createWindow () {
-	let win = new BrowserWindow({width: 800, height: 600, show: false})
+	const settingsPath = app.getPath('userData')
+	lockFile = path.join(settingsPath, 'diogenes-lock.json')
+	const winStatePath = path.join(settingsPath, 'windowstate.json')
+	const prefsFile = path.join(settingsPath, 'diogenes.prefs')
+	process.env.Diogenes_Config_Dir = settingsPath
+
+	// Set the Content Security Policy headers
+	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+		callback({ responseHeaders: Object.assign({
+			"Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
+		}, details.responseHeaders)})
+	})
+
+	// Use saved window state if available
+	let winstate = getWindowState(winStatePath)
+	if(winstate && winstate.bounds) {
+		x = winstate.bounds.x
+		y = winstate.bounds.y
+		w = winstate.bounds.width
+		h = winstate.bounds.height
+	} else {
+		x = undefined
+		y = undefined
+		w = 800
+		h = 600
+	}
+
+	let win = new BrowserWindow({x: x, y: y, width: w, height: h,
+	                             show: false, webPreferences: webprefs, winopts})
+
+	if(winstate && winstate.maximzed) {
+		win.maximize()
+	}
 
 	// Hide window until everything has loaded
 	win.on('ready-to-show', function() {
@@ -59,10 +95,13 @@ function createWindow () {
 		win.focus()
 	})
 
-	const settingsPath = app.getPath('userData')
-	lockFile = path.join(settingsPath, 'diogenes-lock.json')
-	const prefsFile = path.join(settingsPath, 'diogenes.prefs')
-	process.env.Diogenes_Config_Dir = settingsPath
+	// Save window state whenever it changes
+	let changestates = ['resize', 'move', 'close']
+	changestates.forEach(function(e) {
+		win.on(e, function() {
+			saveWindowState(win, winStatePath)
+		})
+	})
 
 	// Remove any stale lockfile
 	if (fs.existsSync(lockFile)) {
@@ -91,6 +130,20 @@ app.on('browser-window-created', (event, win) => {
 //		if(windows.length == 0) {
 //			windows = null
 //		}
+	})
+
+	// Intercept and handle new-window requests (e.g. from shift-click), to
+	// prevent child windows being created which would die if the parent was
+	// killed. This was something to do with the new window being a "guest"
+	// window, which I am intentionally setting here, to fix the issue. The
+	// Electron documentation states that it should be set for "failing to
+	// do so may result in unexpected behavior" but I haven't seen any yet.
+	win.webContents.on('new-window', (event, url) => {
+		event.preventDefault()
+		const win = new BrowserWindow({show: false, webPreferences: webprefs, winopts})
+		win.once('ready-to-show', () => win.show())
+		win.loadURL(url)
+		//event.newGuest = win
 	})
 
 	// Load context menu
@@ -158,15 +211,25 @@ app.on('second-instance', () => {
 	windows[0].focus()
 })
 
+// Only allow loading content from localhost
+app.on('web-contents-created', (event, contents) => {
+	contents.on('will-navigate', (event, navigationUrl) => {
+		const url = new URL(navigationUrl)
+		if (url.hostname !== 'localhost') {
+			event.preventDefault()
+		}
+	})
+})
+
 // Start diogenes-server.pl
 function startServer () {
 	// For Mac and Unix, we assume perl is in the path
 	let perlName = 'perl'
 	if (process.platform == 'win32') {
-		perlName = path.join('strawberry', 'perl', 'bin', 'perl.exe')
+		perlName = path.join(app.getAppPath(), '..', '..', 'strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
-	const serverPath = path.join(process.cwd(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
+	const serverPath = path.join(app.getAppPath(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
 
 	let server = execFile(perlName, [serverPath], {'windowsHide': true})
 	server.stdout.on('data', (data) => {
@@ -218,12 +281,12 @@ function loadWhenLocked(lockFile, prefsFile, win) {
 	})
 }
 
-// IPC used by dbsettings page
+// IPC used by firstrun page
 ipcMain.on('getport', (event, arg) => {
 	event.returnValue = dioSettings.port
 })
 
-// IPC used by dbsettings page
+// IPC used by firstrun page
 ipcMain.on('getsettingsdir', (event, arg) => {
 	event.returnValue = app.getPath('userData')
 })
@@ -243,10 +306,36 @@ function checkDbSet(prefsFile) {
 	return false
 }
 
-// Load either the Diogenes homepage or the dbsettings page
+// Save window dimensions and state to a file
+function saveWindowState(win, path) {
+	let s = {}
+	s.maximized = win.isMaximized()
+	if(!s.maximized) {
+		s.bounds = win.getBounds()
+	}
+	try {
+		fs.writeFileSync(path, JSON.stringify(s))
+	} catch(e) {
+		return false
+	}
+	return true
+}
+
+// Load window dimensions and state from a file
+function getWindowState(path) {
+	let s
+	try {
+		s = fs.readFileSync(path, {'encoding': 'utf8'})
+	} catch(e) {
+		return false
+	}
+	return JSON.parse(s)
+}
+
+// Load either the Diogenes homepage or the firstrun page
 function loadFirstPage(prefsFile, win) {
 	if(!fs.existsSync(prefsFile) || !checkDbSet(prefsFile)) {
-		win.loadFile("pages/dbsettings.html")
+		win.loadFile("pages/firstrun.html")
 	} else {
 		win.loadURL('http://localhost:' + dioSettings.port)
 	}

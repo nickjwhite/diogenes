@@ -1,35 +1,18 @@
-If main window is closed all other windows are closed
-	hmmm. window-all-closed is sent when the main window is closed, even if others are still open. however even if it's prevented from running app.quit() the other windows are closed moments later.
-	maybe they're child windows?
-		doesn't seem to be, setting parent: false in main window, and using setParentWindow(null) for new windows, didn't make any difference
-		double-checked with getChildWindows, def. not.
-	this isn't true of windows created using the context menu new window option, only windows created with shift-click-ing on links
-add app icons (for each platform)
+Suetonius bibliographical references are incorrectly handled, resulting in an invalid jump
+	perseus seem to have changed their referencing of him, from: Perseus:abo:phi,1348,001:life=gal.:16 to: urn:cts:latinLit:phi1348.phi017:16
+	therefore need to add a mapping, either to the jumpTo part of diogenes or just in perseus-abo.pl.
+	there may be other authors for whom this applies; ask Perseus / look for other 'strange' patterns in the original urns that may have been changed
+see BUG in diogenes-browser/perl/Diogenes/Browser.pm
+add a .desktop entry for linux
+think about how best to enable installation on linux systems; will work from the directory, but ideally the diogenes script could be told a location it was installed to, so it could be elsewhere
+add make install rule to install onto unix-like systems into system folders (so the diogenes-linux64 is an alternative, precompiled version, for people to stick on /opt or home, compared to this which is more for sysadmins / packagers)
+add contributions / thanks prominently to diogenes
 Menu needs populating
-make dist should exist and do what all does
 see github issues
-https://blog.avocode.com/4-must-know-tips-for-building-cross-platform-electron-apps-f3ae9c2bffff
-
-
------
-
-file -> quit doesn't work in further info page, browse page, does on context page... seems to be every other page; perseus-style (from further info) works. the loading event is only fired on this every other pages, too
-	add web inspector opening so we can see the web console, to debug this. note that sdk version is now easily enable-able in makefile
-	(working on this in local fixquit branch)
-	the window never receives the 'close' signal when it fails.
-	should count the number of open windows and if it's the last one, close the mainwin too - that is the correct way to kill the server. note that osx's "quit" event may need a special case in the code
-add a loading indicator
-
-2 windows open in windows & linux now, since changing the watch rules for osx. actually doesn't seem to happen for windows (at least not reliably)
-need to ensure osx build uses new icon too - have asked peter
-build to package.nw, to simplify and unify the mac / windows / linux packaging around that
-Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
-process.on('exit') not triggered on linux, either killing nwjs or quitting the application from the menu
-Menus - copy, paste, find, back / forward, search (maybe) [see Diogenes.xul for inspiration]
-
-Document better where the data should go from -prebuilt repo
-Use a fancy font (linux-libertine or junicode, maybe)
-
-Clean up diogenes-startup.js, removing commented out tests etc.
-Disable proxy for localhost, if possible
-i18n - https://gist.github.com/martinheidegger/89a29b9893433aba32d1 https://www.npmjs.com/package/i18n https://hacks.mozilla.org/2013/04/localize-your-node-js-service-part-1-of-3-a-node-js-holiday-season-part-9/
+it's easy to get perl warnings from diogenes; use it a bit and fix what's found
+make settings page shorter and clearer - probably just a variant of firstrun page
+consider changing the homepage interface so the 'what do you want to do' combobox is split out into a more sensible design
+remove chrome/ dir and rename diogenes-browser/ to server/ or similar
+headword in word lookup used to include macrons etc. probably don't want that now, but would be good to check with Peter what's most desirable.
+try to restart diogenes-server if it is killed
+title of work has disappeared from poem reader; see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts

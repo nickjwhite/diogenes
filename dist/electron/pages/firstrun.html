@@ -3,34 +3,43 @@
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Diogenes Database Settings</title>
+    <title>Diogenes First Run Setup</title>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' localhost">
-    <script type="text/javascript" src="dbsettings.js"></script>
-    <link rel="stylesheet" type="text/css" href="dbsettings.css" />
+    <script type="text/javascript" src="firstrun.js"></script>
+    <link rel="stylesheet" type="text/css" href="firstrun.css" />
   </head>
   <body>
-    <h1>Set Database Locations</h1>
+    <img id="biglogo" src="../assets/Diogenes_Logo.png" srcset="../assets/Diogenes_Logo.hidpi.png 2x" />
+    <h1>First Run Setup  <span id="almost">(you're almost there...)</span></h1>
     <p>Diogenes needs to know where on your computer the databases of ancient texts are located.  These are not distributed with Diogenes; they must be acquired separately.</p>
-    <p>Click the buttons below to set the locations of the databases.</p>
+    <p>You will need at least one database to use Diogenes.</p>
+
+    <div class="dbbuttons">
+
+    <p>Where are the database(s) saved on your computer?</p>
 
     <div class="dbpath">
-      <input id="PHIbutton" type="submit" value="PHI (Latin)" />
+      <input id="PHIbutton" type="submit" value="⭢ PHI (Latin)" />
       <span class="path" id="PHIpath"></span>
       <span class="ok" id="PHIok"></span>
     </div>
 
     <div class="dbpath">
-      <input id="TLGbutton" type="submit" value="TLG (Greek)" />
+      <input id="TLGbutton" type="submit" value="⭢ TLG (Greek)" />
       <span class="path" id="TLGpath"></span>
       <span class="ok" id="TLGok"></span>
     </div>
 
     <div class="dbpath">
-      <input id="DDPbutton" type="submit" value="DDP (Papyri, etc)" />
+      <input id="DDPbutton" type="submit" value="⭢ DDP (Papyri, etc)" />
       <span class="path" id="DDPpath"></span>
       <span class="ok" id="DDPok"></span>
     </div>
 
-    <p><hr /><input id="done" type="submit" value="Done" /></p>
+    </div>
+
+    <div id="donesection">
+    <p><button id="done" type="submit"><img src="../assets/icon.png" /> Start Diogenes</button></p>
+    </div>
   </body>
 </html>
