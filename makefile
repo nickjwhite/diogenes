@@ -87,7 +87,7 @@ w64perl:
 	rm w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 
 rcedit.exe:
-	curl -o $@ https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
+	curl -Lo $@ https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
 icons: dist/icon.svg
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
