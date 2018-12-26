@@ -88,9 +88,9 @@ app.on('browser-window-created', (event, win) => {
 		windows.splice(windows.indexOf(win), 1)
 
 		// Dereference the windows object if there are no more windows
-		if(windows.length == 0) {
-			windows = null
-		}
+//		if(windows.length == 0) {
+//			windows = null
+//		}
 	})
 
 	// Load context menu
@@ -261,9 +261,28 @@ function initializeMenuTemplate () {
                 {role: 'copy'},
                 {role: 'paste'},
                 {role: 'selectall'},
-   //             {role: 'find'}  <- needs implementing
-      ]
-    },
+                //             {role: 'find'}  <- needs implementing
+            ]
+        },
+        {
+            label: 'Go',
+            submenu: [
+                {label: 'Back', click: (menu, win) => {
+                    let contents = win.webContents
+                    contents.goBack()
+                }},
+                {label: 'Forward', click: (menu, win) => {
+                    let contents = win.webContents
+                    contents.goForward()
+                }},
+                {label: 'Home', click: (menu, win) => {
+                    win.loadURL('http://localhost:' + dioSettings.port) 
+                }},
+
+            ]
+                
+        },
+        
     {
         label: 'View',
         submenu: [
@@ -300,7 +319,7 @@ function initializeMenuTemplate () {
   
   if (process.platform === 'darwin') {
     template.unshift({
-      label: app.getName(),
+      label: "Diogenes",
       submenu: [
         {role: 'about'},
         {type: 'separator'},
@@ -327,19 +346,29 @@ function initializeMenuTemplate () {
     )
   
     // Window menu
-      template[3].submenu = [
+      template[4].submenu = [
           {
               label:'New Window',
-              click () {
-                  let win = new BrowserWindow({width: 800, height: 600, show: true})
-              }
+              accelerator: 'CmdOrCtrl+N',
+              click: (menu, win) => {
+                  let newWin
+                  if (typeof win === 'undefined') {
+                      newWin = new BrowserWindow({width: 800, height: 600, show: true})    
+                  } else {
+                      let [winX, winY] = win.getPosition()
+                      let newWinX = winX + 20
+                      let newWinY = winY + 20
+                      newWin = new BrowserWindow({width: 800, height: 600, show: true, x: newWinX, y: newWinY})
+                  }
+                  newWin.loadURL('http://localhost:' + dioSettings.port)
+	      }
           },
           {role: 'close'},
           {role: 'minimize'},
           {role: 'zoom'},
           {type: 'separator'},
           {role: 'front'}
-    ]
+      ]
   }
     return template
 }
