@@ -167,6 +167,7 @@ mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 dist/diogenes.icns
 	perl -pi -e 's/Electron/Diogenes/g' mac/Electron.app/Contents/Info.plist
 	perl -pi -e 's/com.github.electron/com.gitlab.diogenes/g' mac/Electron.app/Contents/Info.plist
 	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' mac/Electron.app/Contents/Info.plist
 	mv mac/Electron.app mac/Diogenes.app
 	mv mac/Diogenes.app/Contents/MacOS/Electron mac/Diogenes.app/Contents/MacOS/Diogenes
 	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
