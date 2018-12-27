@@ -116,6 +116,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes
 	cp -r diogenes-browser w32
 	cp -r dependencies w32
 	cp -r w32perl/strawberry w32
+	cp icons/diogenes.ico w32
 	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
 	sed 's/$$/\r/g' < README > w32/README.txt
 	wine rcedit.exe w32/diogenes.exe \
@@ -137,6 +138,7 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl icons/diogenes.
 	cp -r diogenes-browser w64
 	cp -r dependencies w64
 	cp -r w64perl/strawberry w64
+	cp icons/diogenes.ico w64
 	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
 	sed 's/$$/\r/g' < README > w64/README.txt
 	wine rcedit.exe w64/diogenes.exe \
@@ -196,6 +198,23 @@ pkg-w64: w64
 	rm -rf diogenes-win64-$(DIOGENESVERSION)
 
 pkg-all: pkg-linux64 pkg-mac pkg-w32 pkg-w64
+
+inno-setup: 
+	mkdir inno-setup
+	curl -Lo inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
+	cd inno-setup; innoextract is.exe
+
+installer-w32: inno-setup w32
+	wine inno-setup/app/ISCC.exe diogenes-win32.iss
+	mv Output/mysetup.exe diogenes-setup-win32.exe
+	rmdir Output
+
+installer-w64: inno-setup w64
+	wine inno-setup/app/ISCC.exe diogenes-win64.iss
+	mv Output/mysetup.exe diogenes-setup-win64.exe
+	rmdir Output
+
+installer-all: installer-w32 installer-w64 #installer-mac installer-deb64 installer-rpm64
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
