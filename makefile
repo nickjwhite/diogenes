@@ -58,7 +58,7 @@ linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	cp -r diogenes-browser linux64
 	cp -r dependencies linux64
 	cp -r dist linux64
-	printf '#/bin/sh\nd=`dirname $$0`\n"$$d/electron-v$(ELECTRONVERSION)-linux-x64/electron" "$$d/dist/electron"\n' > linux64/diogenes
+	printf '#/bin/sh\nd="$$(dirname "$$(readlink -f "$$0")")" \n"$$d/electron-v$(ELECTRONVERSION)-linux-x64/electron" "$$d/dist/electron"\n' > linux64/diogenes
 	chmod +x linux64/diogenes
 	cp COPYING README linux64
 
