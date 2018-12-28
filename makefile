@@ -224,7 +224,6 @@ installer-macpkg: mac
 	fpm --prefix=/Applications -C mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
 	rm -rf mac
 
-installer-all: installer-w32 installer-w64 installer-macpkg #installer-deb64 installer-rpm64
 installer-deb64: linux64
 	rm -f diogenes-$(DIOGENESVERSION)_amd64.deb
 	fpm -s dir -t deb -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
@@ -236,6 +235,21 @@ installer-deb64: linux64
 		linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
+
+# Completely untested functionality.  I don't know how many of these fpm options are applicable when generating rpms.
+installer-rpm64: linux64
+	rm -f diogenes-$(DIOGENESVERSION).x86_64.rpm
+	fpm -s dir -t rpm -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
+		-p diogenes-$(DIOGENESVERSION).x86_64.rpm -d perl \
+		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
+		--url http://diogenes.durham.ac.uk \
+		--description "Tool for legacy databases of Latin and Greek texts" \
+		--license GPL3 --post-install dist/post-install-rpm.sh \
+		linux64/=/usr/local/diogenes/ \
+		dist/diogenes.desktop=/usr/share/applications/ \
+		dist/icon.svg=/usr/share/icons/diogenes.svg
+
+installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
