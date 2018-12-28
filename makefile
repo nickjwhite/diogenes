@@ -225,6 +225,17 @@ installer-macpkg: mac
 	rm -rf mac
 
 installer-all: installer-w32 installer-w64 installer-macpkg #installer-deb64 installer-rpm64
+installer-deb64: linux64
+	rm -f diogenes-$(DIOGENESVERSION)_amd64.deb
+	fpm -s dir -t deb -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
+		-p diogenes-$(DIOGENESVERSION)_amd64.deb -d perl \
+		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
+		--url http://diogenes.durham.ac.uk \
+		--description "Tool for legacy databases of Latin and Greek texts" \
+		--license GPL3 --post-install dist/post-install-deb.sh \
+		linux64/=/usr/local/diogenes/ \
+		dist/diogenes.desktop=/usr/share/applications/ \
+		dist/icon.svg=/usr/share/icons/diogenes.svg
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
