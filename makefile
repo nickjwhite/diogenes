@@ -208,13 +208,15 @@ inno-setup:
 
 installer-w32: inno-setup w32
 	wine inno-setup/app/ISCC.exe diogenes-win32.iss
-	mv Output/mysetup.exe diogenes-setup-win32.exe
+	mv -f Output/mysetup.exe diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir Output
+	rm -rf w32
 
 installer-w64: inno-setup w64
 	wine inno-setup/app/ISCC.exe diogenes-win64.iss
-	mv Output/mysetup.exe diogenes-setup-win64.exe
+	mv -f Output/mysetup.exe diogenes-setup-win64-$(DIOGENESVERSION).exe
 	rmdir Output
+	rm -rf w64
 
 installer-all: installer-w32 installer-w64 #installer-mac installer-deb64 installer-rpm64
 
