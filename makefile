@@ -5,7 +5,7 @@
 
 DEPDIR = dependencies
 
-DIOGENESVERSION = 4.0.0pr
+DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" diogenes-browser/perl/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 
 ELECTRONVERSION = 3.0.10
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
