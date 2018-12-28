@@ -218,13 +218,13 @@ installer-w64: inno-setup w64
 	rmdir Output
 	rm -rf w64
 
-installer-all: installer-w32 installer-w64 #installer-mac installer-deb64 installer-rpm64
 # NB. Installing this Mac package will silently fail if there exists another copy of Diogenes.app with the same version number anywhere whatsoever on the same disk volume, such as in the mac directory here or another random copy on the devel machine.  
 installer-macpkg: mac
 	rm -f Diogenes-$(DIOGENESVERSION).pkg
 	fpm --prefix=/Applications -C mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
 	rm -rf mac
 
+installer-all: installer-w32 installer-w64 installer-macpkg #installer-deb64 installer-rpm64
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
