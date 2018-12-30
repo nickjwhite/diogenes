@@ -37,7 +37,7 @@ use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
 
 # Use local CPAN
-use lib ($Bin, catdir($Bin, '..', '..', 'dependencies', 'CPAN') );
+use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 
 use HTTP::Daemon;  
 # use CGI qw(-nodebug -compile :standard);
