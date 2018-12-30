@@ -208,8 +208,8 @@ inno-setup:
 
 installer-w32: inno-setup w32
 	wine inno-setup/app/ISCC.exe dist/diogenes-win32.iss
-	mv -f Output/mysetup.exe diogenes-setup-win32-$(DIOGENESVERSION).exe
-	rmdir Output
+	mv -f dist/Output/mysetup.exe diogenes-setup-win32-$(DIOGENESVERSION).exe
+	rmdir dist/Output
 	rm -rf w32
 
 installer-w64: inno-setup w64
