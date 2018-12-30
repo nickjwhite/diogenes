@@ -1,0 +1,22 @@
+* Repackage diogenes within electron
+
+The electron docs suggest that you should nest your app files within the electron tree (in resources/app/), and then you can just rename electron
+
+* Code cleanup
+
+Clean repo, remove diogenes-browser, chrome, etc.
+
+* Add file menu 
+For windows and linux
+
+* Fix Windows add windows bug
+New window creates new Perl process but no new window
+Cannot close app thereafter
+
+* Implement find in page
+
+* Add XML output functionality
+
+* check github issues tracker
+
+
