@@ -1204,7 +1204,7 @@ sub match_authtab
             grep $auths{$self->{type}}{$_} =~ /$pattern/i,
             keys %{ $auths{$self->{type}} };
         }
-        else
+        elsif ($pattern =~ /\d+/)
         {       # Search keys (auth nums)
             $pattern = sprintf '%04d', $pattern; 
             %match = map { $_ => $auths{$self->{type}}{$_} }
