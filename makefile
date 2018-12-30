@@ -277,3 +277,4 @@ clean:
 	rm -rf linux64 diogenes-linux64-$(DIOGENESVERSION)
 	rm -rf w32 w32perl diogenes-w32-$(DIOGENESVERSION)
 	rm -rf w64 w64perl diogenes-w64-$(DIOGENESVERSION)
+	rm -rf inno-setup
