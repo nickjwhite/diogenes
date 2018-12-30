@@ -249,7 +249,19 @@ installer-rpm64: linux64
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 
-installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64
+installer-arch64: linux64
+	rm -f diogenes-$(DIOGENESVERSION).pkg.tar.xz
+	fpm -s dir -t pacman -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
+		-p diogenes-$(DIOGENESVERSION).pkg.tar.xz -d perl \
+		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
+		--url http://diogenes.durham.ac.uk \
+		--description "Tool for legacy databases of Latin and Greek texts" \
+		--license GPL3 --post-install dist/post-install-rpm.sh \
+		linux64/=/usr/local/diogenes/ \
+		dist/diogenes.desktop=/usr/share/applications/ \
+		dist/icon.svg=/usr/share/icons/diogenes.svg
+
+installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64 installer-arch64
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
