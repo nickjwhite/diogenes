@@ -61,6 +61,7 @@ my $config_dir = $Diogenes::Base::config_dir;
 unlink $config_dir if (-e $config_dir and not -d $config_dir);
 mkdir $config_dir unless (-e $config_dir and -d $config_dir);
 my $lock_file = File::Spec->catfile($config_dir, 'diogenes-lock.json');
+my $lock_file_temp = File::Spec->catfile($config_dir, 'diogenes-lock-temp.json');
 
 # Mozilla wants this: it ignores css files of type text/plain.
 use LWP::MediaTypes qw(add_type);
@@ -139,15 +140,7 @@ $root_dir .= '/' unless $root_dir =~ m#[/\\]$#;
 # Pre-compile the main cgi script
 compile_cgi_subroutine("Diogenes.cgi");
 
-
 print "Server Root: $root_dir\n" if $DEBUG;
-
-# if (-e $lock_file)
-# {
-#     print "There's a lock file from a previous server.\n";   
-#     print "Running diogenes-server-kill.\n";
-#     do $root_dir . 'diogenes-server-kill.pl';
-# }
 
 my $server;
 my $max_port_tries = 20;
@@ -404,17 +397,21 @@ REQUEST:
 sub write_lock
 {
     # Write number of port to lock file to indicate that we are ready
-    # to receive connections.  Mild race condition here, but I'm not
-    # sure if anything can be done about it.
+    # to receive connections.
     unlink $lock_file;
+    unlink $lock_file_temp;
     print "Writing $lock_file\n" if $DEBUG;
-    open FLAG, ">$lock_file" or warn "Could not make lock file: $!";
+    open FLAG, ">$lock_file_temp" or warn "Could not create lock file: $!";
     print FLAG
 "{
 \"port\": $PORT,
 \"pid\": $$
 }";
+    # Flush filehandle
     close FLAG;
+    # This ought to address the race condition whereby the browser process can read the file after it has been created but before it has been written to.  The linking action within the rename ought to be atomic.
+    rename $lock_file_temp, $lock_file;
+
 }
     
 sub compile_cgi_subroutine
