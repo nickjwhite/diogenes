@@ -229,7 +229,7 @@ function startServer () {
 		perlName = path.join(app.getAppPath(), '..', '..', 'strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
-	const serverPath = path.join(app.getAppPath(), '..', '..', 'diogenes-browser', 'perl', 'diogenes-server.pl')
+	const serverPath = path.join(app.getAppPath(), '..', '..', 'server', 'diogenes-server.pl')
 
 	let server = execFile(perlName, [serverPath], {'windowsHide': true})
 	server.stdout.on('data', (data) => {
