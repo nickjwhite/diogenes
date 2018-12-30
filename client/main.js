@@ -40,10 +40,10 @@ initialise()
 //       currentLinkURL global variable
 const linkContextMenu = new Menu()
 linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
-	if(currentLinkURL) {
-		win.loadURL(currentLinkURL)
-		currentLinkURL = null
-	}
+    if(currentLinkURL) {
+	win.loadURL(currentLinkURL)
+	currentLinkURL = null
+    }
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
 	if(currentLinkURL) {
@@ -67,27 +67,27 @@ function createWindow () {
 			"Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
 		}, details.responseHeaders)})
 	})
+    // Use saved window state if available
+    let winstate = getWindowState(winStatePath)
+    if(winstate && winstate.bounds) {
+	x = winstate.bounds.x
+	y = winstate.bounds.y
+	w = winstate.bounds.width
+	h = winstate.bounds.height
+    } else {
+	x = undefined
+	y = undefined
+	w = 800
+	h = 600
+    }
 
-	// Use saved window state if available
-	let winstate = getWindowState(winStatePath)
-	if(winstate && winstate.bounds) {
-		x = winstate.bounds.x
-		y = winstate.bounds.y
-		w = winstate.bounds.width
-		h = winstate.bounds.height
-	} else {
-		x = undefined
-		y = undefined
-		w = 800
-		h = 600
-	}
 
-	let win = new BrowserWindow({x: x, y: y, width: w, height: h,
-	                             show: false, webPreferences: webprefs, winopts})
+    let win = new BrowserWindow({x: x, y: y, width: w, height: h,
+	                         show: false, webPreferences: webprefs, winopts})
 
-	if(winstate && winstate.maximzed) {
-		win.maximize()
-	}
+    if(winstate && winstate.maximzed) {
+	win.maximize()
+    }
 
 	// Hide window until everything has loaded
 	win.on('ready-to-show', function() {
@@ -95,12 +95,11 @@ function createWindow () {
 		win.focus()
 	})
 
-	// Save window state whenever it changes
-	let changestates = ['resize', 'move', 'close']
-	changestates.forEach(function(e) {
-		win.on(e, function() {
-			saveWindowState(win, winStatePath)
-		})
+    // Save window state whenever it changes
+    let changestates = ['resize', 'move', 'close']
+    changestates.forEach(function(e) {
+	win.on(e, function() {
+	    saveWindowState(win, winStatePath)
 	})
 
 	// Remove any stale lockfile
@@ -108,8 +107,8 @@ function createWindow () {
 		fs.unlinkSync(lockFile)
 	}
 
-	loadWhenLocked(lockFile, prefsFile, win)
-        server = startServer()
+    loadWhenLocked(lockFile, prefsFile, win)
+    server = startServer()
 
     const menu = Menu.buildFromTemplate(initializeMenuTemplate())
     Menu.setApplicationMenu(menu)
@@ -342,7 +341,7 @@ function loadFirstPage(prefsFile, win) {
 }
 
 function initializeMenuTemplate () {
-    
+
     const template = [
         {
             label: 'Edit',
@@ -365,13 +364,13 @@ function initializeMenuTemplate () {
                     contents.goForward()
                 }},
                 {label: 'Home', click: (menu, win) => {
-                    win.loadURL('http://localhost:' + dioSettings.port) 
+                    win.loadURL('http://localhost:' + dioSettings.port)
                 }},
 
             ]
-                
+
         },
-        
+
     {
         label: 'View',
         submenu: [
@@ -393,7 +392,7 @@ function initializeMenuTemplate () {
                 label:'New Window',
                 click () { createWindow() }
             }
-      ]
+        ]
     },
     {
       role: 'help',
@@ -405,7 +404,7 @@ function initializeMenuTemplate () {
       ]
     }
   ]
-  
+
   if (process.platform === 'darwin') {
     template.unshift({
       label: "Diogenes",
@@ -421,7 +420,7 @@ function initializeMenuTemplate () {
         {role: 'quit'}
       ]
     })
-  
+
     // Edit menu
     template[1].submenu.push(
       {type: 'separator'},
@@ -433,7 +432,7 @@ function initializeMenuTemplate () {
         ]
       }
     )
-  
+
     // Window menu
       template[4].submenu = [
           {
