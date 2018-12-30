@@ -2,3 +2,4 @@ diogenes-browser/perl/Diogenes/unicode-equivs.pl
 diogenes-browser/perl/Diogenes/EntityTable.pm
 dependencies/UnicodeData-7.0.0.txt
 dependencies/PersXML.ent
+dependencies/data
