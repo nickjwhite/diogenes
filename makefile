@@ -54,12 +54,12 @@ electron/electron-v$(ELECTRONVERSION)-linux-x64:
 linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	rm -rf linux64
 	mkdir linux64
-	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64 linux64
-	cp -r diogenes-browser linux64
+	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64/* linux64
+	cp -r server linux64
 	cp -r dependencies linux64
 	cp -r dist linux64
-	printf '#/bin/sh\nd="$$(dirname "$$(readlink -f "$$0")")" \n"$$d/electron-v$(ELECTRONVERSION)-linux-x64/electron" "$$d/dist/electron"\n' > linux64/diogenes
-	chmod +x linux64/diogenes
+	cp -r client linux64/resources/app
+	mv linux64/electron linux64/diogenes
 	cp COPYING README linux64
 
 electron/electron-v$(ELECTRONVERSION)-win32-ia32:
