@@ -22,6 +22,10 @@ let currentLinkURL = null
 const webprefs = {nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
+const settingsPath = app.getPath('userData')
+const winStatePath = path.join(settingsPath, 'windowstate.json')
+const prefsFile = path.join(settingsPath, 'diogenes.prefs')
+
 
 // Ensure the app is single-instance (see 'second-instance' event
 // handler below)
@@ -46,27 +50,16 @@ linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
     }
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
-	if(currentLinkURL) {
-		let newwin = new BrowserWindow({width: 800, height: 600, show: true, webPreferences: webprefs, winopts})
-		newwin.loadURL(currentLinkURL)
-		currentLinkURL = null
-	}
+    if(currentLinkURL) {
+	let newwin = createWindow(20, 20)
+	newwin.loadURL(currentLinkURL)
+	currentLinkURL = null
+    }
 }}))
 
-// Create the initial window and start the diogenes server
-function createWindow () {
-	const settingsPath = app.getPath('userData')
-	lockFile = path.join(settingsPath, 'diogenes-lock.json')
-	const winStatePath = path.join(settingsPath, 'windowstate.json')
-	const prefsFile = path.join(settingsPath, 'diogenes.prefs')
-	process.env.Diogenes_Config_Dir = settingsPath
+// Create a new window (either the first or an additional one)
+function createWindow (offset_x, offset_y) {
 
-	// Set the Content Security Policy headers
-	session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-		callback({ responseHeaders: Object.assign({
-			"Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
-		}, details.responseHeaders)})
-	})
     // Use saved window state if available
     let winstate = getWindowState(winStatePath)
     if(winstate && winstate.bounds) {
@@ -81,6 +74,9 @@ function createWindow () {
 	h = 600
     }
 
+    // Add any desired offset from previously saved window location (useful for showing additional windows)
+    x = x + offset_x
+    y = y + offset_y
 
     let win = new BrowserWindow({x: x, y: y, width: w, height: h,
 	                         show: false, webPreferences: webprefs, winopts})
@@ -89,11 +85,12 @@ function createWindow () {
 	win.maximize()
     }
 
-	// Hide window until everything has loaded
-	win.on('ready-to-show', function() {
-		win.show()
-		win.focus()
-	})
+    // Hide window until everything has loaded
+    win.on('ready-to-show', function() {
+	win.show()
+	win.focus()
+        saveWindowState(win, winStatePath)
+    })
 
     // Save window state whenever it changes
     let changestates = ['resize', 'move', 'close']
@@ -101,11 +98,29 @@ function createWindow () {
 	win.on(e, function() {
 	    saveWindowState(win, winStatePath)
 	})
+    })
 
-	// Remove any stale lockfile
-	if (fs.existsSync(lockFile)) {
-		fs.unlinkSync(lockFile)
-	}
+    return win
+}
+
+// Create the initial window and start the diogenes server
+function createFirstWindow () {
+    lockFile = path.join(settingsPath, 'diogenes-lock.json')
+    process.env.Diogenes_Config_Dir = settingsPath
+
+    // Set the Content Security Policy headers
+    session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+	callback({ responseHeaders: Object.assign({
+	    "Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
+	}, details.responseHeaders)})
+    })
+
+    win = createWindow(0, 0);
+
+    // Remove any stale lockfile
+    if (fs.existsSync(lockFile)) {
+	fs.unlinkSync(lockFile)
+    }
 
     loadWhenLocked(lockFile, prefsFile, win)
     server = startServer()
@@ -138,8 +153,8 @@ app.on('browser-window-created', (event, win) => {
 	// Electron documentation states that it should be set for "failing to
 	// do so may result in unexpected behavior" but I haven't seen any yet.
 	win.webContents.on('new-window', (event, url) => {
-		event.preventDefault()
-		const win = new BrowserWindow({show: false, webPreferences: webprefs, winopts})
+	    event.preventDefault()
+	    const win = createWindow(20, 20)
 		win.once('ready-to-show', () => win.show())
 		win.loadURL(url)
 		//event.newGuest = win
@@ -161,12 +176,12 @@ app.on('browser-window-created', (event, win) => {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 
-app.on('ready', createWindow)
+app.on('ready', createFirstWindow)
 
 // app.on('ready', () => {
 //     const menu = Menu.buildFromTemplate(initializeMenuTemplate())
 //     Menu.setApplicationMenu(menu)
-//     createWindow
+//     createFirstWindow
 // })
 
 // Quit when all windows are closed.
@@ -190,13 +205,6 @@ app.on('will-quit', () => {
 	fs.unlinkSync(lockFile)
 })
 
-app.on('activate', () => {
-	// On macOS it's common to re-create a window in the app when the
-	// dock icon is clicked and there are no other windows open.
-	if (Object.keys(windows).length == 0) {
-		createWindow()
-	}
-})
 
 // If a user tries to open a second instance of diogenes, catch that
 // and focus an existing window instead
@@ -390,7 +398,11 @@ function initializeMenuTemplate () {
             {role: 'close'},
             {
                 label:'New Window',
-                click () { createWindow() }
+                accelerator: 'CmdOrCtrl+N',
+                click: (menu, win) => {
+                    let newWin = createWindow(20, 20)
+                    newWin.loadURL('http://localhost:' + dioSettings.port)
+	        }
             }
         ]
     },
@@ -441,12 +453,11 @@ function initializeMenuTemplate () {
               click: (menu, win) => {
                   let newWin
                   if (typeof win === 'undefined') {
-                      newWin = new BrowserWindow({width: 800, height: 600, show: true})    
+                      // No existing application window
+                      newWin = createWindow(0, 0)
                   } else {
-                      let [winX, winY] = win.getPosition()
-                      let newWinX = winX + 20
-                      let newWinY = winY + 20
-                      newWin = new BrowserWindow({width: 800, height: 600, show: true, x: newWinX, y: newWinY})
+                      // Additional window
+                      newWin = createWindow(20, 20)
                   }
                   newWin.loadURL('http://localhost:' + dioSettings.port)
 	      }
