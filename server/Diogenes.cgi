@@ -198,8 +198,10 @@ my $essential_footer = sub
 
 my $my_footer = sub
 {                                                       
-    print
-        $f->p({class => 'footer'}, qq(The information in these databases may be subject to restrictions on access and use; consult your licenses. <br/>Diogenes (version $version) is &copy; 1999-2017 P.J. Heslin.));
+    print x
+        $f->p({class => 'footer'}, qq(The information in these databases may be subject to
+        restrictions on access and use; consult your licenses. Diogenes
+        (version $version) is &copy; 1999-2017 P.J. Heslin.));
     $essential_footer->();
 };
 
