@@ -198,10 +198,8 @@ my $essential_footer = sub
 
 my $my_footer = sub
 {                                                       
-    print x
-        $f->p({class => 'footer'}, qq(The information in these databases may be subject to
-        restrictions on access and use; consult your licenses. Diogenes
-        (version $version) is &copy; 1999-2017 P.J. Heslin.));
+    print 
+        $f->p({class => 'footer'}, qq(The information in these databases may be subject to restrictions on access and use; consult your licenses.<br/> Diogenes (version $version) is &copy; 1999-2017 P.J. Heslin.));
     $essential_footer->();
 };
 
@@ -409,7 +407,6 @@ $output{splash} = sub
                        $f->submit( -name =>'go',
                                    -value=>'Go')))));
     
-
     $my_footer->();
         
 };
