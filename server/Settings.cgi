@@ -136,7 +136,6 @@ You can add these manually to a configuration file: ',
         $q->hr,
         $q->h2('Version information'),
         $q->p($version_info),
-        $q->p('<a href="Diogenes.cgi">Click here to return to Diogenes.</a>'),
         
 
           '</center>',
@@ -188,7 +187,7 @@ my $write_changes = sub
     $q->center(
         $q->h1('Settings changed'),
         $q->p("Your new settings are now in effect, and have been written to this file:<br>$rcfile"),
-        $q->p('<a href="Diogenes.cgi">Click here to continue.</a>')),
+        $q->p('You may now close this window.')),
     $q->end_html;                  
 };
 

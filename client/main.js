@@ -354,7 +354,7 @@ function initializeMenuTemplate () {
             label: 'File',
             submenu: [
                 {
-                    label:'New Window',
+                    label: 'New Window',
                     accelerator: 'CmdOrCtrl+N',
                     click: (menu, win) => {
                         let newWin
@@ -368,6 +368,14 @@ function initializeMenuTemplate () {
                         newWin.loadURL('http://localhost:' + dioSettings.port)
                     }
                 },
+                {
+                    label: 'Diogenes Settings',
+                    accelerator: 'CmdOrCtrl+S',
+                    click: (menu, win) => {
+                        let newWin = createWindow(20, 20)
+		        newWin.loadURL('http://localhost:' + dioSettings.port + '/Settings.cgi')
+                    }
+                }
             ]
         },
 
