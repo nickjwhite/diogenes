@@ -198,10 +198,8 @@ my $essential_footer = sub
 
 my $my_footer = sub
 {                                                       
-    print 
-        $f->p({class => 'footer'}, qq(All data is &copy; the <em>Thesaurus
-        Linguae Graecae</em>, the Packard Humanities Institute, The Perseus Project and
-        others. The information in these databases is subject to
+    print x
+        $f->p({class => 'footer'}, qq(The information in these databases may be subject to
         restrictions on access and use; consult your licenses. Diogenes
         (version $version) is &copy; 1999-2017 P.J. Heslin.));
     $essential_footer->();
