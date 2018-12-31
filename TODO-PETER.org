@@ -1,14 +1,24 @@
-* Finish menu items
-Add accelerator keys for all
-Go through list of electron built-ins 
-Add file menu for windows and linux
+* Settings menu item
+Separate one for database location chooser
+Point to settings on first-run
+
+
+* There's something odd with the display of some glyphs in the Perseus analysis: 
+lī ber , ebreve;ra, ĕ rum
+clā mo , amacr;vi
+flō rĕ o , ubreve;i
 
 * Implement find in page
+
+* Create diogenes.durham.ac.uk
+add diogenes-help.html
+
 
 * Edit README
 Make it clear that this info and Github page are not of interest to ordinary users.
 
 * Add XML output functionality
+And look at latex output code for further ideas
 
 * check github issues tracker
 
