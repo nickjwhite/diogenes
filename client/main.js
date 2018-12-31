@@ -349,125 +349,108 @@ function loadFirstPage(prefsFile, win) {
 }
 
 function initializeMenuTemplate () {
-
     const template = [
         {
-            label: 'Edit',
+            label: 'File',
             submenu: [
-                {role: 'copy'},
-                {role: 'paste'},
-                {role: 'selectall'},
-                //             {role: 'find'}  <- needs implementing
+                {
+                    label:'New Window',
+                    accelerator: 'CmdOrCtrl+N',
+                    click: (menu, win) => {
+                        let newWin
+                        if (typeof win === 'undefined') {
+                            // No existing application window (for Mac only)
+                            newWin = createWindow(0, 0)
+                        } else {
+                            // Additional window
+                            newWin = createWindow(20, 20)
+                        }
+                        newWin.loadURL('http://localhost:' + dioSettings.port)
+                    }
+                },
             ]
+        },
+
+        {
+            label: 'Edit',
+            role: 'editMenu'
         },
         {
             label: 'Go',
             submenu: [
-                {label: 'Back', click: (menu, win) => {
-                    let contents = win.webContents
-                    contents.goBack()
-                }},
-                {label: 'Forward', click: (menu, win) => {
-                    let contents = win.webContents
-                    contents.goForward()
-                }},
-                {label: 'Home', click: (menu, win) => {
-                    win.loadURL('http://localhost:' + dioSettings.port)
-                }},
-
+                {label: 'Back',
+                 accelerator: 'CmdOrCtrl+[',
+                 click: (menu, win) => {
+                     let contents = win.webContents
+                     contents.goBack()
+                 }},
+                {label: 'Forward',
+                 accelerator: 'CmdOrCtrl+]',
+                 click: (menu, win) => {
+                     let contents = win.webContents
+                     contents.goForward()
+                 }},
+                {label: 'Home',
+                 accelerator: 'CmdOrCtrl+D',
+                 click: (menu, win) => {
+                     win.loadURL('http://localhost:' + dioSettings.port)
+                 }},
             ]
-
         },
-
-    {
-        label: 'View',
-        submenu: [
-            {role: 'resetzoom'},
-            {role: 'zoomin'},
-            {role: 'zoomout'},
-            {type: 'separator'},
-            {role: 'togglefullscreen'},
-            {type: 'separator'},
-            {role: 'toggledevtools'}
-      ]
-    },
-    {
-        role: 'window',
-        submenu: [
-            {role: 'minimize'},
-            {role: 'close'},
-            {
-                label:'New Window',
-                accelerator: 'CmdOrCtrl+N',
-                click: (menu, win) => {
-                    let newWin = createWindow(20, 20)
-                    newWin.loadURL('http://localhost:' + dioSettings.port)
-	        }
-            }
-        ]
-    },
-    {
-      role: 'help',
-      submenu: [
         {
-          label: 'Learn More',
-          click () { require('electron').shell.openExternal('https://electronjs.org') }
+            label: 'View',
+            submenu: [
+                {role: 'resetzoom'},
+                {role: 'zoomin'},
+                {role: 'zoomout'},
+                {type: 'separator'},
+                {role: 'togglefullscreen'},
+                {type: 'separator'},
+                {role: 'toggledevtools'}
+            ]
+        },
+        {
+            label: 'Window',
+            role: 'windowMenu',
+        },
+        {
+            role: 'help',
+            submenu: [
+                {
+                    label: 'Learn More',
+                    click () { require('electron').shell.openExternal('http://diogenes.durham.ac.uk/diogenes-help.html') }
+                }
+            ]
         }
-      ]
+    ]
+
+    if (process.platform === 'darwin') {
+        template.unshift({
+            label: "Diogenes",
+            submenu: [
+                {role: 'about'},
+                {type: 'separator'},
+                {role: 'services', submenu: []},
+                {type: 'separator'},
+                {role: 'hide'},
+                {role: 'hideothers'},
+                {role: 'unhide'},
+                {type: 'separator'},
+                {role: 'quit'}
+            ]
+        })
+        // File menu
+        template[1].submenu.push(
+            {type: 'separator'},
+            {
+                label: 'Speak',
+                submenu: [
+                    {role: 'startspeaking'},
+                    {role: 'stopspeaking'}
+                ]
+            }
+        )
     }
-  ]
 
-  if (process.platform === 'darwin') {
-    template.unshift({
-      label: "Diogenes",
-      submenu: [
-        {role: 'about'},
-        {type: 'separator'},
-        {role: 'services', submenu: []},
-        {type: 'separator'},
-        {role: 'hide'},
-        {role: 'hideothers'},
-        {role: 'unhide'},
-        {type: 'separator'},
-        {role: 'quit'}
-      ]
-    })
-
-    // Edit menu
-    template[1].submenu.push(
-      {type: 'separator'},
-      {
-        label: 'Speech',
-        submenu: [
-          {role: 'startspeaking'},
-          {role: 'stopspeaking'}
-        ]
-      }
-    )
-
-    // Window menu
-      template[4].submenu = [
-          {
-              label:'New Window',
-              accelerator: 'CmdOrCtrl+N',
-              click: (menu, win) => {
-                  let newWin
-                  if (typeof win === 'undefined') {
-                      // No existing application window
-                      newWin = createWindow(0, 0)
-                  } else {
-                      // Additional window
-                      newWin = createWindow(20, 20)
-                  }
-                  newWin.loadURL('http://localhost:' + dioSettings.port)
-	      }
-          },
-          {role: 'close'},
-          {role: 'minimize'},
-          {role: 'zoom'},
-          {type: 'separator'},
-          {role: 'front'}
-      ]
-  }
     return template
 }
