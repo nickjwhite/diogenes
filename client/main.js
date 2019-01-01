@@ -403,6 +403,26 @@ function initializeMenuTemplate () {
                  click: (menu, win) => {
                      win.loadURL('http://localhost:' + dioSettings.port)
                  }},
+
+                {type: 'separator'},
+
+                {label: 'Find',
+                 accelerator: 'CmdOrCtrl+F',
+                 click: (menu, win) => {
+                     findText(win)
+                 }},
+                {label: 'Find Next',
+                 accelerator: 'CmdOrCtrl+G',
+                 click: (menu, win) => {
+                     win.webContents.findInPage(win.mySearchText, {'findNext': true})
+                 }},
+                {label: 'Find Previous',
+                 accelerator: 'CmdOrCtrl+Shift+G',
+                 click: (menu, win) => {
+                     win.webContents.findInPage(win.mySearchText,
+                                                {'findNext': true, 'forward': false})
+                 }},
+
             ]
         },
         {
@@ -461,4 +481,32 @@ function initializeMenuTemplate () {
     }
 
     return template
+}
+
+function findText (win) {
+    let findWin = new BrowserWindow({
+        parent: win,
+        modal: true,
+        width: 200,
+        height: 150,
+        center: true,
+        resizable: false,
+        frame: false,
+        transparent: false,
+    })
+    ipcMain.on("closeDialog", (event, text) => {
+        if (text === "") {
+            win.webContents.stopFindInPage('clearSelection')
+        }
+        else {
+            win.webContents.findInPage(text)
+            win.mySearchText = text
+        }
+    })
+    // Clear highlighting when we navigate to a new page
+    win.webContents.on('did-start-loading', (event, result) => {
+         win.webContents.stopFindInPage('clearSelection')
+     })
+
+    findWin.loadFile("pages/find.html")
 }
