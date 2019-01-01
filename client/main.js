@@ -486,15 +486,15 @@ function initializeMenuTemplate () {
 function findText (win) {
     let findWin = new BrowserWindow({
         parent: win,
-        modal: true,
+        modal: false,
         width: 200,
         height: 150,
-        center: true,
-        resizable: false,
-        frame: false,
+        center: false,
+        resizable: true,
+        frame: true,
         transparent: false,
     })
-    ipcMain.on("closeDialog", (event, text) => {
+    ipcMain.on("findText", (event, text) => {
         if (text === "") {
             win.webContents.stopFindInPage('clearSelection')
         }
@@ -502,6 +502,9 @@ function findText (win) {
             win.webContents.findInPage(text)
             win.mySearchText = text
         }
+    })
+    findWin.on('closed', () => {
+        win.webContents.stopFindInPage('clearSelection')
     })
     // Clear highlighting when we navigate to a new page
     win.webContents.on('did-start-loading', (event, result) => {
