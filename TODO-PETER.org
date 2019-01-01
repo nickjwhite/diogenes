@@ -1,14 +1,13 @@
-* Settings menu item
-Separate one for database location chooser
-Point to settings on first-run
-
-
 * There's something odd with the display of some glyphs in the Perseus analysis: 
 lī ber , ebreve;ra, ĕ rum
 clā mo , amacr;vi
 flō rĕ o , ubreve;i
 
 * Implement find in page
+find-next, find-previous
+submit on enter
+prettify modal window
+
 
 * Create diogenes.durham.ac.uk
 add diogenes-help.html
