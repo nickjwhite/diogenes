@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="find.css" />
+  </head>
+  <body>
+    <center>
+      <div class="find-header"><p>Find in page:</p>
+      </div>
+      <div class="find-body">
+        <input id="textToFind" type="text" value=""/>
+        <menu>
+          <button onclick="response()">Search</button>
+          <button onclick="cancel()">Cancel</button>
+        </menu>
+      </div>
+    </center>
+    <script>
+const { ipcRenderer } = require("electron")
+function cancel() {
+  ipcRenderer.send("closeDialog", "")
+  this.close();
+}
+
+function response() {
+  ipcRenderer.send("closeDialog", document.getElementById("textToFind").value)
+  this.close();
+}
+
+</script>
+  </body>
+</html>
+  
