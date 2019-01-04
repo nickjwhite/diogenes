@@ -484,16 +484,28 @@ function initializeMenuTemplate () {
 }
 
 function findText (win) {
+    let findWidth = 200
+    let find_x = win.getBounds().x + win.getBounds().width - findWidth
+    let find_y = win.getBounds().y
+
     let findWin = new BrowserWindow({
         parent: win,
+        show: false,
         modal: false,
-        width: 200,
-        height: 150,
-        center: false,
-        resizable: true,
-        frame: true,
+        width: findWidth,
+        height: 60,
+        x: find_x,
+        y: find_y,
+        resizable: false,
+        movable: true,
+        frame: false,
         transparent: false,
     })
+    findWin.once('ready-to-show', () => {
+        findWin.show()
+        findWin.focus()
+    })
+
     ipcMain.on("findText", (event, text) => {
         if (text === "") {
             win.webContents.stopFindInPage('clearSelection')

@@ -7,17 +7,22 @@
     <title>Find in Page</title>
   </head>
   <body>
-    <center>
-      <div class="find-body">
-        <input id="textToFind" type="text" value=""/>
-        <menu>
-          <button onclick="response()">Search</button>
-          <button onclick="cancel()">Cancel</button>
-        </menu>
+    <div class="find-body">
+      <form>
+        <input id="textToFind" type="text" name="find" value="" autofocus />
+        <button onclick="response()">Search</button>&nbsp;<button onclick="cancel()">Cancel</button>
+      </form>
       </div>
-    </center>
-    <script>
+      <script>
+
 const { ipcRenderer } = require("electron")
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' || event.keyCode === 27) {
+        cancel();
+    }
+});
+
 function cancel() {
   ipcRenderer.send("findText", "")
   this.close();
@@ -30,4 +35,3 @@ function response() {
 </script>
   </body>
 </html>
-  
