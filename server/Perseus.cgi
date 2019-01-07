@@ -299,8 +299,8 @@ my $text_with_links = sub {
     $text_lang = "grk" if $text_lang eq "greek";
     my $out = '';
     $out .= " " if $text =~ m/^(\s+)/;
-    # skip spaces and &; entities
-    while ($text=~m/([^\s&]+)((?:&[^;\s]+[;\s]|\s)*)/g) {
+    # skip spaces 
+    while ($text=~m/([^\s]+)(\s*)/g) {
         my $word = $1;
         my $space = $2 || '';
         my $form = $word;
