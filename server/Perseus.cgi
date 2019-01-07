@@ -302,7 +302,7 @@ my $text_with_links = sub {
     # skip spaces and &; entities
     while ($text=~m/([^\s&]+)((?:&[^;\s]+[;\s]|\s)*)/g) {
         my $word = $1;
-        my $space = $2 . ' '|| ' ';
+        my $space = $2 || '';
         my $form = $word;
         $form =~ s/\-//g;
         $form =~ s/[^A-Za-z]//g if $text_lang eq 'eng';
