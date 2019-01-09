@@ -1,7 +1,20 @@
+Helma's LSJ:
+	Uses unicode rather than betacode for most things
+	(looking at n915) Uses div2 rather than entryFree, head rather than orth for 1st orth tag, dispatches with TEIform attrib everywhere, i instead of tr, biblScope tag dispatched with
+	to my surprise the reformat_lsj script does actual xml parsing, and it's pretty simple with perl
+	helma's lsj is one entry per line, so may well not need to reformat.
+	more likely will just need to lightly adjust the scripts in the face of the above tag name changes. bigger issue will be getting diogenes to use the unicode rather than betacode, but that shouldn't be too hard
+		done the utils scripts for indexes, was easy
+		have partially done the Perseus.cgi changes. needed to remove newlines to get binary search to work. is broadly working now, but there are at least 2 big bugs
+			1) some of the unicode in the output is borked, seemingly when greek isn't in <foreign> tags
+			2) the search text doesn't seem to match as much. for example searching λαμβάνω no longer finds it (and indeed in this case starts at a part of the dictionary quite different). not sure why yet
+			3) clicking on any of the unicode in a dictionary entry will bring up borked text in the resulting dictionary page
+
 Suetonius bibliographical references are incorrectly handled, resulting in an invalid jump
 	perseus seem to have changed their referencing of him, from: Perseus:abo:phi,1348,001:life=gal.:16 to: urn:cts:latinLit:phi1348.phi017:16
 	therefore need to add a mapping, either to the jumpTo part of diogenes or just in perseus-abo.pl.
 	there may be other authors for whom this applies; ask Perseus / look for other 'strange' patterns in the original urns that may have been changed
+	for the LSJ, at least, this may not be an issue once we switch to Helma's LSJ. Need to revisit once we have switched.
 see BUG in diogenes-browser/perl/Diogenes/Browser.pm
 add a .desktop entry for linux
 think about how best to enable installation on linux systems; will work from the directory, but ideally the diogenes script could be told a location it was installed to, so it could be elsewhere
