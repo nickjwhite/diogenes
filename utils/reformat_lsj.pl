@@ -6,51 +6,57 @@
 
 use strict;
 
-# use local CPAN
-use FindBin qw($Bin);
-use File::Spec::Functions qw(catdir);
-use lib (catdir($Bin, '..', 'dependencies', 'CPAN') );
-
-use XML::Tiny qw(parsefile);
+use XML::Parser;
+use XML::Parser::EasyTree;
+my $parser = new XML::Parser(Style=>'EasyTree');
+binmode STDOUT, ':utf8';
 
 sub attribs_str {
-	my $s = '';
-	for my $attrib (@_) {
-		for my $key (sort(keys(%$attrib))) {
-			$s .= ' ' . $key . '="' . $attrib->{$key} . '"';
-		}
-	}
-	return $s;
+    my $s = '';
+    my $attrib = shift;
+    for my $key (sort(keys(%$attrib))) {
+        # The TEIform attribs just take up an enormous amount of space.
+        next if $key eq 'TEIform';
+        $s .= ' ' . $key . '="' . $attrib->{$key} . '"';
+    }
+    return $s;
 }
 
 my $inentry = 0;
 sub print_contents {
-	for my $item (@_) {
-		if(ref($item) eq 'ARRAY') {
-			print_contents(@$item);
-			next;
-		}
-
-		if($item->{'type'} eq 't') {
-			printf("%s", $item->{'content'});
-		} else {
-			if($item->{'name'} eq 'entryFree') {
-				$inentry = 1;
-			}
-			printf("<%s %s>", $item->{'name'}, attribs_str($item->{'attrib'}));
-			print_contents($item->{'content'});
-			printf("</%s>", $item->{'name'});
-			if(! $inentry or $item->{'name'} eq 'entryFree') {
-				printf("\n");
-			}
-			if($item->{'name'} eq 'entryFree') {
-				$inentry = 0;
-			}
-		}
-	}
+    for my $item (@_) {
+        if(ref($item) eq 'ARRAY') {
+            print_contents(@$item);
+            next;
+        }
+        if($item->{'type'} eq 't') {
+            my $content = $item->{'content'};
+            # Consolidate whitespace.  A single excess space remains at the end of every line/entry, but we can live with that.
+            $content =~ s/\s+/ /gs;
+            printf("%s", $content);
+        } else {
+            if($item->{'name'} eq 'entryFree') {
+                $inentry = 1;
+            }
+            if(! $inentry or $item->{'name'} eq 'entryFree') {
+                printf("\n");
+            }
+            if (scalar keys %{$item->{'attrib'}}) {
+                printf("<%s%s>", $item->{'name'},
+                       attribs_str($item->{'attrib'}));
+            } else {
+                printf("<%s>", $item->{'name'});
+            }
+            print_contents($item->{'content'});
+            printf("</%s>", $item->{'name'});
+            if($item->{'name'} eq 'entryFree') {
+                $inentry = 0;
+            }
+        }
+    }
 }
 
-my @x = parsefile(\*STDIN, no_entity_parsing => 1);
+my @x = $parser->parse(\*STDIN);
 
 for my $i (@x) {
 	print_contents($i);

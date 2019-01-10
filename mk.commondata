@@ -77,10 +77,7 @@ LSJS = $(LSJDIR)/grc.lsj.perseus-eng1.xml $(LSJDIR)/grc.lsj.perseus-eng2.xml $(L
 $(DATA)/grc.lsj.perseus-eng0.xml: utils/reformat_lsj.pl $(LEXICA)/.git/HEAD
 	mkdir -p $(DATA)
 	echo '<!-- Reformatted for Diogenes from the XML files in https://github.com/PerseusDL/lexica -->' > $@
-	for LSJ in $(LSJS); do sed '/<!DOCTYPE/d;/<!ENTITY/d;/%PersDict/d' < $$LSJ | ./utils/reformat_lsj.pl >> $@; done
-	# TODO: fix XML::Tiny to parse "internal subset declarations" of
-	# doctypes correctly (sed works around it here) - looks like it's
-	# the % part in particular that it borks at.
+	for LSJ in $(LSJS); do cat $$LSJ | perl ./utils/reformat_lsj.pl >> $@; done
 
 $(BUILD)/lsj-index.txt: utils/index_lsj.pl $(DATA)/grc.lsj.perseus-eng0.xml
 	mkdir -p $(BUILD)
