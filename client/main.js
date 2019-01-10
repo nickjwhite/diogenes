@@ -428,7 +428,8 @@ function initializeMenuTemplate () {
         {
             label: 'View',
             submenu: [
-                {role: 'resetzoom'},
+                {role: 'resetzoom',
+                 label: 'Original Zoom'},
                 {role: 'zoomin'},
                 {role: 'zoomout'},
                 {type: 'separator'},
