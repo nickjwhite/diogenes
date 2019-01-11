@@ -16,6 +16,9 @@ See BUG in diogenes-browser/perl/Diogenes/Browser.pm - an invalid jump address c
 
 Add title of work back to poem reader (it used to be there); see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
 
+Update README to mention that latex output, the dio command line tool, and (maybe) other bits are still about, but haven't received much focus, so may not be as solid as the rest
+
+
 # Maybe TODO
 
 headword in word lookup used to include macrons etc. probably don't want that now, but would be good to check with Peter what's most desirable.
