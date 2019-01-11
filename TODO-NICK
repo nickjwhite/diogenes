@@ -1,18 +1,27 @@
+# TODO
+
+Update Electron to build (4.0.1)
+
+Add contributions / thanks prominently to diogenes
+
+Make settings page shorter and clearer - roughly a variant of firstrun page, but ensure that it still works outside of electron
+
 Suetonius bibliographical references are incorrectly handled, resulting in an invalid jump
 	perseus seem to have changed their referencing of him, from: Perseus:abo:phi,1348,001:life=gal.:16 to: urn:cts:latinLit:phi1348.phi017:16
 	therefore need to add a mapping, either to the jumpTo part of diogenes or just in perseus-abo.pl.
 	there may be other authors for whom this applies; ask Perseus / look for other 'strange' patterns in the original urns that may have been changed
-see BUG in diogenes-browser/perl/Diogenes/Browser.pm
-add a .desktop entry for linux
-think about how best to enable installation on linux systems; will work from the directory, but ideally the diogenes script could be told a location it was installed to, so it could be elsewhere
-add make install rule to install onto unix-like systems into system folders (so the diogenes-linux64 is an alternative, precompiled version, for people to stick on /opt or home, compared to this which is more for sysadmins / packagers)
-add contributions / thanks prominently to diogenes
-Menu needs populating
-see github issues
-it's easy to get perl warnings from diogenes; use it a bit and fix what's found
-make settings page shorter and clearer - probably just a variant of firstrun page
-consider changing the homepage interface so the 'what do you want to do' combobox is split out into a more sensible design
-remove chrome/ dir and rename diogenes-browser/ to server/ or similar
+	wait until helma's LSJ is integrated, to ensure we aren't doing unnecessary work here
+
+See BUG in diogenes-browser/perl/Diogenes/Browser.pm - an invalid jump address can cause the diogenes server to crash
+
+Add title of work back to poem reader (it used to be there); see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
+
+# Maybe TODO
+
 headword in word lookup used to include macrons etc. probably don't want that now, but would be good to check with Peter what's most desirable.
+
 try to restart diogenes-server if it is killed
-title of work has disappeared from poem reader; see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
+
+consider changing the homepage interface so the 'what do you want to do' combobox is split out into a more sensible design
+
+it's easy to get perl warnings from diogenes; use it a bit and fix what's found
