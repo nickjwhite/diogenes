@@ -269,7 +269,7 @@ clean:
 	rm -f $(DEPDIR)/PersXML.ent
 	rm -f server/Diogenes/EntityTable.pm
 	rm -rf server/fonts
-	rm -rf icons app/diogenes.icns
+	rm -rf icons dist/diogenes.icns
 	rm -f rcedit.exe
 	rm -rf build
 	rm -rf electron
