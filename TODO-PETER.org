@@ -2,6 +2,13 @@
 
 Where choosing dictionary lookup and then navigating forward and backward.  Screen should not split.
 
+* Fix unicode bug
+
+en-dash (—) which is #xE2 #x80 #x94 in utf8 is rendered as three 8-bit glyphs
+
+* Loading page
+Put back in for Mac
+
 * change electron dir to build/electron
 
 * Look at Nick's greatscott branch
