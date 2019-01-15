@@ -528,7 +528,7 @@ function findText (win) {
     })
     findWin.on('closed', () => {
         win.webContents.stopFindInPage('clearSelection')
-        ipcMain.removeAllListeners()
+        ipcMain.removeAllListeners('findText')
     })
     // Clear highlighting when we navigate to a new page
     win.webContents.on('did-start-loading', (event, result) => {
