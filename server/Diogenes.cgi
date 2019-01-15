@@ -30,8 +30,7 @@ $Diogenes::Base::cgi_flag = 1;
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
-#binmode STDOUT, ':utf8';
-binmode ((select), ':utf8');
+binmode (STDOUT, ':utf8');
 
 # Force read of config files 
 my %args_init = (-type => 'none');
