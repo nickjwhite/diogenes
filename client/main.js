@@ -19,7 +19,7 @@ let startupDone = false
 
 let currentLinkURL = null
 
-const webprefs = {nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
+const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
 const settingsPath = app.getPath('userData')
