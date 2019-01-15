@@ -481,6 +481,12 @@ function initializeMenuTemplate () {
         )
     }
 
+    if (process.platform !== 'darwin') {
+        template[0].submenu.push(
+                {role: 'quit'}
+        )
+    }
+
     return template
 }
 

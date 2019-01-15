@@ -1,7 +1,5 @@
 # TODO
 
-Update Electron to build (4.0.1)
-
 Add contributions / thanks prominently to diogenes
 
 Make settings page shorter and clearer - roughly a variant of firstrun page, but ensure that it still works outside of electron
