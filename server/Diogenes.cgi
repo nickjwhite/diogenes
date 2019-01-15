@@ -30,7 +30,8 @@ $Diogenes::Base::cgi_flag = 1;
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
-# binmode STDOUT, ':utf8';
+#binmode STDOUT, ':utf8';
+binmode ((select), ':utf8');
 
 # Force read of config files 
 my %args_init = (-type => 'none');
@@ -364,7 +365,8 @@ $output{splash} = sub
         $f->start_form(-id=>'form', -method=> 'get');
 
 
-    print $f->p({class => "homewelcome"}, qq(Welcome to Diogenes, a tool for searching and
+    print $f->p({class => "homewelcome"},
+                qq(Welcome to Diogenes, a tool for searching and
         browsing through databases of ancient texts. Choose your type
         of query, then the corpus, then type in the query itself: this
         can be either some Greek or Latin to <strong>search</strong>

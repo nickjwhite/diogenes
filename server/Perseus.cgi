@@ -19,7 +19,8 @@ use CGI qw(:standard);
 
 my $debug = 0;
 
-binmode select, ':utf8';
+#binmode STDOUT, ':utf8';
+binmode ((select), ':utf8');
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 print STDERR "$Diogenes_Daemon::params\n" if $debug;

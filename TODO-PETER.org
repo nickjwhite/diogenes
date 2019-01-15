@@ -1,13 +1,17 @@
-* There's something odd with the display of some glyphs in the Perseus analysis: 
-lī ber , ebreve;ra, ĕ rum
-clā mo , amacr;vi
-flō rĕ o , ubreve;i
+* Fix server crash
 
-* Implement find in page
-find-next, find-previous
-submit on enter
-prettify modal window
+Where choosing dictionary lookup and then navigating forward and backward.  Screen should not split.
 
+* Fix unicode bug
+
+en-dash (—) which is #xE2 #x80 #x94 in utf8 is rendered as three 8-bit glyphs
+
+* Loading page
+Put back in for Mac
+
+* change electron dir to build/electron
+
+* Look at Nick's greatscott branch
 
 * Create diogenes.durham.ac.uk
 add diogenes-help.html
