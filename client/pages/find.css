@@ -1,0 +1,11 @@
+button#up span:before {
+	content: "⌃";
+	display:block;
+	transform: translateY(20%);
+}
+
+button#down span:before {
+	content: "⌄";
+	display:block;
+	transform: translateY(-20%);
+}

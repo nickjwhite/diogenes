@@ -491,7 +491,7 @@ function initializeMenuTemplate () {
 }
 
 function findText (win) {
-    let findWidth = 200
+    let findWidth = 350
     let find_x = win.getBounds().x + win.getBounds().width - findWidth
     let find_y = win.getBounds().y
 
@@ -513,17 +513,22 @@ function findText (win) {
         findWin.focus()
     })
 
-    ipcMain.on("findText", (event, text) => {
+    ipcMain.on("findText", (event, text, dir) => {
         if (text === "") {
             win.webContents.stopFindInPage('clearSelection')
         }
         else {
-            win.webContents.findInPage(text)
+            if (dir === "next") {
+                win.webContents.findInPage(text)
+            } else {
+                win.webContents.findInPage(text, {'forward': false})
+            }
             win.mySearchText = text
         }
     })
     findWin.on('closed', () => {
         win.webContents.stopFindInPage('clearSelection')
+        ipcMain.removeAllListeners()
     })
     // Clear highlighting when we navigate to a new page
     win.webContents.on('did-start-loading', (event, result) => {
