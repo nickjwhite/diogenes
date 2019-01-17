@@ -78,6 +78,9 @@ $(DATA)/grc.lsj.perseus-eng0.xml: utils/reformat_lsj.pl $(LEXICA)/.git/HEAD
 	mkdir -p $(DATA)
 	echo '<!-- Reformatted for Diogenes from the XML files in https://github.com/PerseusDL/lexica -->' > $@
 	for LSJ in $(LSJS); do cat $$LSJ | perl ./utils/reformat_lsj.pl >> $@; done
+# The splitting of LSJ entries over multiple, indented lines has introduced spurious whitespace before punctuation after citations.  This is a hack to get rid of the worst (but not all) of it.
+	perl -pi -e 's#</biblScope>\s+</bibl>#</biblScope></bibl>#g' $@
+	perl -pi -e 's#</bibl>\s+</cit>#</bibl></cit>#g' $@
 
 $(BUILD)/lsj-index.txt: utils/index_lsj.pl $(DATA)/grc.lsj.perseus-eng0.xml
 	mkdir -p $(BUILD)
