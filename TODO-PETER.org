@@ -23,6 +23,8 @@ Make it clear that this info and Github page are not of interest to ordinary use
 * Add XML output functionality
 And look at latex output code for further ideas
 
+Substitute libxml with XML::DOM:Lite for portability
+
 * check github issues tracker
 
 

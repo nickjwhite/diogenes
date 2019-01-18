@@ -23,6 +23,7 @@ while ($reader->read) {
 sub processNode {
     if ($reader->nodeType == XML_READER_TYPE_ELEMENT) {
         my $name = $reader->name;
+        my $closer = $reader->isEmptyElement ? ' />' : '>';
         if ($name eq 'entryFree') {
             $in_entry = 1;
             print "\n" unless $at_start;
@@ -38,11 +39,11 @@ sub processNode {
                     next if $attr_name eq 'TEIform';
                     print ' ' . $attr_name . '="' . $attr_val . '"';
                 }
-                print '>';
+                print $closer;
 
             }
             else {
-                print '>';
+                print $closer;
             }
         }
         $in_whitespace = 0;

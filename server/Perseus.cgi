@@ -355,6 +355,7 @@ my $munge_xml = sub {
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
     local $xml_ital = 0  ;
+#    print STDERR ">>$text\n";
     my $tree = XML::Tiny::parsefile($text,
                                     'no_entity_parsing' => 1,
                                     'input_is_string' => 1,
