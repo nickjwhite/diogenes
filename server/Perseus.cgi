@@ -354,7 +354,7 @@ my $munge_xml = sub {
     return $text if $xml_out;
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
-    local $xml_ital = 0  ; 
+    local $xml_ital = 0  ;
     my $tree = XML::Tiny::parsefile($text,
                                     'no_entity_parsing' => 1,
                                     'input_is_string' => 1,

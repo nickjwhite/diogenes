@@ -16,7 +16,7 @@ Put back in for Mac
 * Create diogenes.durham.ac.uk
 add diogenes-help.html
 
-
+* Add print menu item
 * Edit README
 Make it clear that this info and Github page are not of interest to ordinary users.
 
