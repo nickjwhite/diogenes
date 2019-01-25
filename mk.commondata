@@ -6,10 +6,10 @@
 
 DEPDIR = dependencies
 DATA = $(DEPDIR)/data
-BUILD = $(DEPDIR)/build
-GCIDE = $(DEPDIR)/gcide/gcide.dict.dz
-LEXICA = $(DEPDIR)/lexica
-MORPHEUS = $(DEPDIR)/morpheus
+BUILD = build
+GCIDE = $(BUILD)/gcide
+LEXICA = $(BUILD)/lexica
+MORPHEUS = $(BUILD)/morpheus
 
 GCIDEVERSION = 0.48.1
 GCIDESUM = e227f8f9e720eb0b1b805ecec4eb4e5c1045784ab3871cdebd19c237d1242311
@@ -29,25 +29,27 @@ DATAFILES = \
 
 .SUFFIXES: .txt .idt
 
-all: $(MORPHEUS)/.git/HEAD $(LEXICA)/.git/HEAD $(GCIDE) $(DATAFILES)
+all: $(MORPHEUS)/.git/HEAD $(LEXICA)/.git/HEAD $(GCIDE)/gcide.dict.dz $(DATAFILES)
 
-$(GCIDE):
-	rm -rf $(DEPDIR)/gcide
-	mkdir -p $(DEPDIR)/gcide
-	wget -O $(DEPDIR)/gcide/dict-gcide_$(GCIDEVERSION)_all.deb http://http.debian.net/debian/pool/main/d/dict-gcide/dict-gcide_$(GCIDEVERSION)_all.deb
+$(GCIDE)/gcide.dict.dz:
+	rm -rf $(GCIDE)
+	mkdir -p $(GCIDE)
+	wget -O $(GCIDE)/dict-gcide_$(GCIDEVERSION)_all.deb http://http.debian.net/debian/pool/main/d/dict-gcide/dict-gcide_$(GCIDEVERSION)_all.deb
 	printf '%s  %s\n' $(GCIDESUM) $(DEPDIR)/gcide/dict-gcide_$(GCIDEVERSION)_all.deb | shasum -c -a 256
 	cd $(DEPDIR)/gcide && ar x dict-gcide_$(GCIDEVERSION)_all.deb data.tar.gz
-	cd $(DEPDIR)/gcide && zcat < data.tar.gz | tar x ./usr/share/dictd/gcide.dict.dz
-	mv $(DEPDIR)/gcide/usr/share/dictd/gcide.dict.dz $@
+	cd $(GCIDE) && zcat < data.tar.gz | tar x ./usr/share/dictd/gcide.dict.dz
+	mv $(GCIDE)/usr/share/dictd/gcide.dict.dz $@
 
 $(LEXICA)/.git/HEAD:
 	rm -rf $(LEXICA)
-	cd $(DEPDIR) && git clone https://github.com/PerseusDL/lexica
+	mkdir -p $(BUILD)
+	cd $(BUILD) && git clone https://github.com/PerseusDL/lexica
 	cd $(LEXICA) && git checkout $(LEXICACOMMIT)
 
 $(MORPHEUS)/.git/HEAD:
 	rm -rf $(MORPHEUS)
-	cd $(DEPDIR) && git clone https://github.com/PerseusDL/morpheus
+	mkdir -p $(BUILD)
+	cd $(BUILD) && git clone https://github.com/PerseusDL/morpheus
 	cd $(MORPHEUS) && git checkout $(MORPHEUSCOMMIT)
 	cd $(MORPHEUS)/src && make && make install
 	cd $(MORPHEUS)/stemlib/Latin && PATH=$$PATH:../../bin MORPHLIB=.. make
@@ -78,7 +80,7 @@ $(DATA)/grc.lsj.perseus-eng0.xml: utils/reformat_lsj.pl $(LEXICA)/.git/HEAD
 	mkdir -p $(DATA)
 	echo '<!-- Reformatted for Diogenes from the XML files in https://github.com/PerseusDL/lexica -->' > $@
 	for LSJ in $(LSJS); do cat $$LSJ | perl ./utils/reformat_lsj.pl >> $@; done
-# The splitting of LSJ entries over multiple, indented lines has introduced spurious whitespace before punctuation after citations.  This is a hack to get rid of the worst (but not all) of it.
+# The reformatting for readability of the LSJ XML has split entries over multiple, indented lines, which has introduced spurious whitespace before punctuation after citations.  This is a hack to get rid of the worst (but not all) of it.
 	perl -pi -e 's#</biblScope>\s+</bibl>#</biblScope></bibl>#g' $@
 	perl -pi -e 's#</bibl>\s+</cit>#</bibl></cit>#g' $@
 
@@ -118,8 +120,8 @@ $(DATA)/greek-lemmata.txt: utils/make_greek_lemmata.pl $(BUILD)/lsj-index.txt $(
 	./utils/make_greek_lemmata.pl $(BUILD)/lsj-index.txt $(BUILD)/grc.words < $(DATA)/greek-analyses.txt > $@
 
 # The sed below cuts out a notice at the start of the dictionary file
-$(DATA)/gcide.txt: utils/munge_gcide.pl $(GCIDE)
-	zcat < $(GCIDE) | sed '1,102d' | ./utils/munge_gcide.pl > $@
+$(DATA)/gcide.txt: utils/munge_gcide.pl $(GCIDE)/gcide.dict.dz
+	zcat < $(GCIDE)/gcide.dict.dz | sed '1,102d' | ./utils/munge_gcide.pl > $@
 
 clean:
 	rm -f $(BUILD)/lat.words $(BUILD)/grc.words
