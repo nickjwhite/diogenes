@@ -210,19 +210,16 @@ installer-w32: inno-setup w32
 	wine inno-setup/app/ISCC.exe dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
-	rm -rf w32
 
 installer-w64: inno-setup w64
 	wine inno-setup/app/ISCC.exe dist/diogenes-win64.iss
 	mv -f Output/mysetup.exe diogenes-setup-win64-$(DIOGENESVERSION).exe
 	rmdir Output
-	rm -rf w64
 
 # NB. Installing this Mac package will report success but silently fail if there exists another copy of Diogenes.app with the same version number anywhere whatsoever on the same disk volume, such as in the mac directory here or another random copy on the devel machine.  
 installer-macpkg: mac
 	rm -f Diogenes-$(DIOGENESVERSION).pkg
 	fpm --prefix=/Applications -C mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
-	rm -rf mac
 
 installer-deb64: linux64
 	rm -f diogenes-$(DIOGENESVERSION)_amd64.deb
