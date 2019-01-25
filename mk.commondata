@@ -9,12 +9,10 @@ DATA = $(DEPDIR)/data
 BUILD = build
 GCIDE = $(BUILD)/gcide
 LEXICA = $(BUILD)/lexica
-MORPHEUS = $(BUILD)/morpheus
 
 GCIDEVERSION = 0.48.1
 GCIDESUM = e227f8f9e720eb0b1b805ecec4eb4e5c1045784ab3871cdebd19c237d1242311
 LEXICACOMMIT = ca0438681737e45f49facdb1b83d7256c0ff16c8
-MORPHEUSCOMMIT = 64c658c8b3462ca77000d931c1e99388c9ab87b6
 
 DATAFILES = \
 	$(DATA)/lat.ls.perseus-eng1.xml \
@@ -29,7 +27,7 @@ DATAFILES = \
 
 .SUFFIXES: .txt .idt
 
-all: $(MORPHEUS)/.git/HEAD $(LEXICA)/.git/HEAD $(GCIDE)/gcide.dict.dz $(DATAFILES)
+all: $(LEXICA)/.git/HEAD $(GCIDE)/gcide.dict.dz $(DATAFILES)
 
 $(GCIDE)/gcide.dict.dz:
 	rm -rf $(GCIDE)
@@ -45,21 +43,6 @@ $(LEXICA)/.git/HEAD:
 	mkdir -p $(BUILD)
 	cd $(BUILD) && git clone https://github.com/PerseusDL/lexica
 	cd $(LEXICA) && git checkout $(LEXICACOMMIT)
-
-$(MORPHEUS)/.git/HEAD:
-	rm -rf $(MORPHEUS)
-	mkdir -p $(BUILD)
-	cd $(BUILD) && git clone https://github.com/PerseusDL/morpheus
-	cd $(MORPHEUS) && git checkout $(MORPHEUSCOMMIT)
-	cd $(MORPHEUS)/src && make && make install
-	cd $(MORPHEUS)/stemlib/Latin && PATH=$$PATH:../../bin MORPHLIB=.. make
-	cd $(MORPHEUS)/stemlib/Greek && PATH=$$PATH:../../bin MORPHLIB=.. make
-
-$(BUILD)/lat.morph: $(BUILD)/lat.words $(MORPHEUS)/.git/HEAD
-	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher -L < $(BUILD)/lat.words > $@
-
-$(BUILD)/grc.morph: $(BUILD)/grc.words $(MORPHEUS)/.git/HEAD
-	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(BUILD)/grc.words > $@
 
 $(BUILD)/lewis-index.txt: utils/index_lewis.pl $(LEXICA)/.git/HEAD
 	mkdir -p $(BUILD)

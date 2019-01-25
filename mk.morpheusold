@@ -1,0 +1,24 @@
+# This is to use the current version of Morpheus, which gives significantly buggy output. For now, use mk.oldmorpheus instead.
+
+MORPHEUS = $(BUILD)/morpheus-old
+MORPHEUSCOMMIT = 9f793a0725cb8e17bbdc5506d75c501703e2b986
+MORPHEUSREPO = https://github.com/pjheslin/morpheus-old
+
+include mk.commondata
+
+all-morph: $(MORPHEUS)/.git/HEAD $(BUILD)/lat.morph $(BUILD)/grc.morph
+
+$(MORPHEUS)/.git/HEAD:
+	rm -rf $(MORPHEUS)
+	mkdir -p $(BUILD)
+	cd $(BUILD) && git clone $(MORPHEUSREPO)
+	cd $(MORPHEUS) && git checkout $(MORPHEUSCOMMIT)
+	cd $(MORPHEUS)/src && make && make install
+	cd $(MORPHEUS)/stemlib/Latin && PATH=$$PATH:../../bin MORPHLIB=.. make
+	cd $(MORPHEUS)/stemlib/Greek && PATH=$$PATH:../../bin MORPHLIB=.. make
+
+$(BUILD)/lat.morph: $(BUILD)/lat.words $(MORPHEUS)/.git/HEAD
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher -L < $(BUILD)/lat.words > $@
+
+$(BUILD)/grc.morph: $(BUILD)/grc.words $(MORPHEUS)/.git/HEAD
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(BUILD)/grc.words > $@

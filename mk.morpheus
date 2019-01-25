@@ -1,0 +1,28 @@
+# This is to use the current version of Morpheus, which gives significantly buggy output. For now, use mk.oldmorpheus instead.
+
+MORPHEUS = $(BUILD)/morpheus
+#MORPHEUSCOMMIT = 64c658c8b3462ca77000d931c1e99388c9ab87b6
+#MORPHEUSREPO = https://github.com/PerseusDL/morpheus
+
+# llvm-compilev2 branch
+MORPHEUSREPO = https://github.com/nickjwhite/morpheus.git
+MORPHEUSCOMMIT = e9e05b80ebfab1adc557727280a31ca0e53cc4ba
+
+include mk.commondata
+
+all-morph: $(MORPHEUS)/.git/HEAD $(BUILD)/lat.morph $(BUILD)/grc.morph
+
+$(MORPHEUS)/.git/HEAD:
+	rm -rf $(MORPHEUS)
+	mkdir -p $(BUILD)
+	cd $(BUILD) && git clone $(MORPHEUSREPO)
+	cd $(MORPHEUS) && git checkout $(MORPHEUSCOMMIT)
+	cd $(MORPHEUS)/src && make && make install
+	cd $(MORPHEUS)/stemlib/Latin && PATH=$$PATH:../../bin MORPHLIB=.. make
+	cd $(MORPHEUS)/stemlib/Greek && PATH=$$PATH:../../bin MORPHLIB=.. make
+
+$(BUILD)/lat.morph: $(BUILD)/lat.words $(MORPHEUS)/.git/HEAD
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher -L < $(BUILD)/lat.words > $@
+
+$(BUILD)/grc.morph: $(BUILD)/grc.words $(MORPHEUS)/.git/HEAD
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(BUILD)/grc.words > $@
