@@ -175,31 +175,31 @@ mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 dist/diogenes.icns
 	sed 's/$$/\r/g' < COPYING > mac/COPYING.txt
 	sed 's/$$/\r/g' < README > mac/README.txt
 
-pkg-linux64: linux64
+zip-linux64: linux64
 	rm -rf diogenes-linux-$(DIOGENESVERSION)
 	mv linux64 diogenes-linux-$(DIOGENESVERSION)
 	tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
 	rm -rf diogenes-linux-$(DIOGENESVERSION)
 
-pkg-mac: mac
+zip-mac: mac
 	rm -rf diogenes-mac-$(DIOGENESVERSION)
 	mv mac diogenes-mac-$(DIOGENESVERSION)
 	zip -r diogenes-mac-$(DIOGENESVERSION).zip diogenes-mac-$(DIOGENESVERSION)
 	rm -rf diogenes-mac-$(DIOGENESVERSION)
 
-pkg-w32: w32
+zip-w32: w32
 	rm -rf diogenes-win32-$(DIOGENESVERSION)
 	mv w32 diogenes-win32-$(DIOGENESVERSION)
 	zip -r diogenes-win32-$(DIOGENESVERSION).zip diogenes-win32-$(DIOGENESVERSION)
 	rm -rf diogenes-win32-$(DIOGENESVERSION)
 
-pkg-w64: w64
+zip-w64: w64
 	rm -rf diogenes-win64-$(DIOGENESVERSION)
 	mv w64 diogenes-win64-$(DIOGENESVERSION)
 	zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
 	rm -rf diogenes-win64-$(DIOGENESVERSION)
 
-pkg-all: pkg-linux64 pkg-mac pkg-w32 pkg-w64
+zip-all: zip-linux64 zip-mac zip-w32 zip-w64
 
 inno-setup: 
 	mkdir inno-setup
