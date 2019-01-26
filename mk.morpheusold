@@ -24,3 +24,8 @@ $(BUILD)/lat.morph: $(BUILD)/lat.words $(MORPHEUS)/.git/HEAD
 
 $(BUILD)/grc.morph: $(BUILD)/grc.words $(MORPHEUS)/.git/HEAD
 	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(BUILD)/grc.words > $@
+
+clean-morph:
+	rm -rf $(MORPHEUS)
+	rm -f $(BUILD)/lat.morph
+	rm -f $(BUILD)/grc.morph
