@@ -1,13 +1,18 @@
 # This uses and old version of Morpheus, because the current one is buggy.  It does not compile on OS X, however.
+include mk.commondata
+
+# Edit the lines below to use the Perseus corpora rather than tlg/phi to generate wordlists
+
+#include mk.perseusdata
+include mk.tlgdata
+
 
 MORPHEUS = $(BUILD)/morpheus-old
 MORPHEUSCOMMIT = 9f793a0725cb8e17bbdc5506d75c501703e2b986
 MORPHEUSREPO = https://github.com/pjheslin/morpheus-old
 
-#include mk.perseusdata
-include mk.tlgdata
 
-all-morph: $(MORPHEUS)/.git/HEAD $(BUILD)/lat.morph $(BUILD)/grc.morph
+all-morph: $(MORPHEUS)/.git/HEAD $(BUILD)/lat.morph $(BUILD)/grc.morph $(BUILD)/lat.words $(BUILD)/grc.words
 
 $(MORPHEUS)/.git/HEAD:
 	rm -rf $(MORPHEUS)
@@ -29,3 +34,5 @@ clean-morph:
 	rm -rf $(MORPHEUS)
 	rm -f $(BUILD)/lat.morph
 	rm -f $(BUILD)/grc.morph
+	rm -f $(BUILD)/lat.words
+	rm -f $(BUILD)/grc.words
