@@ -1,4 +1,4 @@
-# This is to use the current version of Morpheus, which gives significantly buggy output. For now, use mk.oldmorpheus instead.
+# This uses and old version of Morpheus, because the current one is buggy.  It does not compile on OS X, however.
 
 MORPHEUS = $(BUILD)/morpheus-old
 MORPHEUSCOMMIT = 9f793a0725cb8e17bbdc5506d75c501703e2b986
