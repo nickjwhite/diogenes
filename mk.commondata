@@ -33,8 +33,8 @@ $(GCIDE)/gcide.dict.dz:
 	rm -rf $(GCIDE)
 	mkdir -p $(GCIDE)
 	wget -O $(GCIDE)/dict-gcide_$(GCIDEVERSION)_all.deb http://http.debian.net/debian/pool/main/d/dict-gcide/dict-gcide_$(GCIDEVERSION)_all.deb
-	printf '%s  %s\n' $(GCIDESUM) $(DEPDIR)/gcide/dict-gcide_$(GCIDEVERSION)_all.deb | shasum -c -a 256
-	cd $(DEPDIR)/gcide && ar x dict-gcide_$(GCIDEVERSION)_all.deb data.tar.gz
+	printf '%s  %s\n' $(GCIDESUM) $(GCIDE)/dict-gcide_$(GCIDEVERSION)_all.deb | shasum -c -a 256
+	cd $(GCIDE) && ar x dict-gcide_$(GCIDEVERSION)_all.deb data.tar.gz
 	cd $(GCIDE) && zcat < data.tar.gz | tar x ./usr/share/dictd/gcide.dict.dz
 	mv $(GCIDE)/usr/share/dictd/gcide.dict.dz $@
 
