@@ -22,7 +22,7 @@ browser.
 There are a few files that need to be built before Diogenes can be
 run. To do that run this command:
 
-  make
+    make
 
 
 Building Diogenes standalone
@@ -53,7 +53,7 @@ will also need to install fpm via the Ruby package manager.
     make installer-rpm64      # Make an RPM Linux package
     make installer-arch64     # Make a pacman package for Arch Linux
 
-OS X note. If the same version of Diogenes is already installed on the
+OS X note: If the same version of Diogenes is already installed on the
 machine, the Mac package installer will leave it untouched, not
 install the package, and report success.
 
@@ -61,15 +61,19 @@ install the package, and report success.
 Running the server
 ------------------
 
-Instead of running 
+Instead of running the standalone, integrated app, you may prefer to run Diogenes as a server and to connect to it via an ordinary web browser.  The server can be started using the script:
 
-If you prefer to run Diogenes as a server and to connect to it via a server can be started using the script:
-
-  diogenes-browser/perl/diogenes-server.pl
+    diogenes-browser/perl/diogenes-server.pl
 
 For full usage details run it like this:
 
-  diogenes-browser/perl/diogenes-server.pl -?
+    diogenes-browser/perl/diogenes-server.pl -?
+
+
+Additional features
+-------------------
+
+Diogenes has a number of other features which predate the development of the standalone app and which are no longer fully supported but which may still work.  These include a command-line interface (dio), LaTeX output, and support for a wide variety of pre-Unicode encodings for Ancient Greek.
 
 
 Building the morphology data & dictionaries
@@ -94,15 +98,13 @@ Morpheus:
     
 The above step is the only part of the build process that probably has
 to be done on a Linux machine.  The old version of Morpheus does not
-compile on OS X.
+compile on OS X.  If you want to try the current version of Morpheus,
+substitute mk.morpheus for mk.morpheusold.
 
 Then, to build the dictionaries and morphological data in the format
 used by Diogenes:
 
     make -f mk.commondata
-
-If you want to try the current version of Morpheus, substitute
-mk.morpheus for mk.morpheusold.
 
 The default is to run Morpheus over wordlists derived from the TLG and
 from the PHI corpus.  If you would prefer to generate the wordlists
