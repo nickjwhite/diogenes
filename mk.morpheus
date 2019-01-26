@@ -23,10 +23,10 @@ $(MORPHEUS)/.git/HEAD:
 	cd $(MORPHEUS)/stemlib/Greek && PATH=$$PATH:../../bin MORPHLIB=.. make
 
 $(BUILD)/lat.morph: $(BUILD)/lat.words $(MORPHEUS)/.git/HEAD
-	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher -L < $(BUILD)/lat.words > $@
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher -L $(BUILD)/lat
 
 $(BUILD)/grc.morph: $(BUILD)/grc.words $(MORPHEUS)/.git/HEAD
-	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher < $(BUILD)/grc.words > $@
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher $(BUILD)/grc
 
 clean-morph:
 	rm -rf $(MORPHEUS)
