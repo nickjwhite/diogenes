@@ -17,7 +17,7 @@ Building
 
 Diogenes can either be built and run as a HTTP server application, or
 as a standalone application that seamlessly combines both server and
-browser.
+browser by using the Electron platform (https://electronjs.org/).
 
 There are a few files that need to be built before Diogenes can be
 run. To do that run this command:
@@ -45,7 +45,8 @@ commands below.  All installers can be built on either Linux or OS X.
 You will need to install a number of auxiliary programs, including
 librsvg, iconutils, wine and innoextract.  All of these can easily be
 installed on Linux via your distribution and OS X using Homebrew.  You
-will also need to install fpm via the Ruby package manager.
+will also need to install fpm via the Ruby package manager (see
+https://github.com/jordansissel/fpm).
 
     make installer-w32        # Make a Windows installer
     make installer-macpkg     # Make a Mac pkg installer
@@ -94,7 +95,7 @@ output, so it is recommended to use an older version instead.
 To build the morphology data using the old, known-good version of
 Morpheus:
 
-    PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e make -f mk.morpheusold all-morph
+    make -f mk.morpheusold all-morph PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e
     
 The above step is the only part of the build process that probably has
 to be done on a Linux machine.  The old version of Morpheus does not
