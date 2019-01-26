@@ -7,9 +7,9 @@ the Thesaurus Linguae Graecae and the Packard Humanities Institute.
 
 The information here is only for people who want to delve into
 technical details.  If you just want to install and run Diogenes,
-ignore this material and go to the Diogenes webpage:
+ignore the material here and go to the Diogenes webpage instead: 
 
-    http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/
+http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/
 
 
 Building
