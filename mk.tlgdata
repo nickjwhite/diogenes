@@ -1,9 +1,8 @@
 # Rules to make wordlists from the TLG and PHI datasets.
+# Included from mk.morpheus[old]
 
 PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
-
-include mk.commondata
 
 $(BUILD)/lat.words: utils/make_latin_wordlist.pl
 	mkdir -p $(BUILD) $(DATA)

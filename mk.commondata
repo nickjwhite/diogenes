@@ -107,8 +107,6 @@ $(DATA)/gcide.txt: utils/munge_gcide.pl $(GCIDE)/gcide.dict.dz
 	zcat < $(GCIDE)/gcide.dict.dz | sed '1,102d' | ./utils/munge_gcide.pl > $@
 
 clean:
-	rm -f $(BUILD)/lat.words $(BUILD)/grc.words
-	rm -f $(BUILD)/lat.morph $(BUILD)/grc.morph
 	rm -f $(BUILD)/lewis-index.txt $(BUILD)/lewis-index-head.txt $(BUILD)/lewis-index-trans.txt
 	rm -f $(BUILD)/lsj-index.txt $(BUILD)/lsj-index-head.txt $(BUILD)/lsj-index-trans.txt
 	rm -rf $(DEPDIR)/gcide $(GCIDE) $(LEXICA) $(MORPHEUS)
