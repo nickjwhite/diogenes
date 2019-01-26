@@ -8,7 +8,8 @@ MORPHEUS = $(BUILD)/morpheus
 MORPHEUSREPO = https://github.com/nickjwhite/morpheus.git
 MORPHEUSCOMMIT = e9e05b80ebfab1adc557727280a31ca0e53cc4ba
 
-include mk.commondata
+#include mk.perseusdata
+include mk.tlgdata
 
 all-morph: $(MORPHEUS)/.git/HEAD $(BUILD)/lat.morph $(BUILD)/grc.morph
 

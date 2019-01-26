@@ -4,7 +4,8 @@ MORPHEUS = $(BUILD)/morpheus-old
 MORPHEUSCOMMIT = 9f793a0725cb8e17bbdc5506d75c501703e2b986
 MORPHEUSREPO = https://github.com/pjheslin/morpheus-old
 
-include mk.commondata
+#include mk.perseusdata
+include mk.tlgdata
 
 all-morph: $(MORPHEUS)/.git/HEAD $(BUILD)/lat.morph $(BUILD)/grc.morph
 
