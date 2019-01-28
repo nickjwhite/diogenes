@@ -97,6 +97,8 @@ you can build it from scratch.  The following commands will download
 the lexica and the Morpheus parser, which have been provided by the
 Perseus project, and repackage them for Diogenes.
 
+### Step 1
+
 The first step is to generate Greek and Latin wordlists.  The default
 is to use wordlists derived from the TLG and from the PHI Latin
 database. Run this command, specifying the location of the databases
@@ -104,11 +106,13 @@ on the command line:
 
     make -f mk.tlg-phi-words PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e
 
-If you would prefer to generate the wordlists from the Perseus corpora
+If you prefer to generate the wordlists from the Perseus corpora
 (which have less extensive coverage but are freely available), run
 this command instead:
 
     make -f mk.perseus-words
+
+### Step 2
 
 The next step is to generate the morphological data by running
 Morpheus over the wordlists.  This is the only part of the build
@@ -116,13 +120,13 @@ process that probably requires running it on a Linux machine, as
 Morpheus does not compile on OS X.  If you are on OS X and want to
 skip this step, you can just download and use the morphological data
 from version 3 of Diogenes, which still works fine with version 4.
-Run the following command and then go down to the final step below:
+Run the following command and then go down to Step 3 below:
 
     make -f mk.morpheus-v3
 
-In order to run Morpheus over the wordlists, you have to choose
-between compiling an old version which works well and compiling the
-current version, which is broken.
+If you prefer to run Morpheus over the wordlists yourself, you have to
+choose between compiling an old version which works well and compiling
+the current version, which is broken.
 
 To download, compile and run an older but known-good version of
 Morpheus, run this command:
@@ -136,6 +140,7 @@ current version, do this instead:
 
     make -f mk.morpheus-broken
 
+### Step 3
 
 The final step is to download the lexica, integrate the morphological
 data with the lexica, and package all this in the form that Diogenes
