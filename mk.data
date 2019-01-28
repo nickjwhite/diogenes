@@ -100,6 +100,10 @@ $(DATA)/greek-lemmata.txt: utils/make_greek_lemmata.pl $(BUILD)/lsj-index.txt $(
 $(DATA)/gcide.txt: utils/munge_gcide.pl $(GCIDE)/gcide.dict.dz
 	zcat < $(GCIDE)/gcide.dict.dz | sed '1,102d' | ./utils/munge_gcide.pl > $@
 
+prebuilt-data.tar.xz:
+	tar cvf prebuilt-data.tar $(DATA)
+	xz prebuilt-data.tar
+
 clean:
 	rm -f $(BUILD)/lewis-index.txt $(BUILD)/lewis-index-head.txt $(BUILD)/lewis-index-trans.txt
 	rm -f $(BUILD)/lsj-index.txt $(BUILD)/lsj-index-head.txt $(BUILD)/lsj-index-trans.txt

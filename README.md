@@ -24,7 +24,7 @@ tables, which need to be built or downloaded before use.  If you want
 to skip building these, execute this command, which will download the
 pre-computed data from Github:
 
-    make -f mk.prebuilt
+    make -f mk.prebuilt-data
 
 If you would prefer to build the morphology data and dictionaries
 yourself, see the instructions below.
