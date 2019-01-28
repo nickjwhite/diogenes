@@ -1,8 +1,11 @@
 # Rules to make wordlists from the TLG and PHI datasets.
-# Included from mk.morpheus[old]
+
+include mk.common
 
 PHIDIR = $(HOME)/phi
 TLGDIR = $(HOME)/tlg_e
+
+all: $(BUILD)/lat.words $(BUILD)/grc.words
 
 $(BUILD)/lat.words: utils/make_latin_wordlist.pl
 	mkdir -p $(BUILD) $(DATA)
@@ -13,3 +16,7 @@ $(BUILD)/grc.words: utils/make_greek_wordlist.pl
 	mkdir -p $(BUILD) $(DATA)
 	find $(TLGDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(TLGDIR):  :g' > $(DATA)/tlgsums
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
+
+clean:
+	rm -f $(BUILD)/lat.words
+	rm -f $(BUILD)/grc.words

@@ -1,9 +1,9 @@
 # This builds the files needed to run Diogenes.
-#
-# Note that the dictionaries and morphological data are built using
-# different makefiles; read the README for details.
 
-DEPDIR = dependencies
+# Note that the dictionaries and morphological data are built using
+# different makefiles; read README.md for details.
+
+include mk.common
 
 DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 

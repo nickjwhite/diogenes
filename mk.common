@@ -1,0 +1,7 @@
+# General defintions used across makefiles.
+
+DEPDIR = dependencies
+DATA = $(DEPDIR)/data
+BUILD = build
+GCIDE = $(BUILD)/gcide
+LEXICA = $(BUILD)/lexica

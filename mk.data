@@ -1,14 +1,8 @@
-# This makefile is not intended to be used directly, but included
-# by mk.perseusdata or mk.tlgdata, which provide the rules to
-# generate the wordlists needed by targets provided here. Read the
-# README for details on how to build the dictionaries and
-# morphology data.
+# Rules to make and package lexical data for Diogenes.  Wordlists and
+# morphological data need to be built first.  See README.md for
+# details.
 
-DEPDIR = dependencies
-DATA = $(DEPDIR)/data
-BUILD = build
-GCIDE = $(BUILD)/gcide
-LEXICA = $(BUILD)/lexica
+include mk.common
 
 GCIDEVERSION = 0.48.1
 GCIDESUM = e227f8f9e720eb0b1b805ecec4eb4e5c1045784ab3871cdebd19c237d1242311
