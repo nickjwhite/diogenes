@@ -101,7 +101,7 @@ $(DATA)/gcide.txt: utils/munge_gcide.pl $(GCIDE)/gcide.dict.dz
 	zcat < $(GCIDE)/gcide.dict.dz | sed '1,102d' | ./utils/munge_gcide.pl > $@
 
 prebuilt-data.tar.xz:
-	tar cvf prebuilt-data.tar $(DATA)
+	tar -cvf prebuilt-data.tar $(DATA)
 	xz prebuilt-data.tar
 
 clean:
