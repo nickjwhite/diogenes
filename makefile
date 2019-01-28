@@ -60,7 +60,7 @@ linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	cp -r dist linux64
 	cp -r client linux64/resources/app
 	mv linux64/electron linux64/diogenes
-	cp COPYING README linux64
+	cp COPYING README.md linux64
 
 electron/electron-v$(ELECTRONVERSION)-win32-ia32:
 	mkdir -p electron
@@ -118,7 +118,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes
 	cp -r w32perl/strawberry w32
 	cp icons/diogenes.ico w32
 	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
-	sed 's/$$/\r/g' < README > w32/README.txt
+	sed 's/$$/\r/g' < README.md > w32/README.md
 	wine rcedit.exe w32/diogenes.exe \
 	    --set-icon icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
@@ -140,7 +140,7 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl icons/diogenes.
 	cp -r w64perl/strawberry w64
 	cp icons/diogenes.ico w64
 	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
-	sed 's/$$/\r/g' < README > w64/README.txt
+	sed 's/$$/\r/g' < README.md > w64/README.md
 	wine rcedit.exe w64/diogenes.exe \
 	    --set-icon icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
@@ -173,7 +173,7 @@ mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 dist/diogenes.icns
 	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
 	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
 	sed 's/$$/\r/g' < COPYING > mac/COPYING.txt
-	sed 's/$$/\r/g' < README > mac/README.txt
+	sed 's/$$/\r/g' < README.md > mac/README.md
 
 zip-linux64: linux64
 	rm -rf diogenes-linux-$(DIOGENESVERSION)
