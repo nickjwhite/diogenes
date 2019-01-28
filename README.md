@@ -115,7 +115,8 @@ Morpheus over the wordlists.  This is the only part of the build
 process that probably requires running it on a Linux machine, as
 Morpheus does not compile on OS X.  If you are on OS X and want to
 skip this step, you can just download and use the morphological data
-from version 3 of Diogenes, which still works fine with version 4:
+from version 3 of Diogenes, which still works fine with version 4.
+Run the following command and then go down to the final step below:
 
     make -f mk.morpheus-v3
 

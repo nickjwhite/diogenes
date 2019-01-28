@@ -1,0 +1,18 @@
+# Download old morphological data, as used in version 3 of Diogenes
+# (with tlg.morph renamed to grc.morph).
+
+include mk.common
+
+all: $(BUILD)/lat.morph $(BUILD)/grc.morph
+
+$(BUILD)/lat.morph:
+	mkdir -p $(BUILD)
+	curl -L https://github.com/pjheslin/morpheus-v3/raw/d0cfd09c2aad367230ac4a777adb40cc64267291/lat.morph.xz | xzcat > $@
+
+$(BUILD)/grc.morph:
+	mkdir -p $(BUILD)
+	curl -L  https://github.com/pjheslin/morpheus-v3/raw/d0cfd09c2aad367230ac4a777adb40cc64267291/grc.morph.xz | xzcat > $@
+
+clean:
+	rm -rf $(BUILD)/lat.morph
+	rm -rf $(BUILD)/grc.morph
