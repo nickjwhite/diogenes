@@ -69,7 +69,7 @@ nav ul li:hover a {
     text-decoration: none;
 }
 nav ul li a {
-    display: block; padding: 15px 30px;
+    display: block; padding: 10px 20px;
     color: #28709a; text-decoration: none;
 }
 nav ul ul {
