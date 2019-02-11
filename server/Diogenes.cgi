@@ -188,19 +188,16 @@ $read_filters->() unless @filters;
 
 my $previous_page = $st{current_page};
 
-my $essential_footer = sub
+my $my_footer = sub
 {
+    # Close sticky footer and Perseus main divs
+    print '</div></div></div>';
+    
+    print 
+        $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2017 Peter Heslin.});
     $set_state->();
-    print '</div>'; # font div
     print $f->end_form,
     $f->end_html;
-};
-
-my $my_footer = sub
-{                                                       
-    print 
-        $f->p({class => 'footer'}, qq(The information in these databases may be subject to restrictions on access and use; consult your licenses.<br/> Diogenes (version $version) is &copy; 1999-2017 P.J. Heslin.));
-    $essential_footer->();
 };
 
 
@@ -254,7 +251,11 @@ my $print_title = sub
     # for Perseus data
     print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}"></div>};
     print '<div id="main_window" class="main-full">';
-    
+
+    # for sticky footer
+    print qq{<div class="non-footer-container">
+                 <div class="non-footer-content">};
+
 };
 
 my $print_header = sub 
@@ -307,109 +308,77 @@ my $database_error = sub
                 );
 
     $st{current_page} = 'splash';
-    $essential_footer->();
+    $my_footer->();
     exit;
 };
 
+my $print_navbar = sub {
+    print q{
+  <div class="navbar-area">
+    <nav role="navigation">
+      <ul class="menu">
+	<li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
+	<li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
+          <ul id="submenu1">
+	    <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
+            <li><a href="#" onclick="info('author')" accesskey="a">Author</a></li>
+            <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple</a></li>
+            <li><a href="#" onclick="info('lemma')" accesskey="f">Forms</a></li>
+            <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
+          </ul>
+        </li>
+	<li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
+          <ul id="submenu2">
+	    <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
+            <li><a href="#" onclick="info('parse')" accesskey="i">Inflexion</a></li>
+          </ul>
+        </li>
+	<li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
+	<li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
+        <li><a href="#" onclick="info('help')">Help</a></li>
+      </ul>
+    </nav>
+  </div>
+    };
+}
+
 ### Splash page
-
-my %input_blurb = (
-
-    'Unicode' => qq{
-    You must type Greek using your computer's facility to type Greek
-    letters in Unicode, and you should either type all accents or none
-    at all.  <a href="Unicode_input.html">Further info.</a>},
-
-    'Perseus-style' => qq{Here is <a href="Perseus_input.html">further
-    info</a> on this style of Latin transliteration.},
-
-    'BETA code' => qq{Here is <a href="Beta_input.html">further
-    info</a> on this style of Latin transliteration.}
-    );
 
 $output{splash} = sub 
 {
-    # If you change this list, you may have to change onActionChange() in diogenes-cgi.js
-    my @actions = ('search',
-                   'word_list',
-                   'multiple',
-                   'lemma',
-                   'lookup',
-                   'parse',
-                   'browse',
-                   'filters');
-    
-    my %action_labels = ('search' => 'Simple search for a word or phrase',
-                         'word_list' => 'Search the TLG using its word-list',
-                         'multiple' => 'Search for conjunctions of multiple words or phrases',
-                         'lemma' => 'Morphological search',
-                         'lookup' => 'Look up a word in the dictionary',
-                         'parse' => 'Parse the inflection of a Greek or Latin word',
-                         'browse' => 'Browse to a specific passage in a given text',
-                         'filters' => 'Manage user-defined corpora');
-
-    my @corpora = @choices;
     my @filter_names;
     push @filter_names, $_->{name} for @filters;
 
     $print_title->('Diogenes', 'splash.js');
     $st{current_page} = 'splash';
+
+    print '<div id="corpora-list1">';
+    foreach @options {
+        print qq{<option value="$_">$_</option>};
+    }
+    print '</div>'
+    print '<div id="corpora-list2">';
+    foreach @filter_names {
+        print qq{<option value="$_">$_</option>};
+    }
+    print '</div>'
     
-    print $f->center(
+    print $f->div(
+        {-class=>'header_logo'},
         $f->img({-src=>$picture_dir.'Diogenes_Logo.png',
-                 -srcset=>$picture_dir.'Diogenes_Logo.hidpi.png 2x',
-                 -alt=>'Diogenes', 
-                 -height=>'137', 
-                 -width=>'383'})),
-        $f->start_form(-id=>'form', -method=> 'get');
+                     -srcset=>$picture_dir.'Diogenes_Logo.hidpi.png 2x',
+                     -alt=>'Diogenes', 
+                     -height=>'111', 
+                     -width=>'382'})),
+    $f->start_form(-id=>'form', -method=> 'get');
 
+    $print_navbar->();
 
-    print $f->p({class => "homewelcome"},
-                qq(Welcome to Diogenes, a tool for searching and
-        browsing through databases of ancient texts. Choose your type
-        of query, then the corpus, then type in the query itself: this
-        can be either some Greek or Latin to <strong>search</strong>
-        for, or the name of an author whose work you wish to
-        <strong>browse</strong> through.)),
-
-        $f->p({class => "homewelcome"}, qq($input_blurb{$init->{input_encoding}}));
-
-
-    print $f->center(
-        $f->table({cellspacing=>'10px',class=>'homesearch'},
-            $f->Tr(
-                $f->th({align=>'right'}, 'Action: '),
-                $f->td($f->popup_menu(
-                           -name=>'action',
-                           -id=>'action_menu',
-                           -onChange=>'onActionChange();',
-                           -Values=>\@actions,
-                           -labels=>\%action_labels,
-                           -Default=>'Simple search for a word or phrase'))),
-            $f->Tr(
-                $f->th({align=>'right'}, 'Corpus: '),
-                $f->td($f->popup_menu(
-                           -name=>'corpus',
-                           -id=>'corpus_menu',
-                           -Values=>[
-                                $f->optgroup( -name=>'Databases',
-                                              -values=>\@corpora),
-                                $f->optgroup( -name=>'User-defined corpora',
-                                              -values=>\@filter_names),
-                           ],
-                           -Default=>$default_choice))),
-            $f->Tr(
-                $f->th({align=>'right'}, 'Query: '),
-                $f->td($f->textfield(
-                           -id=>'query_text',
-                           -name=>'query',
-                           -size=>40),
-                       ' ',
-                       $f->submit( -name =>'go',
-                                   -value=>'Go')))));
+    print $f->div({-class=>'info-area', -id=>'info'},
+                  $f->p({class => "homewelcome"},
+                   q{Welcome to Diogenes, a tool for reading and searching through legacy databases of ancient texts.}));
     
-    $my_footer->();
-        
+    $my_footer->();    
 };
 
 my $current_filter;
