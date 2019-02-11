@@ -180,7 +180,7 @@ a.perseus:visited {
   color: #404040;
 }
 
-#logo a:hover { 
+#logo a:hover {
   text-decoration: none;
  }
 
@@ -195,11 +195,11 @@ a.perseus:visited {
 .citation {
   float: left;
   width: 8em;
-  text-align: left; 
+  text-align: left;
   vertical-align: bottom;
 }
 
-#hit { 
+#hit {
   background: #e3e3e3;
  }
 
@@ -234,15 +234,16 @@ a.perseus:visited {
 }
 .sidebar-hidden,
 .sidebar-newpage {
-         display: none;             
+         display: none;
 }
 .main-full {
          width: 100%;
          padding-right: 4px;
-         display: block;             
+         display: block;
+         height: 100%;
 }
 .main-hidden {
-         display: none;             
+         display: none;
 }
 
 #sidebar-control {
@@ -252,34 +253,29 @@ a.perseus:visited {
 }
 
 .invisible {
-         display: none;             
+         display: none;
 }
 
 .visible {
-         display: block;             
+         display: block;
 }
 
 .lemma_span_invisible {
-         display: none;             
+         display: none;
 }
 
 .lemma_span_visible {
-         display:block;             
+         display:block;
 }
 
 .form_span_invisible {
-         display: none;             
+         display: none;
 }
 
 .form_span_visible {
-         display: inline;             
+         display: inline;
 }
 
-.footer {
-         font-size: 80%;
-         text-align: center;
-         color: grey;
-}
 
 img.next {
          float: right;
