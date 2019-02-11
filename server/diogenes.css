@@ -142,6 +142,15 @@ nav ul ul ul {
   -webkit-user-select: none;
 }
 
+.homewelcome {
+    text-align: center;
+    font-size: 20px;
+}
+
+.header_logo {
+    text-align: center;
+}
+
 /* Fix problem where sub/super-scripts increases the line spacing for
 text, but not for the citations, so they no longer align properly */
 
