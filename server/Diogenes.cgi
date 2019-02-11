@@ -32,7 +32,7 @@ my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
 binmode (STDOUT, ':utf8');
 
-# Force read of config files 
+# Force read of config files
 my %args_init = (-type => 'none');
 my $init = new Diogenes::Base(%args_init);
 my $filter_file = $init->{filter_file};
@@ -170,12 +170,12 @@ my $read_filters = sub {
     {
         open my $filter_fh, "<$filter_file"
             or die "Can't read from filter file ($filter_file): $!";
-        
+
         local $/ = undef;
         my $code = <$filter_fh>;
         eval $code;
         warn "Error reading in saved corpora: $@" if $@;
-        
+
         close $filter_fh or die "Can't close filter file ($filter_file): $!";
 
 #         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
@@ -192,8 +192,8 @@ my $my_footer = sub
 {
     # Close sticky footer and Perseus main divs
     print '</div></div></div>';
-    
-    print 
+
+    print
         $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2017 Peter Heslin.});
     $set_state->();
     print $f->end_form,
@@ -201,7 +201,7 @@ my $my_footer = sub
 };
 
 
-my $print_error_page = sub 
+my $print_error_page = sub
 {
     my $msg = shift;
     $msg ||= 'Sorry. You seem to have made a request that I do not understand.';
@@ -215,7 +215,7 @@ my $print_error_page = sub
      exit;
 };
 
-my $print_title = sub 
+my $print_title = sub
 {
     print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
@@ -247,7 +247,7 @@ my $print_title = sub
     print $f->hidden( -name => 'JumpTo',
                       -default => "",
                       -override => 1 );
- 
+
     # for Perseus data
     print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}"></div>};
     print '<div id="main_window" class="main-full">';
@@ -258,7 +258,7 @@ my $print_title = sub
 
 };
 
-my $print_header = sub 
+my $print_header = sub
 {
     # HTML output
     print qq(
@@ -344,7 +344,7 @@ my $print_navbar = sub {
 
 ### Splash page
 
-$output{splash} = sub 
+$output{splash} = sub
 {
     my @filter_names;
     push @filter_names, $_->{name} for @filters;
@@ -362,13 +362,13 @@ $output{splash} = sub
         print qq{<option value="$_">$_</option>};
     }
     print '</div>'
-    
+
     print $f->div(
         {-class=>'header_logo'},
         $f->img({-src=>$picture_dir.'Diogenes_Logo.png',
                      -srcset=>$picture_dir.'Diogenes_Logo.hidpi.png 2x',
-                     -alt=>'Diogenes', 
-                     -height=>'111', 
+                     -alt=>'Diogenes',
+                     -height=>'111',
                      -width=>'382'})),
     $f->start_form(-id=>'form', -method=> 'get');
 
@@ -377,8 +377,8 @@ $output{splash} = sub
     print $f->div({-class=>'info-area', -id=>'info'},
                   $f->p({class => "homewelcome"},
                    q{Welcome to Diogenes, a tool for reading and searching through legacy databases of ancient texts.}));
-    
-    $my_footer->();    
+
+    $my_footer->();
 };
 
 my $current_filter;
@@ -399,7 +399,7 @@ $handler{splash} = sub
 
     my $corpus = $st{corpus};
     my $action = $st{action};
-    if ($choices{$corpus}) 
+    if ($choices{$corpus})
     {
         # Convert to abbreviated form
         $st{short_type} = $choices{$corpus};
@@ -418,19 +418,19 @@ $handler{splash} = sub
         print $f->center($f->p($f->strong('Error.')),
                          $f->p('You must specify a search pattern.'));
     }
-    elsif ($action eq 'filters') 
+    elsif ($action eq 'filters')
     {
         $output{filter_splash}->();
     }
-    elsif ($action eq 'lemma') 
+    elsif ($action eq 'lemma')
     {
         $output{lemma}->();
     }
-    elsif ($action eq 'lookup' or $action eq 'parse') 
+    elsif ($action eq 'lookup' or $action eq 'parse')
     {
         $output{lookup}->($action);
     }
-    elsif ($action eq 'search') 
+    elsif ($action eq 'search')
     {
         $output{search}->();
     }
@@ -454,7 +454,7 @@ $handler{splash} = sub
             $output{indexed_search}->();
         }
     }
-    elsif ($action eq 'browse') 
+    elsif ($action eq 'browse')
     {
         $output{browser}->();
     }
@@ -466,14 +466,14 @@ $handler{splash} = sub
 
 };
 
-$output{multiple} = sub 
+$output{multiple} = sub
 {
     $print_title->('Diogenes Multiple Search Page');
     $print_header->();
     $st{current_page} = 'multiple';
     # Since this is a multiple-step search, we have to save it.
     $st{saved_filter} = $st{corpus} if $current_filter;
-    
+
     my $new_pattern = $st{query};
 
     print '<div style="margin-left: auto; margin-right: auto; width: 50%">';
@@ -486,7 +486,7 @@ $output{multiple} = sub
     @patterns = @{ $st{query_list} } if $st{query_list};
     push @patterns, $new_pattern if $new_pattern;
     $st{query_list} = \@patterns;
-    
+
     if (@patterns)
     {
         print
@@ -496,7 +496,7 @@ $output{multiple} = sub
         print "<li>$_</li>\n" foreach @patterns;
         print '</ol></p>';
     }
-    
+
     print
         $f->h2('Add a Pattern'),
         $f->p('You may add a' . (@patterns ? 'nother' : '') . ' pattern:'),
@@ -508,7 +508,7 @@ $output{multiple} = sub
                            -value=>'Add this pattern to the list'));
 
     my @matches = ('any', 2 .. $#patterns, 'all');
-    
+
 
     print
         $f->hr(),
@@ -580,7 +580,7 @@ my $get_args = sub
     {
         $args{pattern} = $st{query};
     }
-    
+
     for my $arg (qw(context min_matches reject_pattern))
     {
         $args{$arg} = $st{$arg} if $st{$arg};
@@ -589,7 +589,7 @@ my $get_args = sub
                                and not exists $st{context};
 
     $args{encoding} = $st{greek_output_format} || $default_encoding;
-    
+
     return %args;
 };
 
@@ -603,7 +603,7 @@ my $use_and_show_filter = sub
     {
         my $work_nums = $filter->{authors};
         my @texts = $q->select_authors( -author_nums => $work_nums);
-        
+
         print
             $f->p('Searching in the following: '),
             (join '<br />', @texts),
@@ -630,9 +630,9 @@ $output{lookup} = sub {
     print STDERR ">>$perseus_params\n"  if $init->{debug};
     $Diogenes_Daemon::params = $perseus_params;
     do "Perseus.cgi" or die $!;
-    
+
     $my_footer->();
-    
+
 };
 
 
@@ -650,7 +650,7 @@ $output{lemma} = sub {
     print STDERR ">>$perseus_params\n" if $init->{debug};
     $Diogenes_Daemon::params = $perseus_params;
     do "Perseus.cgi" or die $!;
-    
+
     print
         $f->p(
             $f->button( -Value  =>"Select All",
@@ -658,12 +658,12 @@ $output{lemma} = sub {
             '&nbsp;&nbsp;&nbsp;&nbsp;',
             $f->reset( -value  =>'Deselect All')),
         $f->p('Select the lemmata above that interest you.'),
-    
+
         $f->submit( -name => 'proceed',
                     -Value  =>'Show Inflected Forms');
 
     $my_footer->();
-    
+
 };
 
 $handler{lemma} = sub {
@@ -675,7 +675,7 @@ $output{lemmata} = sub {
     $print_header->();
     my $n = 0;
     $st{current_page} = 'inflections';
-    my $lem_string = join " ", @{ $st{lemma_list} }; 
+    my $lem_string = join " ", @{ $st{lemma_list} };
     $Diogenes_Daemon::params = qq{do=inflects&lang=$st{lang}&q=$lem_string&noheader=1};
     do "Perseus.cgi" or die $!;
 
@@ -688,11 +688,11 @@ $output{lemmata} = sub {
                             -default => '',
                             -size => 25),
               '&nbsp;<a onClick="formFilter();">Go</a>');
-    
+
     print qq{<p><a onClick="selectVisible(true);">Select All Visible Forms</a><br>
 <a onClick="selectVisible(false);">Unselect All Visible Forms</a></p>};
 
-    
+
     print
         $f->p(
             $f->submit( -name => 'proceed',
@@ -752,7 +752,7 @@ $handler{inflections} = sub {
     }
 };
 
-$output{indexed_search} = sub 
+$output{indexed_search} = sub
 {
     my %args = $get_args->();
     my $q = new Diogenes::Indexed(%args);
@@ -762,7 +762,7 @@ $output{indexed_search} = sub
     $print_header->();
     $st{current_page} = 'word_list';
     my @params = $f->param;
-    
+
     $use_and_show_filter->($q);
     # Since this is a 2-step search, we have to save it.
     $st{saved_filter} = $st{corpus} if $current_filter;
@@ -784,7 +784,7 @@ $output{indexed_search} = sub
         }
 
         my %labels;
-        foreach my $word (@wlist) 
+        foreach my $word (@wlist)
         {
             $labels{$word} = $word;
             $q->encode_greek($default_encoding, \$labels{$word});
@@ -793,9 +793,9 @@ $output{indexed_search} = sub
         $f->autoEscape(undef);
         print $f->checkbox_group( -name => "word_list",
                                   -Values => \@wlist,
-                                  -labels => \%labels, 
+                                  -labels => \%labels,
                                   -columns=>'3' );
-        
+
         $f->autoEscape(1) ;
         print $f->hr;
     }
@@ -807,7 +807,7 @@ $output{indexed_search} = sub
             '&nbsp;&nbsp;&nbsp;&nbsp;',
             $f->reset( -value  =>'Deselect All')),
         $f->p('Select the forms above that interest you.'),
-    
+
         $f->submit( -name => 'search',
                     -Value  =>'Do Search');
     $my_footer->();
@@ -820,13 +820,13 @@ $handler{word_list} = sub
 };
 
 
-$output{search} = sub 
+$output{search} = sub
 {
-    if ($st{type} =~ m/TLG Word List/ and not $st{word_list}) 
+    if ($st{type} =~ m/TLG Word List/ and not $st{word_list})
     {
         $output{indexed_search}->();
         return;
-    }    
+    }
 
     $st{current_page} = 'doing_search';
 
@@ -859,8 +859,8 @@ $output{search} = sub
         $q->do_search;
     }
     $my_footer->();
-    
-};      
+
+};
 
 
 
@@ -871,7 +871,7 @@ $handler{doing_search} = sub
 };
 
 
-$output{browser} = sub 
+$output{browser} = sub
 {
     my %args = $get_args->();
     my $q = new Diogenes::Browser::Stateless(%args);
@@ -887,7 +887,7 @@ $output{browser} = sub
     # do not allow HTML there.
      $strip_html->(\$_) for values %auths;
 
-    if (keys %auths == 0) 
+    if (keys %auths == 0)
     {
         print
             $f->p($f->strong('Sorry, no matching author names')),
@@ -896,10 +896,10 @@ $output{browser} = sub
                 'or corpus you wish to examine.'),
             $f->p('To get a list of all authors, simply leave the text area blank.');
     }
-    elsif (keys %auths == 1) 
+    elsif (keys %auths == 1)
     {
         my $auth = (keys %auths)[0];
-        
+
         print
             $f->center(
                 $f->p(
@@ -909,7 +909,7 @@ $output{browser} = sub
                             -value => 'Show works by this author'));
         $st{author} = [keys %auths]->[0];
     }
-    else 
+    else
     {
         my $size = keys %auths;
         $size = 20 if $size > 20;
@@ -928,12 +928,12 @@ $output{browser} = sub
                     $f->submit(-name=>'submit',
                                -value=>'Show works by this author')));
     }
-    
+
     $my_footer->();
-    
+
     sub author_sort
     {
-        my ($a, $b) = @_; 
+        my ($a, $b) = @_;
         $a =~ tr/a-zA-Z//cd;
         $b =~ tr/a-zA-Z//cd;
         return (uc $a cmp uc $b);
@@ -942,7 +942,7 @@ $output{browser} = sub
 
 $handler{browser_authors} = sub { $output{browser_works}->(); };
 
-$output{browser_works} = sub 
+$output{browser_works} = sub
 {
     my %args = $get_args->();
     my $q = new Diogenes::Browser::Stateless(%args);
@@ -951,18 +951,18 @@ $output{browser_works} = sub
     $print_title->('Diogenes Work Browser');
     $print_header->();
     $st{current_page} = 'browser_works';
-    
+
     my %works = $q->browse_works( $st{author} );
     $strip_html->(\$_) for (values %works, keys %works);
-    
-    if (keys %works == 0) 
+
+    if (keys %works == 0)
     {
         print $f->p($f->strong('Sorry, no matching names'));
     }
-    elsif (keys %works == 1) 
+    elsif (keys %works == 1)
     {
         my $work = (keys %works)[0];
-        
+
         print
             $f->center(
                 $f->p( 'There is only one work by this author:'),
@@ -971,7 +971,7 @@ $output{browser_works} = sub
                             -value => 'Find a passage in this work'));
         $st{work} = $work;
     }
-    else 
+    else
     {
         print
             $f->center(
@@ -993,7 +993,7 @@ $output{browser_works} = sub
 $handler{browser_works} = sub { $output{browser_passage}->() };
 
 
-$output{browser_passage} = sub 
+$output{browser_passage} = sub
 {
     my %args = $get_args->();
     my $q = new Diogenes::Browser::Stateless(  %args );
@@ -1002,7 +1002,7 @@ $output{browser_passage} = sub
     $print_title->('Diogenes Passage Browser');
     $print_header->();
     $st{current_page} = 'browser_passage';
-    
+
     print
         $f->center(
             $f->p(
@@ -1012,7 +1012,7 @@ $output{browser_passage} = sub
             $f->p(
                 '(Hint: use zeroes to see the very beginning of ',
                 'a work, including the title and proemial material.)'));
-    
+
     print '<center><table><tr><td>';
 
     my @labels = $q->browse_location ($st{author}, $st{work});
@@ -1020,10 +1020,10 @@ $output{browser_passage} = sub
 
     my $j = $#labels;
     my %fields;
-    foreach my $lev (@labels) 
+    foreach my $lev (@labels)
     {
         my $lab = $lev;
-        next if $lab =~ m#^\*#; 
+        next if $lab =~ m#^\*#;
         $lab =~ s#^(.)#\U$1\E#;
         %fields = ( -default => '0', -name => "level_$j", -size => 25 );
         # autofocus first input box (HTML5)
@@ -1031,7 +1031,7 @@ $output{browser_passage} = sub
             $fields{'-autofocus'} = 'autofocus';
         }
         print
-            "$lab: ", '</td><td>', 
+            "$lab: ", '</td><td>',
             $f->textfield( %fields ) ,
             '</td></tr><tr><td>';
         $j--;
@@ -1043,7 +1043,7 @@ $output{browser_passage} = sub
                 $f->submit( -name => 'submit',
                             -Value => 'Show me this passage'))),
             '</table></center>';
-    
+
     $my_footer->();
 
 };
@@ -1051,13 +1051,13 @@ $output{browser_passage} = sub
 $handler{browser_passage} = sub { $output{browser_output}->() };
 $handler{browser_output} = sub { $output{browser_output}->() };
 
-$output{browser_output} = sub 
+$output{browser_output} = sub
 {
     my $jumpTo =  shift;
     my %args = $get_args->();
     my $q = new Diogenes::Browser::Stateless( %args );
     $database_error->($q) if not $q->check_db;
-    
+
     my @target;
     $print_title->('Diogenes Browser');
     $print_header->();
@@ -1099,14 +1099,14 @@ $output{browser_output} = sub
     }
     elsif (exists $st{levels})
     {
-        for (my $j = $st{levels}; $j >= 0; $j--) 
+        for (my $j = $st{levels}; $j >= 0; $j--)
         {
             push @target, $st{"level_$j"};
         }
     }
-    
-    if ($jumpTo or $previous_page eq 'browser_passage') 
-    { 
+
+    if ($jumpTo or $previous_page eq 'browser_passage')
+    {
         my ($begin_offset, $end_offset) = $q->seek_passage ($st{author}, $st{work}, @target);
         # When looking at the start of a work, don't browse back
         if (grep {!/^0$/} @target)
@@ -1119,20 +1119,20 @@ $output{browser_output} = sub
             ($st{begin_offset}, $st{end_offset}) =
                 $q->browse_forward($begin_offset, $end_offset, $st{author}, $st{work});
         }
-    }   
-    elsif ($st{browser_forward}) 
+    }
+    elsif ($st{browser_forward})
     {
         ($st{begin_offset}, $st{end_offset}) = $q->browse_forward ($st{begin_offset},
                                                                        $st{end_offset},
                                                                        $st{author}, $st{work});
     }
-    elsif ($st{browser_back}) 
+    elsif ($st{browser_back})
     {
         ($st{begin_offset}, $st{end_offset}) = $q->browse_backward ($st{begin_offset},
                                                                         $st{end_offset},
                                                                         $st{author}, $st{work});
     }
-    else 
+    else
     {
         warn('Unreachable code!');
     }
@@ -1145,10 +1145,10 @@ $output{browser_output} = sub
                             -value => 'Move Back'),
                 $f->submit( -name => 'browser_forward',
                             -value=> 'Move Forward')));
-           
+
     delete $st{browser_forward};
     delete $st{browser_back};
-    
+
     $my_footer->();
 };
 
@@ -1188,7 +1188,7 @@ $output{filter_splash} = sub
         you can select which matching authors you wish to search in;
         you can then further narrow your selection down to particular
         works.));
-    
+
     my $default_db;
     if ($st{database}) {
         # In case we have prompted the user for db path.
@@ -1198,7 +1198,7 @@ $output{filter_splash} = sub
     } else {
         $default_db = 'tlg';
     }
-    
+
     print
         $f->table({cellspacing=>'10px'},
                   $f->Tr(
@@ -1224,7 +1224,7 @@ $output{filter_splash} = sub
         categories: chronological, generic, geographical, and so
         forth.  You can use these classifications to define a subset
         of works in the TLG to narrow down your search. '),
-        
+
     $f->submit( -name => 'complex',
                 -value => 'Define a complex TLG corpus');
 
@@ -1233,8 +1233,8 @@ $output{filter_splash} = sub
     $dis = '-disabled=>"true"' unless @filters;
     my @filter_names = ($no_filters_msg) unless @filters;
     push @filter_names, $_->{name} for @filters;
-    
-    
+
+
     print
         $f->h2('Manipulate an existing corpus'),
 
@@ -1267,7 +1267,7 @@ $output{filter_splash} = sub
         existing corpus and create a new one based on it, used the
         "Duplicate corpus" function first using a new name, and then
         add new authors to that. ');
-    
+
 
     $my_footer->();
 };
@@ -1310,10 +1310,10 @@ $output{simple_filter} = sub
     $st{short_type} = $st{database};
     $st{type} = $database{$st{database}};
     my $q = new Diogenes::Search(%args);
-    $database_error->($q) if not $q->check_db;   
+    $database_error->($q) if not $q->check_db;
 
     $print_title->('Diogenes Author Select Page');
-    $print_header->();   
+    $print_header->();
     $st{current_page} = 'simple_filter';
 
     my @auths = $q->select_authors(author_regex => $st{author_pattern});
@@ -1326,7 +1326,7 @@ $output{simple_filter} = sub
         $my_footer->();
         return;
     }
-    
+
     $f->autoEscape(undef);
     print $f->h1('Matching Authors'),
 
@@ -1470,7 +1470,7 @@ $output{refine_works} = sub
         $f->h1('Individual Works'),
         $f->p('Select the works you wish to use for searching.');
 
-    
+
     unless ($st{author_list})
     {
         print
@@ -1540,7 +1540,7 @@ $handler{select_works} = sub
     $merge_filter->({ name => $st{saved_filter_name},
                       authors => $work_nums,
                       type => $st{database} });
-    
+
     $save_filters_and_go->();
 };
 
@@ -1557,15 +1557,15 @@ $output{tlg_filter} = sub
 
     $print_title->('Diogenes TLG Selection Page');
     $print_header->();
-    
+
     $st{current_page} = 'tlg_filter';
-    
+
     my %labels = %{ $q->select_authors(get_tlg_categories => 1) };
     my %nice_labels = ( 'epithet' => 'Author\'s genre',
                         'genre_clx' => 'Text genre',
                         'location'  => 'Location' );
     my $j = 0;
-    
+
     print
         $f->h1('TLG Classification'),
         $f->p(
@@ -1601,7 +1601,7 @@ $output{tlg_filter} = sub
     print
         "<strong>$j. Name of Author(s):</strong><br>",
         $f->textfield(-name=>'author_regex', -size=>25),
-        
+
         '</td><td>',
         '<TABLE border=0><TR><TD colspan=2>';
     $j++;
@@ -1620,14 +1620,14 @@ $output{tlg_filter} = sub
         '</td><td rowspan=2>',
         $f->checkbox( -name =>'Varia',
                       -label => ' Include Varia and Incerta?'),
-        
+
         '</td></tr><tr><td>',
         "Before ",
         '</td><td>',
         $f->popup_menu( -name => 'date_before',
                         -Values => \@dates,
                         -Default => '--'),
-        
+
         '</td></tr></table></td></tr></table>',
         $f->p('You may select multiple values for as many ',
         'of the above criteria as you wish.'),
@@ -1646,7 +1646,7 @@ $output{tlg_filter} = sub
         $f->submit(  -name => 'tlg_filter_results',
                      -value => 'Get Matching Texts');
 
-        $my_footer->();   
+        $my_footer->();
 };
 
 $handler{tlg_filter} = sub
@@ -1693,9 +1693,9 @@ $output{tlg_filter_results} = sub
 
     $print_title->('Diogenes TLG Select Page');
     $print_header->();
-    
+
     $st{current_page} = 'tlg_filter_output';
-    
+
     $f->autoEscape(undef);
     %args = $get_args_for_tlg_filter->();
     my @texts = $q->select_authors(%args);
@@ -1715,7 +1715,7 @@ $output{tlg_filter_results} = sub
         $f->p('Here is a list of the texts that matched your query.'),
         $f->p('Please select as many as you wish to search in' ,
               'and click on the button at the bottom.'),
-    
+
         $f->checkbox_group(-name => 'works_list',
                            -Values => [0 .. $#texts],
                            -labels => \%labels,
@@ -1738,7 +1738,7 @@ $output{tlg_filter_results} = sub
         $f->p($f->submit( -name =>'Save'));
 
     $my_footer->();
-    
+
 };
 
 $handler{tlg_filter_output} = sub
@@ -1751,7 +1751,7 @@ $handler{tlg_filter_output} = sub
     $database_error->($q) if not $q->check_db;
 
     %args = $get_args_for_tlg_filter->();
-    
+
     () = $q->select_authors(%args);
     () = $q->select_authors(previous_list => $st{works_list});
 
@@ -1780,12 +1780,12 @@ $output{list_filter} = sub
     $print_title->('User-defined corpus listing');
     $print_header->();
     $st{current_page} = 'list_filter';
-    
+
     my $work_nums = $filter->{authors};
     my @texts = $q->select_authors( -author_nums => $work_nums);
     my %labels;
     $labels{$_} = $texts[$_] for 0 .. $#texts;
-        
+
 
     print
         $f->h2('User-defined corpus listing'),
@@ -1884,7 +1884,7 @@ $output{delete_filter_items} = sub {
 sub numerically { $a <=> $b; }
 
 
-my $mod_perl_error = sub 
+my $mod_perl_error = sub
 {
     $print_title->('Error');
     print '<p><center><strong>Error</strong></center></p>',
@@ -1908,7 +1908,7 @@ if ($check_mod_perl and not $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl/)
 {
     $mod_perl_error->();
 }
-elsif ($f->param('JumpTo')) 
+elsif ($f->param('JumpTo'))
 {
     # Jump straight to a passage in the browser
     my $jump = $f->param('JumpTo');
@@ -1917,7 +1917,7 @@ elsif ($f->param('JumpTo'))
     $st{type} = $database{$1};
     $output{browser_output}->($jump);
 }
-elsif (not $previous_page) 
+elsif (not $previous_page)
 {
     # First time, print opening page
     $output{splash}->();
