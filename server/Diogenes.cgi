@@ -340,7 +340,7 @@ my $print_navbar = sub {
     </nav>
   </div>
     };
-}
+};
 
 ### Splash page
 
@@ -352,32 +352,34 @@ $output{splash} = sub
     $print_title->('Diogenes', 'splash.js');
     $st{current_page} = 'splash';
 
+    print '<input type="hidden" name="action" id="action" value=""/>';
+    print "\n";
     print '<div id="corpora-list1">';
-    foreach @options {
+    foreach (@choices) {
         print qq{<option value="$_">$_</option>};
     }
-    print '</div>'
+    print '</div>';
     print '<div id="corpora-list2">';
-    foreach @filter_names {
+    foreach (@filter_names) {
         print qq{<option value="$_">$_</option>};
     }
-    print '</div>'
-
+    print '</div>';
+    print "\n";
     print $f->div(
         {-class=>'header_logo'},
         $f->img({-src=>$picture_dir.'Diogenes_Logo.png',
                      -srcset=>$picture_dir.'Diogenes_Logo.hidpi.png 2x',
                      -alt=>'Diogenes',
-                     -height=>'111',
-                     -width=>'382'})),
+                     -height=>'104',
+                     -width=>'374'})),
     $f->start_form(-id=>'form', -method=> 'get');
-
+    print "\n";
     $print_navbar->();
-
+    print "\n";
     print $f->div({-class=>'info-area', -id=>'info'},
                   $f->p({class => "homewelcome"},
                    q{Welcome to Diogenes, a tool for reading and searching through legacy databases of ancient texts.}));
-
+    print "\n";
     $my_footer->();
 };
 
@@ -396,9 +398,12 @@ my $get_filter = sub
 
 $handler{splash} = sub
 {
-
     my $corpus = $st{corpus};
     my $action = $st{action};
+
+    if ($action eq 'browse') {
+        $st{query} = $st{author}
+    }
     if ($choices{$corpus})
     {
         # Convert to abbreviated form
