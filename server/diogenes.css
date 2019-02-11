@@ -1,7 +1,30 @@
-body { 
+body {
   background-color: #ffffff;
   color: #000000;
   font-family: 'Gentium Plus';
+  height: 100vh;
+}
+#form {
+  height: 100%;
+}
+
+/* Hack for sticky footer: fixed height, 50px */
+.non-footer-container {
+    min-height: 100%;
+}
+.non-footer-content {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 70px; /* Extra 20px for padding */
+}
+.footer {
+         font-size: 60%;
+         text-align: center;
+         color: grey;
+         height: 50px;
+         margin-top: -50px;
+}
+
 }
 
 @font-face {
