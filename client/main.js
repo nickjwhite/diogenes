@@ -447,7 +447,7 @@ function initializeMenuTemplate () {
             submenu: [
                 {
                     label: 'Learn More',
-                    click () { require('electron').shell.openExternal('http://diogenes.durham.ac.uk/diogenes-help.html') }
+                    click () { require('electron').shell.openExternal('http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/diogenes-help.html') }
                 }
             ]
         }

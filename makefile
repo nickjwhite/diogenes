@@ -226,7 +226,7 @@ installer-deb64: linux64
 	fpm -s dir -t deb -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION)_amd64.deb -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://diogenes.durham.ac.uk \
+		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-deb.sh \
 		linux64/=/usr/local/diogenes/ \
@@ -239,7 +239,7 @@ installer-rpm64: linux64
 	fpm -s dir -t rpm -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION).x86_64.rpm -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://diogenes.durham.ac.uk \
+		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
 		linux64/=/usr/local/diogenes/ \
@@ -251,7 +251,7 @@ installer-arch64: linux64
 	fpm -s dir -t pacman -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION).pkg.tar.xz -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://diogenes.durham.ac.uk \
+		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
 		linux64/=/usr/local/diogenes/ \
