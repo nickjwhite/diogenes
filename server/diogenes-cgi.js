@@ -15,12 +15,6 @@ function setAll() {
     }
 }
 
-// For the splash page
-function onActionChange() {
-  if (document.form.action.selectedIndex == 7) {
-    document.form.submit();
-  }
-}
 
 // AJAX stuff
 var req = null;
