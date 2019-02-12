@@ -7,11 +7,12 @@ body {
   color: #000000;
   font-family: 'Gentium Plus';
   height: 100%;
-  margin: 10px;
+  margin: 0px;
 }
 .wrapper {
     min-height: 100%;
-
+    margin-right: 10px;
+    margin-left: 10px;
     /* Equal to height of footer */
     /* But also accounting for potential margin-bottom of last child */
     margin-bottom: -50px;
@@ -160,6 +161,7 @@ nav ul ul ul {
 
 .header_logo {
     text-align: center;
+    padding-top: 15px;
 }
 
 /* Fix problem where sub/super-scripts increases the line spacing for

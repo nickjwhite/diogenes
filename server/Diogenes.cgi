@@ -242,7 +242,7 @@ my $print_title = sub
                                  -src=>'diogenes.css'},
                        -meta=>{'content' => 'text/html;charset=utf-8'}
         ),
-    '<div class="wrapper">', # for sticky footer
+    '<div class="wrapper">', # for sticky footer and side padding
     $f->start_form(-name=>'form', -id=>'form', -method=> 'get');
     # We put this here (other hidden fields are at the end), so that
     # Javascript can use it for jumpTo even before the page has
@@ -261,13 +261,12 @@ my $print_header = sub
 {
     # HTML output
     print qq(
-        <center>
-             <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
-               <img src="${picture_dir}Diogenes_Logo_Small.png" alt="Logo"
-                srcset="${picture_dir}Diogenes_Logo_Small.hidpi.png 2x"
-                height="38" width="109" align="center" hspace="24" border="0"
-                /></a>
-       </center>);
+        <div class="header_logo">
+        <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
+        <img src="${picture_dir}Diogenes_Logo_Small.png" alt="Logo"
+        srcset="${picture_dir}Diogenes_Logo_Small.hidpi.png 2x"
+        height="38" width="109" /></a>
+       </div>);
 };
 
 my $strip_html = sub
