@@ -15,21 +15,25 @@ var lsTest = function(){
 
 function save_values () {
     if(lsTest === true){
-        if (corpus) {
-            localStorage.setItem("corpus", corpus.value);
+        if (document.getElementById("corpus_menu")) {
+            corpus = document.getElementById("corpus_menu").value;
+            localStorage.setItem("corpus", corpus);
         }
-        if (query) {
-            localStorage.setItem("query", query.value);
+        if (document.getElementById("query_text")) {
+            query = document.getElementById("query_text").value;
+            localStorage.setItem("query", query);
         }
-        if (author) {
-            localStorage.setItem("author", author.value);
+        if (document.getElementById("author_text")) {
+            author = document.getElementById("author_text").value;
+            localStorage.setItem("author", author);
         }
-
     }
 }
 
-window.onsubmit = save_values();
-
+window.onsubmit = function () {
+    console.log('saving values');
+    save_values();
+}
 function dropdown (menu) {
     document.getElementById(menu).style.display = "block";
 }
@@ -47,39 +51,45 @@ function droptoggle (menu) {
 
 const infoText ={};
 function info (choice) {
-    save_values();
-    document.getElementById("action").value = choice;
+
+    if (document.getElementById("corpus_menu")) {
+        corpus = document.getElementById("corpus_menu").value;
+    }
+    if (document.getElementById("query_text")) {
+        query = document.getElementById("query_text").value;
+    }
+    if (document.getElementById("author_text")) {
+        author = document.getElementById("author_text").value;
+    }
+
     // Hide all submenus
     dropup('submenu1');
     dropup('submenu2');
     document.getElementById("info").innerHTML = infoText[choice];
-
-    if(lsTest === true){
-        corpus = document.getElementById("corpus_menu");
-        query = document.getElementById("query_text");
-        author = document.getElementById("author_text");
-
-        var val = localStorage.getItem("corpus");
-        if (corpus && val) {
-            corpus.value = val;
-        }
-        val = localStorage.getItem("query");
-        if (query && val) {
-            query.value = val;
-        }
-        val = localStorage.getItem("author");
-        if (author && val) {
-            author.value = val;
-        }
+    if (corpus && document.getElementById("corpus_menu")) {
+        document.getElementById("corpus_menu").value = corpus;
     }
-    if (query) {
-        query.focus();
+    if (query && document.getElementById("query_text")) {
+        document.getElementById("query_text").value = query;
     }
+    if (author && document.getElementById("author_text")) {
+        document.getElementById("author_text").value = author;
+    }
+
+    if (document.getElementById("query_text")) {
+        document.getElementById("query_text").focus();
+    }
+
+    document.getElementById("action").value = choice;
 }
 
 // Set up content for user choices.
 window.onload = function () {
-
+    if(lsTest === true){
+        corpus = localStorage.getItem("corpus");
+        query = localStorage.getItem("query");
+        author = localStorage.getItem("author");
+    }
     var corpora1 = document.getElementById("corpora-list1").innerHTML;
     var corpora2 = document.getElementById("corpora-list2").innerHTML;
     var corporaAll = '<select name="corpus" id="corpus_menu" class="info-field">' +
