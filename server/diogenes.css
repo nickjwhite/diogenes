@@ -127,6 +127,11 @@ nav ul ul ul {
     text-align: left;
     font-size: 100%;
 }
+.info-button {
+    color: #28709a;
+    background: #e5e5e5
+    background: linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+}
 
 @font-face {
   font-family: 'Gentium Plus';
