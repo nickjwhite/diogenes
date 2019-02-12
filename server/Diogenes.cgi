@@ -388,7 +388,7 @@ my $get_filter = sub
     for (@filters) {
         return $_ if $_->{name} eq $name;
     }
-#     die ("Filter for $name not found!");
+    die ("Filter for $name not found!");
     return undef;
 };
 
@@ -402,13 +402,13 @@ $handler{splash} = sub
     if ($action eq 'browse') {
         $st{query} = $st{author}
     }
-    if ($choices{$corpus})
+    if ($corpus and $choices{$corpus})
     {
         # Convert to abbreviated form
         $st{short_type} = $choices{$corpus};
         $st{type} = $corpus;
     }
-    else
+    elsif ($corpus)
     {
         $current_filter = $get_filter->($corpus);
         $st{short_type} = $current_filter->{type};
@@ -443,19 +443,9 @@ $handler{splash} = sub
     }
     elsif ($action eq 'word_list')
     {
-        if ($current_filter and $current_filter->{type} ne 'tlg') {
-            $print_title->('Error');
-            print
-                $f->center(
-                    $f->p($f->strong('Error.'),
-                          'You have requested to do a TLG word search on a user-defined corpus
- which is not a subset of the TLG.'));
-        }
-        else {
-            $st{short_type} = 'tlg';
-            $st{type} = 'TLG Word List';
-            $output{indexed_search}->();
-        }
+        $st{short_type} = 'tlg';
+        $st{type} = 'TLG Word List';
+        $output{indexed_search}->();
     }
     elsif ($action eq 'browse')
     {
