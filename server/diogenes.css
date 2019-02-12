@@ -1,28 +1,33 @@
+html {
+  height: 100%;
+  margin: 0;
+}
 body {
   background-color: #ffffff;
   color: #000000;
   font-family: 'Gentium Plus';
-  height: 100vh;
-}
-#form {
   height: 100%;
+  margin: 10px;
 }
-
-/* Hack for sticky footer: fixed height, 50px */
-.non-footer-container {
+.wrapper {
     min-height: 100%;
+
+    /* Equal to height of footer */
+    /* But also accounting for potential margin-bottom of last child */
+    margin-bottom: -50px;
 }
-.non-footer-content {
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 70px; /* Extra 20px for padding */
+.push {
+  height: 50px;
 }
 .footer {
          font-size: 60%;
          text-align: center;
          color: grey;
+         font: caption;
+         -webkit-user-select: none;
          height: 50px;
-         margin-top: -50px;
+         margin-block-start: 0px;
+         margin-block-end: 0px;
 }
 
 /* Navbar */
@@ -137,7 +142,7 @@ nav ul ul ul {
 }
 
 /* Use OS fonts for UI elements */
-.gotocontext, .homesearch, .homewelcome, .footer {
+.gotocontext, .homesearch, .homewelcome {
   font: caption;
   -webkit-user-select: none;
 }
@@ -238,7 +243,7 @@ a.perseus:visited {
 }
 .main-full {
          width: 100%;
-         padding-right: 4px;
+/*         padding-right: 4px; */
          display: block;
          height: 100%;
 }

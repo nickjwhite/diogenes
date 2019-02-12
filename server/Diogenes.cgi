@@ -190,14 +190,17 @@ my $previous_page = $st{current_page};
 
 my $my_footer = sub
 {
-    # Close sticky footer and Perseus main divs
-    print '</div></div></div>';
+    $set_state->();
 
+    # Close Perseus main div
+    print '</div>';
+
+    print $f->end_form,
+        '<div class="push"></div></div>'; # sticky footer
     print
         $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2017 Peter Heslin.});
-    $set_state->();
-    print $f->end_form,
-    $f->end_html;
+
+    print $f->end_html;
 };
 
 
@@ -239,7 +242,7 @@ my $print_title = sub
                                  -src=>'diogenes.css'},
                        -meta=>{'content' => 'text/html;charset=utf-8'}
         ),
-    "\n",
+    '<div class="wrapper">', # for sticky footer
     $f->start_form(-name=>'form', -id=>'form', -method=> 'get');
     # We put this here (other hidden fields are at the end), so that
     # Javascript can use it for jumpTo even before the page has
@@ -251,10 +254,6 @@ my $print_title = sub
     # for Perseus data
     print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}"></div>};
     print '<div id="main_window" class="main-full">';
-
-    # for sticky footer
-    print qq{<div class="non-footer-container">
-                 <div class="non-footer-content">};
 
 };
 
