@@ -140,11 +140,11 @@ window.onload = function () {
 
     infoText['filters'] = '<h2 class="info-h2">Select subsets of texts</h2>' +
         '<p class="info-text">In order to perform delimited, targeted searches, you can create lists of particular authors and/or texts and save them for later reuse.  These personalized subsets of texts can be created for any database.  Furthermore, the <i>TLG</i> database categorizes texts by genre, date and so on, and these can be used as the basis for user-defined subsets.</p>' +
-        '<p><center><input class="info-button" type="submit" name="go" value="Create and Manage Subsets"></center></p>';
+        '<p align="center"><input class="info-button" type="submit" name="go" value="Create and Manage Subsets"></p>';
 
     infoText['export'] = '<h2 class="info-h2">Export texts as XML</h2>' +
         '<p class="info-text">You can export texts as XML (compliant with the Text Encoding Initiative) for feeding into other text-analysis tools.  If you want to export particular texts or authors, first go to <b>Filter</b> and create a subset with the texts you want to export.</p>' +
-        '<p><center><input class="info-button" type="submit" name="go" value="Go to XML Export Page"></center></p><h1>Not implemented yet!</h1>';
+        '<p align="center"><input class="info-button" type="submit" name="go" value="Go to XML Export Page"></p><h1>Not implemented yet!</h1>';
 
     infoText['help'] = '<h2 class="info-h2">Help and Support</h2>' +
         '<p class="info-text">For information about using Diogenes, see the <a href="http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/diogenes-help.html">website</a>.</p>' +
