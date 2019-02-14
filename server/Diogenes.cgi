@@ -870,15 +870,22 @@ $output{browser} = sub
     my $q = new Diogenes::Browser::Stateless(%args);
     $database_error->($q) if not $q->check_db;
 
+    my %auths = $q->browse_authors($st{query});
+    # Because they are going into form elements, and most browsers
+    # do not allow HTML there.
+    $strip_html->(\$_) for values %auths;
+
+    # Skip ahead if there is only one match
+    if (keys %auths == 1)
+    {
+        my $auth = (keys %auths)[0];
+        $st{author} = [keys %auths]->[0];
+        $output{browser_works}->();
+    }
+
     $print_title->('Diogenes Author Browser');
     $print_header->();
     $st{current_page} = 'browser_authors';
-
-    my %auths = $q->browse_authors($st{query});
-
-    # Because they are going into form elements, and most browsers
-    # do not allow HTML there.
-     $strip_html->(\$_) for values %auths;
 
     if (keys %auths == 0)
     {
@@ -888,19 +895,6 @@ $output{browser} = sub
                 'To browse texts, enter part of the name of the author ',
                 'or corpus you wish to examine.'),
             $f->p('To get a list of all authors, simply leave the text area blank.');
-    }
-    elsif (keys %auths == 1)
-    {
-        my $auth = (keys %auths)[0];
-
-        print
-            $f->center(
-                $f->p(
-                    'There is only one author corresponding to your request:'),
-                $f->p($auths{$auth}),
-                $f->submit( -name => 'submit',
-                            -value => 'Show works by this author'));
-        $st{author} = [keys %auths]->[0];
     }
     else
     {
@@ -941,34 +935,33 @@ $output{browser_works} = sub
     my $q = new Diogenes::Browser::Stateless(%args);
     $database_error->($q) if not $q->check_db;
 
+    my %auths = $q->browse_authors( $st{author} );
+    my %works = $q->browse_works( $st{author} );
+    $strip_html->(\$_) for (values %works, keys %works);
+
+    # Skip ahead if there is just one work
+    if (keys %works == 1)
+    {
+        my $work = (keys %works)[0];
+        $st{work} = $work;
+        $output{browser_passage}->();
+    }
+
     $print_title->('Diogenes Work Browser');
     $print_header->();
     $st{current_page} = 'browser_works';
 
-    my %works = $q->browse_works( $st{author} );
-    $strip_html->(\$_) for (values %works, keys %works);
 
     if (keys %works == 0)
     {
         print $f->p($f->strong('Sorry, no matching names'));
     }
-    elsif (keys %works == 1)
-    {
-        my $work = (keys %works)[0];
-
-        print
-            $f->center(
-                $f->p( 'There is only one work by this author:'),
-                $f->p( $works{$work} ),
-                $f->submit( -name => 'submit',
-                            -value => 'Find a passage in this work'));
-        $st{work} = $work;
-    }
     else
     {
         print
             $f->center(
-                $f->p('Here is a list of works by your author.'),
+                $f->p('Here is a list of works by your author:'),
+                $f->p( $auths{$st{author}} ),
                 $f->p('Please select one.'),
                 $f->p(
                     $f->scrolling_list( -name => 'work',

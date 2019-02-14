@@ -1,35 +1,28 @@
+* Re-add quick search in matching authors
+* Make h1 etc styling consistent
+* Fix server crash
+
+Where choosing dictionary lookup and then navigating forward and backward.  Screen should not split.
+should go to main page, not sidebar.  Or keep homepage and expand to cover it.
+
+
 * Bugs:
 
 ** caelum2 in dictionary
 ** Show error when no lemmata chosen in morph search
 
-* Redesign home page
+** Is true boldface shown in LSJ definitions?
 
 * Change color of icon back to blue, except on Windows.
-
-* Re-add quick search in matching authors?
 
 * Fix search arrows with CSS
 https://www.w3schools.com/howto/howto_css_arrows.asp
 
-* Remove Unicode input help
-Just say:
-Type in Greek letters (or Beta code Latin transliteration hover for key), omitting accents and breathings.
-
-* Browser 
-Jump ahead when there is only one author/text that matches.
 
 * Test first-run settings page on my desktop.
 
-* Fix lookup functions:
-should go to main page, not sidebar.  Or keep homepage and expand to cover it.
 
-* Fix server crash
-
-Where choosing dictionary lookup and then navigating forward and backward.  Screen should not split.
-
-
-* Create diogenes.durham.ac.uk
+* Redesign home page and move to new URL
 add diogenes-help.html
 
 * Add print menu item
