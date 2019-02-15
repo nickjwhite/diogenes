@@ -320,7 +320,7 @@ my $print_navbar = sub {
           <ul id="submenu1">
 	    <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
             <li><a href="#" onclick="info('author')" accesskey="a">Author</a></li>
-            <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple</a></li>
+            <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple Terms</a></li>
             <li><a href="#" onclick="info('lemma')" accesskey="f">Inflected Forms</a></li>
             <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
           </ul>
@@ -1176,10 +1176,42 @@ $output{filter_splash} = sub
     } else {
         print $f->p('Here are your currently defined filters:');
         print $f->ul($f->li(\@filter_names));
-#        print join "<br>\n", @filter_names;
+
+        print
+        $f->h2('List or modify an existing filter'),
+
+        $f->p( 'Corpus : ',
+               $f->popup_menu( -name => 'filter_choice',
+                               -values => \@filter_names,
+                               $dis)),
+        $f->p(
+            $f->submit (-name=>'list',
+                        -value=>'List contents'),
+            $f->br,
+            $f->submit (-name=>'delete',
+                        -value=>'Delete entire corpus'),
+            $f->br,
+            $f->submit (-name=>'duplicate',
+                        -value=>'Duplicate corpus under new name: '),
+            $f->textfield( -name => 'duplicate_name',
+                           -size => 60, -default => '')),
+
+        $f->p('<strong>N.B.</strong> To delete individual items from a
+        corpus, choose "List contents" and you can do that on the next
+        page.  To add authors to an existing corpus, find the new
+        authors using either the simple corpus or complex subset
+        options above, and then use the name of the existing corpus
+        you want to add them to.  The new authors will be merged into
+        the old, and for any duplicated author the new set of works will
+        replace the old.  If you want to preserve the existing corpus
+        and create a new one based on it, first use the "Duplicate corpus"
+        function, and then add new authors to
+        the duplicate. ');
+
+
     }
 
-    print $f->h2('Define a simple new corpus'),
+    print $f->h2('Define a new corpus'),
 
         $f->p(q(Enter a name or names or parts thereof, in order to
         narrow down the scope of your search within a particular
@@ -1228,40 +1260,6 @@ $output{filter_splash} = sub
     $f->submit( -name => 'complex',
                 -value => 'Define a complex TLG corpus');
 
-
-    print
-        $f->h2('Manipulate an existing corpus'),
-
-        $f->p('Select a previously defined corpus from the list below
-        and choose an action.  '),
-
-        $f->p( 'Corpus to operate on: ',
-               $f->popup_menu( -name => 'filter_choice',
-                               -values => \@filter_names,
-                               $dis)),
-        $f->p(
-            $f->submit (-name=>'list',
-                        -value=>'List contents'),
-            $f->br,
-            $f->submit (-name=>'delete',
-                        -value=>'Delete entire corpus'),
-            $f->br,
-            $f->submit (-name=>'duplicate',
-                        -value=>'Duplicate corpus under new name: '),
-            $f->textfield( -name => 'duplicate_name',
-                           -size => 60, -default => '')),
-
-        $f->p('<strong>N.B.</strong> To delete individual items from a
-        corpus, choose "List contents" and you can do that on the next
-        page.  To add authors to an existing corpus, find the new
-        authors using either the simple corpus or complex subset
-        options above, and then use the name of the existing corpus
-        you want to add them to.  The new authors will be merged into
-        the old, and for any duplicated author the new set of works will
-        replace the old.  If you want to preserve the existing corpus
-        and create a new one based on it, first use the "Duplicate corpus"
-        function, and then add new authors to
-        the duplicate. ');
 
 
     $my_footer->();
