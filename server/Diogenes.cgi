@@ -265,7 +265,7 @@ my $print_error_page = sub
 
     $print_title->('Diogenes Error Page');
     $print_header->();
-    
+
     print $f->center($f->p($msg));
     print $f->end_html;
     exit;
@@ -633,10 +633,10 @@ my $use_and_show_filter = sub
         my $work_nums = $filter->{authors};
         my @texts = $q->select_authors( -author_nums => $work_nums);
 
-        print
-            $f->p('Searching in the following: '),
-            (join '<br />', @texts),
-            $f->hr;
+        print $f->h2('Searching in the following authors/texts:'),
+        $f->ul($f->li(\@texts)),
+        $f->hr;
+
     }
 };
 
@@ -848,7 +848,6 @@ $handler{word_list} = sub
     $output{search}->()
 };
 
-
 $output{search} = sub
 {
     if ($st{type} =~ m/TLG Word List/ and not $st{word_list})
@@ -891,14 +890,10 @@ $output{search} = sub
 
 };
 
-
-
-
 $handler{doing_search} = sub
 {
     warn("Unreachable code!");
 };
-
 
 $output{browser} = sub
 {
@@ -1247,7 +1242,7 @@ $output{filter_splash} = sub
 
     }
 
-    print $f->h2('Define a new corpus'),
+    print $f->h2('Define a new filter'),
 
         $f->p(q(Enter a name or names or parts thereof, in order to
         narrow down the scope of your search within a particular
