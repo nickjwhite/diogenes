@@ -321,7 +321,7 @@ my $print_navbar = sub {
 	    <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
             <li><a href="#" onclick="info('author')" accesskey="a">Author</a></li>
             <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple</a></li>
-            <li><a href="#" onclick="info('lemma')" accesskey="f">Forms</a></li>
+            <li><a href="#" onclick="info('lemma')" accesskey="f">Inflected Forms</a></li>
             <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
           </ul>
         </li>
@@ -1152,19 +1152,32 @@ $output{filter_splash} = sub
 {
     $st{current_page} = 'filter_splash';
     $print_title->('Diogenes Corpora');
+    $print_header->();
+
+    my $no_filters_msg = 'There are no saved texts';
+    my $dis = '';
+    $dis = '-disabled=>"true"' unless @filters;
+    my @filter_names = ($no_filters_msg) unless @filters;
+    push @filter_names, $_->{name} for @filters;
+
+
     print
-        $f->h1("Manage user-defined subsets of the databases."),
+        $f->h1("Filters: user-defined subsets of the databases."),
 
-        $f->p('From this page you can create new corpora or subsets of the
-        databases to search within, and you can also view and
-        delete existing user-defined corpora.'),
+        $f->p('From this page you can create new corpora or subsets of
+        the databases to search within, and you can also view and
+        delete existing user-defined corpora.  Note that these
+        user-defined corpora must be a subset of one and only one
+        database; currently you cannot define a corpus to encompass
+        texts from two different databases.');
 
-        $f->p("Note that these user-defined corpora must be a subset
-        of one and only one database; currently you cannot define a
-        corpus to encompass texts from two different databases."),
-
-        $f->p('Choose one of the options below.');
-
+    if (not @filters) {
+        print $f->p('You do not have any currently defined filters.');
+    } else {
+        print $f->p('Here are your currently defined filters:');
+        print $f->ul($f->li(\@filter_names));
+#        print join "<br>\n", @filter_names;
+    }
 
     print $f->h2('Define a simple new corpus'),
 
@@ -1215,12 +1228,6 @@ $output{filter_splash} = sub
     $f->submit( -name => 'complex',
                 -value => 'Define a complex TLG corpus');
 
-    my $no_filters_msg = 'There are no saved texts';
-    my $dis = '';
-    $dis = '-disabled=>"true"' unless @filters;
-    my @filter_names = ($no_filters_msg) unless @filters;
-    push @filter_names, $_->{name} for @filters;
-
 
     print
         $f->h2('Manipulate an existing corpus'),
@@ -1244,16 +1251,17 @@ $output{filter_splash} = sub
             $f->textfield( -name => 'duplicate_name',
                            -size => 60, -default => '')),
 
-        $f->p('<strong>N.B.</strong> To delete items from a corpus,
-        choose "List contents".  To add authors to an existing corpus,
-        find the new authors using either the simple corpus or complex
-        subset options above, and then use the name of the existing
-        corpus you want to add them to.  The new authors will be
-        merged into the old, but for any given author a new set of
-        works will replace the old.  If you want to preserve the
-        existing corpus and create a new one based on it, used the
-        "Duplicate corpus" function first using a new name, and then
-        add new authors to that. ');
+        $f->p('<strong>N.B.</strong> To delete individual items from a
+        corpus, choose "List contents" and you can do that on the next
+        page.  To add authors to an existing corpus, find the new
+        authors using either the simple corpus or complex subset
+        options above, and then use the name of the existing corpus
+        you want to add them to.  The new authors will be merged into
+        the old, and for any duplicated author the new set of works will
+        replace the old.  If you want to preserve the existing corpus
+        and create a new one based on it, first use the "Duplicate corpus"
+        function, and then add new authors to
+        the duplicate. ');
 
 
     $my_footer->();
@@ -1377,7 +1385,7 @@ my $save_filters = sub {
 };
 
 my $go_splash = sub {
-    $output{filter_splash}->();
+    $output{splash}->();
 };
 
 my $save_filters_and_go = sub {
