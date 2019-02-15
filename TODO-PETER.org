@@ -1,5 +1,6 @@
 * Re-add quick search in matching authors
-* Make h1 etc styling consistent
+* Cause error when saving an empty filter
+* fix link out to website.
 * Fix server crash
 
 Where choosing dictionary lookup and then navigating forward and backward.  Screen should not split.

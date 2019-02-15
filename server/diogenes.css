@@ -163,6 +163,30 @@ nav ul ul ul {
     text-align: center;
     padding-top: 15px;
 }
+.header_back {
+    float:left;
+    padding-top: 20px;
+    background-color: #fff;
+    color: #28709a;
+}
+
+.back_button {
+    border-width: 0px;
+    padding: 0px;
+    margin: 0px;
+    color: #28709a;
+    background-color: #fff;
+    text-align: center;
+    align-items: center;
+    vertical-align: middle;
+}
+.back_button_text {
+    vertical-align: middle;
+    color: #28709a;
+    display: inline;
+    position: relative;
+    top: -7px;
+}
 
 h1 {
     color: #28709a;

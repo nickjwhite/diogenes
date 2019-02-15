@@ -259,7 +259,10 @@ my $print_title = sub
 
 my $print_header = sub
 {
-    # HTML output
+    print q{<div class="header_back"><a onclick="window.history.back()" class="back_button">
+    <svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve">
+    <polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="
+	45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
     print qq(
         <div class="header_logo">
         <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
