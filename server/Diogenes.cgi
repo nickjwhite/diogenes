@@ -787,7 +787,7 @@ $output{indexed_search} = sub
         print $f->checkbox_group( -name => "word_list",
                                   -Values => \@wlist,
                                   -labels => \%labels,
-                                  -columns=>'3' );
+                                  -columns=>'3');
 
         $f->autoEscape(1) ;
         print $f->hr;
@@ -910,6 +910,7 @@ $output{browser} = sub
 #                                         -Values => [sort numerically keys %auths],
                                         -labels => \%auths, -size=>$size,
                                         -autofocus => 'autofocus',
+                                        -required => 'required'
                                       )),
                 $f->p(
                     $f->submit(-name=>'submit',
@@ -968,7 +969,7 @@ $output{browser_works} = sub
                                         -Values => [sort numerically keys %works],
                                         -labels => \%works,
                                         -autofocus => 'autofocus',
-                                      )),
+                                        -required => 'required')),
                 $f->p(
                     $f->submit( -name => 'submit',
                                 -value => 'Find a passage in this work')));
@@ -1326,7 +1327,7 @@ $output{simple_filter} = sub
     print $f->checkbox_group( -name => 'author_list',
                               -Values => \@auth_nums,
                               -labels => \%labels,
-                              -linebreak => 'true' );
+                              -linebreak => 'true');
 
     print
         $f->p(
@@ -1496,7 +1497,7 @@ $output{refine_works} = sub
         print $f->checkbox_group( -name => "work_list_for_$a",
                                   -Values => \@work_nums,
                                   -labels => \%labels,
-                                  -linebreak => 'true' );
+                                  -linebreak => 'true');
     }
     print
         $f->hr,
@@ -1506,7 +1507,8 @@ $output{refine_works} = sub
     print
         $f->textfield( -name => 'saved_filter_name',
                        -size => 60,
-                       -default => $default_filter_name ),
+                       -default => $default_filter_name,
+                       -required => 'required'),
         $f->p('&nbsp;'),
         $f->p($f->submit( -name =>'Save'));
 
@@ -1705,7 +1707,7 @@ $output{tlg_filter_results} = sub
         $f->checkbox_group(-name => 'works_list',
                            -Values => [0 .. $#texts],
                            -labels => \%labels,
-                           -linebreak => 'true' );
+                           -linebreak => 'true');
 
     print
         $f->p(
@@ -1780,7 +1782,7 @@ $output{list_filter} = sub
     print $f->checkbox_group( -name => "filter_list",
                               -Values => [0 .. $#texts],
                               -labels => \%labels,
-                              -columns=>'1' );
+                              -columns=>'1');
 
     print
         $f->hr,
