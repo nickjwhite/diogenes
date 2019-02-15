@@ -204,20 +204,6 @@ my $my_footer = sub
 };
 
 
-my $print_error_page = sub
-{
-    my $msg = shift;
-    $msg ||= 'Sorry. You seem to have made a request that I do not understand.';
-    print $f->header(-type=>"text/html; charset=$charset");
-    print
-        $f->start_html( -title =>'Diogenes Error Page',
-                        -style => {-type=>'text/plain', -src=>'diogenes.css'}),
-        $f->center(
-            $f->p($msg)),
-        $f->end_html;
-     exit;
-};
-
 my $print_title = sub
 {
     print $f->header(-type=>"text/html; charset=$charset");
@@ -272,6 +258,19 @@ my $print_header = sub
        </div>);
 };
 
+my $print_error_page = sub
+{
+    my $msg = shift;
+    $msg ||= 'Sorry. You seem to have made a request that I do not understand.';
+
+    $print_title->('Diogenes Error Page');
+    $print_header->();
+    
+    print $f->center($f->p($msg));
+    print $f->end_html;
+    exit;
+};
+
 my $strip_html = sub
 {
     my $ref = shift;
@@ -299,6 +298,7 @@ my $database_error = sub
         $disk_type = 'tlg';
     }
     $print_title->('Database Error');
+    $print_header->();
     print qq(<center>
                <div style="display: block; width: 50%;">
                  <h2 id="database-error">Error: Database not found</h2>
@@ -421,6 +421,7 @@ $handler{splash} = sub
     if ((not $st{query}) and $action eq 'search')
     {
         $print_title->('Error');
+        $print_header->();
         print $f->center($f->p($f->strong('Error.')),
                          $f->p('You must specify a search pattern.'));
     }
@@ -457,6 +458,7 @@ $handler{splash} = sub
     else
     {
         $print_title->('Error');
+        $print_header->();
         print $f->center($f->p($f->strong('Flow Error.')));
     }
 
@@ -1292,6 +1294,7 @@ $handler{filter_splash} = sub
     }
     else {
         $print_title->('Error');
+        $print_header->();
         print $f->center($f->p($f->strong('Flow Error.')));
     }
 
@@ -1821,6 +1824,7 @@ $handler{list_filter} = sub
     }
     else {
         $print_title->('Error');
+        $print_header->();
         print $f->center($f->p($f->strong('Flow Error.')));
     }
 };
@@ -1884,6 +1888,7 @@ sub numerically { $a <=> $b; }
 my $mod_perl_error = sub
 {
     $print_title->('Error');
+    $print_header->();
     print '<p><center><strong>Error</strong></center></p>',
     '<p>This CGI script is set up to expect to run under mod_perl, ',
     'and yet it seems not to be doing so.</p>',
