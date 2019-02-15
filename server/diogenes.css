@@ -164,6 +164,17 @@ nav ul ul ul {
     padding-top: 15px;
 }
 
+h1 {
+    color: #28709a;
+}
+h2 {
+    color: #28709a;
+}
+h3 {
+    color: #28709a;
+}
+
+
 /* Fix problem where sub/super-scripts increases the line spacing for
 text, but not for the citations, so they no longer align properly */
 
