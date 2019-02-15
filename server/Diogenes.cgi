@@ -266,7 +266,10 @@ my $print_error_page = sub
     $print_title->('Diogenes Error Page');
     $print_header->();
 
-    print $f->center($f->p($msg));
+    print $f->center(
+        $f->h1('ERROR'),
+        $f->p($msg));
+
     print $f->end_html;
     exit;
 };
@@ -1428,6 +1431,9 @@ my $merge_filter = sub {
     my $new = shift;
     my $name = $new->{name};
     $print_error_page->('You must give your corpus a name!') unless ($name and $name =~ m/\S/);
+    unless (defined $new->{authors}) {
+        $print_error_page->('Your corpus has no authors in it!')
+    }
     my $merge;
     for my $f (@filters) {
         if ($f->{name} eq $name) {

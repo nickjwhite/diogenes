@@ -1,5 +1,3 @@
-* Re-add quick search in matching authors
-* Cause error when saving an empty filter
 * fix link out to website.
 * Fix server crash
 
