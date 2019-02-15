@@ -322,7 +322,7 @@ my $print_navbar = sub {
 	<li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
           <ul id="submenu1">
 	    <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
-            <li><a href="#" onclick="info('author')" accesskey="a">Author</a></li>
+            <li><a href="#" onclick="info('author')" accesskey="a">Within an Author</a></li>
             <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple Terms</a></li>
             <li><a href="#" onclick="info('lemma')" accesskey="f">Inflected Forms</a></li>
             <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
@@ -454,6 +454,10 @@ $handler{splash} = sub
     elsif ($action eq 'browse')
     {
         $output{browser}->();
+    }
+    elsif ($action eq 'author')
+    {
+        $output{author_search}->();
     }
     else
     {
@@ -589,6 +593,33 @@ my $get_args = sub
     $args{encoding} = $st{greek_output_format} || $default_encoding;
 
     return %args;
+};
+
+$output{author_search} = sub
+{
+    # A quick and dirty author search
+    $print_title->('Diogenes Author Search Page');
+    $print_header->();
+    $st{current_page} = 'author';
+
+    my %args = $get_args->();
+    $args{type} = $choices{$st{corpus}};
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;
+    my @auths = $q->select_authors(author_regex => $st{author});
+    unless (scalar @auths)
+    {
+        $print_error_page->(qq(There were no texts matching the author $st{author_pattern}));
+        return;
+    }
+
+    print $f->h2('Searching in the following authors'),
+        $f->ul($f->li(\@auths)),
+        $f->hr;
+
+    $q->do_search;
+    $my_footer->();
+
 };
 
 my $use_and_show_filter = sub

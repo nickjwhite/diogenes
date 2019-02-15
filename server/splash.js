@@ -110,11 +110,11 @@ window.onload = function () {
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
         '<p class="info-text">Choose the relevant corpus, and then enter a pattern (word or sequence of words) to search for.  Enter Greek without diacritics. <b>NB.</b> To restrict a search to the beginning or end of a word, enter a space before or after the letters in your pattern.</p>';
 
-    infoText['author'] = '<h2 class="info-h2">Search in an Author</h2>' +
+    infoText['author'] = '<h2 class="info-h2">Search within Author(s)</h2>' +
         '<p class="info-field">Corpus: ' + corporaCore + '</p>' +
         '<p class="info-field">Author: <input type="text" name="author" size="20" id="author_text" class="info-field"></p>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">This is a simple search within the texts of selected author(s). Choose the relevant corpus, and enter part of an author\'s name (all matching authors will be searched).  Then enter a pattern to search for. For finer-grained control over which authors and texts to search in and many more ways to select them, choose the <b>Filter</b> option above.</p> <h1>Not implemented yet!</h1>';
+        '<p class="info-text">This is a simple search within the texts of selected author(s). Choose the relevant corpus, enter part of an author\'s name (all matching authors will be searched), and enter a pattern to search for.</p> <p>For finer-grained control over which authors and texts to search in and many more ways to select them, choose the <b>Filter</b> option above.</p>';
 
     infoText['multiple'] = '<h2 class="info-h2">Multiple Pattern Search</h2>' +
         '<p class="info-field">Corpus: ' + corporaAll + '</p>' +
