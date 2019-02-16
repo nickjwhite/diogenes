@@ -147,7 +147,7 @@ window.onload = function () {
         '<p align="center"><input class="info-button" type="submit" name="go" value="Go to XML Export Page"></p><h1>Not implemented yet!</h1>';
 
     infoText['help'] = '<h2 class="info-h2">Help and Support</h2>' +
-        '<p class="info-text">For information about using Diogenes, see the <a href="http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/diogenes-help.html">website</a>.</p>' +
+        '<p class="info-text">For information about using Diogenes, see the <a target="_blank" href="http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/diogenes-help.html">website</a>.</p>' +
         '<p class="info-text">If are a student, a schoolteacher or a member of the general public who uses Diogenes, or if you are a university teacher who uses it in your undergraduate teaching, you can help to support its continuing development by sending a quick message describing the benefits it has brought to you to this address:  <a href="mailto:p.j.heslin@durham.ac.uk?subject=Diogenes Impact">p.j.heslin@durham.ac.uk</a>.</p>';
 
 }
