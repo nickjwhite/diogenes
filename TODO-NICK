@@ -16,6 +16,8 @@ Add title of work back to poem reader (it used to be there); see http://localhos
 
 Update README to mention that latex output, the dio command line tool, and (maybe) other bits are still about, but haven't received much focus, so may not be as solid as the rest
 
+Next & Prev pop up rather than switch page in dictionary lookup
+
 
 # Maybe TODO
 
