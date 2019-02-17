@@ -49,6 +49,11 @@ function droptoggle (menu) {
     }
 }
 
+function splashParse () {
+    parse_lat("foo");
+    sidebarFullscreen();
+}
+
 const infoText ={};
 function info (choice) {
 
@@ -135,7 +140,7 @@ window.onload = function () {
         '<p class="info-text">Look up a word in the Greek lexicon of Liddel, Scott and Jones or in the Latin lexicon of Lewis and Short.</p>';
 
     infoText['parse'] = '<h2 class="info-h2">Parse an Inflected Form</h2>' +
-        '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
+        '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="button" onClick="splashParse()" name="go" value="Go" class="info-field"></p>' +
         '<p class="info-text">Parse the morphology of an inflected word in Latin or Greek.</p>';
 
     infoText['filters'] = '<h2 class="info-h2">Select subsets of texts</h2>' +

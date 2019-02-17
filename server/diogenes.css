@@ -284,6 +284,13 @@ a.perseus:visited {
 .sidebar-newpage {
          display: none;
 }
+.dismiss-text {
+    position: relative;
+    top: -6px;
+    display: inline;
+    padding-right: 2px;
+    padding-left: 10px;
+}
 .main-full {
          width: 100%;
 /*         padding-right: 4px; */

@@ -357,6 +357,7 @@ $output{splash} = sub
     $st{current_page} = 'splash';
 
     print '<input type="hidden" name="action" id="action" value=""/>';
+    print '<input type="hidden" name="splash" id="splash" value="true"/>';
     print "\n";
     print '<div id="corpora-list1">';
     foreach (@choices) {

@@ -96,25 +96,36 @@ function sidebarControl () {
     var sidebar = document.getElementById("sidebar");
     var sidebarClass = sidebar.getAttribute("class");
     var sidebarControl = document.getElementById("sidebar-control");
-
-    if (sidebarClass == 'sidebar-split') {
-        sidebarControl.innerHTML = 
-            '<a onClick="sidebarFullscreen();">' +
-            `<img id="fullscreen" src="${picture_dir}view-fullscreen.png" srcset="${picture_dir}view-fullscreen.hidpi.png 2x" alt="Fullscreen" /></a>`;
-    } else if (sidebarClass == 'sidebar-full') {
+    var splash = document.getElementById("splash");
+    
+    if (splash) {
+        // Do not permit split screen on splash
         sidebarControl.innerHTML =
+        '<a onClick="sidebarDismiss();"><div class="dismiss-text">Close</div> ' +
+            `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /></a>`;
+    }
+    else {
+        if (sidebarClass == 'sidebar-split') {
+            sidebarControl.innerHTML = 
+                '<a onClick="sidebarFullscreen();">' +
+                `<img id="fullscreen" src="${picture_dir}view-fullscreen.png" srcset="${picture_dir}view-fullscreen.hidpi.png 2x" alt="Fullscreen" /></a>`;
+        } else if (sidebarClass == 'sidebar-full') {
+            sidebarControl.innerHTML =
             '<a onClick="sidebarSplitscreen();">' +
             `<img id="splitscreen" src="${picture_dir}view-restore.png" srcset="${picture_dir}view-restore.hidpi.png 2x" alt="Split Screen" /></a>`;
+        }
+        sidebarControl.innerHTML +=
+            '<a onClick="sidebarDismiss();">' +
+            `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /></a>`;
     }
-    sidebarControl.innerHTML +=
-        '<a onClick="sidebarDismiss();">' +
-        `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /></a>`;
 }
 
 function sidebarDismiss () {
     var sidebar = document.getElementById("sidebar");
     var mainWindow = document.getElementById("main_window");
+    var sidebarControl = document.getElementById("sidebar-control");
     sidebar.innerHTML = "";
+    sidebarControl.innerHTML = "";
     mainWindow.setAttribute("class", "main-full");
 }
 
