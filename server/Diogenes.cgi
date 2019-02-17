@@ -439,7 +439,8 @@ $handler{splash} = sub
     }
     elsif ($action eq 'lookup' or $action eq 'parse')
     {
-        $output{lookup}->($action);
+        $print_error_page->('Request for Perseus lookup should not get through to Diognenes.cgi');
+#        $output{lookup}->($action);
     }
     elsif ($action eq 'search')
     {

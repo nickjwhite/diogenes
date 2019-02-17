@@ -30,10 +30,37 @@ function save_values () {
     }
 }
 
-window.onsubmit = function () {
-    console.log('saving values');
+// Set up submit handler
+window.addEventListener("load", function() {
+    var form = document.getElementById('form');
+    if (form.attachEvent) {
+        form.attachEvent("submit", processForm);
+    }
+    else {
+        form.addEventListener("submit", processForm);
+    }
+});
+
+function processForm (e) {
+    if (e.preventDefault) e.preventDefault();
     save_values();
+
+    // Catch and block submission of form for Perseus lookup
+    var action = document.getElementById("action").value;
+    if (action == 'parse') {
+        splashParse();
+        return false;
+    }
+    else if (action == 'lookup') {
+        return false;
+    }
+    else {
+        // Submit form
+        var form = document.getElementById('form');
+        form.submit();
+    }
 }
+
 function dropdown (menu) {
     document.getElementById(menu).style.display = "block";
 }
@@ -50,8 +77,11 @@ function droptoggle (menu) {
 }
 
 function splashParse () {
-    parse_lat("foo");
-    sidebarFullscreen();
+    if (document.getElementById("query_text")) {
+        query = document.getElementById("query_text").value;
+        parse_lat(query);
+        sidebarFullscreen();
+    }
 }
 
 const infoText ={};
@@ -140,7 +170,7 @@ window.onload = function () {
         '<p class="info-text">Look up a word in the Greek lexicon of Liddel, Scott and Jones or in the Latin lexicon of Lewis and Short.</p>';
 
     infoText['parse'] = '<h2 class="info-h2">Parse an Inflected Form</h2>' +
-        '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="button" onClick="splashParse()" name="go" value="Go" class="info-field"></p>' +
+        '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
         '<p class="info-text">Parse the morphology of an inflected word in Latin or Greek.</p>';
 
     infoText['filters'] = '<h2 class="info-h2">Select subsets of texts</h2>' +
