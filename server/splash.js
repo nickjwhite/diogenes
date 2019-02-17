@@ -79,8 +79,12 @@ function droptoggle (menu) {
 function splashParse () {
     if (document.getElementById("query_text")) {
         query = document.getElementById("query_text").value;
-        parse_lat(query);
-        sidebarFullscreen();
+        const grk = /[\u0370-\u03FF\u1F00-\u1FFF]/;
+        if (grk.test(query)) {
+            parse_grk_unicode(query)
+        } else {
+            parse_lat(query)
+        }
     }
 }
 

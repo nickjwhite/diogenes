@@ -306,7 +306,9 @@ a.perseus:visited {
          display: block;
          float: right;
 }
-
+.back-padding {
+    padding-top: 10px;
+}
 .invisible {
          display: none;
 }

@@ -23,7 +23,7 @@ function new_page (action, lang, query){
     window.location.href = `Perseus.cgi?do=${action}&lang=${lang}&q=${query}&popup=1`;
 }
 
-function sendRequest(action, lang, query) {
+function sendRequest(action, lang, query, enc) {
     /* If we just want a popup, skip the AJAX fancy stuff*/
     var sidebar = document.getElementById("sidebar");
     var sidebarClass = sidebar.getAttribute("class");
@@ -51,7 +51,14 @@ function sendRequest(action, lang, query) {
         }
         req.onreadystatechange = stateHandler;
         req.open("POST", "Perseus.cgi");
-        req.send("do="+action+"&lang="+lang+"&q="+query);
+        if (enc) {
+            // Send utf8 from user input 
+            req.send("do="+action+"&lang="+lang+"&q="+query+"&inp_enc="+enc);
+        }
+        else {
+            // From text links (which use transliteration)
+            req.send("do="+action+"&lang="+lang+"&q="+query);
+        }
         return true;
     }
     return true;
@@ -88,9 +95,13 @@ function showPerseus () {
         var mainWindow = document.getElementById("main_window");
         mainWindow.setAttribute("class", "main-hidden");
     }
-    sidebarControl();
+    var splash = document.getElementById("splash");    
+    if (splash) {
+        sidebarFullscreen();
+    } else {
+        sidebarControl();
+    }
 }
-
 
 function sidebarControl () {
     var sidebar = document.getElementById("sidebar");
@@ -99,10 +110,8 @@ function sidebarControl () {
     var splash = document.getElementById("splash");
     
     if (splash) {
-        // Do not permit split screen on splash
-        sidebarControl.innerHTML =
-        '<a onClick="sidebarDismiss();"><div class="dismiss-text">Close</div> ' +
-            `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /></a>`;
+        // Do not show split screen control on splash; instead, produce fake back button
+        sidebarControl.innerHTML = '<div class="back-padding"><a onclick="sidebarDismiss();" class="back_button"><svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve"><polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>';
     }
     else {
         if (sidebarClass == 'sidebar-split') {
@@ -148,6 +157,9 @@ function sidebarSplitscreen () {
 
 function parse_grk (word) {
     sendRequest("parse", "grk", word);
+}
+function parse_grk_unicode (word) {
+    sendRequest("parse", "grk", word, 'utf8');
 }
 function parse_lat (word) {
     sendRequest("parse", "lat", word);
