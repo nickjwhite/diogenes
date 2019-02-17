@@ -30,8 +30,8 @@ function save_values () {
     }
 }
 
-// Set up submit handler
 window.addEventListener("load", function() {
+    // Set up submit handler
     var form = document.getElementById('form');
     if (form.attachEvent) {
         form.attachEvent("submit", processForm);
@@ -39,11 +39,18 @@ window.addEventListener("load", function() {
     else {
         form.addEventListener("submit", processForm);
     }
+    // Turn off spinning cursor
+    var body = document.getElementsByTagName("BODY")[0];
+    body.classList.remove("waiting");
 });
 
 function processForm (e) {
-    if (e.preventDefault) e.preventDefault();
     save_values();
+    // Stop submit
+    if (e.preventDefault) e.preventDefault();
+    // Wait cursor
+    var body = document.getElementsByTagName("BODY")[0];
+    body.classList.add("waiting");
 
     // Catch and block submission of form for Perseus lookup
     var action = document.getElementById("action").value;

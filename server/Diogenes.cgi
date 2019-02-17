@@ -226,7 +226,8 @@ my $print_title = sub
                        -script=>$script,
                        -style=>{ -type=>'text/css',
                                  -src=>'diogenes.css'},
-                       -meta=>{'content' => 'text/html;charset=utf-8'}
+                       -meta=>{'content' => 'text/html;charset=utf-8'},
+                       -class=>'waiting'
         ),
     '<div class="wrapper">', # for sticky footer and side padding
     $f->start_form(-name=>'form', -id=>'form', -method=> 'get');
