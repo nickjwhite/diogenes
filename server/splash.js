@@ -104,7 +104,9 @@ function info (choice) {
     // Hide all submenus
     dropup('submenu1');
     dropup('submenu2');
+
     document.getElementById("info").innerHTML = infoText[choice];
+
     if (corpus && document.getElementById("corpus_menu")) {
         document.getElementById("corpus_menu").value = corpus;
     }

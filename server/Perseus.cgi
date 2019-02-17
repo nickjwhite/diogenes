@@ -79,7 +79,7 @@ elsif ($inp_enc eq 'Unicode') {
     $query = $c->unicode_greek_to_beta($query);
 }
 elsif ($inp_enc eq 'utf8') {
-    # Bytes that need to be 
+    # Bytes that need to be
     $query = Encode::decode(utf8=>$query);
     my $c = new Diogenes::UnicodeInput;
     $query = $c->unicode_greek_to_beta($query);
@@ -116,7 +116,7 @@ if (not -e $perseus_dir) {
         exit;
     }
 }
-    
+
 my $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
 my $dict_name = $dicts{$lang}->[1];
 my $dict_format = $dicts{$lang}->[2];
@@ -291,7 +291,7 @@ my $beta_to_utf8 = sub {
     $text =~ s/([\x80-\xff])\_/$1&#x304;/g; # combining macron
     $text =~ s/_/&nbsp;&#x304;/g;
     $text =~ s/([\x80-\xff])\^/$1&#x306;/g; # combining breve
-    $text =~ s/\^/&nbsp;&#x306;/g; 
+    $text =~ s/\^/&nbsp;&#x306;/g;
     # Decode from a 'binary string' to a UTF-8 'text string' so the
     # UTF-8 strings from Diogenes::EntityTable can be mixed freely
     return Encode::decode('utf-8', $text);
@@ -304,7 +304,7 @@ my $text_with_links = sub {
     $text_lang = "grk" if $text_lang eq "greek";
     my $out = '';
     $out .= " " if $text =~ m/^(\s+)/;
-    # skip spaces 
+    # skip spaces
     while ($text=~m/([^\s]+)(\s*)/g) {
         my $word = $1;
         my $space = $2 || '';
@@ -361,7 +361,7 @@ my $munge_xml = sub {
                                     'input_is_string' => 1,
                                     'preserve_whitespace' => 1);
     $munge_tree->($tree);
-    
+
     my $entity;
     foreach $entity (%Diogenes::EntityTable::table) {
         $out =~ s/&$entity;/$Diogenes::EntityTable::table{$entity}/g;
@@ -495,12 +495,12 @@ $format_fn{dict} = sub {
      print qq{<hr><a onClick="prevEntry$lang($dict_offset)">Previous Entry</a>&nbsp;&nbsp;&nbsp;<a onClick="nextEntry$lang($dict_offset)">Next Entry</a><hr>};
 
 };
-    
+
 my $format_dict = sub {
     my $text = shift;
     $format_fn{$dict_format}->($text);
 };
-        
+
 my $do_lookup = sub {
     my $word = shift;
     my $exact = shift;
@@ -723,7 +723,7 @@ my $find_lemma = sub {
     } else {
         print "Sorry, no lemma matches were found for $qq (language = $lang)\n";
     }
-    
+
 };
 
 my $get_entry = sub {
@@ -793,7 +793,7 @@ my $do_parse = sub {
             }
         }
     }
-    
+
     if (defined $analysis) {
         $format_analysis->($analysis);
     }

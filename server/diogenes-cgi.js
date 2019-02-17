@@ -4,7 +4,7 @@ var picture_dir = 'images/';
 function setAll() {
     with (document.form) {
         for (i = 0; i < elements.length; i++) {
-            if (elements[i].name == "word_list" || 
+            if (elements[i].name == "word_list" ||
                 elements[i].name == "author_list" ||
                 elements[i].name == "works_list" ||
                 elements[i].name == "lemma_list") {
@@ -29,7 +29,7 @@ function sendRequest(action, lang, query, enc) {
     var sidebarClass = sidebar.getAttribute("class");
     if (sidebarClass == "sidebar-popup") {
         try {
-            var perseusWin = window.open("Perseus.cgi?do="+action+"&lang="+lang+"&q="+query+"&popup=1", 
+            var perseusWin = window.open("Perseus.cgi?do="+action+"&lang="+lang+"&q="+query+"&popup=1",
                 'Perseus Data');
         } catch(e) {
             alert('You have requested that Perseus data be displayed in a pop-up window, ' +
@@ -38,21 +38,21 @@ function sendRequest(action, lang, query, enc) {
     }
     else if (sidebarClass == "sidebar-newpage") {
         new_page(action, lang, query);
-    }    
+    }
     else {
         /* Check for running connections */
         if (req != null && req.readyState != 0 && req.readyState != 4) {
             req.abort();
         }
-        if (window.XMLHttpRequest) { 
+        if (window.XMLHttpRequest) {
             req = new XMLHttpRequest();     // Firefox, Safari, ...
         } else if (window.ActiveXObject) {
-            req = new ActiveXObject("Microsoft.XMLHTTP");  // Internet Explorer 
+            req = new ActiveXObject("Microsoft.XMLHTTP");  // Internet Explorer
         }
         req.onreadystatechange = stateHandler;
         req.open("POST", "Perseus.cgi");
         if (enc) {
-            // Send utf8 from user input 
+            // Send utf8 from user input
             req.send("do="+action+"&lang="+lang+"&q="+query+"&inp_enc="+enc);
         }
         else {
@@ -95,7 +95,7 @@ function showPerseus () {
         var mainWindow = document.getElementById("main_window");
         mainWindow.setAttribute("class", "main-hidden");
     }
-    var splash = document.getElementById("splash");    
+    var splash = document.getElementById("splash");
     if (splash) {
         sidebarFullscreen();
     } else {
@@ -108,14 +108,14 @@ function sidebarControl () {
     var sidebarClass = sidebar.getAttribute("class");
     var sidebarControl = document.getElementById("sidebar-control");
     var splash = document.getElementById("splash");
-    
+
     if (splash) {
         // Do not show split screen control on splash; instead, produce fake back button
         sidebarControl.innerHTML = '<div class="back-padding"><a onclick="sidebarDismiss();" class="back_button"><svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve"><polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>';
     }
     else {
         if (sidebarClass == 'sidebar-split') {
-            sidebarControl.innerHTML = 
+            sidebarControl.innerHTML =
                 '<a onClick="sidebarFullscreen();">' +
                 `<img id="fullscreen" src="${picture_dir}view-fullscreen.png" srcset="${picture_dir}view-fullscreen.hidpi.png 2x" alt="Fullscreen" /></a>`;
         } else if (sidebarClass == 'sidebar-full') {
@@ -286,5 +286,3 @@ function formFilter () {
         }
     }
 }
-
- 
