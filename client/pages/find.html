@@ -9,9 +9,18 @@
   <body>
     <div class="find-body">
       <form>
-        <input id="textToFind" size="20" type="text" name="find" value="" placeholder="Find in page" autofocus />
-        <button id="down" onclick="next()"><span></span></button><button id="up" onclick="prev()"><span></span></button>
-        &nbsp;<button onclick="cancel()">Cancel</button>
+        <input id="textToFind" size="30" type="text" name="find" value="" placeholder="Find in page" autofocus />
+        <button id="chevron-down" onclick="next()"></button><button id="chevron-up" onclick="prev()"></button><a id="close-button" onclick="cancel()">
+        <svg width="12px" height="12px" viewPort="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <line x1="1" y1="11" 
+                x2="11" y2="1" 
+                stroke="black" 
+                stroke-width="2"/>
+          <line x1="1" y1="1" 
+                x2="11" y2="11" 
+                stroke="black" 
+                stroke-width="2"/>
+        </svg></a>
       </form>
       </div>
       <script>

@@ -491,7 +491,7 @@ function initializeMenuTemplate () {
 }
 
 function findText (win) {
-    let findWidth = 350
+    let findWidth = 300
     let find_x = win.getBounds().x + win.getBounds().width - findWidth
     let find_y = win.getBounds().y
 
@@ -500,7 +500,7 @@ function findText (win) {
         show: false,
         modal: false,
         width: findWidth,
-        height: 60,
+        height: 40,
         x: find_x,
         y: find_y,
         resizable: false,

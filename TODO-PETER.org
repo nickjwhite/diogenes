@@ -5,15 +5,11 @@
 
 * Change color of icon back to blue, except on Windows.
 
-* Fix search arrows with CSS
-https://www.w3schools.com/howto/howto_css_arrows.asp
-
-
 * Test first-run settings page on my desktop.
 
 
 * Redesign home page and move to new URL
-add diogenes-help.html
+add diogenes-help.html as FAQs
 
 * Add print menu item
 
@@ -23,5 +19,6 @@ And look at latex output code for further ideas
 Substitute libxml with XML::DOM:Lite for portability
 
 * check github issues tracker
+* Go through Nick's to-dos
 * Create diogenes-help.html page
 And make it internal to app.
