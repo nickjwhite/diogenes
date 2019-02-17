@@ -149,7 +149,7 @@ nav ul ul ul {
 }
 
 /* Use OS fonts for UI elements */
-.gotocontext, .homesearch, .homewelcome {
+.gotocontext, .homesearch {
   font: caption;
   -webkit-user-select: none;
 }
