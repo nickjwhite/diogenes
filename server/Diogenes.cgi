@@ -705,6 +705,10 @@ $handler{lemma} = sub {
 };
 
 $output{lemmata} = sub {
+    unless ($st{lemma_list}) {
+        $print_error_page->('No lemmata were chosen!');
+        return;
+    }
     $print_title->('Diogenes Lemma Choice Page');
     $print_header->();
     my $n = 0;
@@ -712,7 +716,7 @@ $output{lemmata} = sub {
     my $lem_string = join " ", @{ $st{lemma_list} };
     $Diogenes_Daemon::params = qq{do=inflects&lang=$st{lang}&q=$lem_string&noheader=1};
     do "Perseus.cgi" or die $!;
-
+    delete $st{lemma_list};
     print
         $f->hr,
         $f->p('Show only forms matching this text (e.g. "aor opt" for only aorist optatives):',
@@ -737,6 +741,10 @@ $output{lemmata} = sub {
 };
 
 $handler{inflections} = sub {
+    unless ($st{lemma_list}) {
+        $print_error_page->('No lemmata were chosen!');
+        return;
+    }
     $print_title->('Diogenes Morphological Search');
     $print_header->();
     if ($st{short_type} eq "tlg") {

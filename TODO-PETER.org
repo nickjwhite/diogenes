@@ -1,14 +1,6 @@
-* Fix server crash
-
-Where choosing dictionary lookup and then navigating forward and backward.  Screen should not split.
-should go to main page, not sidebar.  Or keep homepage and expand to cover it.
-
-
 * Bugs:
 
 ** caelum2 in dictionary
-** Show error when no lemmata chosen in morph search
-
 ** Is true boldface shown in LSJ definitions?
 
 * Change color of icon back to blue, except on Windows.
