@@ -305,6 +305,7 @@ a.perseus:visited {
          color: red;
          display: block;
          float: right;
+         padding-left: 20px;
 }
 .back-padding {
     padding-top: 10px;

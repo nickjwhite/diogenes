@@ -158,9 +158,6 @@ function sidebarSplitscreen () {
 function parse_grk (word) {
     sendRequest("parse", "grk", word);
 }
-function parse_grk_unicode (word) {
-    sendRequest("parse", "grk", word, 'utf8');
-}
 function parse_lat (word) {
     sendRequest("parse", "lat", word);
 }

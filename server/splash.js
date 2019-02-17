@@ -47,11 +47,8 @@ function processForm (e) {
 
     // Catch and block submission of form for Perseus lookup
     var action = document.getElementById("action").value;
-    if (action == 'parse') {
-        splashParse();
-        return false;
-    }
-    else if (action == 'lookup') {
+    if (action == 'parse' || action == 'lookup') {
+        splashPerseus(action);
         return false;
     }
     else {
@@ -76,14 +73,14 @@ function droptoggle (menu) {
     }
 }
 
-function splashParse () {
+function splashPerseus (action) {
     if (document.getElementById("query_text")) {
         query = document.getElementById("query_text").value;
         const grk = /[\u0370-\u03FF\u1F00-\u1FFF]/;
         if (grk.test(query)) {
-            parse_grk_unicode(query)
+            sendRequest(action, "grk", query, 'utf8');
         } else {
-            parse_lat(query)
+            sendRequest(action, "lat", query);
         }
     }
 }
