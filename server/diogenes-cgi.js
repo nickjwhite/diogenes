@@ -31,6 +31,10 @@ function new_page (action, lang, query){
 }
 
 function sendRequest(action, lang, query, enc) {
+    // Spinning cursor
+    var body = document.getElementsByTagName("BODY")[0];
+    body.classList.add("waiting");
+
     /* If we just want a popup, skip the AJAX fancy stuff*/
     var sidebar = document.getElementById("sidebar");
     var sidebarClass = sidebar.getAttribute("class");
@@ -105,13 +109,13 @@ function showPerseus () {
     var splash = document.getElementById("splash");
     if (splash) {
         sidebarFullscreen();
-        // Turn off spinning cursor
-        var body = document.getElementsByTagName("BODY")[0];
-        body.classList.remove("waiting");
     }
     else {
         sidebarControl();
     }
+    // Turn off spinning cursor
+    var body = document.getElementsByTagName("BODY")[0];
+    body.classList.remove("waiting");
 }
 
 function sidebarControl () {
