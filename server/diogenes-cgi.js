@@ -121,8 +121,10 @@ function sidebarControl () {
     var splash = document.getElementById("splash");
 
     if (splash) {
-        // Do not show split screen control on splash; instead, produce fake back button
-        sidebarControl.innerHTML = '<div class="back-padding"><a onclick="sidebarDismiss();" class="back_button"><svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve"><polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>';
+        // Do not show split screen control on splash.
+        sidebarControl.innerHTML =
+            '<a onClick="sidebarDismiss();">' +
+            `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /><div class="dismiss_button_text">Dismiss</div></a>`;
     }
     else {
         if (sidebarClass == 'sidebar-split') {

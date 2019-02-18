@@ -190,6 +190,14 @@ nav ul ul ul {
     position: relative;
     top: -7px;
 }
+.dismiss_button_text {
+    vertical-align: middle;
+    color: #28709a;
+    display: inline;
+    position: relative;
+    top: -9px;
+}
+
 
 h1 {
     color: #28709a;
@@ -305,7 +313,6 @@ a.perseus:visited {
 }
 
 #sidebar-control {
-         color: red;
          display: block;
          float: right;
          padding-left: 20px;
