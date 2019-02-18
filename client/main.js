@@ -491,8 +491,8 @@ function initializeMenuTemplate () {
 }
 
 function findText (win) {
-    let findWidth = 300
-    let find_x = win.getBounds().x + win.getBounds().width - findWidth
+    let findWidth = 340
+    let find_x = win.getBounds().x + win.getContentBounds().width - findWidth
     let find_y = win.getBounds().y
 
     let findWin = new BrowserWindow({
