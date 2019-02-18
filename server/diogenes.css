@@ -6,6 +6,7 @@ body {
   background-color: #ffffff;
   color: #000000;
   font-family: 'Gentium Plus';
+  font-synthesis: weight;
   height: 100%;
   margin: 0px;
 }
