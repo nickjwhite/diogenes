@@ -413,14 +413,12 @@ function initializeMenuTemplate () {
                  }},
                 {label: 'Find Next',
                  accelerator: 'CmdOrCtrl+G',
-                 click: (menu, win) => {
-                     win.webContents.findInPage(win.mySearchText, {'findNext': true})
+                 click: (menu, win) => { win.webContents.findInPage(win.mySearchText)
                  }},
                 {label: 'Find Previous',
                  accelerator: 'CmdOrCtrl+Shift+G',
                  click: (menu, win) => {
-                     win.webContents.findInPage(win.mySearchText,
-                                                {'findNext': true, 'forward': false})
+                     win.webContents.findInPage(win.mySearchText, {'forward': false})
                  }},
 
             ]
