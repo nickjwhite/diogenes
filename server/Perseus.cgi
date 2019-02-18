@@ -351,6 +351,8 @@ my $munge_xml = sub {
     # Tiny.pm will complain if not well-formed -- get rid of stray divs and milestones
     $text =~ s/^.*?<entryFree /<entryFree /;
     $text =~ s/<\/entryFree>.*$/<\/entryFree>/;
+    # Tiny needs a space before close of empty tag
+    $text =~ s#<([^>]*\S)/>#<$1 />#g;
     return $text if $xml_out;
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
