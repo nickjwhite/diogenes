@@ -105,7 +105,11 @@ function showPerseus () {
     var splash = document.getElementById("splash");
     if (splash) {
         sidebarFullscreen();
-    } else {
+        // Turn off spinning cursor
+        var body = document.getElementsByTagName("BODY")[0];
+        body.classList.remove("waiting");
+    }
+    else {
         sidebarControl();
     }
 }
