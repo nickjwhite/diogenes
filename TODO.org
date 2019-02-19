@@ -1,16 +1,12 @@
 * Bugs
-** Suetonius bibliographical references are incorrectly handled, resulting in an invalid jump
-	perseus seem to have changed their referencing of him, from: Perseus:abo:phi,1348,001:life=gal.:16 to: urn:cts:latinLit:phi1348.phi017:16
-	therefore need to add a mapping, either to the jumpTo part of diogenes or just in perseus-abo.pl.
-	there may be other authors for whom this applies; ask Perseus / look for other 'strange' patterns in the original urns that may have been changed
-
 ** See BUG in diogenes-browser/perl/Diogenes/Browser.pm  
    an invalid jump address can cause the diogenes server to crash
 
 ** Add title of work back to poem reader (it used to be there)
    see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
 
-
+* Add button to show sidebar even when dismissed
+To permit getting it back after going to a text from splash perseus
 * Redesign home page
   add diogenes-help.html as FAQs
   Add contributions / thanks prominently to diogenes
@@ -19,9 +15,7 @@
   Substitute libxml with XML::DOM:Lite for portability
   And look at latex output code for further ideas
 
-* check github issues tracker
-* Go through Nick's to-dos
-
+* Add menu item to go back to firstrun.html
 * Long-term, aspirational to-do items
 ** Clean-up various Perl warnings. 
 ** Replace Perseus LSJ with Helma's from Logeion

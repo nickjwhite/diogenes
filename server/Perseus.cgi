@@ -448,7 +448,6 @@ my $swap_element = sub {
         else {
             my $jump = $1;
             $jump = $translate_abo->($jump);
-            # DEBUGGING
             $out .= qq{<a class="origjump $e->{attrib}->{n}" onClick="jumpTo('$jump');">};
             #$out .= qq{<a onClick="jumpTo('$jump');">};
             $in_link = 1;
