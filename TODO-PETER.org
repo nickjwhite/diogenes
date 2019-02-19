@@ -5,20 +5,15 @@
 
 * Redesign home page and move to new URL
 add diogenes-help.html as FAQs
-
-* Add print menu item
+make it internal to app?
 
 * Add XML output functionality
 And look at latex output code for further ideas
-
 Substitute libxml with XML::DOM:Lite for portability
 
 * check github issues tracker
 * Go through Nick's to-dos
-* Create diogenes-help.html page
-And make it internal to app.
 
-
-* Long-term todos
-
+* Long-term, aspirational to-do items
 ** Replace XML::Tiny with XML::DOM::Lite
+** Implement print menu item

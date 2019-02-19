@@ -19,6 +19,9 @@ let startupDone = false
 
 let currentLinkURL = null
 
+let findTargetWin;
+let mySearchText;
+
 const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
@@ -413,12 +416,13 @@ function initializeMenuTemplate () {
                  }},
                 {label: 'Find Next',
                  accelerator: 'CmdOrCtrl+G',
-                 click: (menu, win) => { win.webContents.findInPage(win.mySearchText)
+                 click: (menu, win) => {
+                     findTargetWin.webContents.findInPage( mySearchText )
                  }},
                 {label: 'Find Previous',
                  accelerator: 'CmdOrCtrl+Shift+G',
                  click: (menu, win) => {
-                     win.webContents.findInPage(win.mySearchText, {'forward': false})
+                     findTargetWin.webContents.findInPage( mySearchText, {'forward': false} )
                  }},
 
             ]
@@ -489,6 +493,7 @@ function initializeMenuTemplate () {
 }
 
 function findText (win) {
+    findTargetWin = win;
     let findWidth = 340
     let find_x = win.getBounds().x + win.getContentBounds().width - findWidth
     let find_y = win.getBounds().y
@@ -521,7 +526,7 @@ function findText (win) {
             } else {
                 win.webContents.findInPage(text, {'forward': false})
             }
-            win.mySearchText = text
+            mySearchText = text
         }
     })
     findWin.on('closed', () => {
