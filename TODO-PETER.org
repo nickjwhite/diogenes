@@ -1,19 +1,34 @@
-* Test first-run settings page on my desktop.
+* Bugs
+** Suetonius bibliographical references are incorrectly handled, resulting in an invalid jump
+	perseus seem to have changed their referencing of him, from: Perseus:abo:phi,1348,001:life=gal.:16 to: urn:cts:latinLit:phi1348.phi017:16
+	therefore need to add a mapping, either to the jumpTo part of diogenes or just in perseus-abo.pl.
+	there may be other authors for whom this applies; ask Perseus / look for other 'strange' patterns in the original urns that may have been changed
+
+** See BUG in diogenes-browser/perl/Diogenes/Browser.pm  
+   an invalid jump address can cause the diogenes server to crash
+
+** Add title of work back to poem reader (it used to be there)
+   see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
 
 
-* Redesign home page and move to new URL
-add diogenes-help.html as FAQs
-make it internal to app?
+* Redesign home page
+  add diogenes-help.html as FAQs
+  Add contributions / thanks prominently to diogenes
 
 * Add XML output functionality
-And look at latex output code for further ideas
-Substitute libxml with XML::DOM:Lite for portability
+  Substitute libxml with XML::DOM:Lite for portability
+  And look at latex output code for further ideas
 
 * check github issues tracker
 * Go through Nick's to-dos
 
 * Long-term, aspirational to-do items
+** Clean-up various Perl warnings. 
+** Replace Perseus LSJ with Helma's from Logeion
+** Try to restart diogenes-server if it is killed
 ** Replace XML::Tiny with XML::DOM::Lite
 ** Implement print menu item
 ** Make new icon for Windows with a light background
    The foreground colour of the current icon, which has a transparent background, matches one of the common colours of the background of the Windows 10 start menus, so it disappears in these cases.
+** Make settings page shorter and clearer 
+   roughly a variant of firstrun page, but ensure that it still works outside of electron
