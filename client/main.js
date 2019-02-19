@@ -29,15 +29,14 @@ const settingsPath = app.getPath('userData')
 const winStatePath = path.join(settingsPath, 'windowstate.json')
 const prefsFile = path.join(settingsPath, 'diogenes.prefs')
 
-
 // Ensure the app is single-instance (see 'second-instance' event
 // handler below)
 function initialise() {
-	const gotTheLock = app.requestSingleInstanceLock()
+    const gotTheLock = app.requestSingleInstanceLock()
 
-	if (!gotTheLock) {
-		return app.quit()
-	}
+    if (!gotTheLock) {
+	return app.quit()
+    }
 }
 
 initialise()
@@ -130,62 +129,49 @@ function createFirstWindow () {
 
     const menu = Menu.buildFromTemplate(initializeMenuTemplate())
     Menu.setApplicationMenu(menu)
-
 }
 
 // Track each window in a global 'windows' array, and set up the
 // context menu
 app.on('browser-window-created', (event, win) => {
-	// Track window in global windows object
-	windows.push(win)
+    // Track window in global windows object
+    windows.push(win)
 
-	win.on('closed', () => {
-		// Delete window id from list of windows
-		windows.splice(windows.indexOf(win), 1)
+    win.on('closed', () => {
+	// Delete window id from list of windows
+	windows.splice(windows.indexOf(win), 1)
+    })
 
-		// Dereference the windows object if there are no more windows
-//		if(windows.length == 0) {
-//			windows = null
-//		}
-	})
+    // Intercept and handle new-window requests (e.g. from shift-click), to
+    // prevent child windows being created which would die if the parent was
+    // killed. This was something to do with the new window being a "guest"
+    // window, which I am intentionally setting here, to fix the issue. The
+    // Electron documentation states that it should be set for "failing to
+    // do so may result in unexpected behavior" but I haven't seen any yet.
+    win.webContents.on('new-window', (event, url) => {
+	event.preventDefault()
+	const win = createWindow(20, 20)
+	win.once('ready-to-show', () => win.show())
+	win.loadURL(url)
+	//event.newGuest = win
+    })
 
-	// Intercept and handle new-window requests (e.g. from shift-click), to
-	// prevent child windows being created which would die if the parent was
-	// killed. This was something to do with the new window being a "guest"
-	// window, which I am intentionally setting here, to fix the issue. The
-	// Electron documentation states that it should be set for "failing to
-	// do so may result in unexpected behavior" but I haven't seen any yet.
-	win.webContents.on('new-window', (event, url) => {
-	    event.preventDefault()
-	    const win = createWindow(20, 20)
-		win.once('ready-to-show', () => win.show())
-		win.loadURL(url)
-		//event.newGuest = win
-	})
-
-	// Load context menu
-	win.webContents.on('context-menu', (e, params) => {
-		// Only load on links, which aren't javascript links
-		if(params.linkURL != "" && params.linkURL.indexOf("javascript:") != 0) {
-			currentLinkURL = params.linkURL
-			linkContextMenu.popup(win, params.x, params.y)
-		} else {
-			currentLinkURL = null
-		}
-	})
+    // Load context menu
+    win.webContents.on('context-menu', (e, params) => {
+	// Only load on links, which aren't javascript links
+	if(params.linkURL != "" && params.linkURL.indexOf("javascript:") != 0) {
+	    currentLinkURL = params.linkURL
+	    linkContextMenu.popup(win, params.x, params.y)
+	} else {
+	    currentLinkURL = null
+	}
+    })
 })
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-
 app.on('ready', createFirstWindow)
-
-// app.on('ready', () => {
-//     const menu = Menu.buildFromTemplate(initializeMenuTemplate())
-//     Menu.setApplicationMenu(menu)
-//     createFirstWindow
-// })
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -351,6 +337,7 @@ function loadFirstPage(prefsFile, win) {
 	}
 }
 
+// Menus
 function initializeMenuTemplate () {
     const template = [
         {
@@ -492,6 +479,7 @@ function initializeMenuTemplate () {
     return template
 }
 
+// Find-in-page mini-window
 function findText (win) {
     findTargetWin = win;
     let findWidth = 340
