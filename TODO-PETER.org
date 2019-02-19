@@ -1,8 +1,3 @@
-* Bugs:
-
-** caelum2 in dictionary
-** Is true boldface shown in LSJ definitions?
-
 * Change color of icon back to blue, except on Windows.
 
 * Test first-run settings page on my desktop.
@@ -22,3 +17,8 @@ Substitute libxml with XML::DOM:Lite for portability
 * Go through Nick's to-dos
 * Create diogenes-help.html page
 And make it internal to app.
+
+
+* Long-term todos
+
+** Replace XML::Tiny with XML::DOM::Lite

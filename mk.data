@@ -60,6 +60,8 @@ $(DATA)/grc.lsj.perseus-eng0.xml: utils/reformat_lsj.pl $(LEXICA)/.git/HEAD
 # The reformatting for readability of the LSJ XML has split entries over multiple, indented lines, which has introduced spurious whitespace before punctuation after citations.  This is a hack to get rid of the worst (but not all) of it.
 	perl -pi -e 's#</biblScope>\s+</bibl>#</biblScope></bibl>#g' $@
 	perl -pi -e 's#</bibl>\s+</cit>#</bibl></cit>#g' $@
+# Remove some spurious newlines
+	perl -pi -e 's#(?<!</entryFree>)\s*\n# #' $@
 
 $(BUILD)/lsj-index.txt: utils/index_lsj.pl $(DATA)/grc.lsj.perseus-eng0.xml
 	mkdir -p $(BUILD)
@@ -76,6 +78,8 @@ $(BUILD)/lsj-index-trans.txt: utils/index_lsj_trans.pl $(DATA)/grc.lsj.perseus-e
 $(DATA)/lat.ls.perseus-eng1.xml: $(LEXICA)/.git/HEAD
 	mkdir -p $(DATA)
 	cp $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
+# Remove the many spurious newlines
+	perl -pi -e 's#(?<!</entryFree>)\s*\n# #' $@
 
 $(DATA)/latin-analyses.txt: utils/make_latin_analyses.pl $(BUILD)/lewis-index.txt $(BUILD)/lewis-index-head.txt $(BUILD)/lewis-index-trans.txt $(BUILD)/lat.morph
 	./utils/make_latin_analyses.pl \
