@@ -9,8 +9,10 @@ use warnings;
 # Input layer needs to be raw, not utf8.
 binmode STDOUT, ':utf8';
 
+# Turn off external DTDs in case TEI website is down.
 use XML::LibXML::Reader;
-my $reader = XML::LibXML::Reader->new(IO => \*STDIN);
+my $reader = XML::LibXML::Reader->new(IO => \*STDIN,
+                                      load_ext_dtd => 0);
 
 my $at_start = 1;
 my $in_entry = 0;
