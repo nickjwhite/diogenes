@@ -7,7 +7,8 @@ window.addEventListener("load", function() {
 
     // If we have jumped to a passage from a lexicon, show that entry again after loading.
     var dio_form = document.getElementById("form");
-    if (dio_form.JumpFromShowLexicon.value == 'yes') {
+    if (dio_form.JumpFromShowLexicon &&
+        dio_form.JumpFromShowLexicon.value == 'yes') {
         jumpFrom();
     }
 });
