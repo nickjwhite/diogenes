@@ -227,16 +227,25 @@ my $print_title = sub
                        -style=>{ -type=>'text/css',
                                  -src=>'diogenes.css'},
                        -meta=>{'content' => 'text/html;charset=utf-8'},
-                       -class=>'waiting'
-        ),
+                       -class=>'waiting'),
     '<div class="wrapper">', # for sticky footer and side padding
     $f->start_form(-name=>'form', -id=>'form', -method=> 'get');
     # We put this here (other hidden fields are at the end), so that
     # Javascript can use it for jumpTo even before the page has
-    # completely loaded.
+    # completely loaded.  JumpFrom is a place to hold Perseus query
+    # params, in case they are needed later.
     print $f->hidden( -name => 'JumpTo',
                       -default => "",
                       -override => 1 );
+    print $f->hidden( -name => 'JumpFromQuery',
+                      -default => "",
+                      -override => 0 );
+    print $f->hidden( -name => 'JumpFromLang',
+                      -default => "",
+                      -override => 0 );
+    print $f->hidden( -name => 'JumpFromAction',
+                      -default => "",
+                      -override => 0 );
 
     # for Perseus data
     print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}"></div>};
@@ -1097,6 +1106,13 @@ $output{browser_output} = sub
 
     if ($jumpTo)
     {
+        # Set signal to show the lexicon entry from whence we jumped
+        # (the params have been stored previously in the other hidden
+        # fields).
+        print $f->hidden( -name => 'JumpFromShowLexicon',
+                          -default => "yes",
+                          -override => 1 );
+
         if ($jumpTo =~ m/^([^,]+),\s*(\d+?),\s*(\d+?):(.+)$/) {
             my $corpus = $1;
             $st{author} = $2;

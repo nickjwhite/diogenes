@@ -50,6 +50,16 @@ if ($f->param('popup')) {
     print $f->hidden( -name => 'JumpTo',
                       -default => "",
                       -override => 1 );
+    print $f->hidden( -name => 'JumpFromQuery',
+                      -default => $f->param('q'),
+                      -override => 1 );
+    print $f->hidden( -name => 'JumpFromLang',
+                      -default => $f->param('lang'),
+                      -override => 1 );
+    print $f->hidden( -name => 'JumpFromAction',
+                      -default => $f->param('do'),
+                      -override => 1 );
+
     print qq{<div>};
 
     # Subsequent pages should use this same pop-up
@@ -610,7 +620,7 @@ the spot it should appear.)");
         seek $dict_fh, $dict, 0;
         $dict_offset = $dict;
         my $entry = <$dict_fh>;
-#          print "\n\n$entry\n\n";
+#        print STDERR "\n\n== $entry\n\n";
         $format_dict->($entry);
     }
 };

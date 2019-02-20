@@ -4,8 +4,13 @@ window.addEventListener("load", function() {
     // Turn off spinning cursor
     var body = document.getElementsByTagName("BODY")[0];
     body.classList.remove("waiting");
-});
 
+    // If we have jumped to a passage from a lexicon, show that entry again after loading.
+    var dio_form = document.getElementById("form");
+    if (dio_form.JumpFromShowLexicon.value == 'yes') {
+        jumpFrom();
+    }
+});
 
 // Select All for the checkboxes
 function setAll() {
@@ -34,6 +39,12 @@ function sendRequest(action, lang, query, enc) {
     // Spinning cursor
     var body = document.getElementsByTagName("BODY")[0];
     body.classList.add("waiting");
+
+    // Save the Perseus query in main page to reinstate it after JumpTo
+    var dio_form = document.getElementById("form");
+    dio_form.JumpFromQuery.value = query;
+    dio_form.JumpFromAction.value = action;
+    dio_form.JumpFromLang.value = lang;
 
     /* If we just want a popup, skip the AJAX fancy stuff*/
     var sidebar = document.getElementById("sidebar");
@@ -236,6 +247,16 @@ function jumpTo (loc) {
     var dio_form = document.getElementById("form");
     dio_form.JumpTo.value = loc;
     document.form.submit();
+}
+
+function jumpFrom (loc) {
+    // After jumping to a new text passage, show the lexicon entry from whence we have jumped in sidebar.
+    var dio_form = document.getElementById("form");
+    var query = dio_form.JumpFromQuery.value;
+    var action = dio_form.JumpFromAction.value;
+    var lang = dio_form.JumpFromLang.value;
+    sendRequest(action, lang, query);
+    sidebarSplitscreen();
 }
 
 function getFont () {
