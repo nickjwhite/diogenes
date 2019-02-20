@@ -63,6 +63,10 @@ $Diogenes::Perseus::translate_abo = sub{
             my $life = $1;
             $abo = 'phi,1348,001:' . $suet_map{$life} . $loc;
         }
+        elsif ($work =~ m/^phi,0060,(\d\d\d)$/) {
+            # The 2019 version of the Perseus L-S lexicon erroneously gives Tibullus the number 0060 instead of 0660.
+            $abo = 'phi,0660,' . $1 . $loc;
+        }
         elsif ($work =~ m/^tlg,0059/) {
             # Plato needs the part of Stephanus page broken off
             if ($loc =~ m/^:(\d+)([a-z])$/) {
