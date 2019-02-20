@@ -42,6 +42,9 @@ window.addEventListener("load", function() {
     // Turn off spinning cursor
     var body = document.getElementsByTagName("BODY")[0];
     body.classList.remove("waiting");
+
+    // Set up choices for splash page
+    splash_setup();
 });
 
 function processForm (e) {
@@ -128,8 +131,8 @@ function info (choice) {
     document.getElementById("action").value = choice;
 }
 
-// Set up content for user choices.
-window.onload = function () {
+// Set up content for user choices on load.
+function splash_setup () {
     if(lsTest === true){
         corpus = localStorage.getItem("corpus");
         query = localStorage.getItem("query");
