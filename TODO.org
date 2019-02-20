@@ -1,12 +1,11 @@
 * Bugs
-** See BUG in diogenes-browser/perl/Diogenes/Browser.pm  
-   an invalid jump address can cause the diogenes server to crash
-
 ** Add title of work back to poem reader (it used to be there)
    see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
 
 * Add button to show sidebar even when dismissed
 To permit getting it back after going to a text from splash perseus
+* Test on Windows:
+cause tibullus crash and see if server respawns.
 * Redesign home page
   add diogenes-help.html as FAQs
   Add contributions / thanks prominently to diogenes
