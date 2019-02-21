@@ -1,27 +1,34 @@
-* Bugs
-** Add title of work back to poem reader (it used to be there)
-   see http://localhost:8889/Diogenes.cgi?JumpTo=phi%2C1348%2C001%3Alife%3Dgal.%3A10&FontName=&actionXXstate=lookup&greek_output_formatXXstate=UTF-8&JumpToXXstate=&typeXXstate=TLG+Texts&goXXstate=Go&current_pageXXstate=lookup&short_typeXXstate=tlg&queryXXstate=sacramentum&FontNameXXstate=&corpusXXstate=TLG+Texts
+* Always default to Latin when reading Lewis-Short. Gcide wrongly invoked too often.
 
-* Add button to show sidebar even when dismissed
-To permit getting it back after going to a text from splash perseus
+* Add menu item to go back to firstrun.html
+
 * Test on Windows:
-cause tibullus crash and see if server respawns.
+  cause tibullus crash and see if server respawns.
+
+* Test Helma's LSJ
+
+* Add XML output functionality
+** Phase 1
+   Substitute libxml with XML::DOM:Lite for portability and test it.
+   Import code into a module.
+   Integrate into splash page, with folder select native pop-up.
+   Include schema.
+** Phase 2
+   Adapt latex output code to do further markup.
+   Revise schema and test.
+
 * Redesign home page
   add diogenes-help.html as FAQs
   Add contributions / thanks prominently to diogenes
 
-* Add XML output functionality
-  Substitute libxml with XML::DOM:Lite for portability
-  And look at latex output code for further ideas
 
-* Add menu item to go back to firstrun.html
 * Long-term, aspirational to-do items
-** Clean-up various Perl warnings. 
+** Clean-up various Perl warnings.
 ** Replace Perseus LSJ with Helma's from Logeion
 ** Try to restart diogenes-server if it is killed
 ** Replace XML::Tiny with XML::DOM::Lite
 ** Implement print menu item
 ** Make new icon for Windows with a light background
    The foreground colour of the current icon, which has a transparent background, matches one of the common colours of the background of the Windows 10 start menus, so it disappears in these cases.
-** Make settings page shorter and clearer 
+** Make settings page shorter and clearer
    roughly a variant of firstrun page, but ensure that it still works outside of electron
