@@ -45,7 +45,7 @@ my %suet_map = (
 sub unmodernise_urn
 {
     my $work = shift;
-    $work =~ s/\.perseus-lat1|\.perseus-grc1//;
+    $work =~ s/\.perseus-lat\d|\.perseus-grc\d//;
     $work =~ s/^(phi|tlg)/$1,/;
     $work =~ s/\.(phi|tlg)/,/g;
     return $work;
