@@ -11,6 +11,11 @@ window.addEventListener("load", function() {
         dio_form.JumpFromShowLexicon.value == 'yes') {
         jumpFrom();
     }
+    // If we have stored a previous Perseus query, provide facility to show it again.
+    else if (dio_form.JumpFromQuery.value) {
+        var restore = document.getElementById('header_restore');
+        restore.classList.remove('invisible'); 
+    }
 });
 
 // Select All for the checkboxes
@@ -257,7 +262,6 @@ function jumpFrom (loc) {
     var action = dio_form.JumpFromAction.value;
     var lang = dio_form.JumpFromLang.value;
     sendRequest(action, lang, query);
-    sidebarSplitscreen();
 }
 
 function getFont () {

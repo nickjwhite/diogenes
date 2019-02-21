@@ -259,6 +259,10 @@ my $print_header = sub
     <svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve">
     <polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="
 	45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
+
+    # Provide facility to restore an earlier Perseus query, but make invisible to start.
+    print qq{<div class="header_restore" class="invisible" id="header_restore"><a onclick="jumpFrom()"><span class="restore_text">Restore</span><img id="splitscreen" src="${picture_dir}view-restore.png" srcset="${picture_dir}view-restore.hidpi.png 2x" alt="Split Screen" /></a></div>};
+
     print qq(
         <div class="header_logo">
         <a id="logo" href="Diogenes.cgi" title="New Diogenes Search">
