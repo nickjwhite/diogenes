@@ -73,8 +73,8 @@ sub unicode_greek_to_beta {
     my $self = shift;
     my $pat = shift;
 
-    unless ($pat =~ m/^\p{Diogenes::UnicodeInput::IsMyGreekCopt}*$/) {
-        $pat =~ m/(^\P{Diogenes::UnicodeInput::IsMyGreekCopt})/;
+    unless ($pat =~ m/^ʼ|\p{Diogenes::UnicodeInput::IsMyGreekCopt}*$/) {
+        $pat =~ m/(\P{Diogenes::UnicodeInput::IsMyGreekCopt})/;
         warn "WARNING: Character(s) of input $pat not understood! ($1)";
         return;
     }
@@ -85,14 +85,14 @@ sub unicode_greek_to_beta {
         my $initial_char = $2;
         my $initial_diacrits = $3 || '';
         my $end_space = $4 || '';
-        my ($char, $diacrits) = $self->decompose($initial_char, $initial_diacrits); 
+        my ($char, $diacrits) = $self->decompose($initial_char, $initial_diacrits);
         $char = $upper_to_lower{$char} if exists $upper_to_lower{$char};
         if (exists $unicode_to_beta{$char}) {
             $out .= $unicode_to_beta{$char};
         }
         else {
-            warn "I don't know what to do with character $char";
-            return;
+            warn "I don't know what to do with character $char in $pat\n";
+            return 0;
         }
         my $temp = '';
         my @diacrits = split //, $diacrits;

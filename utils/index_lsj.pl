@@ -1,21 +1,38 @@
 #!/usr/bin/perl -w
 use strict;
 
+binmode(STDIN);
+binmode(STDERR, ":utf8");
+
+use Encode;
+use FindBin qw($Bin);
+use File::Spec::Functions qw(:ALL);
+use lib ($Bin, catdir($Bin, '..', 'server') );
+use Diogenes::UnicodeInput;
+my $d = new Diogenes::UnicodeInput;
+
 my $i = 0;
 my %seen;
 
 while (<>) {
-    my %orth;
-    if (m/<entryFree[^>]*key\s*=\s*\"(.*?)\"/)
+    if (m/<(?:entryFree|div2)[^>]*key\s*=\s*\"(.*?)\"/)
     {
         my $key = $1;
-
         print_variants($key);
         $key =~ s/[^a-z]//g;
-        while (m/<orth\s*[^>]*>([^<]+)<\/orth>/g) {
-            my $orth = $1;
-#             $orth =~ s/-//g;
-            print_variants($orth);
+        while (m/<(orth|head)\s*[^>]*>([^<]+)<\/(?:orth|head)>/g) {
+            my $tag = $1;
+            my $var = $2;
+            $var =~ s/&lt;//gi;
+            $var =~ s/&gt;//gi;
+            $var =~ s/^—//gi;
+            # Back-convert for Logeion dict.
+            if ($var =~ m/[\x80-\xff]/ and utf8::decode($var)) {
+                $var = $d->unicode_greek_to_beta($var);
+                next if $var eq '0';
+                $var = lc($var);
+            }
+            print_variants($var);
         }
     }
     $i += length $_;
