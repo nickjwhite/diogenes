@@ -293,6 +293,10 @@ my $try_parse = sub {
 
 my $beta_to_utf8 = sub {
     my $text = shift;
+    if (Encode::is_utf8($text)) {
+        # In Logeion LSJ, the Greek is already utf8;
+        return $text;
+    }
     $text =~ s/#?(\d)$/ $1/g;
     my %fake_obj;    # Dreadful hack
     $fake_obj{encoding} = 'UTF-8';
