@@ -5,7 +5,18 @@
 * Test on Windows:
   cause tibullus crash and see if server respawns.
 
+* Perseus LSJ
+remove grc.lsj.perseus-eng18.xml  and the first one??
+
+
 * Test Helma's LSJ
+
+git clone
+mv greatscott01.xml frontmatter.xml
+cat greatscott*.xml >helma.xml
+perl -pi -e 's#(?<!</div\d>)\s*\n# #' helma.xml
+perl -pi -e 's#^\s+(<div\d)#$1#' helma.xml
+
 
 * Add XML output functionality
 ** Phase 1
@@ -21,6 +32,9 @@
   add diogenes-help.html as FAQs
   Add contributions / thanks prominently to diogenes
 
+  Register domain
+  set up payment via dept card
+  
 
 * Long-term, aspirational to-do items
 ** Clean-up various Perl warnings.
