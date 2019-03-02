@@ -9,9 +9,9 @@ while (<>) {
     if (m/<(?:entryFree|div2)[^>]*key\s*=\s*\"(.*?)\"/)
     {
         if (m/<tr\s[^>]*>(.*?)<\/tr>/ or
-            m/<sense\s[^>]*>\s*<i>(.*?)<\/i>/) {
+            m/<sense\s[^>]*>.*?<i>(.*?)<\/i>/) {
             my $trans = $1;
-            $trans =~ s/[,;:].*$//;
+            $trans =~ s/[,;:.]$//;
             print "$i $trans\n";
         }
     }
