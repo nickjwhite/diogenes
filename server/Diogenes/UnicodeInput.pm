@@ -21,7 +21,7 @@ sub IsMyGreekCopt {
 1F00\t1FFF
 2C80\t2CFF
 END
-}    
+}
 
 sub unicode_pattern {
     my $self = shift;
@@ -49,7 +49,7 @@ sub unicode_pattern {
         $pat = $self->unicode_greek_to_beta($pat);
 
         if ($pat =~ m/[\\\/=|]/) {
-            # Accent(s) present, so significant 
+            # Accent(s) present, so significant
             $pat = $self->make_strict_greek_pattern($pat);
         }
         else {
@@ -108,7 +108,7 @@ sub unicode_greek_to_beta {
         # Put the diacrits in the correct order
         for my $d (qw{ ) ( / \ = | + }) {
             my $r = quotemeta $d;
-            $out .= $d if $temp =~ m/$r/; 
+            $out .= $d if $temp =~ m/$r/;
         }
         $out = $front_space.$out.$end_space;
     }
@@ -155,7 +155,7 @@ sub decompose {
     "\x{03C7}" => "X",
     "\x{03C8}" => "Y",
     "\x{03C9}" => "W",
-    
+
     "\x{0300}" => "\\",
     "\x{0301}" => "/",
     "\x{0308}" => "+",
@@ -206,7 +206,7 @@ sub decompose {
     "\x{2CB1}" => "W",
 
     # For the demotic letters, we use the old Greek and Coptic block
-    
+
     );
 
 1;
