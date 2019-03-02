@@ -163,10 +163,13 @@ sub decompose {
     "\x{0314}" => "(",
     "\x{0342}" => "=",
     "\x{0345}" => "|",
+    "\x{0304}" => "&", # macron
+    "\x{0306}" => "'", # vrachy
+    "\x{02bc}" => "ʼ", # pass thru Unicode apostrophe
 
     "\x{03DC}" => "V", # digamma
     "\x{03DD}" => "V",
-    
+
     # coptic (old block)
     "\x{03E3}" => "s",
     "\x{03E5}" => "f",

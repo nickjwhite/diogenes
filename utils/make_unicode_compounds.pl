@@ -9,7 +9,6 @@ while (<>) {
     my @f = split ";";
     next unless $f[1] =~ m/^GREEK|COPTIC/;
     next unless $f[1] =~ m/LETTER/;
-    next if $f[1] =~ m/VRACHY|MACRON/;
     next if $f[5] =~ m/<sub>|<super>/;
 
     if ($f[1] =~ m/CAPITAL/) {
