@@ -4,4 +4,5 @@ DEPDIR = dependencies
 DATA = $(DEPDIR)/data
 BUILD = build
 GCIDE = $(BUILD)/gcide
-LEXICA = $(BUILD)/lexica
+PERSEUSLEXICA = $(BUILD)/lexica
+LOGEIONLEXICON = $(BUILD)/logeion

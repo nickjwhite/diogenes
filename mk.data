@@ -1,16 +1,13 @@
-# Rules to make and package lexical data for Diogenes.  Wordlists and
-# morphological data need to be built first.  See README.md for
-# details.
+# Rules to make and package lexical data for Diogenes.  Wordlists,
+# lexica and morphological data need to be built first.  See README.md
+# for details.
 
 include mk.common
 
 GCIDEVERSION = 0.48.1
 GCIDESUM = e227f8f9e720eb0b1b805ecec4eb4e5c1045784ab3871cdebd19c237d1242311
-LEXICACOMMIT = ca0438681737e45f49facdb1b83d7256c0ff16c8
 
 DATAFILES = \
-	$(DATA)/lat.ls.perseus-eng1.xml \
-	$(DATA)/grc.lsj.perseus-eng0.xml \
 	$(DATA)/latin-analyses.txt \
 	$(DATA)/greek-analyses.txt \
 	$(DATA)/latin-analyses.idt \
@@ -21,7 +18,7 @@ DATAFILES = \
 
 .SUFFIXES: .txt .idt
 
-all: $(LEXICA)/.git/HEAD $(GCIDE)/gcide.dict.dz $(DATAFILES)
+all: $(GCIDE)/gcide.dict.dz $(DATAFILES)
 
 data: $(DATAFILES)
 
@@ -33,12 +30,6 @@ $(GCIDE)/gcide.dict.dz:
 	cd $(GCIDE) && ar x dict-gcide_$(GCIDEVERSION)_all.deb data.tar.gz
 	cd $(GCIDE) && zcat < data.tar.gz | tar x ./usr/share/dictd/gcide.dict.dz
 	mv $(GCIDE)/usr/share/dictd/gcide.dict.dz $@
-
-$(LEXICA)/.git/HEAD:
-	rm -rf $(LEXICA)
-	mkdir -p $(BUILD)
-	cd $(BUILD) && git clone https://github.com/PerseusDL/lexica
-	cd $(LEXICA) && git checkout $(LEXICACOMMIT)
 
 $(BUILD)/lewis-index.txt: utils/index_lewis.pl $(DATA)/lat.ls.perseus-eng1.xml
 	mkdir -p $(BUILD)
@@ -52,19 +43,6 @@ $(BUILD)/lewis-index-trans.txt: utils/index_lewis_trans.pl $(DATA)/lat.ls.perseu
 	mkdir -p $(BUILD)
 	./utils/index_lewis_trans.pl < $(DATA)/lat.ls.perseus-eng1.xml > $@
 
-LSJDIR = $(LEXICA)/CTS_XML_TEI/perseus/pdllex/grc/lsj
-LSJS = $(LSJDIR)/grc.lsj.perseus-eng1.xml $(LSJDIR)/grc.lsj.perseus-eng2.xml $(LSJDIR)/grc.lsj.perseus-eng3.xml $(LSJDIR)/grc.lsj.perseus-eng4.xml $(LSJDIR)/grc.lsj.perseus-eng5.xml $(LSJDIR)/grc.lsj.perseus-eng6.xml $(LSJDIR)/grc.lsj.perseus-eng7.xml $(LSJDIR)/grc.lsj.perseus-eng8.xml $(LSJDIR)/grc.lsj.perseus-eng9.xml $(LSJDIR)/grc.lsj.perseus-eng10.xml $(LSJDIR)/grc.lsj.perseus-eng11.xml $(LSJDIR)/grc.lsj.perseus-eng12.xml $(LSJDIR)/grc.lsj.perseus-eng13.xml $(LSJDIR)/grc.lsj.perseus-eng14.xml $(LSJDIR)/grc.lsj.perseus-eng15.xml $(LSJDIR)/grc.lsj.perseus-eng16.xml $(LSJDIR)/grc.lsj.perseus-eng17.xml $(LSJDIR)/grc.lsj.perseus-eng18.xml $(LSJDIR)/grc.lsj.perseus-eng19.xml $(LSJDIR)/grc.lsj.perseus-eng20.xml $(LSJDIR)/grc.lsj.perseus-eng21.xml $(LSJDIR)/grc.lsj.perseus-eng22.xml $(LSJDIR)/grc.lsj.perseus-eng23.xml $(LSJDIR)/grc.lsj.perseus-eng24.xml $(LSJDIR)/grc.lsj.perseus-eng25.xml $(LSJDIR)/grc.lsj.perseus-eng26.xml $(LSJDIR)/grc.lsj.perseus-eng27.xml
-
-$(DATA)/grc.lsj.perseus-eng0.xml: utils/reformat_lsj.pl $(LEXICA)/.git/HEAD
-	mkdir -p $(DATA)
-	echo '<!-- Reformatted for Diogenes from the XML files in https://github.com/PerseusDL/lexica -->' > $@
-	for LSJ in $(LSJS); do cat $$LSJ | perl ./utils/reformat_lsj.pl >> $@; done
-# The reformatting for readability of the LSJ XML has split entries over multiple, indented lines, which has introduced spurious whitespace before punctuation after citations.  This is a hack to get rid of the worst (but not all) of it.
-	perl -pi -e 's#</biblScope>\s+</bibl>#</biblScope></bibl>#g' $@
-	perl -pi -e 's#</bibl>\s+</cit>#</bibl></cit>#g' $@
-# Remove some spurious newlines
-	perl -pi -e 's#(?<!</entryFree>)\s*\n# #' $@
-
 $(BUILD)/lsj-index.txt: utils/index_lsj.pl $(DATA)/grc.lsj.perseus-eng0.xml
 	mkdir -p $(BUILD)
 	./utils/index_lsj.pl < $(DATA)/grc.lsj.perseus-eng0.xml > $@
@@ -76,12 +54,6 @@ $(BUILD)/lsj-index-head.txt: utils/index_lsj_head.pl $(DATA)/grc.lsj.perseus-eng
 $(BUILD)/lsj-index-trans.txt: utils/index_lsj_trans.pl $(DATA)/grc.lsj.perseus-eng0.xml
 	mkdir -p $(BUILD)
 	./utils/index_lsj_trans.pl < $(DATA)/grc.lsj.perseus-eng0.xml > $@
-
-$(DATA)/lat.ls.perseus-eng1.xml: $(LEXICA)/.git/HEAD
-	mkdir -p $(DATA)
-	cp $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
-# Remove the many spurious newlines
-	perl -pi -e 's#(?<!</entryFree>)\s*\n# #' $@
 
 $(DATA)/latin-analyses.txt: utils/make_latin_analyses.pl $(BUILD)/lewis-index.txt $(BUILD)/lewis-index-head.txt $(BUILD)/lewis-index-trans.txt $(BUILD)/lat.morph
 	./utils/make_latin_analyses.pl \
@@ -113,7 +85,7 @@ prebuilt-data.tar.xz:
 clean:
 	rm -f $(BUILD)/lewis-index.txt $(BUILD)/lewis-index-head.txt $(BUILD)/lewis-index-trans.txt
 	rm -f $(BUILD)/lsj-index.txt $(BUILD)/lsj-index-head.txt $(BUILD)/lsj-index-trans.txt
-	rm -rf $(DEPDIR)/gcide $(GCIDE) $(LEXICA) $(MORPHEUS)
+	rm -rf $(DEPDIR)/gcide $(GCIDE) $(MORPHEUS)
 	rm -f $(DATAFILES)
 
 clean-data:

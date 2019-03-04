@@ -1,0 +1,22 @@
+# Get LSJ and L-S lexica from Perseus
+
+include mk.lexica-common
+
+all: $(PERSEUSLEXICA)/.git/HEAD $(DATA)/lat.ls.perseus-eng1.xml $(DATA)/grc.lsj.xml
+
+LSJDIR = $(PERSEUSLEXICA)/CTS_XML_TEI/perseus/pdllex/grc/lsj
+
+LSJS = $(LSJDIR)/grc.lsj.perseus-eng1.xml $(LSJDIR)/grc.lsj.perseus-eng2.xml $(LSJDIR)/grc.lsj.perseus-eng3.xml $(LSJDIR)/grc.lsj.perseus-eng4.xml $(LSJDIR)/grc.lsj.perseus-eng5.xml $(LSJDIR)/grc.lsj.perseus-eng6.xml $(LSJDIR)/grc.lsj.perseus-eng7.xml $(LSJDIR)/grc.lsj.perseus-eng8.xml $(LSJDIR)/grc.lsj.perseus-eng9.xml $(LSJDIR)/grc.lsj.perseus-eng10.xml $(LSJDIR)/grc.lsj.perseus-eng11.xml $(LSJDIR)/grc.lsj.perseus-eng12.xml $(LSJDIR)/grc.lsj.perseus-eng13.xml $(LSJDIR)/grc.lsj.perseus-eng14.xml $(LSJDIR)/grc.lsj.perseus-eng15.xml $(LSJDIR)/grc.lsj.perseus-eng16.xml $(LSJDIR)/grc.lsj.perseus-eng17.xml $(LSJDIR)/grc.lsj.perseus-eng18.xml $(LSJDIR)/grc.lsj.perseus-eng19.xml $(LSJDIR)/grc.lsj.perseus-eng20.xml $(LSJDIR)/grc.lsj.perseus-eng21.xml $(LSJDIR)/grc.lsj.perseus-eng22.xml $(LSJDIR)/grc.lsj.perseus-eng23.xml $(LSJDIR)/grc.lsj.perseus-eng24.xml $(LSJDIR)/grc.lsj.perseus-eng25.xml $(LSJDIR)/grc.lsj.perseus-eng26.xml $(LSJDIR)/grc.lsj.perseus-eng27.xml
+
+$(DATA)/grc.lsj.xml: utils/reformat_lsj.pl $(PERSEUSLEXICA)/.git/HEAD
+	mkdir -p $(DATA)
+	echo '<!-- Reformatted for Diogenes from the XML files in https://github.com/PerseusDL/lexica -->' > $@
+	for LSJ in $(LSJS); do cat $$LSJ | perl ./utils/reformat_lsj.pl >> $@; done
+# The reformatting for readability of the LSJ XML has split entries over multiple, indented lines, which has introduced spurious whitespace before punctuation after citations.  This is a hack to get rid of the worst (but not all) of it.
+	perl -pi -e 's#</biblScope>\s+</bibl>#</biblScope></bibl>#g' $@
+	perl -pi -e 's#</bibl>\s+</cit>#</bibl></cit>#g' $@
+# Remove some spurious newlines
+	perl -pi -e 's#(?<!</entryFree>)\s*\n# #' $@
+
+
+clean: $(PERSEUSLEXICA) $(LEXICONFILES)
