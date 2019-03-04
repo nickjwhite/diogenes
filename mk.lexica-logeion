@@ -15,13 +15,7 @@ $(LOGEIONLEXICON)/.git/HEAD:
 $(DATA)/grc.lsj.xml: $(LOGEIONLEXICON)/.git/HEAD
 	mkdir -p $(DATA)
         mv $(LOGEIONLEXICON)/greatscott01.xml $(LOGEIONLEXICON)/frontmatter.xml
-        cat $(LOGEIONLEXICON)/greatscott*.xml > $(DATA)/grc.lsj.xml
-        # Get rid of blank lines between entries
-        perl -pi -e 's#(?<!</div\d>)\s*\n# #' $(DATA)/grc.lsj.xml
-        perl -pi -e 's#^\s+(<div\d)#$1#' $(DATA)/grc.lsj.xml
-
-
-
-
+# Collect entries (could do with error-checking for spurious newlines)
+	perl -n -e 'print $_ if m#<div2\s.*?</div2>#' greatscott*.xml > $(DATA)/grc.lsj.xml
 
 clean: $(PERSEUSLEXICA) $(LOGEIONLEXICON) $(LEXICONFILES)
