@@ -16,6 +16,8 @@ $(DATA)/grc.lsj.xml: $(LOGEIONLEXICON)/.git/HEAD
 	mkdir -p $(DATA)
         mv $(LOGEIONLEXICON)/greatscott01.xml $(LOGEIONLEXICON)/frontmatter.xml
 # Collect entries (could do with error-checking for spurious newlines)
-	perl -n -e 'print $_ if m#<div2\s.*?</div2>#' greatscott*.xml > $(DATA)/grc.lsj.xml
+	perl -n -e 'print $_ if m#^\s*<div2\s.*?</div2>#' greatscott*.xml > $(DATA)/grc.lsj.xml
+# Remove spurious newlines
+	perl -pi -e 's#(?<!</div2>)\s*\n# #' $(DATA)/grc.lsj.xml
 
 clean: $(PERSEUSLEXICA) $(LOGEIONLEXICON) $(LEXICONFILES)
