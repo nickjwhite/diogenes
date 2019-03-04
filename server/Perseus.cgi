@@ -444,7 +444,8 @@ my $swap_element = sub {
     if ($lang eq 'grk' and $e->{name} =~ m/^tr|orth$/) {
         $out .= $close ? '</b>' : '<b>';
     }
-    if ($e->{attrib}->{rend} and $e->{attrib}->{rend} eq 'ital') {
+    if (($e->{attrib}->{rend} and $e->{attrib}->{rend} eq 'ital')
+        or $e->{name} eq 'i') {
         if ($close) {
             $out .= '</i>';
             $xml_ital = 0;
