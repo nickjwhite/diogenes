@@ -442,7 +442,7 @@ my $swap_element = sub {
         }
     }
     if ($lang eq 'grk' and $e->{name} =~ m/^tr|orth$/) {
-        $out .= $close ? '</b>' : '<b>';
+        $out .= $close ? '</i></b>' : '<b><i>';
     }
     if (($e->{attrib}->{rend} and $e->{attrib}->{rend} eq 'ital')
         or $e->{name} eq 'i') {

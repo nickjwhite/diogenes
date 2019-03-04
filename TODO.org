@@ -1,3 +1,5 @@
+* On startup, going to browser should not have restore option.
+
 * Always default to Latin when reading Lewis-Short. Gcide wrongly invoked too often.
 
 * Add menu item to go back to firstrun.html
@@ -5,17 +7,9 @@
 * Test on Windows:
   cause tibullus crash and see if server respawns.
 
-* Perseus LSJ
-remove grc.lsj.perseus-eng18.xml  and the first one??
-
 
 * Test Helma's LSJ
-
-git clone
-mv greatscott01.xml frontmatter.xml
-cat greatscott*.xml >helma.xml
-perl -pi -e 's#(?<!</div\d>)\s*\n# #' helma.xml
-perl -pi -e 's#^\s+(<div\d)#$1#' helma.xml
+** Test <i> for translations
 
 
 * Add XML output functionality
