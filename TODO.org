@@ -1,4 +1,6 @@
-* On startup, going to browser should not have restore option.
+* Bugs
+
+ὁ (lentil, Ervum Lens): φᾰκός
 
 * Always default to Latin when reading Lewis-Short. Gcide wrongly invoked too often.
 
@@ -7,9 +9,6 @@
 * Test on Windows:
   cause tibullus crash and see if server respawns.
 
-
-* Test Helma's LSJ
-** Test <i> for translations
 
 
 * Add XML output functionality

@@ -12,9 +12,10 @@ window.addEventListener("load", function() {
         jumpFrom();
     }
     // If we have stored a previous Perseus query, provide facility to show it again.
-    else if (dio_form.JumpFromQuery.value) {
+    else if (dio_form.JumpFromQuery.value &&
+             dio_form.JumpFromQuery.value != '') {
         var restore = document.getElementById('header_restore');
-        restore.classList.remove('invisible'); 
+        restore.classList.remove('invisible');
     }
 });
 
