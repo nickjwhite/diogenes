@@ -14,8 +14,8 @@ $(LOGEIONLEXICON)/.git/HEAD:
 
 $(DATA)/grc.lsj.xml: $(LOGEIONLEXICON)/.git/HEAD
 	mkdir -p $(DATA)
-        mv $(LOGEIONLEXICON)/greatscott01.xml $(LOGEIONLEXICON)/frontmatter.xml
+	mv $(LOGEIONLEXICON)/greatscott01.xml $(LOGEIONLEXICON)/frontmatter.xml
 # Collect entries and remove spurious newlines
-	perl utils/reformat_lsj_logeion.pl greatscott*.xml > $(DATA)/grc.lsj.xml
+	perl utils/reformat_lsj_logeion.pl  $(LOGEIONLEXICON)/greatscott*.xml > $(DATA)/grc.lsj.xml
 
 clean: $(PERSEUSLEXICA) $(LOGEIONLEXICON) $(LEXICONFILES)
