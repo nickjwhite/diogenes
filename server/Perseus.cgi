@@ -190,7 +190,7 @@ my $beta_comp_fn = sub {
 my $xml_key_fn = sub {
     my $line = shift;
     my $key;
-    if ($line =~ m/<entryFree[^>]*key\s*=\s*\"([^"]*)\"/)
+    if ($line =~ m/<(?:entryFree|div2)[^>]*key\s*=\s*\"([^"]*)\"/)
     {
         $key = $1;
         $key =~ s/[^a-zA-Z]//g;
@@ -293,8 +293,8 @@ my $try_parse = sub {
 
 my $beta_to_utf8 = sub {
     my $text = shift;
-    if (Encode::is_utf8($text)) {
-        # In Logeion LSJ, the Greek is already utf8;
+    if ($text !~ m/^[\x00-\x7f]*$/) {
+        # In Logeion LSJ, the Greek (apart from keys) is already utf8
         return $text;
     }
     $text =~ s/#?(\d)$/ $1/g;
@@ -364,7 +364,9 @@ my $munge_xml = sub {
     my $text = shift;
     # Tiny.pm will complain if not well-formed -- get rid of stray divs and milestones
     $text =~ s/^.*?<entryFree /<entryFree /;
+    $text =~ s/^.*?<div2 /<div2 /;
     $text =~ s/<\/entryFree>.*$/<\/entryFree>/;
+    $text =~ s/<\/div2>.*$/<\/div2>/;
     # Tiny needs a space before close of empty tag
     $text =~ s#<([^>]*\S)/>#<$1 />#g;
     return $text if $xml_out;
@@ -474,7 +476,7 @@ my $swap_element = sub {
 local $munge_element = sub {
     my $e = shift;
     $swap_element->($e, 0); # open it
-    if ($e->{name} eq 'entryFree') {
+    if ($e->{name} eq 'entryFree' or $e->{name} eq 'div2') {
         my $key = $e->{attrib}->{key};
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';
