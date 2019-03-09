@@ -32,6 +32,8 @@ while (<>) {
                 next if $var eq '0';
                 $var = lc($var);
             }
+            # Error in both LSJs
+            next if ($key eq 'fakos' and $var eq 'o( ');
             print_variants($var);
         }
     }

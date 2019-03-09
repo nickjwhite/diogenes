@@ -12,6 +12,8 @@ while (<>) {
             m/<sense\s[^>]*>.*?<i>(.*?)<\/i>/) {
             my $trans = $1;
             $trans =~ s/[,;:.]$//;
+            # Error in o(/s
+            $trans = 'the; who; he, she, it' if $trans =~ m/^yas,.*yad$/;
             print "$i $trans\n";
         }
     }
