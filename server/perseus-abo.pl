@@ -46,7 +46,7 @@ sub unmodernise_urn
 {
     my $work = shift;
     $work =~ s/\.perseus-lat\d|\.perseus-grc\d//;
-    $work =~ s/^(phi|tlg)/$1,/;
+    $work =~ s/^(phi|tlg),?/$1,/;
     $work =~ s/\.(phi|tlg)/,/g;
     return $work;
 }
