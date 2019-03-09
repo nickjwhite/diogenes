@@ -401,16 +401,14 @@ my $munge_text = sub {
         if ($xml_lang eq 'greek' or $xml_lang eq 'la') {
             $text = $text_with_links->($text, $xml_lang);
         }
-        # BUG: These hacks cause much that is English to be misidentified
-        #      as Latin. Not sure yet what cases it's needed for.
-        #elsif ($lang eq 'lat' and $text =~ m/^, (?:v\.|=) /) {
-        #    # Hack for L-S cross refs (not identified as Latin).
-        #    $text = $text_with_links->($text, 'lat');
-        #}
-        #elsif ($lang eq 'lat' and not $xml_ital) {
-        #    # Hack to make all non-italicized L-S text Latin
-        #    $text = $text_with_links->($text, 'lat');
-        #}
+        elsif ($lang eq 'lat' and $text =~ m/^, (?:v\.|=) /) {
+           # Hack for L-S cross refs (not identified as Latin).
+           $text = $text_with_links->($text, 'lat');
+        }
+        elsif ($lang eq 'lat' and not $xml_ital) {
+           # Hack to make all non-italicized L-S text Latin
+           $text = $text_with_links->($text, 'lat');
+        }
         else {
             $text = $text_with_links->($text, 'eng');
         }
