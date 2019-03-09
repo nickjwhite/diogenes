@@ -82,6 +82,8 @@ my $lang = $f->param('lang') or warn "Bad Perseus request (c)";
 my $xml_out = 1 if $f->param('xml');
 my $inp_enc = $f->param('inp_enc') || '';
 
+#print STDERR $f->param('do').':'.$f->param('q').':'.$f->param('lang').':'.$f->param('inp_enc')."\n";
+
 if ($lang ne 'grk') {
     # Latin -- do nothing.
 }
@@ -90,8 +92,9 @@ elsif ($inp_enc eq 'Unicode') {
     my $c = new Diogenes::UnicodeInput;
     $query = $c->unicode_greek_to_beta($query);
 }
-elsif ($inp_enc eq 'utf8') {
-    # Bytes that need to be
+elsif ($inp_enc eq 'utf8' or
+       $query =~ m/[\x80-\xff]/) {
+    # Raw bytes that need to be decoded
     $query = Encode::decode(utf8=>$query);
     my $c = new Diogenes::UnicodeInput;
     $query = $c->unicode_greek_to_beta($query);
