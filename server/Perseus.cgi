@@ -22,7 +22,6 @@ use CGI qw(:standard);
 
 my $debug = 0;
 
-#binmode STDOUT, ':utf8';
 binmode ((select), ':utf8');
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
@@ -81,8 +80,6 @@ my $query = $f->param('q') or warn "Bad Perseus request (b)";
 my $lang = $f->param('lang') or warn "Bad Perseus request (c)";
 my $xml_out = 1 if $f->param('xml');
 my $inp_enc = $f->param('inp_enc') || '';
-
-#print STDERR $f->param('do').':'.$f->param('q').':'.$f->param('lang').':'.$f->param('inp_enc')."\n";
 
 if ($lang ne 'grk') {
     # Latin -- do nothing.
@@ -444,16 +441,17 @@ my $swap_element = sub {
             $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em">};
         }
     }
+    # Try to emphasize English words in lexica
     if ($lang eq 'grk' and $e->{name} =~ m/^tr|orth$/) {
         $out .= $close ? '</i></b>' : '<b><i>';
     }
     if (($e->{attrib}->{rend} and $e->{attrib}->{rend} eq 'ital')
         or $e->{name} eq 'i') {
         if ($close) {
-            $out .= '</i>';
+            $out .= '</i></b>';
             $xml_ital = 0;
         } else {
-            $out .= '<i>';
+            $out .= '<b><i>';
             $xml_ital = 1;
         }
     }
