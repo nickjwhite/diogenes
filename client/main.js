@@ -359,6 +359,14 @@ function initializeMenuTemplate () {
                     }
                 },
                 {
+                    label: 'Database Setup',
+                    accelerator: 'CmdOrCtrl+B',
+                    click: (menu, win) => {
+                        let newWin = createWindow(20, 20)
+                        newWin.loadFile("pages/firstrun.html")
+                    }
+                },
+                {
                     label: 'Diogenes Settings',
                     accelerator: 'CmdOrCtrl+S',
                     click: (menu, win) => {
