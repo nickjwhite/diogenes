@@ -92,10 +92,11 @@ for Ancient Greek.
 Building the morphology data & dictionaries
 -------------------------------------------
 
-Instead of downloading the pre-built lexical data via `mk-prebuilt`,
-you can build it from scratch.  The following commands will download
-the lexica and the Morpheus parser, which have been provided by the
-Perseus project, and repackage them for Diogenes.
+Instead of downloading the pre-built lexical data via
+`make -f mk.prebuilt-data`, you can build it from scratch. The
+following commands will download the lexica and the Morpheus parser,
+which have been provided by the Perseus project, and repackage them
+for Diogenes.
 
 ### Step 1
 
@@ -142,11 +143,15 @@ current version, do this instead:
 
 ### Step 3
 
-The next step is to download the LSJ Greek lexicon and the L-S Latin lexica, which have been digitized by the Perseus project.  To get the lexica from Perseus, run:
+The next step is to download the LSJ Greek lexicon and the L-S Latin
+lexica, which have been digitized by the Perseus project.  To get the
+lexica from Perseus, run:
 
     make -f mk.lexica-perseus
 
-The Perseus version of the LSJ has had some errors corrected by the Logeion project, so to download that version instead (L-S will still come from Perseus), run:
+The Perseus version of the LSJ has had some errors corrected by the
+Logeion project, so to download that version instead (L-S will still
+come from Perseus), run:
 
     make -f mk.lexica-logeion
 
