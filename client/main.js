@@ -225,7 +225,12 @@ function startServer () {
 		perlName = path.join(app.getAppPath(), '..', 'strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
-	const serverPath = path.join(app.getAppPath(), '..', 'server', 'diogenes-server.pl')
+	// server/ can be either at ../server or ../../server depending on whether
+	// we're running a packaged or development version, so try both
+	let serverPath = path.join(app.getAppPath(), '..', 'server', 'diogenes-server.pl')
+	if (!fs.existsSync(serverPath)) {
+		serverPath = path.join(app.getAppPath(), '..', '..', 'server', 'diogenes-server.pl')
+	}
 
 	let server = execFile(perlName, [serverPath], {'windowsHide': true})
 	server.stdout.on('data', (data) => {
@@ -325,7 +330,11 @@ function getWindowState(path) {
 	} catch(e) {
 		return false
 	}
-	return JSON.parse(s)
+	try {
+		JSON.parse(s)
+	} catch(e) {
+		return false
+	}
 }
 
 // Load either the Diogenes homepage or the firstrun page
