@@ -198,7 +198,7 @@ my $my_footer = sub
     print $f->end_form,
         '<div class="push"></div></div>'; # sticky footer
     print
-        $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2017 Peter Heslin.});
+        $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2019 Peter Heslin.});
 
     print $f->end_html;
 };
