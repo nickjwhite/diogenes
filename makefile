@@ -89,7 +89,7 @@ w64perl:
 rcedit.exe:
 	curl -Lo $@ https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
-icons: dist/icon.svg
+icons: dist/icon.svg icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
 	mkdir -p icons
 	rsvg-convert -w 256 -h 256 dist/icon.svg > icons/256.png
@@ -99,10 +99,10 @@ icons: dist/icon.svg
 	rsvg-convert -w 32 -h 32 dist/icon.svg > icons/32.png
 	rsvg-convert -w 16 -h 16 dist/icon.svg > icons/16.png
 
-icons/diogenes.ico: icons
+icons/diogenes.ico: icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
 	icotool -c icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png > $@
 
-dist/diogenes.icns: icons
+dist/diogenes.icns: icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
 	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
 
 w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes.ico rcedit.exe

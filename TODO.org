@@ -1,5 +1,4 @@
-* Add menu item to go back to firstrun.html
-
+* Fix createWindow offset for new windows
 * Test on Windows:
   cause tibullus crash and see if server respawns.
 
