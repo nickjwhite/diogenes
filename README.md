@@ -51,10 +51,10 @@ Building the installers
 To build an installer for your target platform, run one of the
 commands below.  All installers can be built on either Linux or OS X.
 You will need to install a number of auxiliary programs, including
-`librsvg`, `libicns`, `iconutils`, `wine` and `innoextract`.  All of these can
-easily be installed on Linux via your distribution and OS X using
-Homebrew.  You will also need to install `fpm` via the Ruby package
-manager (see https://fpm.readthedocs.io/en/latest/).
+`librsvg`, `libicns`, `iconutils`, `wine` and `innoextract`.  All of
+these can easily be installed on Linux via your distribution and OS X
+using Homebrew.  You will also need to install `fpm` via the Ruby
+package manager (see https://fpm.readthedocs.io/en/latest/).
 
     make installer-w32        # Make a Windows installer
     make installer-macpkg     # Make a Mac pkg installer
@@ -136,7 +136,7 @@ Morpheus, run this command:
 
 The current version of Morpheus from the Perseus project has some bugs
 in it that leads to incomplete and incorrect output, so it is
-recommended to use the older version.  But if you want to try the
+recommended to use the older version.  But if you want to test the
 current version, do this instead:
 
     make -f mk.morpheus-broken
@@ -144,26 +144,26 @@ current version, do this instead:
 ### Step 3
 
 The next step is to download the LSJ Greek lexicon and the L-S Latin
-lexica, which have been digitized by the Perseus project.  To get the
+lexica, which were digitized by the Perseus project.  To get the
 lexica from Perseus, run:
 
     make -f mk.lexica-perseus
 
-The Perseus version of the LSJ has had some errors corrected by the
-Logeion project, so to download that version instead (L-S will still
-come from Perseus), run:
+The Perseus version of the LSJ has some errors in it which have been
+corrected by the Logeion project, so to download that version instead
+(L-S will still come from Perseus), run:
 
     make -f mk.lexica-logeion
 
 ### Step 4
 
-The final step is to download the lexica, integrate the morphological
-data with the lexica, and package all this in the form that Diogenes
-requires.  To do this, run:
+The final step is to integrate the morphological data with the lexica,
+and package all this in the form that Diogenes requires.  To do this,
+run:
 
     make -f mk.data
 
 The intermediate files generated in the course of all of the steps
-above are put the build/ directory, and the final lexical data used by
-Diogenes is put in the dependencies/data directory, whence it is read
-by diogenes-server.pl.
+above are put the build/ directory, and the final lexical data which
+is used used by Diogenes at runtime is put in the dependencies/data
+directory, whence it is read by diogenes-server.pl.
