@@ -325,7 +325,11 @@ function getWindowState(path) {
 	} catch(e) {
 		return false
 	}
-	return JSON.parse(s)
+	try {
+		JSON.parse(s)
+	} catch(e) {
+		return false
+	}
 }
 
 // Load either the Diogenes homepage or the firstrun page
