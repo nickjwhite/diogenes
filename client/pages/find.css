@@ -1,11 +1,44 @@
-button#up span:before {
-	content: "⌃";
-	display:block;
-	transform: translateY(20%);
+#find-body {
+    vertical-align: middle;
 }
 
-button#down span:before {
-	content: "⌄";
-	display:block;
-	transform: translateY(-20%);
+#chevron-down {
+    border: solid black;
+    opacity: 0.3;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+    margin: 5px;
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    position: relative;
+    top: -7px;
+}
+#chevron-down:hover,#chevron-down:active {
+    opacity: 1;
+}
+
+#chevron-up {
+    border: solid black;
+    opacity: 0.3;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+    margin: 5px;
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+    position: relative;
+    top: -3px;
+}
+#chevron-up:hover,#chevron-up:active {
+    opacity: 1;
+}
+
+#close-button {
+    opacity: 0.3;
+    position: relative;
+    top: 2px;
+}
+#close-button:hover {
+    opacity: 1;
 }

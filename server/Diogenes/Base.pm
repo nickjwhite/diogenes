@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.0.0pr";
+$Diogenes::Base::Version =  "4.0.0pr2";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -3156,9 +3156,8 @@ sub barf
         print DUMP ${ $self->{buf} } if defined $self->{buf}; 
         close DUMP or die ("Can't close dump file");
     }
-    # We don't die here, in case this is a single-process Windows
-    # server, and we wish to try to recover.
-    carp shift;
+    # We die here, and hope that the server will spawn another child.
+    confess shift;
 }
 
 1;

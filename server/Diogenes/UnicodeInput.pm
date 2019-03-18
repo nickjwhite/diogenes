@@ -21,7 +21,7 @@ sub IsMyGreekCopt {
 1F00\t1FFF
 2C80\t2CFF
 END
-}    
+}
 
 sub unicode_pattern {
     my $self = shift;
@@ -49,7 +49,7 @@ sub unicode_pattern {
         $pat = $self->unicode_greek_to_beta($pat);
 
         if ($pat =~ m/[\\\/=|]/) {
-            # Accent(s) present, so significant 
+            # Accent(s) present, so significant
             $pat = $self->make_strict_greek_pattern($pat);
         }
         else {
@@ -73,8 +73,8 @@ sub unicode_greek_to_beta {
     my $self = shift;
     my $pat = shift;
 
-    unless ($pat =~ m/^\p{Diogenes::UnicodeInput::IsMyGreekCopt}*$/) {
-        $pat =~ m/(^\P{Diogenes::UnicodeInput::IsMyGreekCopt})/;
+    unless ($pat =~ m/^ʼ|\p{Diogenes::UnicodeInput::IsMyGreekCopt}*$/) {
+        $pat =~ m/(\P{Diogenes::UnicodeInput::IsMyGreekCopt})/;
         warn "WARNING: Character(s) of input $pat not understood! ($1)";
         return;
     }
@@ -85,14 +85,14 @@ sub unicode_greek_to_beta {
         my $initial_char = $2;
         my $initial_diacrits = $3 || '';
         my $end_space = $4 || '';
-        my ($char, $diacrits) = $self->decompose($initial_char, $initial_diacrits); 
+        my ($char, $diacrits) = $self->decompose($initial_char, $initial_diacrits);
         $char = $upper_to_lower{$char} if exists $upper_to_lower{$char};
         if (exists $unicode_to_beta{$char}) {
             $out .= $unicode_to_beta{$char};
         }
         else {
-            warn "I don't know what to do with character $char";
-            return;
+            warn "I don't know what to do with character $char in $pat\n";
+            return 0;
         }
         my $temp = '';
         my @diacrits = split //, $diacrits;
@@ -108,7 +108,7 @@ sub unicode_greek_to_beta {
         # Put the diacrits in the correct order
         for my $d (qw{ ) ( / \ = | + }) {
             my $r = quotemeta $d;
-            $out .= $d if $temp =~ m/$r/; 
+            $out .= $d if $temp =~ m/$r/;
         }
         $out = $front_space.$out.$end_space;
     }
@@ -155,7 +155,7 @@ sub decompose {
     "\x{03C7}" => "X",
     "\x{03C8}" => "Y",
     "\x{03C9}" => "W",
-    
+
     "\x{0300}" => "\\",
     "\x{0301}" => "/",
     "\x{0308}" => "+",
@@ -163,10 +163,13 @@ sub decompose {
     "\x{0314}" => "(",
     "\x{0342}" => "=",
     "\x{0345}" => "|",
+    "\x{0304}" => "&", # macron
+    "\x{0306}" => "'", # vrachy
+    "\x{02bc}" => "ʼ", # pass thru Unicode apostrophe
 
     "\x{03DC}" => "V", # digamma
     "\x{03DD}" => "V",
-    
+
     # coptic (old block)
     "\x{03E3}" => "s",
     "\x{03E5}" => "f",
@@ -203,7 +206,7 @@ sub decompose {
     "\x{2CB1}" => "W",
 
     # For the demotic letters, we use the old Greek and Coptic block
-    
+
     );
 
 1;

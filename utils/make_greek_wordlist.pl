@@ -3,9 +3,10 @@ use strict;
 
 my $tlgdir = shift @ARGV or die "Usage: $0 tlgdir\n";
 
-my @words = split /[\x80-\xff]/, `cat $tlgdir/tlgwlist.inx`;
+my @words = split /[\x80-\xff]+/, `cat $tlgdir/tlgwlist.inx`;
 
 for (@words) {
+    s/[\x00]//g;
     tr[A-Z][a-z];
     next if m#^iaewbafrenemoun#;
     next if m#\!#;

@@ -5,61 +5,76 @@
 # converting all of Diogenes to do proper XML parsing.
 
 use strict;
-
-use XML::Parser;
-use XML::Parser::EasyTree;
-my $parser = new XML::Parser(Style=>'EasyTree');
+use warnings;
+# Input layer needs to be raw, not utf8.
 binmode STDOUT, ':utf8';
 
-sub attribs_str {
-    my $s = '';
-    my $attrib = shift;
-    for my $key (sort(keys(%$attrib))) {
-        # The TEIform attribs just take up an enormous amount of space.
-        next if $key eq 'TEIform';
-        $s .= ' ' . $key . '="' . $attrib->{$key} . '"';
-    }
-    return $s;
+# Turn off external DTDs in case TEI website is down.
+use XML::LibXML::Reader;
+my $reader = XML::LibXML::Reader->new(IO => \*STDIN,
+                                      load_ext_dtd => 0);
+
+my $at_start = 1;
+my $in_entry = 0;
+my $in_whitespace = 0;
+
+while ($reader->read) {
+  processNode($reader);
 }
 
-my $inentry = 0;
-sub print_contents {
-    for my $item (@_) {
-        if(ref($item) eq 'ARRAY') {
-            print_contents(@$item);
-            next;
+sub processNode {
+    if ($reader->nodeType == XML_READER_TYPE_ELEMENT) {
+        my $name = $reader->name;
+        my $closer = $reader->isEmptyElement ? ' />' : '>';
+        if ($name eq 'entryFree') {
+            $in_entry = 1;
+            print "\n" unless $at_start;
+            $at_start = 0;
         }
-        if($item->{'type'} eq 't') {
-            my $content = $item->{'content'};
-            # Consolidate whitespace.  A single excess space remains at the end of every line/entry, but we can live with that.
-            $content =~ s/\s+/ /gs;
-            printf("%s", $content);
-        } else {
-            if($item->{'name'} eq 'entryFree') {
-                $inentry = 1;
+        if ($in_entry) {
+            print "<$name";
+            if ($reader->hasAttributes) {
+                while ($reader->moveToNextAttribute) {
+                    my $attr_name = $reader->name;
+                    my $attr_val = $reader->value;
+                    # The TEIform attribs take up a vast amount of space.
+                    next if $attr_name eq 'TEIform';
+                    print ' ' . $attr_name . '="' . $attr_val . '"';
+                }
+                print $closer;
+
             }
-            if(! $inentry or $item->{'name'} eq 'entryFree') {
-                printf("\n");
-            }
-            if (scalar keys %{$item->{'attrib'}}) {
-                printf("<%s%s>", $item->{'name'},
-                       attribs_str($item->{'attrib'}));
-            } else {
-                printf("<%s>", $item->{'name'});
-            }
-            print_contents($item->{'content'});
-            printf("</%s>", $item->{'name'});
-            if($item->{'name'} eq 'entryFree') {
-                $inentry = 0;
+            else {
+                print $closer;
             }
         }
+        $in_whitespace = 0;
+    }
+    elsif ($reader->nodeType == XML_READER_TYPE_END_ELEMENT and $in_entry) {
+        my $name = $reader->name;
+        print "</$name>";
+        if ($name eq 'entryFree') {
+            $in_entry = 0;
+        }
+        $in_whitespace = 0;
+    }
+    elsif ($reader->nodeType == XML_READER_TYPE_TEXT and $in_entry) {
+        my $text = $reader->value;
+        print xml_escape($text);
+        $in_whitespace = 0;
+    }
+    elsif ($reader->nodeType == XML_READER_TYPE_SIGNIFICANT_WHITESPACE
+           and $in_entry) {
+        print ' ' unless $in_whitespace;
+        $in_whitespace = 1;
     }
 }
 
-my @x = $parser->parse(\*STDIN);
-
-for my $i (@x) {
-	print_contents($i);
+# I could not find out how to turn off resolving predefined XML entities in any parser that was functional enough to resolve external entities.
+sub xml_escape {
+    my $text = shift;
+    $text =~ s/&/&amp;/g;
+    $text =~ s/</&lt;/g;
+    $text =~ s/>/&gt;/g;
+    return $text;
 }
-
-printf("\n");

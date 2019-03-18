@@ -1,0 +1,22 @@
+# Perseus repo is common source of L-S for both Perseus and Logeion
+
+include mk.common
+
+PERSEUSLEXICACOMMIT = ca0438681737e45f49facdb1b83d7256c0ff16c8
+
+LEXICONFILES = \
+	$(DATA)/lat.ls.perseus-eng1.xml \
+	$(DATA)/grc.lsj.xml
+
+$(PERSEUSLEXICA)/.git/HEAD:
+	rm -rf $(PERSEUSLEXICA)
+	mkdir -p $(BUILD)
+	cd $(BUILD) && git clone https://github.com/PerseusDL/lexica
+	cd $(PERSEUSLEXICA) && git checkout $(PERSEUSLEXICACOMMIT)
+
+$(DATA)/lat.ls.perseus-eng1.xml: $(PERSEUSLEXICA)/.git/HEAD
+	mkdir -p $(DATA)
+	cp $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
+# Remove spurious newlines in the middle of entries
+	perl -pi -e 's#(?<!</entryFree>)\s*\n# #' $@
+

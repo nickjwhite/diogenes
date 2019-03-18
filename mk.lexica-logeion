@@ -1,0 +1,21 @@
+# Get LSJ lexicon from Logeion and and L-S from Perseus
+
+include mk.lexica-common
+
+LOGEIONLEXICONCOMMIT = da095805622d6637a46808570ce6937a1d61c1a3
+
+all: $(PERSEUSLEXICA)/.git/HEAD $(LOGEIONLEXICON)/.git/HEAD $(DATA)/lat.ls.perseus-eng1.xml $(DATA)/grc.lsj.xml
+
+$(LOGEIONLEXICON)/.git/HEAD:
+	rm -rf $(LOGEIONLEXICON)
+	mkdir -p $(BUILD)
+	cd $(BUILD) && git clone https://github.com/helmadik/LSJLogeion.git
+	cd $(LOGEIONLEXICON) && git checkout $(LOGEIONLEXICONCOMMIT)
+
+$(DATA)/grc.lsj.xml: $(LOGEIONLEXICON)/.git/HEAD
+	mkdir -p $(DATA)
+	mv $(LOGEIONLEXICON)/greatscott01.xml $(LOGEIONLEXICON)/frontmatter.xml
+# Collect entries and remove spurious newlines
+	perl utils/reformat_lsj_logeion.pl  $(LOGEIONLEXICON)/greatscott*.xml > $(DATA)/grc.lsj.xml
+
+clean: $(PERSEUSLEXICA) $(LOGEIONLEXICON) $(LEXICONFILES)

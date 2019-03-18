@@ -1,0 +1,36 @@
+* Bugs
+* Add menu item to go back to firstrun.html
+
+* Test on Windows:
+  cause tibullus crash and see if server respawns.
+
+
+
+* Add XML output functionality
+** Phase 1
+   Substitute libxml with XML::DOM:Lite for portability and test it.
+   Import code into a module.
+   Integrate into splash page, with folder select native pop-up.
+   Include schema.
+** Phase 2
+   Adapt latex output code to do further markup.
+   Revise schema and test.
+
+* Redesign home page
+  add diogenes-help.html as FAQs
+  Add contributions / thanks prominently to diogenes
+
+  Register domain
+  set up payment via dept card
+  
+
+* Long-term, aspirational to-do items
+** Clean-up various Perl warnings.
+** Replace Perseus LSJ with Helma's from Logeion
+** Try to restart diogenes-server if it is killed
+** Replace XML::Tiny with XML::DOM::Lite
+** Implement print menu item
+** Make new icon for Windows with a light background
+   The foreground colour of the current icon, which has a transparent background, matches one of the common colours of the background of the Windows 10 start menus, so it disappears in these cases.
+** Make settings page shorter and clearer
+   roughly a variant of firstrun page, but ensure that it still works outside of electron

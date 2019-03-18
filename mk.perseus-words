@@ -1,21 +1,23 @@
 # Rules to make wordlists from the Perseus Latin and Greek corpora.
 
-GREEKLIT = $(DEPDIR)/canonical-greekLit
-LATINLIT = $(DEPDIR)/canonical-latinLit
+include mk.common
+
+GREEKLIT = $(BUILD)/canonical-greekLit
+LATINLIT = $(BUILD)/canonical-latinLit
 
 GREEKLITCOMMIT = 5d069b29bd9dd40c8bb1dc1b9e2623236ebb22b9
 LATINLITCOMMIT = 5b1e32979179c5e92aefe59e43a15cae7f3d1b3b
 
-include mk.commondata
+all: $(BUILD)/lat.words $(BUILD)/grc.words
 
 $(GREEKLIT)/.git/HEAD:
 	rm -rf $(GREEKLIT)
-	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-greekLit
+	cd $(BUILD) && git clone https://github.com/PerseusDL/canonical-greekLit
 	cd $(GREEKLIT) && git checkout $(GREEKLITCOMMIT)
 
 $(LATINLIT)/.git/HEAD:
 	rm -rf $(LATINLIT)
-	cd $(DEPDIR) && git clone https://github.com/PerseusDL/canonical-latinLit
+	cd $(BUILD) && git clone https://github.com/PerseusDL/canonical-latinLit
 	cd $(LATINLIT) && git checkout $(LATINLITCOMMIT)
 
 $(BUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
@@ -25,3 +27,7 @@ $(BUILD)/lat.words: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
 $(BUILD)/grc.words: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
 	mkdir -p $(BUILD)
 	./utils/make_greek_wordlist_perseus.pl $(GREEKLIT) > $@
+
+clean:
+	rm -f $(BUILD)/lat.words
+	rm -f $(BUILD)/grc.words

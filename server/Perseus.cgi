@@ -8,6 +8,9 @@ use Diogenes::EntityTable;
 use FileHandle;
 use Encode;
 
+# The lexica are now utf8, but we need to read the files in as bytes, as we want to jump into the middle and read backwards.  We then convert entries to utf8 by hand.
+use open IN  => ":bytes", OUT => ":utf8";
+
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
 
@@ -19,7 +22,6 @@ use CGI qw(:standard);
 
 my $debug = 0;
 
-#binmode STDOUT, ':utf8';
 binmode ((select), ':utf8');
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
@@ -47,6 +49,16 @@ if ($f->param('popup')) {
     print $f->hidden( -name => 'JumpTo',
                       -default => "",
                       -override => 1 );
+    print $f->hidden( -name => 'JumpFromQuery',
+                      -default => $f->param('q'),
+                      -override => 1 );
+    print $f->hidden( -name => 'JumpFromLang',
+                      -default => $f->param('lang'),
+                      -override => 1 );
+    print $f->hidden( -name => 'JumpFromAction',
+                      -default => $f->param('do'),
+                      -override => 1 );
+
     print qq{<div>};
 
     # Subsequent pages should use this same pop-up
@@ -77,8 +89,9 @@ elsif ($inp_enc eq 'Unicode') {
     my $c = new Diogenes::UnicodeInput;
     $query = $c->unicode_greek_to_beta($query);
 }
-elsif ($inp_enc eq 'utf8') {
-    # Bytes that need to be 
+elsif ($inp_enc eq 'utf8' or
+       $query =~ m/[\x80-\xff]/) {
+    # Raw bytes that need to be decoded
     $query = Encode::decode(utf8=>$query);
     my $c = new Diogenes::UnicodeInput;
     $query = $c->unicode_greek_to_beta($query);
@@ -96,7 +109,7 @@ elsif ($inp_enc) {
 $query =~ tr/A-Z/a-z/;
 
 my %dicts = (
-    grk => ['grc.lsj.perseus-eng0.xml', 'LSJ', 'xml'],
+    grk => ['grc.lsj.xml', 'LSJ', 'xml'],
     lat => ['lat.ls.perseus-eng1.xml', 'Lewis-Short', 'xml'],
     eng => ['gcide.txt', 'Gcide (based on 1913 Webster)', 'dict']
     );
@@ -115,7 +128,7 @@ if (not -e $perseus_dir) {
         exit;
     }
 }
-    
+
 my $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
 my $dict_name = $dicts{$lang}->[1];
 my $dict_format = $dicts{$lang}->[2];
@@ -177,7 +190,7 @@ my $beta_comp_fn = sub {
 my $xml_key_fn = sub {
     my $line = shift;
     my $key;
-    if ($line =~ m/<entryFree[^>]*key\s*=\s*\"([^"]*)\"/)
+    if ($line =~ m/<(?:entryFree|div2)[^>]*key\s*=\s*\"([^"]*)\"/)
     {
         $key = $1;
         $key =~ s/[^a-zA-Z]//g;
@@ -256,6 +269,7 @@ local $binary_search = sub {
     my $stop = shift;
     my $mid = int(($start + $stop) / 2);
     return undef if $start == $mid or $stop == $mid;
+    # This may land in the middle of a utf8 char, but that should not matter.
     seek $search_fh, $mid, 0;
     <$search_fh> unless $mid == 0;
     $dict_offset = tell $search_fh;
@@ -279,6 +293,10 @@ my $try_parse = sub {
 
 my $beta_to_utf8 = sub {
     my $text = shift;
+    if ($text !~ m/^[\x00-\x7f]*$/) {
+        # In Logeion LSJ, the Greek (apart from keys) is already utf8
+        return $text;
+    }
     $text =~ s/#?(\d)$/ $1/g;
     my %fake_obj;    # Dreadful hack
     $fake_obj{encoding} = 'UTF-8';
@@ -287,7 +305,7 @@ my $beta_to_utf8 = sub {
     $text =~ s/([\x80-\xff])\_/$1&#x304;/g; # combining macron
     $text =~ s/_/&nbsp;&#x304;/g;
     $text =~ s/([\x80-\xff])\^/$1&#x306;/g; # combining breve
-    $text =~ s/\^/&nbsp;&#x306;/g; 
+    $text =~ s/\^/&nbsp;&#x306;/g;
     # Decode from a 'binary string' to a UTF-8 'text string' so the
     # UTF-8 strings from Diogenes::EntityTable can be mixed freely
     return Encode::decode('utf-8', $text);
@@ -300,7 +318,7 @@ my $text_with_links = sub {
     $text_lang = "grk" if $text_lang eq "greek";
     my $out = '';
     $out .= " " if $text =~ m/^(\s+)/;
-    # skip spaces 
+    # skip spaces
     while ($text=~m/([^\s]+)(\s*)/g) {
         my $word = $1;
         my $space = $2 || '';
@@ -346,17 +364,22 @@ my $munge_xml = sub {
     my $text = shift;
     # Tiny.pm will complain if not well-formed -- get rid of stray divs and milestones
     $text =~ s/^.*?<entryFree /<entryFree /;
+    $text =~ s/^.*?<div2 /<div2 /;
     $text =~ s/<\/entryFree>.*$/<\/entryFree>/;
+    $text =~ s/<\/div2>.*$/<\/div2>/;
+    # Tiny needs a space before close of empty tag
+    $text =~ s#<([^>]*\S)/>#<$1 />#g;
     return $text if $xml_out;
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
-    local $xml_ital = 0  ; 
+    local $xml_ital = 0  ;
+#    print STDERR ">>$text\n";
     my $tree = XML::Tiny::parsefile($text,
                                     'no_entity_parsing' => 1,
                                     'input_is_string' => 1,
                                     'preserve_whitespace' => 1);
     $munge_tree->($tree);
-    
+
     my $entity;
     foreach $entity (%Diogenes::EntityTable::table) {
         $out =~ s/&$entity;/$Diogenes::EntityTable::table{$entity}/g;
@@ -378,16 +401,14 @@ my $munge_text = sub {
         if ($xml_lang eq 'greek' or $xml_lang eq 'la') {
             $text = $text_with_links->($text, $xml_lang);
         }
-        # BUG: These hacks cause much that is English to be misidentified
-        #      as Latin. Not sure yet what cases it's needed for.
-        #elsif ($lang eq 'lat' and $text =~ m/^, (?:v\.|=) /) {
-        #    # Hack for L-S cross refs (not identified as Latin).
-        #    $text = $text_with_links->($text, 'lat');
-        #}
-        #elsif ($lang eq 'lat' and not $xml_ital) {
-        #    # Hack to make all non-italicized L-S text Latin
-        #    $text = $text_with_links->($text, 'lat');
-        #}
+        elsif ($lang eq 'lat' and $text =~ m/^, (?:v\.|=) /) {
+           # Hack for L-S cross refs (not identified as Latin).
+           $text = $text_with_links->($text, 'lat');
+        }
+        elsif ($lang eq 'lat' and not $xml_ital) {
+           # Hack to make all non-italicized L-S text Latin
+           $text = $text_with_links->($text, 'lat');
+        }
         else {
             $text = $text_with_links->($text, 'eng');
         }
@@ -420,15 +441,17 @@ my $swap_element = sub {
             $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em">};
         }
     }
+    # Try to emphasize English words in lexica
     if ($lang eq 'grk' and $e->{name} =~ m/^tr|orth$/) {
-        $out .= $close ? '</b>' : '<b>';
+        $out .= $close ? '</i></b>' : '<b><i>';
     }
-    if ($e->{attrib}->{rend} and $e->{attrib}->{rend} eq 'ital') {
+    if (($e->{attrib}->{rend} and $e->{attrib}->{rend} eq 'ital')
+        or $e->{name} eq 'i') {
         if ($close) {
-            $out .= '</i>';
+            $out .= '</i></b>';
             $xml_ital = 0;
         } else {
-            $out .= '<i>';
+            $out .= '<b><i>';
             $xml_ital = 1;
         }
     }
@@ -441,7 +464,6 @@ my $swap_element = sub {
         else {
             my $jump = $1;
             $jump = $translate_abo->($jump);
-            # DEBUGGING
             $out .= qq{<a class="origjump $e->{attrib}->{n}" onClick="jumpTo('$jump');">};
             #$out .= qq{<a onClick="jumpTo('$jump');">};
             $in_link = 1;
@@ -453,7 +475,7 @@ my $swap_element = sub {
 local $munge_element = sub {
     my $e = shift;
     $swap_element->($e, 0); # open it
-    if ($e->{name} eq 'entryFree') {
+    if ($e->{name} eq 'entryFree' or $e->{name} eq 'div2') {
         my $key = $e->{attrib}->{key};
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';
@@ -490,12 +512,13 @@ $format_fn{dict} = sub {
      print qq{<hr><a onClick="prevEntry$lang($dict_offset)">Previous Entry</a>&nbsp;&nbsp;&nbsp;<a onClick="nextEntry$lang($dict_offset)">Next Entry</a><hr>};
 
 };
-    
+
 my $format_dict = sub {
     my $text = shift;
+    $text = Encode::decode('utf-8', $text);
     $format_fn{$dict_format}->($text);
 };
-        
+
 my $do_lookup = sub {
     my $word = shift;
     my $exact = shift;
@@ -603,7 +626,7 @@ the spot it should appear.)");
         seek $dict_fh, $dict, 0;
         $dict_offset = $dict;
         my $entry = <$dict_fh>;
-#          print "\n\n$entry\n\n";
+#        print STDERR "\n\n== $entry\n\n";
         $format_dict->($entry);
     }
 };
@@ -718,7 +741,7 @@ my $find_lemma = sub {
     } else {
         print "Sorry, no lemma matches were found for $qq (language = $lang)\n";
     }
-    
+
 };
 
 my $get_entry = sub {
@@ -788,7 +811,7 @@ my $do_parse = sub {
             }
         }
     }
-    
+
     if (defined $analysis) {
         $format_analysis->($analysis);
     }

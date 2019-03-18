@@ -1,10 +1,29 @@
 var picture_dir = 'images/';
 
+window.addEventListener("load", function() {
+    // Turn off spinning cursor
+    var body = document.getElementsByTagName("BODY")[0];
+    body.classList.remove("waiting");
+
+    // If we have jumped to a passage from a lexicon, show that entry again after loading.
+    var dio_form = document.getElementById("form");
+    if (dio_form.JumpFromShowLexicon &&
+        dio_form.JumpFromShowLexicon.value == 'yes') {
+        jumpFrom();
+    }
+    // If we have stored a previous Perseus query, provide facility to show it again.
+    else if (dio_form.JumpFromQuery.value &&
+             dio_form.JumpFromQuery.value != '') {
+        var restore = document.getElementById('header_restore');
+        restore.classList.remove('invisible');
+    }
+});
+
 // Select All for the checkboxes
 function setAll() {
     with (document.form) {
         for (i = 0; i < elements.length; i++) {
-            if (elements[i].name == "word_list" || 
+            if (elements[i].name == "word_list" ||
                 elements[i].name == "author_list" ||
                 elements[i].name == "works_list" ||
                 elements[i].name == "lemma_list") {
@@ -15,12 +34,6 @@ function setAll() {
     }
 }
 
-// For the splash page
-function onActionChange() {
-  if (document.form.action.selectedIndex == 7) {
-    document.form.submit();
-  }
-}
 
 // AJAX stuff
 var req = null;
@@ -29,13 +42,23 @@ function new_page (action, lang, query){
     window.location.href = `Perseus.cgi?do=${action}&lang=${lang}&q=${query}&popup=1`;
 }
 
-function sendRequest(action, lang, query) {
+function sendRequest(action, lang, query, enc) {
+    // Spinning cursor
+    var body = document.getElementsByTagName("BODY")[0];
+    body.classList.add("waiting");
+
+    // Save the Perseus query in main page to reinstate it after JumpTo
+    var dio_form = document.getElementById("form");
+    dio_form.JumpFromQuery.value = query;
+    dio_form.JumpFromAction.value = action;
+    dio_form.JumpFromLang.value = lang;
+
     /* If we just want a popup, skip the AJAX fancy stuff*/
     var sidebar = document.getElementById("sidebar");
     var sidebarClass = sidebar.getAttribute("class");
     if (sidebarClass == "sidebar-popup") {
         try {
-            var perseusWin = window.open("Perseus.cgi?do="+action+"&lang="+lang+"&q="+query+"&popup=1", 
+            var perseusWin = window.open("Perseus.cgi?do="+action+"&lang="+lang+"&q="+query+"&popup=1",
                 'Perseus Data');
         } catch(e) {
             alert('You have requested that Perseus data be displayed in a pop-up window, ' +
@@ -44,20 +67,27 @@ function sendRequest(action, lang, query) {
     }
     else if (sidebarClass == "sidebar-newpage") {
         new_page(action, lang, query);
-    }    
+    }
     else {
         /* Check for running connections */
         if (req != null && req.readyState != 0 && req.readyState != 4) {
             req.abort();
         }
-        if (window.XMLHttpRequest) { 
+        if (window.XMLHttpRequest) {
             req = new XMLHttpRequest();     // Firefox, Safari, ...
         } else if (window.ActiveXObject) {
-            req = new ActiveXObject("Microsoft.XMLHTTP");  // Internet Explorer 
+            req = new ActiveXObject("Microsoft.XMLHTTP");  // Internet Explorer
         }
         req.onreadystatechange = stateHandler;
         req.open("POST", "Perseus.cgi");
-        req.send("do="+action+"&lang="+lang+"&q="+query);
+        if (enc) {
+            // Send utf8 from user input
+            req.send("do="+action+"&lang="+lang+"&q="+query+"&inp_enc="+enc);
+        }
+        else {
+            // From text links (which use transliteration)
+            req.send("do="+action+"&lang="+lang+"&q="+query);
+        }
         return true;
     }
     return true;
@@ -94,33 +124,52 @@ function showPerseus () {
         var mainWindow = document.getElementById("main_window");
         mainWindow.setAttribute("class", "main-hidden");
     }
-    sidebarControl();
+    var splash = document.getElementById("splash");
+    if (splash) {
+        sidebarFullscreen();
+    }
+    else {
+        sidebarControl();
+    }
+    // Turn off spinning cursor
+    var body = document.getElementsByTagName("BODY")[0];
+    body.classList.remove("waiting");
 }
-
 
 function sidebarControl () {
     var sidebar = document.getElementById("sidebar");
     var sidebarClass = sidebar.getAttribute("class");
     var sidebarControl = document.getElementById("sidebar-control");
+    var splash = document.getElementById("splash");
 
-    if (sidebarClass == 'sidebar-split') {
-        sidebarControl.innerHTML = 
-            '<a onClick="sidebarFullscreen();">' +
-            `<img id="fullscreen" src="${picture_dir}view-fullscreen.png" srcset="${picture_dir}view-fullscreen.hidpi.png 2x" alt="Fullscreen" /></a>`;
-    } else if (sidebarClass == 'sidebar-full') {
+    if (splash) {
+        // Do not show split screen control on splash.
         sidebarControl.innerHTML =
+            '<a onClick="sidebarDismiss();">' +
+            `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /><div class="dismiss_button_text">Dismiss</div></a>`;
+    }
+    else {
+        if (sidebarClass == 'sidebar-split') {
+            sidebarControl.innerHTML =
+                '<a onClick="sidebarFullscreen();">' +
+                `<img id="fullscreen" src="${picture_dir}view-fullscreen.png" srcset="${picture_dir}view-fullscreen.hidpi.png 2x" alt="Fullscreen" /></a>`;
+        } else if (sidebarClass == 'sidebar-full') {
+            sidebarControl.innerHTML =
             '<a onClick="sidebarSplitscreen();">' +
             `<img id="splitscreen" src="${picture_dir}view-restore.png" srcset="${picture_dir}view-restore.hidpi.png 2x" alt="Split Screen" /></a>`;
+        }
+        sidebarControl.innerHTML +=
+            '<a onClick="sidebarDismiss();">' +
+            `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /></a>`;
     }
-    sidebarControl.innerHTML +=
-        '<a onClick="sidebarDismiss();">' +
-        `<img id="dismiss" src="${picture_dir}dialog-close.png" srcset="${picture_dir}dialog-close.hidpi.png 2x" alt="Dismiss" /></a>`;
 }
 
 function sidebarDismiss () {
     var sidebar = document.getElementById("sidebar");
     var mainWindow = document.getElementById("main_window");
+    var sidebarControl = document.getElementById("sidebar-control");
     sidebar.innerHTML = "";
+    sidebarControl.innerHTML = "";
     mainWindow.setAttribute("class", "main-full");
 }
 
@@ -207,6 +256,15 @@ function jumpTo (loc) {
     document.form.submit();
 }
 
+function jumpFrom (loc) {
+    // After jumping to a new text passage, show the lexicon entry from whence we have jumped in sidebar.
+    var dio_form = document.getElementById("form");
+    var query = dio_form.JumpFromQuery.value;
+    var action = dio_form.JumpFromAction.value;
+    var lang = dio_form.JumpFromLang.value;
+    sendRequest(action, lang, query);
+}
+
 function getFont () {
     var dio_form = document.getElementById("form");
     return dio_form.FontName.value;
@@ -269,5 +327,3 @@ function formFilter () {
         }
     }
 }
-
- 

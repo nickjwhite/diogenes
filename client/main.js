@@ -19,6 +19,9 @@ let startupDone = false
 
 let currentLinkURL = null
 
+let findTargetWin;
+let mySearchText;
+
 const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
@@ -26,15 +29,14 @@ const settingsPath = app.getPath('userData')
 const winStatePath = path.join(settingsPath, 'windowstate.json')
 const prefsFile = path.join(settingsPath, 'diogenes.prefs')
 
-
 // Ensure the app is single-instance (see 'second-instance' event
 // handler below)
 function initialise() {
-	const gotTheLock = app.requestSingleInstanceLock()
+    const gotTheLock = app.requestSingleInstanceLock()
 
-	if (!gotTheLock) {
-		return app.quit()
-	}
+    if (!gotTheLock) {
+	return app.quit()
+    }
 }
 
 initialise()
@@ -127,62 +129,49 @@ function createFirstWindow () {
 
     const menu = Menu.buildFromTemplate(initializeMenuTemplate())
     Menu.setApplicationMenu(menu)
-
 }
 
 // Track each window in a global 'windows' array, and set up the
 // context menu
 app.on('browser-window-created', (event, win) => {
-	// Track window in global windows object
-	windows.push(win)
+    // Track window in global windows object
+    windows.push(win)
 
-	win.on('closed', () => {
-		// Delete window id from list of windows
-		windows.splice(windows.indexOf(win), 1)
+    win.on('closed', () => {
+	// Delete window id from list of windows
+	windows.splice(windows.indexOf(win), 1)
+    })
 
-		// Dereference the windows object if there are no more windows
-//		if(windows.length == 0) {
-//			windows = null
-//		}
-	})
+    // Intercept and handle new-window requests (e.g. from shift-click), to
+    // prevent child windows being created which would die if the parent was
+    // killed. This was something to do with the new window being a "guest"
+    // window, which I am intentionally setting here, to fix the issue. The
+    // Electron documentation states that it should be set for "failing to
+    // do so may result in unexpected behavior" but I haven't seen any yet.
+    win.webContents.on('new-window', (event, url) => {
+	event.preventDefault()
+	const win = createWindow(20, 20)
+	win.once('ready-to-show', () => win.show())
+	win.loadURL(url)
+	//event.newGuest = win
+    })
 
-	// Intercept and handle new-window requests (e.g. from shift-click), to
-	// prevent child windows being created which would die if the parent was
-	// killed. This was something to do with the new window being a "guest"
-	// window, which I am intentionally setting here, to fix the issue. The
-	// Electron documentation states that it should be set for "failing to
-	// do so may result in unexpected behavior" but I haven't seen any yet.
-	win.webContents.on('new-window', (event, url) => {
-	    event.preventDefault()
-	    const win = createWindow(20, 20)
-		win.once('ready-to-show', () => win.show())
-		win.loadURL(url)
-		//event.newGuest = win
-	})
-
-	// Load context menu
-	win.webContents.on('context-menu', (e, params) => {
-		// Only load on links, which aren't javascript links
-		if(params.linkURL != "" && params.linkURL.indexOf("javascript:") != 0) {
-			currentLinkURL = params.linkURL
-			linkContextMenu.popup(win, params.x, params.y)
-		} else {
-			currentLinkURL = null
-		}
-	})
+    // Load context menu
+    win.webContents.on('context-menu', (e, params) => {
+	// Only load on links, which aren't javascript links
+	if(params.linkURL != "" && params.linkURL.indexOf("javascript:") != 0) {
+	    currentLinkURL = params.linkURL
+	    linkContextMenu.popup(win, params.x, params.y)
+	} else {
+	    currentLinkURL = null
+	}
+    })
 })
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-
 app.on('ready', createFirstWindow)
-
-// app.on('ready', () => {
-//     const menu = Menu.buildFromTemplate(initializeMenuTemplate())
-//     Menu.setApplicationMenu(menu)
-//     createFirstWindow
-// })
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -348,6 +337,7 @@ function loadFirstPage(prefsFile, win) {
 	}
 }
 
+// Menus
 function initializeMenuTemplate () {
     const template = [
         {
@@ -366,6 +356,14 @@ function initializeMenuTemplate () {
                             newWin = createWindow(20, 20)
                         }
                         newWin.loadURL('http://localhost:' + dioSettings.port)
+                    }
+                },
+                {
+                    label: 'Database Setup',
+                    accelerator: 'CmdOrCtrl+B',
+                    click: (menu, win) => {
+                        let newWin = createWindow(20, 20)
+                        newWin.loadFile("pages/firstrun.html")
                     }
                 },
                 {
@@ -414,13 +412,12 @@ function initializeMenuTemplate () {
                 {label: 'Find Next',
                  accelerator: 'CmdOrCtrl+G',
                  click: (menu, win) => {
-                     win.webContents.findInPage(win.mySearchText, {'findNext': true})
+                     findTargetWin.webContents.findInPage( mySearchText )
                  }},
                 {label: 'Find Previous',
                  accelerator: 'CmdOrCtrl+Shift+G',
                  click: (menu, win) => {
-                     win.webContents.findInPage(win.mySearchText,
-                                                {'findNext': true, 'forward': false})
+                     findTargetWin.webContents.findInPage( mySearchText, {'forward': false} )
                  }},
 
             ]
@@ -447,7 +444,7 @@ function initializeMenuTemplate () {
             submenu: [
                 {
                     label: 'Learn More',
-                    click () { require('electron').shell.openExternal('http://diogenes.durham.ac.uk/diogenes-help.html') }
+                    click () { require('electron').shell.openExternal('http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/diogenes-help.html') }
                 }
             ]
         }
@@ -490,9 +487,11 @@ function initializeMenuTemplate () {
     return template
 }
 
+// Find-in-page mini-window
 function findText (win) {
-    let findWidth = 350
-    let find_x = win.getBounds().x + win.getBounds().width - findWidth
+    findTargetWin = win;
+    let findWidth = 340
+    let find_x = win.getBounds().x + win.getContentBounds().width - findWidth
     let find_y = win.getBounds().y
 
     let findWin = new BrowserWindow({
@@ -500,7 +499,7 @@ function findText (win) {
         show: false,
         modal: false,
         width: findWidth,
-        height: 60,
+        height: 40,
         x: find_x,
         y: find_y,
         resizable: false,
@@ -523,12 +522,12 @@ function findText (win) {
             } else {
                 win.webContents.findInPage(text, {'forward': false})
             }
-            win.mySearchText = text
+            mySearchText = text
         }
     })
     findWin.on('closed', () => {
         win.webContents.stopFindInPage('clearSelection')
-        ipcMain.removeAllListeners()
+        ipcMain.removeAllListeners('findText')
     })
     // Clear highlighting when we navigate to a new page
     win.webContents.on('did-start-loading', (event, result) => {
