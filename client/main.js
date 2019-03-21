@@ -333,17 +333,19 @@ function saveWindowState(win, path) {
 
 // Load window dimensions and state from a file
 function getWindowState(path) {
-	let s
-	try {
-		s = fs.readFileSync(path, {'encoding': 'utf8'})
-	} catch(e) {
-		return false
-	}
-	try {
-		JSON.parse(s)
-	} catch(e) {
-		return false
-	}
+    let s
+    let ret
+    try {
+	s = fs.readFileSync(path, {'encoding': 'utf8'})
+    } catch(e) {
+	return false
+    }
+    try {
+	ret = JSON.parse(s)
+    } catch(e) {
+	return false
+    }
+    return ret
 }
 
 // Load either the Diogenes homepage or the firstrun page
