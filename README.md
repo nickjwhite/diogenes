@@ -52,8 +52,8 @@ To build an installer for your target platform, run one of the
 commands below.  All installers can be built on either Linux or OS X.
 You will need to install a number of auxiliary programs, including
 `librsvg`, `libicns`, `iconutils`, `wine` and `innoextract`.  All of
-these can easily be installed on Linux via your distribution and OS X
-using Homebrew.  You will also need to install `fpm` via the Ruby
+these can easily be installed on Linux via your distribution and on OS
+X using Homebrew.  You will also need to install `fpm` via the Ruby
 package manager (see https://fpm.readthedocs.io/en/latest/).
 
     make installer-w32        # Make a Windows installer

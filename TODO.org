@@ -1,18 +1,16 @@
-* Fix createWindow offset for new windows
-* Test on Windows:
-  cause tibullus crash and see if server respawns.
-
-
-
+* Test on Windows
+* Figure out why icon cut off on top on Windows
 * Add XML output functionality
 ** Phase 1
-   Substitute libxml with XML::DOM:Lite for portability and test it.
+   Substitute libxml with XML::DOM:Lite for portability and test it against phi corpus.
    Import code into a module.
    Integrate into splash page, with folder select native pop-up.
-   Include schema.
+   Work on fixing TLG errors.  Maybe give up and release.
+   Validate if xmllint present.
 ** Phase 2
    Adapt latex output code to do further markup.
    Revise schema and test.
+   More TLG fixes
 
 * Redesign home page
   add diogenes-help.html as FAQs
