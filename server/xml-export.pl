@@ -1,105 +1,85 @@
 #!/usr/bin/perl -w
 
-# NB.  This is obsolete legacy code; the current version is
-# xml-export.pl in the server directory.
+# This script is part of Diogenes.
 
-# phi2tei converts databases of classical texts in the CD-ROM format
-# develped by the Packard Humanities Institute (PHI) to XML files
-# conforming to the P5 specification of the Text Encoding Initiative
-# (TEI).  It depends upon the Diogenes libraries.  It needs to be run
-# on a computer with Diogenes installed and where the user has
-# told Diogenes where to find the database to be converted.
-
-# NB. We attempt to guess where the Diogenes Perl libraries are
-# located, but if you installed the application in a non-default
-# place, this will not work, and you will need to put a line at the
-# top of this script like this:
-# use lib '/path/to/diogenes/perl';
-
-# These are the default locations for various platforms:
-use if (-e  '/Applicazioni/Diogenes.app/Contents/Resources/perl'), lib =>  '/Applicazioni/Diogenes.app/Contents/Resources/perl';
-use if (-e  '/Applications/Diogenes.app/Contents/Resources/perl'), lib =>  '/Applications/Diogenes.app/Contents/Resources/perl';
-use if (-e 'C:\Program Files (x86)\Diogenes\perl'), lib => 'C:\Program Files (x86)\Diogenes\perl';
-use if (-e 'C:\Program Files\Diogenes\perl'), lib => 'C:\Program Files\Diogenes\perl';
-use if (-e '/usr/local/diogenes/perl'), lib => '/usr/local/diogenes/perl';
-
-# This script was developed by Peter Heslin at the request of and with
-# the financial support of the DigiLibLT project.  The XML output has
-# been designed to harmonize with the subset of TEI markup used by
-# that project.
-
-# http://www.digiliblt.unipmn.it
-# http://www.dur.ac.uk/p.j.heslin/Software/Diogenes/
-
-# There is a single mandatory command-line switch -c to specify which
-# corpus to convert.  The output is put in the "output" sub-directory.
-
-# This software is distributed by its author under the GNU General
-# Public License (GPL) v.3.
-
-# Version History
-# phi2tei -- version 1.0 -- date: 1 June 2013
-# initial release to DigiLibLT for testing
-
-# phi2tei -- version 2.0 -- date: 22 Aug 2013
-# Fixes for bugs found by DigiLibLT.  XML now validates against the
-# DigiLibLT schema
-
-# phi2tei -- version 3.0 -- date: 26 Oct 2014 Added -p option for
-# DigiLibLT; fixed a major bug in hanging divs introduced in version
-# 2.0.
-
-# phi2tei -- version 3.1 -- date: 3 June 2015
-# Fixed a small bug in hanging divs.
-
-sub VERSION_MESSAGE {print "phi2tei version 3.1\n"}
+# This XML export functionality was developed at the request of and
+# with the financial support of the DigiLibLT project.  The XML output
+# has been designed to harmonize with the subset of TEI markup used by
+# that project.  In the default setting, the output diverges in a few
+# respects from the norms of DigiLibLT, but a higher level of
+# alignment is an option.
 
 use strict;
 use warnings;
 use Getopt::Std;
-$Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts ('alproc:s:n:d');
-our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_o, $opt_s, $opt_d, $opt_n);
-sub HELP_MESSAGE {
-    my $corpora = join ', ', sort values %Diogenes::Base::choices;
-    print qq{
-
-phi2tei converts databases of classical texts in the CD-ROM format
-develped by the Packard Humanities Institute (PHI) to XML files
-conforming to the P5 specification of the Text Encoding Initiative
-(TEI).  It creates an 'output' subdirectory of the current directory
-into which to put those XML files; it will fail if that subdirectory
-already exists unless you specify the -o switch to overwrite it.
-
-There is one mandatory switch:
-
--c abbr   The abberviation of the corpus to be converted.  Valid values
-          are: $corpora
-
-The following optional switches are supported:
-
--d        Debug info: report progress of conversion 
--n        Convert a specific author number only
--r        Convert book numbers to Roman numerals, as in DigiLibLT
--o        Overwrite any exisiting "output" subdirectory
--p        Mark paragraphs as milestones rather than divs
--l        Pretty-print XML using xmllint
--a        Suppress translating indentation into <space> tags 
--s path   Validate output against an Relax NG Schema located at (full) path  
-};
-}
-
 use Data::Dumper;
+use File::Spec::Functions;
+use File::Path qw(remove_tree);
+use IO::Handle;
+use XML::LibXML;
+
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;
 use Diogenes::BetaHtml;
-# package Diogenes::Converter;
-# @Diogenes::Converter::ISA = qw( Diogenes::Base );
-use XML::LibXML;
 
-my $debug = $opt_d ? 1 : 0;
-use IO::Handle;
+my $dirname = 'diogenes-xml';
+
+sub VERSION_MESSAGE {print "xml-export.pl, Diogenes version $Diogenes::Base::Version\n"}
+
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+getopts ('alprho:c:s:n:vd');
+our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_n);
+sub HELP_MESSAGE {
+    my $corpora = join ', ', sort values %Diogenes::Base::choices;
+    print qq{
+
+xml-export.pl is part of Diogenes; it converts classical texts in the
+format develped by the Packard Humanities Institute (PHI) to XML files
+conforming to the P5 specification of the Text Encoding Initiative
+(TEI).  
+
+There are two mandatory switches:
+
+-c abbr   The abberviation of the corpus to be converted.  Valid values
+          are: $corpora
+
+-o        Full path to output directory; if the directory itself is not
+          called $dirname, a subdirectory by that name will be created
+          within the specified directory and will be used.
+
+The following optional switches are supported:
+
+-v        Verbose info on progress of conversion 
+-n        Convert a specific author number only
+-d        DigiLibLT compatibility; equal to -rpa
+-r        Convert book numbers to Roman numerals
+-p        Mark paragraphs as milestones rather than divs
+-a        Suppress translating indentation into <space> tags 
+-l        Pretty-print XML using xmllint
+-s path   Validate output against an Relax NG Schema located at (full) path  
+
+};
+}
+
+die "Error: specify corpus" unless $opt_c;
+my $corpus = $opt_c;
+die "Unknown corpus" unless exists $database{$corpus};
+
+if ($opt_o) {
+    $out_dir = $opt_o;
+    if (-e $out_dir) {
+        remove_tree($out_dir);
+    }
+}
+else {
+    die "Error: output directory not specified" ;
+}
+
+mkdir $out_dir;
+chdir $out_dir;
+
+my $debug = $opt_v ? 1 : 0;
 my $xmlns = 'http://www.tei-c.org/ns/1.0';
 
 my $xml_header=qq{<?xml version="1.0" encoding="UTF-8"?>
@@ -169,23 +149,6 @@ my %div_translations = (
 use charnames qw(:full :short latin greek);
 binmode(STDOUT, ":utf8");
 
-use File::Spec::Functions;
-use File::Path qw(remove_tree);
-
-if (-e 'output') {
-    if ($opt_o) {
-        remove_tree('output');
-    }
-    else {
-        die "Error: output directory already exists" ;
-    }
-}
-mkdir 'output';
-chdir 'output';
-
-die "Error: specify corpus" unless $opt_c;
-my $corpus = $opt_c;
-die "Unknown corpus" unless exists $database{$corpus};
 
 open( AUTHTAB, ">authtab.xml" ) or die "Could not create authtab.xml\n";
 AUTHTAB->autoflush(1);
@@ -634,8 +597,8 @@ sub write_xml_file {
         the same directory as this script and make sure Java is
         installed";
         }
-#         my $ret = `xmllint --noout --relaxng $opt_s $file`;
-        my $ret = `java -jar ../jing.jar -c $opt_s $file`;
+#        my $ret = `xmllint --noout --relaxng $opt_s $file`;
+        my $ret = `java -jar ../jing.jar -t -c $opt_s $file`;
         print $ret;
     }
 }
