@@ -1322,9 +1322,8 @@ $output{filter_splash} = sub
         forth.  You can use these classifications to define a subset
         of works in the TLG to narrow down your search. '),
 
-    $f->submit( -name => 'complex',
-                -value => 'Define a complex TLG corpus');
-
+        $f->p($f->submit( -name => 'complex',
+                -value => 'Define a complex TLG corpus'));
 
 
     $my_footer->();
