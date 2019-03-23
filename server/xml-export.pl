@@ -1,13 +1,15 @@
 #!/usr/bin/perl -w
 
-# This script is part of Diogenes.
+# This script is part of Diogenes.  It is normally run from the
+# integrated client/server application, but it can also be run from
+# the command line.
 
-# This XML export functionality was developed at the request of and
-# with the financial support of the DigiLibLT project.  The XML output
-# has been designed to harmonize with the subset of TEI markup used by
-# that project.  In the default setting, the output diverges in a few
-# respects from the norms of DigiLibLT, but a higher level of
-# alignment is an option.
+# The XML export functionality in this script was developed at the
+# request of and with the financial support of the DigiLibLT project.
+# The XML output has been designed to harmonize with the subset of TEI
+# markup used by that project.  In the default setting, the output
+# diverges in a few respects from the norms of DigiLibLT, but a higher
+# level of alignment is an option.
 
 use strict;
 use warnings;
@@ -43,8 +45,9 @@ conforming to the P5 specification of the Text Encoding Initiative
 
 There are two mandatory switches:
 
--c abbr   The abberviation of the corpus to be converted.  Valid values
-          are: $corpora
+-c abbr   The abberviation of the corpus to be converted; without the -n
+          option all authors will be converted.  Valid values are:
+          $corpora
 
 -o        Full path to output directory. If the path contains a directory
           called $dirname, only the path up to that directory will be
@@ -54,13 +57,14 @@ There are two mandatory switches:
 The following optional switches are supported:
 
 -v        Verbose info on progress of conversion
--n        Convert a specific author number only
+-n        Comma-separated list of author numbers to convert
 -d        DigiLibLT compatibility; equal to -rpa
 -r        Convert book numbers to Roman numerals
 -p        Mark paragraphs as milestones rather than divs
 -a        Suppress translating indentation into <space> tags
 -l        Pretty-print XML using xmllint
--s        Validate output against Relax NG Schema (digiliblt.rnc)
+-s        Validate output against Relax NG Schema (via Jing;
+          requires Java to be installed)
 
 };
 }
@@ -187,10 +191,15 @@ my ($buf, $i, $auth_name, $real_num, $work_name, $body, $header, $is_verse, $han
 
 my @all_auths = sort keys %{ $Diogenes::Base::auths{$corpus} };
 if ($opt_n) {
-    @all_auths = split /,\s*/, $opt_n;
+    if ($opt_n =~ m/,/) {
+        @all_auths = split /,\s*/, $opt_n;
+    }
+    else {
+        $opt_n =~ s/(\d+)/$1/;
+        @all_auths = $opt_n;
+    }
 }
 AUTH: foreach my $auth_num (@all_auths) {
-    $auth_num = $opt_n if $opt_n and $opt_n =~ m/^\d+$/;
     $real_num = $query->parse_idt ($auth_num);
     $query->{auth_num} = $auth_num;
     $auth_name = $Diogenes::Base::auths{$corpus}{$auth_num};
