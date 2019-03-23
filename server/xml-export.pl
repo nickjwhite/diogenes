@@ -49,10 +49,13 @@ There are two mandatory switches:
           option all authors will be converted.  Valid values are:
           $corpora
 
--o        Full path to output directory. If the path contains a directory
-          called $dirname, only the path up to that directory will be
-          used; if it does not, $dirname will be appended to the
-          supplied path.
+-o        Full path to the output directory. If the supplied path contains a
+          directory called $dirname, only the path up to that
+          directory will be used; if it does not, $dirname will be
+          appended to the supplied path. $dirname is created if it
+          does not exist, and within it a subdirectory with the name
+          of the corpus is created, after deleting any existing
+          subdirectory by that name.
 
 The following optional switches are supported:
 
@@ -64,7 +67,7 @@ The following optional switches are supported:
 -a        Suppress translating indentation into <space> tags
 -l        Pretty-print XML using xmllint
 -s        Validate output against Relax NG Schema (via Jing;
-          requires Java to be installed)
+          requires Java runtime)
 
 };
 }
@@ -75,7 +78,7 @@ die "Unknown corpus" unless exists $database{$corpus};
 
 die "Error: specify output directory" unless $opt_o;
 
-my ($volume,$directories,$file) = File::Spec->splitpath( $opt_o );
+my ($volume, $directories, $file) = File::Spec->splitpath( $opt_o );
 my $path;
 
 if (-e $opt_o and not -d $opt_o) {
@@ -98,6 +101,7 @@ for my $dir (@dirs) {
     push @newdirs, $dir;
 }
 push @newdirs, $dirname;
+push @newdirs, $corpus;
 $path = File::Spec->catpath($volume, File::Spec->catdir(@newdirs), '');
 
 if (-e $path) {
