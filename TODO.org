@@ -1,6 +1,7 @@
 * Test on Windows
 * Figure out why icon cut off on top on Windows
 * Add XML output functionality
+
 Add output subdirs for different corpora
 Implement sub-corpora?  Do this by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
 
