@@ -96,8 +96,19 @@ function splashPerseus (action) {
 }
 
 function XMLPathSelect () {
-
+    var event = new Event('XMLPathRequest');
+    document.dispatchEvent(event)
 }
+
+function XMLPathSet (e) {
+    var path = e.detail;
+    exportPath = path;
+    localStorage.setItem("exportPath", path);
+    info('export');
+}
+
+document.addEventListener('XMLPathResponse', XMLPathSet, false)
+
 
 var infoText ={};
 var exportText1;
@@ -118,15 +129,15 @@ function info (choice) {
         author = document.getElementById("author_text").value;
     }
     if (choice == 'export') {
-        if (exportPath === undefined || exportPath === null) {
+        if (exportPath && exportPath != "null") {
             infoText['export'] = exportText1 +
-                '<p class="info-field">Output Folder: <a href="#" onclick="XMLPathSelect"><span style = "color:red">Undefined</span></a></p>' +
-                exportText2 + '<p class="info-text">You must <a href="#" onclick="XMLPathSelect">select the folder</a> into which the directory with the XML files will be placed.</p>';
+                '<p class="info-field">Output Folder: <a href="#" onclick="XMLPathSelect()">' + exportPath + '</a></p>' +
+                exportText2 + '<p align="center"><input class="info-button" type="submit" name="go" value="Export Texts"></p>';
         }
         else {
             infoText['export'] = exportText1 +
-                '<p class="info-field">Output Folder: <a href="#" onclick="XMLPathSelect">' + exportPath + '</a></p>' +
-                exportText2 + '<p align="center"><input class="info-button" type="submit" name="go" value="Export Texts"></p>';
+                '<p class="info-field">Output Folder: <a href="#" onclick="XMLPathSelect()"><span style = "color:red">Undefined</span></a></p>' +
+                exportText2 + '<p class="info-text">You must <a href="#" onclick="XMLPathSelect()">select the folder</a> into which the directory with the XML files will be placed.</p>';
         }
     }
 
@@ -166,7 +177,6 @@ function splash_setup () {
     var corporaCore = '<select name="corpus" id="corpus_menu" class="info-field">' +
         corpora1 +
         '</select>';
-    var exportFolder = '<p class="info-field">Output Folder: ' + exportPath + '<a href="#" onclick="XMLPathSelect">Select</a>'  + '</p>'
 
     infoText['browse'] = '<h2 class="info-h2">Read a Text</h2>' +
         '<p class="info-field">Corpus: ' + corporaCore +

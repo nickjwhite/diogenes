@@ -118,3 +118,23 @@ function isFirstRunPage() {
 }
 
 window.addEventListener('load', isFirstRunPage, false)
+
+// Select folder for XML export
+
+function setXMLPath (path) {
+    if (path) {
+        var event = new CustomEvent('XMLPathResponse', { detail: path });
+        document.dispatchEvent(event)
+    }
+}
+
+function exportPathPick () {
+    setXMLPath(dialog.showOpenDialog({
+			title: 'Set location for XML directory',
+			properties: ['openDirectory']
+    }))
+}
+
+document.addEventListener('XMLPathRequest', exportPathPick, false)
+
+//console.log('preload done');
