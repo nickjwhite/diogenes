@@ -6,10 +6,11 @@ of ancient texts, primarily in Latin and Greek, that are published by
 the Thesaurus Linguae Graecae and the Packard Humanities Institute.
 
 The information here is only for people who want to delve into the
-technical details of Diogenes.  If you just want to install and run
-it, ignore all this and go to the Diogenes webpage instead:
+technical details of Diogenes and build it for themselves.  If you
+just want to install and run the program, ignore all this and go to
+the Diogenes webpage instead:
 
-http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/
+https://d.iogen.es/d
 
 Building
 --------
@@ -74,11 +75,11 @@ Instead of running the standalone, integrated app, you may prefer to
 run Diogenes as a server and to connect to it via an ordinary web
 browser.  The server can be started using the script:
 
-    diogenes-browser/perl/diogenes-server.pl
+    server/diogenes-server.pl
 
 For full usage details run it like this:
 
-    diogenes-browser/perl/diogenes-server.pl -?
+    server/diogenes-server.pl -?
 
 Additional features
 -------------------
@@ -87,7 +88,8 @@ Diogenes has a number of other features which predate the development
 of the standalone app and which are no longer fully supported but
 which may still work.  These include a command-line interface (dio),
 LaTeX output, and support for a wide variety of pre-Unicode encodings
-for Ancient Greek.
+for Ancient Greek.  XML export can also be done by running the
+xml-export.pl script from the command line.
 
 Building the morphology data & dictionaries
 -------------------------------------------
@@ -134,8 +136,8 @@ Morpheus, run this command:
 
     make -f mk.morpheus-old
 
-The current version of Morpheus from the Perseus project has some bugs
-in it that leads to incomplete and incorrect output, so it is
+The current version of Morpheus in the Perseus github repo has some
+bugs in it that leads to incomplete and incorrect output, so it is
 recommended to use the older version.  But if you want to test the
 current version, do this instead:
 

@@ -7,8 +7,18 @@ Do we need to substitute it?
 Substitute libxml with XML::DOM:Lite for portability and test it against phi corpus.
 
 * Test on Windows
+And test install on MDS/NCPS
 
-* New home page
+* New website
+
+  Downloads
+  FAQs
+  About
+  Feedback
+  Help
+  Source Code
+
+
   Put under d/
   Splash page at /
   add diogenes-help.html as FAQs
