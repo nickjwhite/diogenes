@@ -227,6 +227,6 @@ function splash_setup () {
 
     infoText['help'] = '<h2 class="info-h2">Help and Support</h2>' +
         '<p class="info-text">For information about using Diogenes, see the <a target="_blank" href="https://d.iogen.es/d/faqs.html">website</a>.</p>' +
-        '<p class="info-text">If are a student, a schoolteacher or a member of the general public who uses Diogenes, or if you are a university teacher who uses it in your undergraduate teaching, you can help to support its continuing development by sending a quick message describing the benefits it has brought to you to this address:  <a href="mailto:p.j.heslin@durham.ac.uk?subject=Diogenes Impact">classics.impact@durham.ac.uk</a>.</p>';
+        '<p class="info-text">If are a student, a schoolteacher or a member of the general public who uses Diogenes, or if you are a university teacher who uses it in your undergraduate teaching, you can help to support its continuing development by sending a quick message describing the benefits it has brought to you to this address:  <a href="mailto:classics.impact@durham.ac.uk?subject=Diogenes Impact">classics.impact@durham.ac.uk</a>.</p>';
 
 }
