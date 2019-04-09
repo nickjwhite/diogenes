@@ -7,6 +7,31 @@ Do we need to substitute it?
 Substitute libxml with XML::DOM:Lite for portability and test it against phi corpus.
 Make XML::LibXML a prereq for Linux packages.
 
+* Patch for XML::DOM::Lite
+Only remove \n in parser when whitespace=>strip
+Add pretty and indent options to serializer
+Fix stripping of declaration.
+
+* Improve for document-oriented xml
+** Bugs
+*** Strips newlines regardless of whitespace option (same as existing report)
+*** Serializer inserts significant whitespace
+    New option indent => safe or none.  None adds no whitespace at all.  Safe adds no newlines.  It adds indentation only after and relative to existing newlines in the document; hence the whitespace it adds (or removes) is safe under normalization.  Do not use the safe option with the whitespace=>normalize parser option, as that removes all newlines, replacing them with spaces.
+*** Parser does not preserve the name of the processing instruction, only its value
+*** Serializer does not output processing instructions.
+*** Change parser normalizer to reduce to \n when space includes \n when whitespace=>normalize_newlines.
+*** Unsuported methods do not cause an error.
+
+
+Copy current version and add to github.
+Make new test
+
+new sub to make indent.  only when $out ends in \n([ \n\t\r]*).  Get rid of trailing stuff and add indent then.
+
+Test for round-trip from preserve to none.
+
+
+
 * Test on Windows
 And test install on MDS/NCPS
 
