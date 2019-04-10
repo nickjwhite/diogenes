@@ -87,7 +87,8 @@ w64perl:
 	rm w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 
 rcedit.exe:
-	curl -Lo $@ https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
+	mkdir -p build
+	curl -Lo build/rcedit.exe https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
 icons: dist/icon.svg icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
@@ -119,7 +120,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes
 	cp icons/diogenes.ico w32
 	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
 	sed 's/$$/\r/g' < README.md > w32/README.md
-	wine rcedit.exe w32/diogenes.exe \
+	wine build/rcedit.exe w32/diogenes.exe \
 	    --set-icon icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
@@ -141,7 +142,7 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl icons/diogenes.
 	cp icons/diogenes.ico w64
 	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
 	sed 's/$$/\r/g' < README.md > w64/README.md
-	wine rcedit.exe w64/diogenes.exe \
+	wine build/rcedit.exe w64/diogenes.exe \
 	    --set-icon icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
@@ -202,19 +203,19 @@ zip-w64: w64
 zip-all: zip-linux64 zip-mac zip-w32 zip-w64
 
 inno-setup: 
-	mkdir inno-setup
-	curl -Lo inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
-	cd inno-setup; innoextract is.exe
+	mkdir -p build/inno-setup
+	curl -Lo build/inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
+	cd build/inno-setup; innoextract is.exe
 
 installer-w32: inno-setup w32
 	mkdir -p install
-	wine inno-setup/app/ISCC.exe dist/diogenes-win32.iss
+	wine build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
 installer-w64: inno-setup w64
 	mkdir -p install
-	wine inno-setup/app/ISCC.exe dist/diogenes-win64.iss
+	wine build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
 	mv -f Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	rmdir Output
 
@@ -286,13 +287,11 @@ clean:
 	rm -f server/Diogenes/EntityTable.pm
 	rm -rf server/fonts
 	rm -rf icons dist/diogenes.icns
-	rm -f rcedit.exe
 	rm -rf build
 	rm -rf electron
 	rm -rf mac diogenes-mac-$(DIOGENESVERSION)
 	rm -rf linux64 diogenes-linux64-$(DIOGENESVERSION)
 	rm -rf w32 w32perl diogenes-w32-$(DIOGENESVERSION)
 	rm -rf w64 w64perl diogenes-w64-$(DIOGENESVERSION)
-	rm -rf inno-setup
 	rm -rf install
 
