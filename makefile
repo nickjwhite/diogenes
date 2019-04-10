@@ -74,11 +74,11 @@ electron/electron-v$(ELECTRONVERSION)-win32-x64:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-win32-x64 electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 
-w32perl:
-	mkdir -p w32perl/strawberry
-	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
-	unzip -d w32perl/strawberry w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
-	rm w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+build/w32perl:
+	mkdir -p build/w32perl/strawberry
+	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	unzip -d build/w32perl/strawberry build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	rm build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 
 w64perl:
 	mkdir -p w64perl/strawberry
@@ -106,7 +106,7 @@ build/icons/diogenes.ico: build/icons/256.png build/icons/128.png build/icons/64
 build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
 	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
 
-w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl build/icons/diogenes.ico build/rcedit.exe
+w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w32
@@ -116,7 +116,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl build/icons/di
 	mv w32/electron.exe w32/diogenes.exe
 	cp -r server w32
 	cp -r dependencies w32
-	cp -r w32perl/strawberry w32
+	cp -r build/w32perl/strawberry w32
 	cp build/icons/diogenes.ico w32
 	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
 	sed 's/$$/\r/g' < README.md > w32/README.md
