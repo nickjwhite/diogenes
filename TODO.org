@@ -1,4 +1,4 @@
-Remove grc.lsj.logeion.xml and perseus lsj from data/dependencies
+add .gitignore
 
 * Finish XML output functionality
 

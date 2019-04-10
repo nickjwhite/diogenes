@@ -80,11 +80,11 @@ build/w32perl:
 	unzip -d build/w32perl/strawberry build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	rm build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 
-w64perl:
-	mkdir -p w64perl/strawberry
-	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip > w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
-	unzip -d w64perl/strawberry w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
-	rm w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+build/w64perl:
+	mkdir -p build/w64perl/strawberry
+	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip > build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+	unzip -d build/w64perl/strawberry build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+	rm build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 
 build/rcedit.exe:
 	mkdir -p build
@@ -128,7 +128,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/ic
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
-w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl build/icons/diogenes.ico build/rcedit.exe
+w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 build/w64perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w64
@@ -138,7 +138,7 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl build/icons/dio
 	mv w64/electron.exe w64/diogenes.exe
 	cp -r server w64
 	cp -r dependencies w64
-	cp -r w64perl/strawberry w64
+	cp -r build/w64perl/strawberry w64
 	cp build/icons/diogenes.ico w64
 	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
 	sed 's/$$/\r/g' < README.md > w64/README.md
@@ -290,7 +290,7 @@ clean:
 	rm -rf electron
 	rm -rf mac diogenes-mac-$(DIOGENESVERSION)
 	rm -rf linux64 diogenes-linux64-$(DIOGENESVERSION)
-	rm -rf w32 w32perl diogenes-w32-$(DIOGENESVERSION)
-	rm -rf w64 w64perl diogenes-w64-$(DIOGENESVERSION)
+	rm -rf w32 diogenes-w32-$(DIOGENESVERSION)
+	rm -rf w64 diogenes-w64-$(DIOGENESVERSION)
 	rm -rf install
 
