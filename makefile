@@ -291,10 +291,5 @@ clean:
 	rm -rf w32 w32perl diogenes-w32-$(DIOGENESVERSION)
 	rm -rf w64 w64perl diogenes-w64-$(DIOGENESVERSION)
 	rm -rf inno-setup
-	rm -f diogenes-setup-win32-$(DIOGENESVERSION).exe
-	rm -f diogenes-setup-win64-$(DIOGENESVERSION).exe
-	rm -f Diogenes-$(DIOGENESVERSION).pkg
-	rm -f diogenes-$(DIOGENESVERSION)_amd64.deb
-	rm -f diogenes-$(DIOGENESVERSION).x86_64.rpm
-	rm -f diogenes-$(DIOGENESVERSION).pkg.tar.xz
+	rm -rf install
 
