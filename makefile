@@ -90,23 +90,23 @@ rcedit.exe:
 	mkdir -p build
 	curl -Lo build/rcedit.exe https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
-icons: dist/icon.svg icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
+build/icons: dist/icon.svg build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
-	mkdir -p icons
-	rsvg-convert -w 256 -h 256 dist/icon.svg > icons/256.png
-	rsvg-convert -w 128 -h 128 dist/icon.svg > icons/128.png
-	rsvg-convert -w 64 -h 64 dist/icon.svg > icons/64.png
-	rsvg-convert -w 48 -h 48 dist/icon.svg > icons/48.png
-	rsvg-convert -w 32 -h 32 dist/icon.svg > icons/32.png
-	rsvg-convert -w 16 -h 16 dist/icon.svg > icons/16.png
+	mkdir -p build/icons
+	rsvg-convert -w 256 -h 256 dist/icon.svg > build/icons/256.png
+	rsvg-convert -w 128 -h 128 dist/icon.svg > build/icons/128.png
+	rsvg-convert -w 64 -h 64 dist/icon.svg > build/icons/64.png
+	rsvg-convert -w 48 -h 48 dist/icon.svg > build/icons/48.png
+	rsvg-convert -w 32 -h 32 dist/icon.svg > build/icons/32.png
+	rsvg-convert -w 16 -h 16 dist/icon.svg > build/icons/16.png
 
-icons/diogenes.ico: icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
-	icotool -c icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png > $@
+build/icons/diogenes.ico: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
+	icotool -c build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png > $@
 
-build/diogenes.icns: icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
-	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
+build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
+	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
 
-w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes.ico rcedit.exe
+w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl build/icons/diogenes.ico rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w32
@@ -117,18 +117,18 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes
 	cp -r server w32
 	cp -r dependencies w32
 	cp -r w32perl/strawberry w32
-	cp icons/diogenes.ico w32
+	cp build/icons/diogenes.ico w32
 	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
 	sed 's/$$/\r/g' < README.md > w32/README.md
 	wine build/rcedit.exe w32/diogenes.exe \
-	    --set-icon icons/diogenes.ico \
+	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
 	    --set-version-string CompanyName "The Diogenes Team" \
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
-w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl icons/diogenes.ico rcedit.exe
+w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl build/icons/diogenes.ico rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w64
@@ -139,11 +139,11 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl icons/diogenes.
 	cp -r server w64
 	cp -r dependencies w64
 	cp -r w64perl/strawberry w64
-	cp icons/diogenes.ico w64
+	cp build/icons/diogenes.ico w64
 	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
 	sed 's/$$/\r/g' < README.md > w64/README.md
 	wine build/rcedit.exe w64/diogenes.exe \
-	    --set-icon icons/diogenes.ico \
+	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
 	    --set-version-string CompanyName "The Diogenes Team" \
@@ -286,7 +286,6 @@ clean:
 	rm -f $(DEPDIR)/PersXML.ent
 	rm -f server/Diogenes/EntityTable.pm
 	rm -rf server/fonts
-	rm -rf icons
 	rm -rf build
 	rm -rf electron
 	rm -rf mac diogenes-mac-$(DIOGENESVERSION)
