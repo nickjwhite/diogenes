@@ -86,7 +86,7 @@ w64perl:
 	unzip -d w64perl/strawberry w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 	rm w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 
-rcedit.exe:
+build/rcedit.exe:
 	mkdir -p build
 	curl -Lo build/rcedit.exe https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
@@ -106,7 +106,7 @@ build/icons/diogenes.ico: build/icons/256.png build/icons/128.png build/icons/64
 build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
 	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
 
-w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl build/icons/diogenes.ico rcedit.exe
+w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w32
@@ -128,7 +128,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl build/icons/di
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
-w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl build/icons/diogenes.ico rcedit.exe
+w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
 	rm -rf w64
