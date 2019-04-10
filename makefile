@@ -276,6 +276,9 @@ installer-arch64: linux64
 
 installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64 installer-arch64
 
+release: # installer-all
+	git tag -a -m "Release" $(DIOGENESVERSION)
+
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f server/Diogenes/unicode-equivs.pl
