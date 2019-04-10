@@ -103,7 +103,7 @@ icons: dist/icon.svg icons/256.png icons/128.png icons/64.png icons/48.png icons
 icons/diogenes.ico: icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
 	icotool -c icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png > $@
 
-dist/diogenes.icns: icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
+build/diogenes.icns: icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png
 	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
 
 w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes.ico rcedit.exe
@@ -156,14 +156,14 @@ electron/electron-v$(ELECTRONVERSION)-darwin-x64:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-darwin-x64 electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 
-mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 dist/diogenes.icns
+mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
 	rm -rf mac
 	mkdir -p mac
 	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* mac
 	cp -r client mac/Electron.app/Contents/Resources/app
 	cp -r server mac/Electron.app/Contents
 	cp -r dependencies mac/Electron.app/Contents
-	cp dist/diogenes.icns mac/Electron.app/Contents/Resources/
+	cp build/diogenes.icns mac/Electron.app/Contents/Resources/
 	perl -pi -e 's/electron.icns/diogenes.icns/g' mac/Electron.app/Contents/Info.plist
 	perl -pi -e 's/Electron/Diogenes/g' mac/Electron.app/Contents/Info.plist
 	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' mac/Electron.app/Contents/Info.plist
@@ -286,7 +286,7 @@ clean:
 	rm -f $(DEPDIR)/PersXML.ent
 	rm -f server/Diogenes/EntityTable.pm
 	rm -rf server/fonts
-	rm -rf icons dist/diogenes.icns
+	rm -rf icons
 	rm -rf build
 	rm -rf electron
 	rm -rf mac diogenes-mac-$(DIOGENESVERSION)
