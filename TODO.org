@@ -1,3 +1,5 @@
+Remove grc.lsj.logeion.xml and perseus lsj from data/dependencies
+
 * Finish XML output functionality
 
 Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.

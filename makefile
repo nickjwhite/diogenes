@@ -207,56 +207,72 @@ inno-setup:
 	cd inno-setup; innoextract is.exe
 
 installer-w32: inno-setup w32
+	mkdir -p install
 	wine inno-setup/app/ISCC.exe dist/diogenes-win32.iss
-	mv -f dist/Output/mysetup.exe diogenes-setup-win32-$(DIOGENESVERSION).exe
+	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
 installer-w64: inno-setup w64
+	mkdir -p install
 	wine inno-setup/app/ISCC.exe dist/diogenes-win64.iss
-	mv -f Output/mysetup.exe diogenes-setup-win64-$(DIOGENESVERSION).exe
+	mv -f Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	rmdir Output
 
-# NB. Installing this Mac package will report success but silently fail if there exists another copy of Diogenes.app with the same version number anywhere whatsoever on the same disk volume, such as in the mac directory here or another random copy on the devel machine.  
+# NB. Installing this Mac package will report success but silently
+# fail if there exists another copy of Diogenes.app with the same
+# version number anywhere whatsoever on the same disk volume, such as
+# in the mac directory here or another random copy on the devel
+# machine.  In other words, this installer usually will fail silently
+# when run on the machine that created the installer.
 installer-macpkg: mac
-	rm -f Diogenes-$(DIOGENESVERSION).pkg
+	mkdir -p install
+	rm -f install/Diogenes-Mac-$(DIOGENESVERSION).pkg
 	fpm --prefix=/Applications -C mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
+	mv Diogenes-$(DIOGENESVERSION).pkg install/Diogenes-Mac-$(DIOGENESVERSION).pkg
 
 installer-deb64: linux64
-	rm -f diogenes-$(DIOGENESVERSION)_amd64.deb
+	mkdir -p install
+	rm -f install/diogenes-$(DIOGENESVERSION)_amd64.deb
 	fpm -s dir -t deb -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION)_amd64.deb -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
+		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-deb.sh \
 		linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
+	mv diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION)_amd64.deb
 
-# Completely untested functionality.  I don't know how many of these fpm options are applicable when generating rpms.
+# Completely untested functionality.  I don't know how many of these
+# fpm options are applicable when generating rpms.
 installer-rpm64: linux64
-	rm -f diogenes-$(DIOGENESVERSION).x86_64.rpm
+	mkdir -p install
+	rm -f install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 	fpm -s dir -t rpm -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION).x86_64.rpm -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
+		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
 		linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
+	mv diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 
 installer-arch64: linux64
-	rm -f diogenes-$(DIOGENESVERSION).pkg.tar.xz
+	mkdir -p install
+	rm -f install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 	fpm -s dir -t pacman -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION).pkg.tar.xz -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
+		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
 		linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
+	mv diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64 installer-arch64
 
