@@ -204,22 +204,24 @@ zip-w64: app/w64
 
 zip-all: zip-linux64 zip-mac zip-w32 zip-w64
 
-inno-setup:
+build/inno-setup/app/ISCC.exe:
 	mkdir -p build/inno-setup
 	curl -Lo build/inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
 	cd build/inno-setup; innoextract is.exe
 
-installer-w32: inno-setup app/w32
+installer-w32: build/inno-setup/app/ISCC.exe app/w32
 	mkdir -p install
+	rm -f install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	wine build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
-installer-w64: inno-setup app/w64
+installer-w64: build/inno-setup/app/ISCC.exe app/w64
 	mkdir -p install
+	rm -f install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	wine build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
-	mv -f Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
-	rmdir Output
+	mv -f dist/Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
+	rmdir dist/Output
 
 # NB. Installing this Mac package will report success but silently
 # fail if there exists another copy of Diogenes.app with the same
