@@ -5,6 +5,8 @@
 
 include mk.common
 
+GITHUBTOKEN=replace-this-token
+
 DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 
 ELECTRONVERSION = 4.0.2
@@ -277,8 +279,15 @@ installer-arch64: linux64
 
 installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64 installer-arch64
 
-release: # installer-all
-	git tag -a -m "Release" $(DIOGENESVERSION)
+# Run like this: make release GITHUBTOKEN=github-access-token
+
+release: install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/Diogenes-Mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
+
+
+pre-release: install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/Diogenes-Mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+	git tag -a -m "Diogenes Pre-release" $(DIOGENESVERSION)
+
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
