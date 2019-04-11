@@ -171,8 +171,8 @@ mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
 	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' app/mac/Electron.app/Contents/Info.plist
 	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' app/mac/Electron.app/Contents/Info.plist
 	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac/Electron.app/Contents/Info.plist
-	mv mac/Electron.app app/mac/Diogenes.app
-	mv mac/Diogenes.app/Contents/MacOS/Electron app/mac/Diogenes.app/Contents/MacOS/Diogenes
+	mv app/mac/Electron.app app/mac/Diogenes.app
+	mv app/mac/Diogenes.app/Contents/MacOS/Electron app/mac/Diogenes.app/Contents/MacOS/Diogenes
 	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
 	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
 	sed 's/$$/\r/g' < COPYING > app/mac/COPYING.txt
@@ -204,7 +204,7 @@ zip-w64: app/w64
 
 zip-all: zip-linux64 zip-mac zip-w32 zip-w64
 
-inno-setup: 
+inno-setup:
 	mkdir -p build/inno-setup
 	curl -Lo build/inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
 	cd build/inno-setup; innoextract is.exe
@@ -299,4 +299,3 @@ clean:
 	rm -rf electron
 	rm -rf app
 	rm -rf install
-
