@@ -111,18 +111,18 @@ build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png 
 w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
-	rm -rf w32
-	mkdir -p w32
-	cp -r electron/electron-v$(ELECTRONVERSION)-win32-ia32/* w32
-	cp -r client w32/resources/app
-	mv w32/electron.exe w32/diogenes.exe
-	cp -r server w32
-	cp -r dependencies w32
-	cp -r build/w32perl/strawberry w32
-	cp build/icons/diogenes.ico w32
-	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
-	sed 's/$$/\r/g' < README.md > w32/README.md
-	wine build/rcedit.exe w32/diogenes.exe \
+	rm -rf app/w32
+	mkdir -p app/w32
+	cp -r electron/electron-v$(ELECTRONVERSION)-win32-ia32/* app/w32
+	cp -r client app/w32/resources/app
+	mv app/w32/electron.exe app/w32/diogenes.exe
+	cp -r server app/w32
+	cp -r dependencies app/w32
+	cp -r build/w32perl/strawberry app/w32
+	cp build/icons/diogenes.ico app/w32
+	sed 's/$$/\r/g' < COPYING > app/w32/COPYING.txt
+	sed 's/$$/\r/g' < README.md > app/w32/README.md
+	wine build/rcedit.exe app/w32/diogenes.exe \
 	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
@@ -133,18 +133,18 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/ic
 w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 build/w64perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
-	rm -rf w64
-	mkdir -p w64
-	cp -r electron/electron-v$(ELECTRONVERSION)-win32-x64/* w64
-	cp -r client w64/resources/app
-	mv w64/electron.exe w64/diogenes.exe
-	cp -r server w64
-	cp -r dependencies w64
-	cp -r build/w64perl/strawberry w64
-	cp build/icons/diogenes.ico w64
-	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
-	sed 's/$$/\r/g' < README.md > w64/README.md
-	wine build/rcedit.exe w64/diogenes.exe \
+	rm -rf app/w64
+	mkdir -p app/w64
+	cp -r electron/electron-v$(ELECTRONVERSION)-win32-x64/* app/w64
+	cp -r client app/w64/resources/app
+	mv app/w64/electron.exe app/w64/diogenes.exe
+	cp -r server app/w64
+	cp -r dependencies app/w64
+	cp -r build/w64perl/strawberry app/w64
+	cp build/icons/diogenes.ico app/w64
+	sed 's/$$/\r/g' < COPYING > app/w64/COPYING.txt
+	sed 's/$$/\r/g' < README.md > app/w64/README.md
+	wine build/rcedit.exe app/w64/diogenes.exe \
 	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
@@ -209,13 +209,13 @@ inno-setup:
 	curl -Lo build/inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
 	cd build/inno-setup; innoextract is.exe
 
-installer-w32: inno-setup w32
+installer-w32: inno-setup app/w32
 	mkdir -p install
 	wine build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
-installer-w64: inno-setup w64
+installer-w64: inno-setup app/w64
 	mkdir -p install
 	wine build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
 	mv -f Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
@@ -227,13 +227,13 @@ installer-w64: inno-setup w64
 # in the mac directory here or another random copy on the devel
 # machine.  In other words, this installer usually will fail silently
 # when run on the machine that created the installer.
-installer-macpkg: mac
+installer-macpkg: app/mac
 	mkdir -p install
 	rm -f install/Diogenes-Mac-$(DIOGENESVERSION).pkg
 	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
 	mv Diogenes-$(DIOGENESVERSION).pkg install/Diogenes-Mac-$(DIOGENESVERSION).pkg
 
-installer-deb64: linux64
+installer-deb64: app/linux64
 	mkdir -p install
 	rm -f install/diogenes-$(DIOGENESVERSION)_amd64.deb
 	fpm -s dir -t deb -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
@@ -249,7 +249,7 @@ installer-deb64: linux64
 
 # Completely untested functionality.  I don't know how many of these
 # fpm options are applicable when generating rpms.
-installer-rpm64: linux64
+installer-rpm64: app/linux64
 	mkdir -p install
 	rm -f install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 	fpm -s dir -t rpm -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
@@ -263,7 +263,7 @@ installer-rpm64: linux64
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 
-installer-arch64: linux64
+installer-arch64: app/linux64
 	mkdir -p install
 	rm -f install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 	fpm -s dir -t pacman -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
