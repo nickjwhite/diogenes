@@ -92,7 +92,7 @@ build/rcedit.exe:
 	mkdir -p build
 	curl -Lo build/rcedit.exe https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
-build/icons: dist/icon.svg build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
+build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png: dist/icon.svg
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
 	mkdir -p build/icons
 	rsvg-convert -w 256 -h 256 dist/icon.svg > build/icons/256.png
