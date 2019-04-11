@@ -54,8 +54,11 @@ commands below.  All installers can be built on either Linux or OS X.
 You will need to install a number of auxiliary programs, including
 `librsvg`, `libicns`, `icoutils`, `wine`, `innoextract` and `rpm`.
 All of these can easily be installed on Linux via your distribution
-and on OS X using Homebrew.  You will also need to install `fpm` via
-the Ruby package manager (see https://fpm.readthedocs.io/en/latest/).
+and on OS X using Homebrew (on OS X, Wine version 4.5 works, which can
+be installed via `brew cask install
+homebrew/cask-versions/wine-devel`).  To create the Mac and Linux
+installers you will also need to install `fpm`, which is done via the
+Ruby package manager (see https://fpm.readthedocs.io/en/latest/).
 
     make installer-w32        # Make a Windows installer
     make installer-macpkg     # Make a Mac pkg installer
