@@ -178,29 +178,29 @@ mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
 	sed 's/$$/\r/g' < COPYING > app/mac/COPYING.txt
 	sed 's/$$/\r/g' < README.md > app/mac/README.md
 
-zip-linux64: linux64
-	rm -rf diogenes-linux-$(DIOGENESVERSION)
-	mv linux64 diogenes-linux-$(DIOGENESVERSION)
-	tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
-	rm -rf diogenes-linux-$(DIOGENESVERSION)
+zip-linux64: app/linux64
+	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
+	mv app/linux64 app/diogenes-linux-$(DIOGENESVERSION)
+	cd app;tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
+	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
 
-zip-mac: mac
+zip-mac: app/mac
+	rm -rf app/diogenes-mac-$(DIOGENESVERSION)
+	mv app/mac app/diogenes-mac-$(DIOGENESVERSION)
+	cd app;zip -r diogenes-mac-$(DIOGENESVERSION).zip diogenes-mac-$(DIOGENESVERSION)
 	rm -rf diogenes-mac-$(DIOGENESVERSION)
-	mv mac diogenes-mac-$(DIOGENESVERSION)
-	zip -r diogenes-mac-$(DIOGENESVERSION).zip diogenes-mac-$(DIOGENESVERSION)
-	rm -rf diogenes-mac-$(DIOGENESVERSION)
 
-zip-w32: w32
-	rm -rf diogenes-win32-$(DIOGENESVERSION)
-	mv w32 diogenes-win32-$(DIOGENESVERSION)
-	zip -r diogenes-win32-$(DIOGENESVERSION).zip diogenes-win32-$(DIOGENESVERSION)
-	rm -rf diogenes-win32-$(DIOGENESVERSION)
+zip-w32: app/w32
+	rm -rf app/diogenes-win32-$(DIOGENESVERSION)
+	mv app/w32 app/diogenes-win32-$(DIOGENESVERSION)
+	cd app;zip -r diogenes-win32-$(DIOGENESVERSION).zip diogenes-win32-$(DIOGENESVERSION)
+	rm -rf app/diogenes-win32-$(DIOGENESVERSION)
 
-zip-w64: w64
-	rm -rf diogenes-win64-$(DIOGENESVERSION)
-	mv w64 diogenes-win64-$(DIOGENESVERSION)
-	zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
-	rm -rf diogenes-win64-$(DIOGENESVERSION)
+zip-w64: app/w64
+	rm -rf app/diogenes-win64-$(DIOGENESVERSION)
+	mv app/w64 app/diogenes-win64-$(DIOGENESVERSION)
+	cd app;zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
+	rm -rf app/diogenes-win64-$(DIOGENESVERSION)
 
 zip-all: zip-linux64 zip-mac zip-w32 zip-w64
 
