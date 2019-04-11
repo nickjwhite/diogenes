@@ -159,24 +159,24 @@ electron/electron-v$(ELECTRONVERSION)-darwin-x64:
 	rm electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 
 mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
-	rm -rf mac
-	mkdir -p mac
-	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* mac
-	cp -r client mac/Electron.app/Contents/Resources/app
-	cp -r server mac/Electron.app/Contents
-	cp -r dependencies mac/Electron.app/Contents
-	cp build/diogenes.icns mac/Electron.app/Contents/Resources/
-	perl -pi -e 's/electron.icns/diogenes.icns/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/Electron/Diogenes/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' mac/Electron.app/Contents/Info.plist
-	mv mac/Electron.app mac/Diogenes.app
-	mv mac/Diogenes.app/Contents/MacOS/Electron mac/Diogenes.app/Contents/MacOS/Diogenes
-	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
-	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
-	sed 's/$$/\r/g' < COPYING > mac/COPYING.txt
-	sed 's/$$/\r/g' < README.md > mac/README.md
+	rm -rf app/mac
+	mkdir -p app/mac
+	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac
+	cp -r client app/mac/Electron.app/Contents/Resources/app
+	cp -r server app/mac/Electron.app/Contents
+	cp -r dependencies app/mac/Electron.app/Contents
+	cp build/diogenes.icns app/mac/Electron.app/Contents/Resources/
+	perl -pi -e 's/electron.icns/diogenes.icns/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/Electron/Diogenes/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac/Electron.app/Contents/Info.plist
+	mv mac/Electron.app app/mac/Diogenes.app
+	mv mac/Diogenes.app/Contents/MacOS/Electron app/mac/Diogenes.app/Contents/MacOS/Diogenes
+	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
+	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
+	sed 's/$$/\r/g' < COPYING > app/mac/COPYING.txt
+	sed 's/$$/\r/g' < README.md > app/mac/README.md
 
 zip-linux64: linux64
 	rm -rf diogenes-linux-$(DIOGENESVERSION)
@@ -230,7 +230,7 @@ installer-w64: inno-setup w64
 installer-macpkg: mac
 	mkdir -p install
 	rm -f install/Diogenes-Mac-$(DIOGENESVERSION).pkg
-	fpm --prefix=/Applications -C mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
+	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
 	mv Diogenes-$(DIOGENESVERSION).pkg install/Diogenes-Mac-$(DIOGENESVERSION).pkg
 
 installer-deb64: linux64
@@ -297,9 +297,6 @@ clean:
 	rm -rf server/fonts
 	rm -rf build
 	rm -rf electron
-	rm -rf mac diogenes-mac-$(DIOGENESVERSION)
-	rm -rf linux64 diogenes-linux64-$(DIOGENESVERSION)
-	rm -rf w32 diogenes-w32-$(DIOGENESVERSION)
-	rm -rf w64 diogenes-w64-$(DIOGENESVERSION)
+	rm -rf app
 	rm -rf install
 
