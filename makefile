@@ -61,7 +61,7 @@ linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	cp -r dependencies app/linux64
 	cp -r dist app/linux64
 	cp -r client app/linux64/resources/app
-	mv linux64/electron app/linux64/diogenes
+	mv app/linux64/electron app/linux64/diogenes
 	cp COPYING README.md app/linux64
 
 electron/electron-v$(ELECTRONVERSION)-win32-ia32:
@@ -126,7 +126,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/ic
 	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
-	    --set-version-string CompanyName "The Diogenes Team" \
+	    --set-version-string CompanyName "Classics Dept. Durham Univ." \
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
@@ -148,7 +148,7 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 build/w64perl build/ico
 	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
-	    --set-version-string CompanyName "The Diogenes Team" \
+	    --set-version-string CompanyName "Classics Dept. Durham Univ." \
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
@@ -231,9 +231,9 @@ installer-w64: build/inno-setup/app/ISCC.exe app/w64
 # when run on the machine that created the installer.
 installer-macpkg: app/mac
 	mkdir -p install
-	rm -f install/Diogenes-Mac-$(DIOGENESVERSION).pkg
+	rm -f install/diogenes-mac-$(DIOGENESVERSION).pkg
 	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
-	mv Diogenes-$(DIOGENESVERSION).pkg install/Diogenes-Mac-$(DIOGENESVERSION).pkg
+	mv Diogenes-$(DIOGENESVERSION).pkg install/diogenes-mac-$(DIOGENESVERSION).pkg
 
 installer-deb64: app/linux64
 	mkdir -p install
