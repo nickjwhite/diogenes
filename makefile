@@ -54,15 +54,15 @@ electron/electron-v$(ELECTRONVERSION)-linux-x64:
 	rm electron/electron-v$(ELECTRONVERSION)-linux-x64.zip
 
 linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
-	rm -rf linux64
-	mkdir linux64
-	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64/* linux64
-	cp -r server linux64
-	cp -r dependencies linux64
-	cp -r dist linux64
-	cp -r client linux64/resources/app
-	mv linux64/electron linux64/diogenes
-	cp COPYING README.md linux64
+	rm -rf app/linux64
+	mkdir -p app/linux64
+	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64/* app/linux64
+	cp -r server app/linux64
+	cp -r dependencies app/linux64
+	cp -r dist app/linux64
+	cp -r client app/linux64/resources/app
+	mv linux64/electron app/linux64/diogenes
+	cp COPYING README.md app/linux64
 
 electron/electron-v$(ELECTRONVERSION)-win32-ia32:
 	mkdir -p electron
@@ -242,7 +242,7 @@ installer-deb64: app/linux64
 		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-deb.sh \
-		linux64/=/usr/local/diogenes/ \
+		app/linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION)_amd64.deb
@@ -258,7 +258,7 @@ installer-rpm64: app/linux64
 		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
-		linux64/=/usr/local/diogenes/ \
+		app/linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).x86_64.rpm
@@ -272,7 +272,7 @@ installer-arch64: app/linux64
 		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
-		linux64/=/usr/local/diogenes/ \
+		app/linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
