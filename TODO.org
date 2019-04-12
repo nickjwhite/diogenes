@@ -1,5 +1,3 @@
-add .gitignore
-
 * Finish XML output functionality
 
 Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
@@ -37,22 +35,6 @@ Test for round-trip from preserve to none.
 * Test on Windows
 And test install on MDS/NCPS
 
-* New website
-
-  Downloads
-  FAQs
-  About
-  Feedback
-  Help
-  Source Code
-
-
-  Put under d/
-  Splash page at /
-  add diogenes-help.html as FAQs
-  Add contributions / thanks prominently to diogenes
-
-  Fix links from app under help and support
 Αdd favicon to website
 
 * Post-release
