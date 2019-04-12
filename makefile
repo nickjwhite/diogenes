@@ -281,16 +281,6 @@ installer-arch64: app/linux64
 
 installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64 installer-arch64
 
-# Run like this: make release GITHUBTOKEN=github-access-token
-
-release: install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/Diogenes-Mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
-	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
-
-
-pre-release: install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/Diogenes-Mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
-	git tag -a -m "Diogenes Pre-release" $(DIOGENESVERSION)
-
-
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f server/Diogenes/unicode-equivs.pl
@@ -301,3 +291,25 @@ clean:
 	rm -rf electron
 	rm -rf app
 	rm -rf install
+
+installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/Diogenes-Mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+
+# These targets will not be of interest to anyone else
+# Run like this: make release GITHUBTOKEN=github-access-token
+
+release: $(installers)
+	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
+	git push origin master
+	utils/github-create-release.sh github_api_token=GITHUBTOKEN owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
+	$(foreach installer,installers,utils/upload-github-release-asset.sh github_api_token=GITHUBTOKEN owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=installer)
+	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
+	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/dversion.js
+
+pre-release: $(installers)
+	git tag -a -m "Diogenes Pre-release" $(DIOGENESVERSION)
+	git push origin master
+	utils/github-create-release.sh github_api_token=GITHUBTOKEN owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=true
+	$(foreach installer,installers,utils/upload-github-release-asset.sh github_api_token=GITHUBTOKEN owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=installer)
+	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
+	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/dversion.js
+
