@@ -209,14 +209,16 @@ build/inno-setup/app/ISCC.exe:
 	curl -Lo build/inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
 	cd build/inno-setup; innoextract is.exe
 
-installer-w32: build/inno-setup/app/ISCC.exe app/w32
+installer-w32: install/diogenes-setup-win32-$(DIOGENESVERSION).exe
+install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
 	mkdir -p install
 	rm -f install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	wine build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
-installer-w64: build/inno-setup/app/ISCC.exe app/w64
+installer-w64: install/diogenes-setup-win64-$(DIOGENESVERSION).exe
+install/diogenes-setup-win64-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w64
 	mkdir -p install
 	rm -f install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	wine build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
@@ -229,13 +231,15 @@ installer-w64: build/inno-setup/app/ISCC.exe app/w64
 # in the mac directory here or another random copy on the devel
 # machine.  In other words, this installer usually will fail silently
 # when run on the machine that created the installer.
-installer-macpkg: app/mac
+installer-macpkg: install/diogenes-mac-$(DIOGENESVERSION).pkg
+install/diogenes-mac-$(DIOGENESVERSION).pkg: app/mac
 	mkdir -p install
 	rm -f install/diogenes-mac-$(DIOGENESVERSION).pkg
 	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
 	mv Diogenes-$(DIOGENESVERSION).pkg install/diogenes-mac-$(DIOGENESVERSION).pkg
 
-installer-deb64: app/linux64
+installer-deb64: install/diogenes-$(DIOGENESVERSION)_amd64.deb
+install/diogenes-$(DIOGENESVERSION)_amd64.deb: app/linux64
 	mkdir -p install
 	rm -f install/diogenes-$(DIOGENESVERSION)_amd64.deb
 	fpm -s dir -t deb -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
@@ -251,7 +255,8 @@ installer-deb64: app/linux64
 
 # Completely untested functionality.  I don't know how many of these
 # fpm options are applicable when generating rpms.
-installer-rpm64: app/linux64
+installer-rpm64: install/diogenes-$(DIOGENESVERSION).x86_64.rpm
+install/diogenes-$(DIOGENESVERSION).x86_64.rpm: app/linux64
 	mkdir -p install
 	rm -f install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 	fpm -s dir -t rpm -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
@@ -265,7 +270,8 @@ installer-rpm64: app/linux64
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 
-installer-arch64: app/linux64
+installer-arch64: install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 	mkdir -p install
 	rm -f install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 	fpm -s dir -t pacman -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
@@ -292,7 +298,7 @@ clean:
 	rm -rf app
 	rm -rf install
 
-installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/Diogenes-Mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 # These targets will not be of interest to anyone else
 # Run like this: make release GITHUBTOKEN=github-access-token
