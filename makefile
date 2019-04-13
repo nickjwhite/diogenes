@@ -186,6 +186,8 @@ zip-linux64: app/linux64
 	cd app;tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
 	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
 
+apps: mac w32 linux64
+
 zip-mac: app/mac
 	rm -rf app/diogenes-mac-$(DIOGENESVERSION)
 	mv app/mac app/diogenes-mac-$(DIOGENESVERSION)

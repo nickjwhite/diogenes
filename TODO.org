@@ -1,5 +1,3 @@
-* Bugs
-** Bug report on Debian Sid installer
 * Finish XML output functionality
 
 Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
@@ -34,10 +32,8 @@ Test for round-trip from preserve to none.
 
 
 
-* Test on Windows
+* Test on Windows USB stick
 And test install on MDS/NCPS
-
-Αdd favicon to website
 
 * Post-release
 ** Fix all XML validation errors
