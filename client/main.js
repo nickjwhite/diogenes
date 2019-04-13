@@ -231,7 +231,7 @@ function startServer () {
 	// For Mac and Unix, we assume perl is in the path
 	let perlName = 'perl'
 	if (process.platform == 'win32') {
-		perlName = path.join(app.getAppPath(), '..', 'strawberry', 'perl', 'bin', 'perl.exe')
+		perlName = path.join(app.getAppPath(), '..', '..', 'strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
 	// server/ can be either at ../server or ../../server depending on whether
@@ -249,7 +249,7 @@ function startServer () {
 		console.log('server stderr: ' + data)
 	})
 	server.on('close', (code) => {
-		console.log('Diogenes server exited')
+		console.log('Diogenes server exited (or failed to start)')
 	})
 	return server
 }
