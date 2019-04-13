@@ -22,5 +22,5 @@ EOF
 }
 echo $(generate_post_data)
 echo "Creating release $version"
-curl --data "$(generate_post_data)" "https://api.github.com/repos/$owner/$repo/releases?access_token=$github_api_token"
 
+curl -i -X POST -H "Content-Type: application/json" -H "Authorization: token $github_api_token"  https://api.github.com/repos/$owner/$repo/releases -d "$(generate_post_data)"
