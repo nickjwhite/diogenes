@@ -307,15 +307,15 @@ release: $(installers)
 	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
 	git push origin master
 	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
-	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer; done
+	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
 	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
 	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/d/
 
 pre-release: $(installers)
-	git tag -a -m "Diogenes Pre-release for Testing" $(DIOGENESVERSION)
-	git push origin master
+#	git tag -a -m "Diogenes Pre-release for Testing" $(DIOGENESVERSION)
+#	git push origin master
 	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=true
-	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer; done
+	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
 	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
 	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/d/
 
