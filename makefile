@@ -6,6 +6,8 @@
 include mk.common
 
 GITHUBTOKEN=replace-this-token
+CLOUDFRONTID=replace-this-id
+PRERELEASE=false
 
 DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 
@@ -301,21 +303,17 @@ clean:
 installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 # These targets will not be of interest to anyone else
-# Run like this: make release GITHUBTOKEN=github-access-token
 
+# make release PRERELEASE=true/false GITHUBTOKEN=github-access-token
 release: $(installers)
 	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
 	git push origin master
-	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
+	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=$(PRERELEASE)
 	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
-	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
-	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/d/
 
-pre-release: $(installers)
-#	git tag -a -m "Diogenes Pre-release for Testing" $(DIOGENESVERSION)
-#	git push origin master
-	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=true
-	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
+# make update-website CLOUDFRONTID=id
+update-website:
 	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
 	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/d/
+	aws cloudfront create-invalidation --distribution-id $(CLOUDFRONTID) --paths '/*'
 
