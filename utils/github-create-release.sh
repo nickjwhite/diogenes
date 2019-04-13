@@ -14,7 +14,7 @@ generate_post_data()
   "tag_name": "$tag",
   "target_commitish": "master",
   "name": "$tag",
-  "body": "Release of Diogenes",
+  "body": "Public release of Diogenes desktop application",
   "draft": false,
   "prerelease": $prerelease
 }
