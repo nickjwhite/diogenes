@@ -789,7 +789,7 @@ sub post_process_xml {
 =cut
         
 #    print STDERR Dumper($xmldoc);
-    my $serializer = Serializer->new;
+    my $serializer = Serializer->new(indent=>'none');
     my $out = $serializer->serializeToString($xmldoc);
  #   print STDERR $out;
     #my $out = $xmldoc->toString;;
