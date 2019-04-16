@@ -47,6 +47,6 @@ sub serializeToString {
 
 sub _mkIndent {
     my ($self) = @_;
-    return (" " x (2 * $self->{_indent_level}));
+    return ("" x (2 * $self->{_indent_level}));
 }
 1;
