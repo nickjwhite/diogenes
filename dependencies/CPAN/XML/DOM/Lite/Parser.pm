@@ -150,7 +150,7 @@ sub _handle_decl_node {
 
 sub _handle_pi_node {
     my ($self, $pi) = @_;
-    $pi =~ s/^<\?\S+//o;
+    $pi =~ s/^<\?//o;
     $pi =~ s/\?>$//so;
     my $parent = $self->{stack}->[$#{$self->{stack}}];
     return $self->_mk_gen_node($pi, $parent, PROCESSING_INSTRUCTION_NODE);
