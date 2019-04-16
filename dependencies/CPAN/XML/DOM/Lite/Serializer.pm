@@ -22,7 +22,7 @@ sub serializeToString {
 
     my $out = "";
     if ($node->nodeType == ELEMENT_NODE) {
-        $out .= "\n".$self->_mkIndent()."<".$node->tagName;
+        $out .= "".$self->_mkIndent()."<".$node->tagName;
         foreach my $att (@{$node->attributes}) {
             $out .= " $att->{nodeName}=\"".$att->{nodeValue}."\"";
         }
@@ -33,13 +33,13 @@ sub serializeToString {
                 $out .= $self->serializeToString($n);
             }
             $self->{_indent_level}--;
-            $out .= "\n".$self->_mkIndent()."</".$node->tagName.">";
+            $out .= "".$self->_mkIndent()."</".$node->tagName.">";
         } else {
             $out .= " />";
         }
     }
     elsif ($node->nodeType == TEXT_NODE) {
-        $out .= "\n".$self->_mkIndent().$node->nodeValue;
+        $out .= "".$self->_mkIndent().$node->nodeValue;
     }
 
     return $out;
