@@ -7,6 +7,8 @@ Do we need to substitute it?
 Substitute libxml with XML::DOM:Lite for portability and test it against phi corpus.
 Make XML::LibXML a prereq for Linux packages.
 
+Check out XML::Tidy for indentation at the end.
+
 * Patch for XML::DOM::Lite
 Only remove \n in parser when whitespace=>strip
 Add pretty and indent options to serializer

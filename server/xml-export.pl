@@ -766,7 +766,7 @@ sub post_process_xml {
 #              print $grandparent->nodeName;
          }
     }
-
+#=cut
     # Some desperate special cases here, which I would regard as bugs
     # in the PHI markup
     my $out = $xmldoc->toString;;
@@ -779,6 +779,7 @@ sub post_process_xml {
  LIBER PRIMVS</head>
 <div type="cap" n="pr">#s;
     }
+
     # Hyginus Myth: This is a bit of a lie, as this marks a place
     # where there *might* be a new div -- it's not really the heading of
     # this "par" subdiv.  But it won't validate and I can't think of a
@@ -809,8 +810,6 @@ sub post_process_xml {
         $out =~ s#<head>\s*TRACTATVS\s*</head>##;
         $out =~ s#<label>\s*EXPLICIT LIBER PRIMVS\s*</label>##;
     }
-
-
 
     return $out;
 }
