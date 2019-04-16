@@ -607,7 +607,7 @@ sub convert_chunk {
 sub write_xml_file {
     my ($file, $text) = @_;
     if ($debug) {
-        my $tmpfile = File::Spec->catfile( $path, 'tmp.xml' );
+        my $tmpfile = File::Spec->catfile( $path, $file) . '.tmp';
         open( OUT, ">$tmpfile" ) or die $!;
         print OUT $text;
         close(OUT) or die $!;
