@@ -652,20 +652,31 @@ sub post_process_xml {
 
     my $parser = XML::LibXML->new({huge=>1});
     my $xmldoc = $parser->parse_string($in);
-    # Remove all div and l elements with n="t", remove all tags and
-    # put the text in <head>s instead (unless element has only whitespace)
+
+    # Remove all div and l elements with n="t", preserving content
     foreach my $node ($xmldoc->getElementsByTagName('l'),
                       $xmldoc->getElementsByTagName('div'),) {
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
-            if ($node->textContent =~ m/\S/) {
-                my $head = $xmldoc->createElementNS($xmlns, 'head');
-                $head->appendText($node->textContent);
-                $node->parentNode->insertBefore($head, $node);
+            foreach my $child ($node->childNodes) {
+                $node->parentNode->insertBefore( $child, $node );
             }
             $node->unbindNode;
         }
     }
+
+    # Remove all l elements that have a <head> child, preserving content
+    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+        my $parent = $node->parentNode;
+        if ($parent->nodeName eq 'l') {
+            foreach my $child ($parent->childNodes) {
+                $parent->parentNode->insertBefore( $child, $parent );
+            }
+            $parent->unbindNode;
+        }
+    }
+
+#=pod
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
