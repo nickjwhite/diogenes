@@ -617,7 +617,7 @@ sub write_xml_file {
     my ($file, $text) = @_;
 
     # XML::Dom::Lite removes <?xml declaration with encoding
-    
+
     if ($debug) {
         my $tmpfile = File::Spec->catfile( $path, $file) . '.tmp';
         open( OUT, ">$tmpfile" ) or die $!;
@@ -626,7 +626,7 @@ sub write_xml_file {
     }
 
     $text = post_process_xml($text, $file);
-    
+
     my $file_path = File::Spec->catfile( $path, $file );
     if ($opt_l) {
         open(LINT, "|xmllint --format - >$file_path") or die "Can't open xmllint: $!";
@@ -665,46 +665,47 @@ sub post_process_xml {
     my $num_octets = utf8::upgrade($in);
     my $parser = Parser->new();
     my $xmldoc = $parser->parse($in);
-    
+
      #print Dumper($xmldoc);
 
     # my $serializer = Serializer->new;
     # my $out = $serializer->serializeToString($xmldoc->documentElement);
     # return $out;
 
+    # FIXME this needs to be rewritten to match new code in xml-export
+
     # Remove all div and l elements with n="t", remove all tags and
     # put the text in <head>s instead (unless element has only whitespace)
     foreach my $node (@{ $xmldoc->getElementsByTagName('l') },
                       @{ $xmldoc->getElementsByTagName('div') }) {
-#        print STDERR $node->tagName;
         my $n = $node->getAttribute('n');
-#        print STDERR $n;
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
             if ($node->textContent and $node->textContent =~ m/\S/) {
-##                print ";;".$node->textContent."\n";
-#            print "foo";
                 my $head = $xmldoc->createElement('head');
                 my $cont = $xmldoc->createTextNode($node->textContent);
                 $head->appendChild($cont);
                 $node->parentNode->insertBefore($head, $node);
-#                print ">>".$node->xml."\n\n";
             }
-#            $node->unbindNode;
             $node->parentNode->childNodes->removeNode($node);
 
         }
     }
-=pod
-    
+
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
-        my $sib = $node->nextSibling;
-        if ($sib and $sib->nodeValue =~ m/\S/ and $sib->nodeName eq 'head') {
-            $node->appendText($sib->textContent);
-            $sib->unbindNode;
+        my $sib = $node->nextNonBlankSibling;
+#        print STDERR ">$sib\n";
+        if ($sib and $sib->nodeName eq 'head') {
+            #            $node->appendText($sib->textContent);
+            print STDERR '>'.$sib->textContent."\n";
+
+            $node->parentNode->appendChild($xmldoc->createTextNode($sib->textContent));
+#            $sib->unbindNode;
+            $sib->parentNode->childNodes->removeNode($sib);
         }
     }
+=pod
 
     # Sometimes we get <p><head>foo</head><head>bar</head> blah.  So
     # put the <p> after the heads.
@@ -787,13 +788,13 @@ sub post_process_xml {
     }
 
 =cut
-        
+
 #    print STDERR Dumper($xmldoc);
     my $serializer = Serializer->new(indent=>'none');
     my $out = $serializer->serializeToString($xmldoc);
  #   print STDERR $out;
     #my $out = $xmldoc->toString;;
-    
+
     # Some desperate special cases here, which I would regard as bugs
     # in the PHI markup
 
