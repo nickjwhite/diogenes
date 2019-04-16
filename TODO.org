@@ -1,3 +1,5 @@
+Use github lfs for pre-built data.
+
 * Finish XML output functionality
 
 Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
