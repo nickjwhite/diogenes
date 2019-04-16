@@ -656,6 +656,7 @@ sub post_process_xml {
     # put the text in <head>s instead (unless element has only whitespace)
     foreach my $node ($xmldoc->getElementsByTagName('l'),
                       $xmldoc->getElementsByTagName('div'),) {
+#        print STDERR $node->tagName;
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
             if ($node->textContent =~ m/\S/) {
@@ -666,6 +667,7 @@ sub post_process_xml {
             $node->unbindNode;
         }
     }
+=pod
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
@@ -755,7 +757,7 @@ sub post_process_xml {
 #              print $grandparent->nodeName;
          }
     }
-
+=cut
     # Some desperate special cases here, which I would regard as bugs
     # in the PHI markup
     my $out = $xmldoc->toString;;
