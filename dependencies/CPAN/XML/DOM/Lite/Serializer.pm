@@ -49,7 +49,7 @@ sub serializeToString {
             $self->{_indent_level}--;
             $out .= $self->{_newline}.$self->_mkIndent()."</".$node->tagName.">";
         } else {
-            $out .= " />";
+            $out .= $self->{_space}."/>";
         }
     }
     elsif ($node->nodeType == TEXT_NODE) {
