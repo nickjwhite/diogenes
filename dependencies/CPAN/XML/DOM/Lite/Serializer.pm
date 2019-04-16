@@ -13,8 +13,8 @@ sub new {
     if (defined($options{'indent'})) {
         my $mode = $options{'indent'};
         if (index($mode, 'none') >= 0) {
-            $self->{_newline} = '';
-            $self->{_space} = '';
+            $self->{_newline} = "";
+            $self->{_space} = "";
         }
     }
     return $self;
@@ -36,7 +36,7 @@ sub serializeToString {
     $self->{_indent_level} = 0 unless defined $self->{_indent_level};
 
     if ($node->nodeType == ELEMENT_NODE) {
-        $out .= "".$self->_mkIndent()."<".$node->tagName;
+        $out .= $self->{_newline}.$self->_mkIndent()."<".$node->tagName;
         foreach my $att (@{$node->attributes}) {
             $out .= " $att->{nodeName}=\"".$att->{nodeValue}."\"";
         }
@@ -47,13 +47,13 @@ sub serializeToString {
                 $out .= $self->serializeToString($n);
             }
             $self->{_indent_level}--;
-            $out .= "".$self->_mkIndent()."</".$node->tagName.">";
+            $out .= $self->{_newline}.$self->_mkIndent()."</".$node->tagName.">";
         } else {
             $out .= " />";
         }
     }
     elsif ($node->nodeType == TEXT_NODE) {
-        $out .= "".$self->_mkIndent().$node->nodeValue;
+        $out .= $self->{_newline}.$self->_mkIndent().$node->nodeValue;
     }
     elsif ($node->nodeType == PROCESSING_INSTRUCTION_NODE) {
         $out .= "<?".$node->nodeValue."?>";
@@ -63,6 +63,6 @@ sub serializeToString {
 
 sub _mkIndent {
     my ($self) = @_;
-    return ("" x (2 * $self->{_indent_level}));
+    return ($self->{_space} x (2 * $self->{_indent_level}));
 }
 1;
