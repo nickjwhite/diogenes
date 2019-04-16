@@ -159,7 +159,14 @@ sub _handle_pi_node {
 sub _handle_text_node {
     my ($self, $text) = @_;
     my $parent = $self->{stack}->[$#{$self->{stack}}];
-    $text =~ s/^\n//so; return unless defined $text;
+    my %options = %{$self->{options}};
+    if (defined($options{'whitespace'})) {
+        my $mode = $options{'whitespace'};
+        if (index($mode, 'strip') >= 0) {
+            $text =~ s/^\n//so;
+        }
+    }
+    return unless defined $text;
     return $self->_mk_gen_node($text, $parent, TEXT_NODE);
 }
 
