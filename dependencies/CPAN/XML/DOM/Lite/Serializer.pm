@@ -5,8 +5,19 @@ use strict;
 use XML::DOM::Lite::Constants qw(:all);
 
 sub new {
-    my $class = shift;
-    return bless { }, $class;
+    my ($class, %options) = @_;
+    my $self = bless { }, $class;
+
+    $self->{_newline} = "\n";
+    $self->{_space} = " ";
+    if (defined($options{'indent'})) {
+        my $mode = $options{'indent'};
+        if (index($mode, 'none') >= 0) {
+            $self->{_newline} = '';
+            $self->{_space} = '';
+        }
+    }
+    return $self;
 }
 
 sub serializeToString {
