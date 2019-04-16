@@ -145,6 +145,10 @@ XML::DOM::Lite - Lite Pure Perl XML DOM Parser Kit
  use XML::DOM::Lite qw(Serializer);
   
  $serializer = Serializer->new;
+
+ # Do not add (potentially significant) whitespace for indentation
+ $serializer = Serializer->new(indent => 'none');
+
  $xmlout = $serializer->serializeToString($node);
 
 =head1 INTRODUCTION

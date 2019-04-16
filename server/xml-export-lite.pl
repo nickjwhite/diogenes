@@ -11,22 +11,30 @@
 # diverges in a few respects from the norms of DigiLibLT, but a higher
 # level of alignment is an option.
 
+use FindBin qw($Bin);
+use File::Spec::Functions;
+# Use local CPAN
+use lib ($Bin, File::Spec->catdir($Bin, '..', 'dependencies', 'CPAN') );
+
 use strict;
 use warnings;
 use Getopt::Std;
 use Data::Dumper;
-use File::Spec::Functions;
 use File::Path;
 use File::Spec;
 use File::Basename;
 use IO::Handle;
-use XML::LibXML;
 use File::Which;
+use Storable;
+
+use XML::DOM::Lite qw(Parser Serializer :constants);
 
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;
 use Diogenes::BetaHtml;
+#use open OUT => ':utf8';
+#use utf8;
 
 my $dirname = 'diogenes-xml';
 
@@ -177,7 +185,8 @@ my %div_translations = (
                         column => 'col',
 );
 use charnames qw(:full :short latin greek);
-binmode(STDOUT, ":utf8");
+#binmode(STDOUT, ":utf8");
+#binmode(STDERR, ":utf8");
 
 my $authtab = File::Spec->catfile( $path, 'authtab.xml' );
 open( AUTHTAB, ">$authtab" ) or die "Could not create $authtab\n";
@@ -606,6 +615,9 @@ sub convert_chunk {
 
 sub write_xml_file {
     my ($file, $text) = @_;
+
+    # XML::Dom::Lite removes <?xml declaration with encoding
+    
     if ($debug) {
         my $tmpfile = File::Spec->catfile( $path, $file) . '.tmp';
         open( OUT, ">$tmpfile" ) or die $!;
@@ -614,7 +626,7 @@ sub write_xml_file {
     }
 
     $text = post_process_xml($text, $file);
-
+    
     my $file_path = File::Spec->catfile( $path, $file );
     if ($opt_l) {
         open(LINT, "|xmllint --format - >$file_path") or die "Can't open xmllint: $!";
@@ -650,27 +662,45 @@ sub post_process_xml {
     my $in = shift;
     my $file = shift;
 
-    my $parser = XML::LibXML->new({huge=>1});
-    my $xmldoc = $parser->parse_string($in);
+    my $num_octets = utf8::upgrade($in);
+    my $parser = Parser->new();
+    my $xmldoc = $parser->parse($in);
+    
+     #print Dumper($xmldoc);
+
+    # my $serializer = Serializer->new;
+    # my $out = $serializer->serializeToString($xmldoc->documentElement);
+    # return $out;
+
     # Remove all div and l elements with n="t", remove all tags and
     # put the text in <head>s instead (unless element has only whitespace)
-    foreach my $node ($xmldoc->getElementsByTagName('l'),
-                      $xmldoc->getElementsByTagName('div'),) {
+    foreach my $node (@{ $xmldoc->getElementsByTagName('l') },
+                      @{ $xmldoc->getElementsByTagName('div') }) {
+#        print STDERR $node->tagName;
         my $n = $node->getAttribute('n');
+#        print STDERR $n;
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
-            if ($node->textContent =~ m/\S/) {
-                my $head = $xmldoc->createElementNS($xmlns, 'head');
-                $head->appendText($node->textContent);
+            if ($node->textContent and $node->textContent =~ m/\S/) {
+##                print ";;".$node->textContent."\n";
+#            print "foo";
+                my $head = $xmldoc->createElement('head');
+                my $cont = $xmldoc->createTextNode($node->textContent);
+                $head->appendChild($cont);
                 $node->parentNode->insertBefore($head, $node);
+#                print ">>".$node->xml."\n\n";
             }
-            $node->unbindNode;
+#            $node->unbindNode;
+            $node->parentNode->childNodes->removeNode($node);
+
         }
     }
+=pod
+    
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
-    foreach my $node ($xmldoc->getElementsByTagName('head')) {
-        my $sib = $node->nextNonBlankSibling;
-        if ($sib and $sib->nodeName eq 'head') {
+    foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
+        my $sib = $node->nextSibling;
+        if ($sib and $sib->nodeValue =~ m/\S/ and $sib->nodeName eq 'head') {
             $node->appendText($sib->textContent);
             $sib->unbindNode;
         }
@@ -678,7 +708,7 @@ sub post_process_xml {
 
     # Sometimes we get <p><head>foo</head><head>bar</head> blah.  So
     # put the <p> after the heads.
-    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+    foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         if ($node->parentNode->nodeName eq 'p') {
             my $new_head = $node->cloneNode(1);
             $node->parentNode->parentNode->insertBefore($new_head,
@@ -691,7 +721,7 @@ sub post_process_xml {
     # works to which a list of fragments have been assigned.  When
     # this happens, we change the <head>s to <label>s, of which we are
     # allowed to have more than one.
-    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+    foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         my $parent = $node->parentNode;
         foreach my $sibling ($parent->childNodes) {
             if (not $node->isSameNode($sibling) and $sibling->nodeName eq 'head') {
@@ -756,9 +786,16 @@ sub post_process_xml {
          }
     }
 
+=cut
+        
+#    print STDERR Dumper($xmldoc);
+    my $serializer = Serializer->new;
+    my $out = $serializer->serializeToString($xmldoc);
+ #   print STDERR $out;
+    #my $out = $xmldoc->toString;;
+    
     # Some desperate special cases here, which I would regard as bugs
     # in the PHI markup
-    my $out = $xmldoc->toString;;
 
     # Irritating bug in the PHI markup of the title of Bk 1 of Varro, de re rust.
     if ($file eq 'phi0684002.xml') {
