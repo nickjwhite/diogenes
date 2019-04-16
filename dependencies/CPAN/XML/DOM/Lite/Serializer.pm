@@ -29,7 +29,7 @@ sub serializeToString {
         if ($node->childNodes->length) {
             $out .= ">";
             $self->{_indent_level}++;
-            foreach my $n (@{$node->childNodes}) {      
+            foreach my $n (@{$node->childNodes}) {
                 $out .= $self->serializeToString($n);
             }
             $self->{_indent_level}--;
