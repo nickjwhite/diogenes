@@ -228,6 +228,19 @@ sub xml {
     return $serializer->serializeToString( $self );
 }
 
+sub textContent{
+    my $self = shift;
+    my $text = '';
+    if ($self->nodeType  == ELEMENT_NODE) {
+        foreach my $n (@{$self->childNodes}) {
+            $text .= $n->textContent;
+        }
+    }
+    elsif ($self->nodeType  == TEXT_NODE) {
+        $text .= $self->nodeValue;
+    }
+    return $text;
+}
 
 1;
 
