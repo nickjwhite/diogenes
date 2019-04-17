@@ -665,10 +665,10 @@ sub post_process_xml {
         }
     }
 
-    # Remove all l elements that have a <head> child, preserving content
+    # Remove all l and p elements that have a <head> child, preserving content
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
         my $parent = $node->parentNode;
-        if ($parent->nodeName eq 'l') {
+        if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
             foreach my $child ($parent->childNodes) {
                 $parent->parentNode->insertBefore( $child, $parent );
             }
@@ -676,7 +676,10 @@ sub post_process_xml {
         }
     }
 
-#=pod
+    # Fix indentation of l, p, and heads
+
+    #=pod
+    # This is broken?
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
