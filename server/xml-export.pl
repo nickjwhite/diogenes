@@ -828,6 +828,12 @@ sub ad_hoc_fixes {
     my $out = shift;
     my $file = shift;
 
+    # Calpurnius Siculus
+    if ($file eq 'phi0830001.xml') {
+        $out =~ s#\[(<label [^>]*>)#$1\[#g;
+        $out =~ s#</label>\]#\]</label>#g;
+    }
+
     # Hyginus Myth
     if ($file eq 'phi1263001.xml') {
         $out =~ s#<label [^>]*><supplied>QVI PIISSIMI FVERVNT\.</supplied></label>\s*<div type="par" n="4">#<div type="par" n="4">\n<label><supplied>QVI PIISSIMI FVERVNT.</supplied></label>#;
