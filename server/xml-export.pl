@@ -476,9 +476,9 @@ sub convert_chunk {
     $chunk =~ s#\"\d*#&quot;#g;
 
     # Speakers in drama: {&7 ... }& {40&7 ... }40&
-    $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label style="speaker">$1</label>#g;
-    $chunk =~ s#\{40([^}]*)\}40#<label style="speaker">$1</label>#g;
-    $chunk =~ s#\{41([^}]*)\}41#<label style="stage direction">$1</label>#g;
+    $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
+    $chunk =~ s#\{40([^}]*)\}40#<label type="speaker">$1</label>#g;
+    $chunk =~ s#\{41([^}]*)\}41#<label type="stage-direction">$1</label>#g;
 
     # Font switching.  Beta does not always nest these properly: e.g
     # "HS &7<ccc&>", so we could try to bring trailing markup inside:
@@ -509,7 +509,7 @@ sub convert_chunk {
 
     $chunk =~ s#\{\d+([^\}]+)(?:\}\d+|$)#<head>$1</head>#g;
     # Speakers in e.g. Eclogues: {M.}
-    $chunk =~ s#\{([^\}]+)\}#<label style="speaker">$1</label>#g;
+    $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
 
 #     $chunk =~
 #         s#(<hi rend[^>]+>)(.*)<head>(.*)</hi>(.*)</head>#$1$2<head>$3</head>$4</hi>#gs;
@@ -642,7 +642,8 @@ sub write_xml_file {
             unless which 'java';
         # xmllint validation errors can be misleading; jing is better
         # my $ret = `xmllint --noout --relaxng digiliblt.rng $file_path`;
-        my $ret = `java -jar jing.jar -c digiliblt.rnc $file_path`;
+        # my $ret = `java -jar jing.jar -c digiliblt.rnc $file_path`;
+        my $ret = `java -jar jing.jar -c tei_all.rnc $file_path`;
         if ($ret) {
             print "Invalid.\n";
             print $ret;
