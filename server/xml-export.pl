@@ -20,7 +20,7 @@ use File::Path;
 use File::Spec;
 use File::Basename;
 use IO::Handle;
-use XML::LibXML;
+use XML::LibXML qw(:libxml);
 use File::Which;
 
 use Diogenes::Base qw(%work %author %work_start_block %level_label
@@ -662,7 +662,9 @@ sub post_process_xml {
     my $parser = XML::LibXML->new({huge=>1});
     my $xmldoc = $parser->parse_string($in);
 
-    # Remove all div and l elements with n="t", preserving content
+    # Remove all div and l elements with n="t", preserving content;
+    # these are just titles and usually have a <head>, so should not
+    # appear in a separate div or line.
     foreach my $node ($xmldoc->getElementsByTagName('l'),
                       $xmldoc->getElementsByTagName('div'),) {
         my $n = $node->getAttribute('n');
@@ -674,18 +676,37 @@ sub post_process_xml {
         }
     }
 
-    # Remove all l and p elements that have a <head> child, preserving content
-    foreach my $node ($xmldoc->getElementsByTagName('head')) {
-        my $parent = $node->parentNode;
-        if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
-            foreach my $child ($parent->childNodes) {
-                $parent->parentNode->insertBefore( $child, $parent );
-            }
-            $parent->unbindNode;
+    # Change <space> to indentation at start of para, line, etc.  Note
+    # that this is an imperfect heuristic.  A <space> at the start of
+    # a line of verse from a fragmentary papyrus is probably correct,
+    # and really should not be converted to indentation.
+    foreach my $node ($xmldoc->getElementsByTagName('space')) {
+        my $next = $node->nextSibling;
+        if ($next->nodeName =~ m/^l|p|head|label$/) {
+            my $quantity = $node->getAttribute('quantity');
+            $next->setAttribute('rend',"indent($quantity)");
+            $node->unbindNode;
         }
     }
 
-    # Fix indentation of l, p, and heads
+    # <head>s often appear inside <p> and <l>, which isn't valid.  So
+    # we move the <head> to just before its parent, and then delete
+    # the former parent if it has only space content.  Remove all l
+    # and p elements that have a <head> child, preserving content
+    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+        my $parent = $node->parentNode;
+        if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
+            $parent->parentNode->insertBefore($node, $parent);
+            my $content = 0;
+            foreach my $child ($parent->childNodes) {
+                if ($child->nodeType != XML_TEXT_NODE or $child->textContent =~ m/\S/) {
+                    $content++;
+                }
+            }
+            $parent->unbindNode unless $content;
+        }
+    }
+
 
     #=pod
     # This is broken?
@@ -722,6 +743,22 @@ sub post_process_xml {
             }
         }
     }
+
+    # Some texts have EXPLICITs within <label>s, which generally fall
+    # after the end of the div, so we tuck them into the end of the
+    # preceding div.
+    foreach my $node ($xmldoc->getElementsByTagName('label')) {
+        if ($node->textContent =~ m/EXPLICIT/) {
+            my $sib = $node;
+            while ($sib = $sib->previousSibling) {
+                if ($sib->nodeName eq 'div') {
+                    $sib->appendChild($node);
+                    last;
+                }
+            }
+        }
+    }
+
     return $xmldoc;
 }
 
