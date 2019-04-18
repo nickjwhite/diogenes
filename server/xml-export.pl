@@ -613,7 +613,15 @@ sub write_xml_file {
         close(OUT) or die $!;
     }
 
-    $text = post_process_xml($text, $file);
+    my $xmldoc = post_process_xml($text, $file);
+
+    if ($opt_p) {
+        $xmldoc = milestones($xmldoc);
+    }
+
+    $text = $xmldoc->toString;
+
+    $text = ad_hoc_fixes($text, $file);
 
     my $file_path = File::Spec->catfile( $path, $file );
     if ($opt_l) {
@@ -713,13 +721,17 @@ sub post_process_xml {
             }
         }
     }
+    return $xmldoc;
+}
 
+sub milestones {
+    my $xmldoc = shift;
     # Added this at the request of DigiLibLT.  They prefer paragraph
     # divs to be converted into milestones, so that <div type="par"
     # n="1"> becomes <milestone unit="par" n="1"/> and the
     # higher-level div is contained in just one <p>, with inner <p>s
     # removed. Found this surprisingly tricky, so we do this step by step
-    if ($opt_p and not $is_verse) {
+    if (not $is_verse) {
          my $xpc = XML::LibXML::XPathContext->new;
          $xpc->registerNs('x', $xmlns);
          # Put a collection of multiple <div type="par">s inside a big
@@ -769,10 +781,14 @@ sub post_process_xml {
 #              print $grandparent->nodeName;
          }
     }
+    return $xmldoc;
+}
+
 #=cut
-    # Some desperate special cases here, which I would regard as bugs
-    # in the PHI markup
-    my $out = $xmldoc->toString;;
+sub ad_hoc_fixes {
+    # This is for fixing desperate special cases.
+    my $out = shift;
+    my $file = shift;
 
     # Irritating bug in the PHI markup of the title of Bk 1 of Varro, de re rust.
     if ($file eq 'phi0684002.xml') {
