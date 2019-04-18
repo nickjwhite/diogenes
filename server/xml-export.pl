@@ -828,44 +828,17 @@ sub ad_hoc_fixes {
     my $out = shift;
     my $file = shift;
 
-    # Irritating bug in the PHI markup of the title of Bk 1 of Varro, de re rust.
-    if ($file eq 'phi0684002.xml') {
-        $out =~ s#\<head\>\s*RERVM RVSTICARVM DE AGRI CVLTVRA\s*\n\s*LIBER PRIMVS\s*\<\/head\>##s;
-        $out =~ s#<div type="cap" n="ca">\s*<head>\s*CAPITVLA LIBRI PRIMI\s*</head>#
-<head>RERVM RVSTICARVM DE AGRI CVLTVRA
- LIBER PRIMVS</head>
-<div type="cap" n="pr">#s;
-    }
-
-    # Hyginus Myth: This is a bit of a lie, as this marks a place
-    # where there *might* be a new div -- it's not really the heading of
-    # this "par" subdiv.  But it won't validate and I can't think of a
-    # better way to mark this up.
+    # Hyginus Myth
     if ($file eq 'phi1263001.xml') {
-        $out =~ s#<label>\s*QVI PIISSIMI FVERVNT\.\s*</label>\s*<div type="par" n="4">#
-<div type="par" n="4">
-<label>
-&lt;QVI PIISSIMI FVERVNT.&gt;
-</label>
-#;
+        $out =~ s#<label [^>]*><supplied>QVI PIISSIMI FVERVNT\.</supplied></label>\s*<div type="par" n="4">#<div type="par" n="4">\n<label><supplied>QVI PIISSIMI FVERVNT.</supplied></label>#;
     }
+    # Porphyry on Horace
     if ($file =~ m/^phi1512/) {
-        # Stupid "explicit"s in Porphyrio on Horace.  No idea how to
-        # mark these up
-        $out =~
-    s#<(?:head|label)>([^<]*EXPLICIT[^<]*)</(?:head|label)>#<div type="explicit"><p>$1</p></div>#g;
+        # Not all of the Sermones have this heading and this one for
+        # poem 3 is in the middle of the scholia to poem 2.
+        $out =~ s#(<head [^>]*>EGLOGA III</head>.*?</p>\n)#<div type="lemma" n="t">$1</div>#s;
         # Another bizzarely placed heading
-        $out =~ s#<head>\s*\[DE SATVRA\s*</head>\s*<div type="lemma" n="12a">#<div type="lemma" n="12a"><label>DE SATURA</label>#;
-        # Bizzarre error.  Not all of the Sermones have this heading
-        # and the one for poem 3 is in the middle of the scholia to
-        # poem 2.
-        $out =~ s#<head>\s*EGLOGA III\s*([^<]*)</head>\s*(<div[^>]*>\s*<p>)#$2$1#;
-
-    }
-    if ($file eq 'phi2150001.xml') {
-        # Random headings and explicits in Zeno of Verona
-        $out =~ s#<head>\s*TRACTATVS\s*</head>##;
-        $out =~ s#<label>\s*EXPLICIT LIBER PRIMVS\s*</label>##;
+        $out =~ s#<head [^>]*>\[DE SATVRA</head>\s*<div type="lemma" n="12a">#<div type="lemma" n="12a"><head>DE SATURA</head>#;
     }
 
     return $out;
