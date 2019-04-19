@@ -665,6 +665,10 @@ sub post_process_xml {
     my $parser = XML::LibXML->new({huge=>1});
     my $xmldoc = $parser->parse_string($in);
 
+    # Change <space>s to @rend.  Best to do this first, and then again
+    # last, to take into account changes in between.
+    fixup_spaces($xmldoc);
+
     # Remove all div and l elements with n="t", preserving content;
     # these are just titles and usually have a <head>, so should not
     # appear in a separate div or line.
@@ -687,34 +691,6 @@ sub post_process_xml {
         if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
             $parent->parentNode->insertBefore($node, $parent);
             $parent->unbindNode unless $parent->textContent =~ m/\S/;
-        }
-    }
-
-    # Change <space> to indentation at start of para, line, etc.  Note
-    # that this is an imperfect heuristic.  A <space> at the start of
-    # a line of verse from a fragmentary papyrus is probably correct,
-    # and really should not be converted to indentation.
-    foreach my $node ($xmldoc->getElementsByTagName('space')) {
-        my $next = $node->nextSibling;
-        while ($next and $next->nodeType == XML_TEXT_NODE and $next->data =~ m/^\s*$/s) {
-            $next = $next->nextSibling;
-        }
-        my $parent = $node->parentNode;
-        my $quantity = $node->getAttribute('quantity') || '1';
-        # If <space> comes right before (allowing whitespace).
-        if ($next and $next->nodeName =~ m/^l|p|head|label$/) {
-            $next->setAttribute('rend',"indent($quantity)");
-            $node->unbindNode;
-        } # If <space> comes right after (allowing whitespace).
-        elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/) {
-            my $child = $parent->firstChild;
-            while ($child->nodeType == XML_TEXT_NODE and $child->data =~ m/^\s*$/s) {
-                $child = $child->nextSibling;
-            }
-            if ($child and $child->isSameNode($node)) {
-                $parent->setAttribute('rend',"indent($quantity)");
-                $node->unbindNode;
-            }
         }
     }
 
@@ -769,8 +745,42 @@ sub post_process_xml {
         }
     }
 
+    fixup_spaces($xmldoc);
+
     return $xmldoc;
 }
+
+sub fixup_spaces {
+    my $xmldoc = shift;
+    # Change <space> to indentation at start of para, line, etc.  Note
+    # that this is an imperfect heuristic.  A <space> at the start of
+    # a line of verse from a fragmentary papyrus is probably correct,
+    # and really should not be converted to indentation.
+    foreach my $node ($xmldoc->getElementsByTagName('space')) {
+        my $next = $node->nextSibling;
+        while ($next and $next->nodeType == XML_TEXT_NODE and $next->data =~ m/^\s*$/s) {
+            $next = $next->nextSibling;
+        }
+        my $parent = $node->parentNode;
+        my $quantity = $node->getAttribute('quantity') || '1';
+        # If <space> comes right before (allowing whitespace).
+        if ($next and $next->nodeName =~ m/^l|p|head|label$/) {
+            $next->setAttribute('rend',"indent($quantity)");
+            $node->unbindNode;
+        } # If <space> comes right after (allowing whitespace).
+        elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/) {
+            my $child = $parent->firstChild;
+            while ($child->nodeType == XML_TEXT_NODE and $child->data =~ m/^\s*$/s) {
+                $child = $child->nextSibling;
+            }
+            if ($child and $child->isSameNode($node)) {
+                $parent->setAttribute('rend',"indent($quantity)");
+                $node->unbindNode;
+            }
+        }
+    }
+}
+
 
 sub milestones {
     my $xmldoc = shift;
