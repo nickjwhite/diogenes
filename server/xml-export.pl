@@ -682,9 +682,15 @@ sub post_process_xml {
     # and really should not be converted to indentation.
     foreach my $node ($xmldoc->getElementsByTagName('space')) {
         my $next = $node->nextSibling;
-        if ($next->nodeName =~ m/^l|p|head|label$/) {
-            my $quantity = $node->getAttribute('quantity');
+        my $parent = $node->parentNode;
+        my $quantity = $node->getAttribute('quantity') || '1';
+        # If <space> comes right before.
+        if ($next and $next->nodeName =~ m/^l|p|head|label$/) {
             $next->setAttribute('rend',"indent($quantity)");
+            $node->unbindNode;
+        } # If <space> comes right after.
+        elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/ and $parent->firstChild eq $node) {
+            $parent->setAttribute('rend',"indent($quantity)");
             $node->unbindNode;
         }
     }
