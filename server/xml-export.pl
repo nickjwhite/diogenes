@@ -729,7 +729,16 @@ sub post_process_xml {
         }
     }
 
-    # FIXME: any remaining <space> within a <head> is just superfluous indentation from a multi-line set of <head>s, so should just be removed.
+    # Any remaining <space> within a <head> is just superfluous
+    # indentation left over from the unification of a multi-line set
+    # of <head>s, so should just be removed.
+    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+        foreach my $child ($node->childNodes) {
+            if ($child->nodeName eq 'space') {
+                $child->unbindNode;
+            }
+        }
+    }
 
     # Some texts have multiple <head>s spread throughout a single
     # <div> or <body>, such as when these represent the titles of
