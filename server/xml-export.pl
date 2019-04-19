@@ -729,16 +729,8 @@ sub post_process_xml {
         }
     }
 
-    # Sometimes we get <p><head>foo</head><head>bar</head> blah.  So
-    # put the <p> after the heads.
-    foreach my $node ($xmldoc->getElementsByTagName('head')) {
-        if ($node->parentNode->nodeName eq 'p') {
-            my $new_head = $node->cloneNode(1);
-            $node->parentNode->parentNode->insertBefore($new_head,
-                                                        $node->parentNode);
-            $node->unbindNode;
-        }
-    }
+    # FIXME: any remaining <space> within a <head> is just superfluous indentation from a multi-line set of <head>s, so should just be removed.
+
     # Some texts have multiple <head>s spread throughout a single
     # <div> or <body>, such as when these represent the titles of
     # works to which a list of fragments have been assigned.  When
@@ -753,7 +745,7 @@ sub post_process_xml {
         }
     }
 
-    # Some texts have EXPLICITs within <label>s, which generally fall
+    # Some texts have an EXPLICIT within a <label>, which generally fall
     # after the end of the div, so we tuck them into the end of the
     # preceding div.
     foreach my $node ($xmldoc->getElementsByTagName('label')) {
