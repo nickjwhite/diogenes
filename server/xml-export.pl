@@ -130,7 +130,9 @@ my $xml_header=qq{<?xml version="1.0" encoding="UTF-8"?>
         </p>
       </publicationStmt>
       <sourceDesc>
-        <p>__SOURCE__</p>
+        <p>
+          __SOURCE__
+        </p>
       </sourceDesc>
     </fileDesc>
   </teiHeader>
@@ -321,6 +323,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                     $query->latin_with_greek(\$source);
                 }
                 $source = strip_formatting($source);
+                $source =~ s#\s*\n\s*# #g;
                 $body = '';
                 $hanging_div = '';
                 my @time = localtime(time);
