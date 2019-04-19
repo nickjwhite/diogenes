@@ -679,51 +679,51 @@ sub post_process_xml {
         }
     }
 
+    # <head>s often appear inside <p> and <l>, which isn't valid.  So
+    # we move the <head> to just before its parent, and then delete
+    # the former parent if it has only whitespace content.
+    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+        my $parent = $node->parentNode;
+        if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
+            $parent->parentNode->insertBefore($node, $parent);
+            $parent->unbindNode unless $parent->textContent =~ m/\S/;
+        }
+    }
+
     # Change <space> to indentation at start of para, line, etc.  Note
     # that this is an imperfect heuristic.  A <space> at the start of
     # a line of verse from a fragmentary papyrus is probably correct,
     # and really should not be converted to indentation.
     foreach my $node ($xmldoc->getElementsByTagName('space')) {
         my $next = $node->nextSibling;
+        while ($next and $next->nodeType == XML_TEXT_NODE and $next->data =~ m/^\s*$/s) {
+            $next = $next->nextSibling;
+        }
         my $parent = $node->parentNode;
         my $quantity = $node->getAttribute('quantity') || '1';
-        # If <space> comes right before.
+        # If <space> comes right before (allowing whitespace).
         if ($next and $next->nodeName =~ m/^l|p|head|label$/) {
             $next->setAttribute('rend',"indent($quantity)");
             $node->unbindNode;
-        } # If <space> comes right after.
-        elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/ and $parent->firstChild eq $node) {
-            $parent->setAttribute('rend',"indent($quantity)");
-            $node->unbindNode;
-        }
-    }
-
-    # <head>s often appear inside <p> and <l>, which isn't valid.  So
-    # we move the <head> to just before its parent, and then delete
-    # the former parent if it has only space content.  Remove all l
-    # and p elements that have a <head> child, preserving content
-    foreach my $node ($xmldoc->getElementsByTagName('head')) {
-        my $parent = $node->parentNode;
-        if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
-            $parent->parentNode->insertBefore($node, $parent);
-            my $content = 0;
-            foreach my $child ($parent->childNodes) {
-                if ($child->nodeType != XML_TEXT_NODE or $child->textContent =~ m/\S/) {
-                    $content++;
-                }
+        } # If <space> comes right after (allowing whitespace).
+        elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/) {
+            my $child = $parent->firstChild;
+            while ($child->nodeType == XML_TEXT_NODE and $child->data =~ m/^\s*$/s) {
+                $child = $child->nextSibling;
             }
-            $parent->unbindNode unless $content;
+            if ($child and $child->isSameNode($node)) {
+                $parent->setAttribute('rend',"indent($quantity)");
+                $node->unbindNode;
+            }
         }
     }
 
-
-    #=pod
-    # This is broken?
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
         my $sib = $node->nextNonBlankSibling;
         if ($sib and $sib->nodeName eq 'head') {
+            $node->appendText(' ');
             $node->appendText($sib->textContent);
             $sib->unbindNode;
         }
