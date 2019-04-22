@@ -28,6 +28,7 @@ use File::Which;
 use Storable;
 
 use XML::DOM::Lite qw(Parser Serializer :constants);
+use XML::DOM::Lite::Extras;
 
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
@@ -138,7 +139,9 @@ my $xml_header=qq{<?xml version="1.0" encoding="UTF-8"?>
         </p>
       </publicationStmt>
       <sourceDesc>
-        <p>__SOURCE__</p>
+        <p>
+          __SOURCE__
+        </p>
       </sourceDesc>
     </fileDesc>
   </teiHeader>
@@ -330,6 +333,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                     $query->latin_with_greek(\$source);
                 }
                 $source = strip_formatting($source);
+                $source =~ s#\s*\n\s*# #g;
                 $body = '';
                 $hanging_div = '';
                 my @time = localtime(time);
@@ -485,9 +489,9 @@ sub convert_chunk {
     $chunk =~ s#\"\d*#&quot;#g;
 
     # Speakers in drama: {&7 ... }& {40&7 ... }40&
-    $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label style="speaker">$1</label>#g;
-    $chunk =~ s#\{40([^}]*)\}40#<label style="speaker">$1</label>#g;
-    $chunk =~ s#\{41([^}]*)\}41#<label style="stage direction">$1</label>#g;
+    $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
+    $chunk =~ s#\{40([^}]*)\}40#<label type="speaker">$1</label>#g;
+    $chunk =~ s#\{41([^}]*)\}41#<label type="stage-direction">$1</label>#g;
 
     # Font switching.  Beta does not always nest these properly: e.g
     # "HS &7<ccc&>", so we could try to bring trailing markup inside:
@@ -518,7 +522,7 @@ sub convert_chunk {
 
     $chunk =~ s#\{\d+([^\}]+)(?:\}\d+|$)#<head>$1</head>#g;
     # Speakers in e.g. Eclogues: {M.}
-    $chunk =~ s#\{([^\}]+)\}#<label style="speaker">$1</label>#g;
+    $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
 
 #     $chunk =~
 #         s#(<hi rend[^>]+>)(.*)<head>(.*)</hi>(.*)</head>#$1$2<head>$3</head>$4</hi>#gs;
@@ -616,8 +620,6 @@ sub convert_chunk {
 sub write_xml_file {
     my ($file, $text) = @_;
 
-    # XML::Dom::Lite removes <?xml declaration with encoding
-
     if ($debug) {
         my $tmpfile = File::Spec->catfile( $path, $file) . '.tmp';
         open( OUT, ">$tmpfile" ) or die $!;
@@ -655,7 +657,8 @@ sub write_xml_file {
             unless which 'java';
         # xmllint validation errors can be misleading; jing is better
         # my $ret = `xmllint --noout --relaxng digiliblt.rng $file_path`;
-        my $ret = `java -jar jing.jar -c digiliblt.rnc $file_path`;
+        # my $ret = `java -jar jing.jar -c digiliblt.rnc $file_path`;
+        my $ret = `java -jar jing.jar -c tei_all.rnc $file_path`;
         if ($ret) {
             print "Invalid.\n";
             print $ret;
@@ -799,7 +802,7 @@ sub milestones {
 #              print $grandparent->nodeName;
          }
     }
-    return $xmldoc
+    return $xmldoc;
 }
 #=cut
 sub ad_hoc_fixes {
@@ -807,43 +810,23 @@ sub ad_hoc_fixes {
     my $out = shift;
     my $file = shift;
 
-    # Irritating bug in the PHI markup of the title of Bk 1 of Varro, de re rust.
-    if ($file eq 'phi0684002.xml') {
-        $out =~ s#\<head\>\s*RERVM RVSTICARVM DE AGRI CVLTVRA\s*\n\s*LIBER PRIMVS\s*\<\/head\>##s;
-        $out =~ s#<div type="cap" n="ca">\s*<head>\s*CAPITVLA LIBRI PRIMI\s*</head>#
-<head>RERVM RVSTICARVM DE AGRI CVLTVRA
- LIBER PRIMVS</head>
-<div type="cap" n="pr">#s;
+    # Calpurnius Siculus
+    if ($file eq 'phi0830001.xml') {
+        $out =~ s#\[(<label [^>]*>)#$1\[#g;
+        $out =~ s#</label>\]#\]</label>#g;
     }
-    # Hyginus Myth: This is a bit of a lie, as this marks a place
-    # where there *might* be a new div -- it's not really the heading of
-    # this "par" subdiv.  But it won't validate and I can't think of a
-    # better way to mark this up.
-    if ($file eq 'phi1263001.xml') {
-        $out =~ s#<label>\s*QVI PIISSIMI FVERVNT\.\s*</label>\s*<div type="par" n="4">#
-<div type="par" n="4">
-<label>
-&lt;QVI PIISSIMI FVERVNT.&gt;
-</label>
-#;
-    }
-    if ($file =~ m/^phi1512/) {
-        # Stupid "explicit"s in Porphyrio on Horace.  No idea how to
-        # mark these up
-        $out =~
-    s#<(?:head|label)>([^<]*EXPLICIT[^<]*)</(?:head|label)>#<div type="explicit"><p>$1</p></div>#g;
-        # Another bizzarely placed heading
-        $out =~ s#<head>\s*\[DE SATVRA\s*</head>\s*<div type="lemma" n="12a">#<div type="lemma" n="12a"><label>DE SATURA</label>#;
-        # Bizzarre error.  Not all of the Sermones have this heading
-        # and the one for poem 3 is in the middle of the scholia to
-        # poem 2.
-        $out =~ s#<head>\s*EGLOGA III\s*([^<]*)</head>\s*(<div[^>]*>\s*<p>)#$2$1#;
 
+    # Hyginus Myth
+    if ($file eq 'phi1263001.xml') {
+        $out =~ s#<label [^>]*><supplied>QVI PIISSIMI FVERVNT\.</supplied></label>\s*<div type="par" n="4">#<div type="par" n="4">\n<label><supplied>QVI PIISSIMI FVERVNT.</supplied></label>#;
     }
-    if ($file eq 'phi2150001.xml') {
-        # Random headings and explicits in Zeno of Verona
-        $out =~ s#<head>\s*TRACTATVS\s*</head>##;
-        $out =~ s#<label>\s*EXPLICIT LIBER PRIMVS\s*</label>##;
+    # Porphyry on Horace
+    if ($file =~ m/^phi1512/) {
+        # Not all of the Sermones have this heading and this one for
+        # poem 3 is in the middle of the scholia to poem 2.
+        $out =~ s#(<head [^>]*>EGLOGA III</head>.*?</p>\n)#<div type="lemma" n="t">$1</div>#s;
+        # Another bizzarely placed heading
+        $out =~ s#<head [^>]*>\[DE SATVRA</head>\s*<div type="lemma" n="12a">#<div type="lemma" n="12a"><head>DE SATURA</head>#;
     }
 
     return $out;
