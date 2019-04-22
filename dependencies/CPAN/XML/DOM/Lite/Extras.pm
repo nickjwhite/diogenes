@@ -16,17 +16,4 @@ sub XML::DOM::Lite::Node::nextNonBlankSibling {
     return undef;
 }
 
-# sub nextNonBlankSibling {
-#     my $self = shift;
-#     my $sib = $self;
-#     while ($sib = $sib->nextSibling) {
-#         #        print STDERR $sib;
-#         unless (($sib->nodeType == TEXT_NODE or $sib->nodeType == CDATA_SECTION_NODE)
-#             and $sib->nodeValue =~ m/^\s*$/) {
-#             return $sib;
-#         }
-#     }
-# }
-
-
 1;
