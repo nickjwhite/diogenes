@@ -676,7 +676,7 @@ sub post_process_xml {
                       $xmldoc->getElementsByTagName('div'),) {
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
-            foreach my $child ($node->childNodes) {
+            foreach my $child (reverse $node->childNodes) {
                 $node->parentNode->insertBefore( $child, $node );
             }
             $node->unbindNode;
