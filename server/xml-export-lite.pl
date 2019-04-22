@@ -674,32 +674,36 @@ sub post_process_xml {
     my $in = shift;
     my $file = shift;
 
-    my $num_octets = utf8::upgrade($in);
     my $parser = Parser->new();
     my $xmldoc = $parser->parse($in);
 
-     #print Dumper($xmldoc);
+    # Change <space>s to @rend.  Best to do this first, and then again
+    # last, to take into account changes in between.
+    fixup_spaces($xmldoc);
 
-    # my $serializer = Serializer->new;
-    # my $out = $serializer->serializeToString($xmldoc->documentElement);
-    # return $out;
-
-    # FIXME this needs to be rewritten to match new code in xml-export
-
-    # Remove all div and l elements with n="t", remove all tags and
-    # put the text in <head>s instead (unless element has only whitespace)
-    foreach my $node (@{ $xmldoc->getElementsByTagName('l') },
-                      @{ $xmldoc->getElementsByTagName('div') }) {
+    # Remove all div and l elements with n="t", preserving content;
+    # these are just titles and usually have a <head>, so should not
+    # appear in a separate div or line.
+    foreach my $node (@{ $xmldoc->getElementsByTagName('div') },
+                      @{ $xmldoc->getElementsByTagName('l') }) {
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
-            if ($node->textContent and $node->textContent =~ m/\S/) {
-                my $head = $xmldoc->createElement('head');
-                my $cont = $xmldoc->createTextNode($node->textContent);
-                $head->appendChild($cont);
-                $node->parentNode->insertBefore($head, $node);
+            foreach my $child (reverse @{ $node->childNodes} ) {
+                print STDERR $child->nodeName, $node->parentNode->nodeName, $node->nodeName, ' ';
+                $node->parentNode->insertBefore( $child, $node );
             }
-            $node->parentNode->childNodes->removeNode($node);
+            $node->unbindNode;
+        }
+    }
 
+    # <head>s often appear inside <p> and <l>, which isn't valid.  So
+    # we move the <head> to just before its parent, and then delete
+    # the former parent if it has only whitespace content.
+    foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
+        my $parent = $node->parentNode;
+        if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
+            $parent->parentNode->insertBefore($node, $parent);
+            $parent->unbindNode unless $parent->textContent =~ m/\S/;
         }
     }
 
@@ -707,28 +711,24 @@ sub post_process_xml {
     # just a line break, so we unify them
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         my $sib = $node->nextNonBlankSibling;
-#        print STDERR ">$sib\n";
         if ($sib and $sib->nodeName eq 'head') {
-            #            $node->appendText($sib->textContent);
-            print STDERR '>'.$sib->textContent."\n";
-
-            $node->parentNode->appendChild($xmldoc->createTextNode($sib->textContent));
-#            $sib->unbindNode;
-            $sib->parentNode->childNodes->removeNode($sib);
+            $node->appendChild($xmldoc->createTextNode(' '));
+            $node->appendChild($xmldoc->createTextNode($sib->textContent));
+            $sib->unbindNode;
         }
     }
-=pod
 
-    # Sometimes we get <p><head>foo</head><head>bar</head> blah.  So
-    # put the <p> after the heads.
+    # Any remaining <space> within a <head> is just superfluous
+    # indentation left over from the unification of a multi-line set
+    # of <head>s, so should just be removed.
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
-        if ($node->parentNode->nodeName eq 'p') {
-            my $new_head = $node->cloneNode(1);
-            $node->parentNode->parentNode->insertBefore($new_head,
-                                                        $node->parentNode);
-            $node->unbindNode;
+        foreach my $child (@{ $node->childNodes }) {
+            if ($child->nodeName eq 'space') {
+                $child->unbindNode;
+            }
         }
     }
+
     # Some texts have multiple <head>s spread throughout a single
     # <div> or <body>, such as when these represent the titles of
     # works to which a list of fragments have been assigned.  When
@@ -736,15 +736,66 @@ sub post_process_xml {
     # allowed to have more than one.
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         my $parent = $node->parentNode;
-        foreach my $sibling ($parent->childNodes) {
-            if (not $node->isSameNode($sibling) and $sibling->nodeName eq 'head') {
-                $sibling->setNodeName('label');
+        foreach my $sibling (@{ $parent->childNodes }) {
+            if ($node ne $sibling and $sibling->nodeName eq 'head') {
+                $sibling->nodeName('label');
             }
         }
     }
-=cut
+
+    # Some texts have an EXPLICIT within a <label>, which generally fall
+    # after the end of the div, so we tuck them into the end of the
+    # preceding div.
+    foreach my $node (@{ $xmldoc->getElementsByTagName('label') }) {
+        if ($node->textContent =~ m/EXPLICIT/) {
+            my $sib = $node;
+            while ($sib = $sib->previousSibling) {
+                if ($sib->nodeName eq 'div') {
+                    $sib->appendChild($node);
+                    last;
+                }
+            }
+        }
+    }
+
+    fixup_spaces($xmldoc);
+
     return $xmldoc;
+
 }
+
+sub fixup_spaces {
+    my $xmldoc = shift;
+    # Change <space> to indentation at start of para, line, etc.  Note
+    # that this is an imperfect heuristic.  A <space> at the start of
+    # a line of verse from a fragmentary papyrus is probably correct,
+    # and really should not be converted to indentation.
+    foreach my $node (@{ $xmldoc->getElementsByTagName('space')} ) {
+        my $next = $node->nextSibling;
+        while ($next and $next->nodeType == TEXT_NODE and $next->nodeValue =~ m/^\s*$/s) {
+            $next = $next->nextSibling;
+        }
+        my $parent = $node->parentNode;
+        my $quantity = $node->getAttribute('quantity') || '1';
+        # If <space> comes right before (allowing whitespace).
+        if ($next and $next->nodeName =~ m/^l|p|head|label$/) {
+            $next->setAttribute('rend',"indent($quantity)");
+            $node->unbindNode;
+        } # If <space> comes right after (allowing whitespace).
+        elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/) {
+            my $child = $parent->firstChild;
+            while ($child->nodeType == TEXT_NODE and $child->nodeValue =~ m/^\s*$/s) {
+                $child = $child->nextSibling;
+            }
+            if ($child and $child eq $node) {
+                $parent->setAttribute('rend',"indent($quantity)");
+                $node->unbindNode;
+            }
+        }
+    }
+}
+
+
 sub milestones {
     my $xmldoc = shift;
     # Added this at the request of DigiLibLT.  They prefer paragraph
