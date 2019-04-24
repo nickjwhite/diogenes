@@ -48,12 +48,21 @@ sub nodeType {
 }
 
 sub nodeName {
-    my $self = shift; $self->{nodeName} = shift if @_;
+    my $self = shift;
+    if (@_) {
+        $self->{nodeName} = shift;
+        $self->{tagName} = $self->{nodeName} if $self->nodeType == ELEMENT_NODE;
+    }
     $self->{nodeName};
 }
 
 sub tagName {
-    my $self = shift; $self->{tagName} = shift if @_;
+    my $self = shift;
+    die "$self is not an element node" unless $self->nodeType == ELEMENT_NODE;
+    if (@_) {
+        $self->{tagName} = shift;
+        $self->{nodeName} = $self->{tagName};
+    }
     $self->{tagName};
 }
 
