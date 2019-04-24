@@ -486,7 +486,8 @@ sub convert_chunk {
     $chunk =~ s#\&#&amp;#g;
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
-    $chunk =~ s#\"\d*#&quot;#g;
+    # Not necessary (like &apos;). Strictly, > is not necessary in text, either.
+    # $chunk =~ s#\"\d*#&quot;#g;
 
     # Speakers in drama: {&7 ... }& {40&7 ... }40&
     $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
@@ -677,8 +678,8 @@ sub post_process_xml {
     my $parser = Parser->new();
     my $xmldoc = $parser->parse($in);
 
-    # Change <space>s to @rend.  Best to do this first, and then again
-    # last, to take into account changes in between.
+    # Change <space>s to rend attr.  Best to do this first, and then
+    # again last, to take into account changes in between.
     fixup_spaces($xmldoc);
 
     # Remove all div and l elements with n="t", preserving content;
