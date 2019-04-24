@@ -689,8 +689,9 @@ sub post_process_xml {
                       @{ $xmldoc->getElementsByTagName('l') }) {
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
-            foreach my $child (reverse @{ $node->childNodes} ) {
-                print STDERR $child->nodeName, $node->parentNode->nodeName, $node->nodeName, ' ';
+            # We need a copy of the list, or the children die when the parent is removed.
+            my @nodelist = @{ $node->childNodes };
+            foreach my $child (@nodelist) {
                 $node->parentNode->insertBefore( $child, $node );
             }
             $node->unbindNode;
