@@ -9,9 +9,10 @@ sub XML::DOM::Lite::Node::unbindNode {
 
 sub XML::DOM::Lite::Node::nextNonBlankSibling {
     my $self = shift;
-    my $sib = $self;
-    while ($sib = $sib->nextSibling) {
+    my $sib = $self->nextSibling;
+    while ($sib) {
         return $sib if ($sib->textContent =~ m/\S/);
+        $sib = $sib->nextSibling;
     }
     return undef;
 }
