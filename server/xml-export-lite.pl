@@ -711,12 +711,17 @@ sub post_process_xml {
 
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
-    foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
-        my $sib = $node->nextNonBlankSibling;
-        if ($sib and $sib->nodeName eq 'head') {
-            $node->appendChild($xmldoc->createTextNode(' '));
-            $node->appendChild($xmldoc->createTextNode($sib->textContent));
-            $sib->unbindNode;
+    my $nodelist = $xmldoc->getElementsByTagName('head');
+    foreach my $node (@{ $nodelist }) {
+        if ($node) {
+            my $sib = $node->nextNonBlankSibling;
+            if ($sib and $sib->nodeName eq 'head') {
+                $node->appendChild($xmldoc->createTextNode(' '));
+                $node->appendChild($xmldoc->createTextNode($sib->textContent));
+                # We have to remove nodes from the list manually; it is not live and does not update automatically
+                $nodelist->removeNode($sib);
+                $sib->unbindNode;
+            }
         }
     }
 
