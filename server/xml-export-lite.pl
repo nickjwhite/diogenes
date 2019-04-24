@@ -791,7 +791,7 @@ sub fixup_spaces {
         } # If <space> comes right after (allowing whitespace).
         elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/) {
             my $child = $parent->firstChild;
-            while ($child->nodeType == TEXT_NODE and $child->nodeValue =~ m/^\s*$/s) {
+            while ($child and $child->nodeType == TEXT_NODE and $child->nodeValue =~ m/^\s*$/s) {
                 $child = $child->nextSibling;
             }
             if ($child and $child eq $node) {
