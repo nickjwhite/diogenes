@@ -476,7 +476,8 @@ sub convert_chunk {
     $chunk =~ s#\&#&amp;#g;
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
-    $chunk =~ s#\"\d*#&quot;#g;
+    # Not necessary (like &apos;). Strictly, > is not necessary in text, either.
+    # $chunk =~ s#\"\d*#&quot;#g;
 
     # Speakers in drama: {&7 ... }& {40&7 ... }40&
     $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
