@@ -26,6 +26,7 @@ use File::Basename;
 use IO::Handle;
 use File::Which;
 use Storable;
+use Encode;
 
 use XML::DOM::Lite qw(Parser Serializer :constants);
 use XML::DOM::Lite::Extras;
@@ -34,16 +35,14 @@ use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;
 use Diogenes::BetaHtml;
-#use open OUT => ':utf8';
-#use utf8;
 
 my $dirname = 'diogenes-xml';
 
 sub VERSION_MESSAGE {print "xml-export.pl, Diogenes version $Diogenes::Base::Version\n"}
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts ('alprho:c:sn:vd');
-our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_n);
+getopts ('alprho:c:sn:vdu');
+our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_n, $opt_u);
 sub HELP_MESSAGE {
     my $corpora = join ', ', sort values %Diogenes::Base::choices;
     print qq{
@@ -77,6 +76,7 @@ The following optional switches are supported:
 -l        Pretty-print XML using xmllint
 -s        Validate output against Relax NG Schema (via Jing;
           requires Java runtime)
+-u        Convert hex entities to utf8 for comparison with libxml2
 
 };
 }
@@ -767,9 +767,48 @@ sub post_process_xml {
 
     fixup_spaces($xmldoc);
 
+    if ($opt_u) {
+        # libxml2 normalizes all output to utf8, including entities. In order to compare output with XML::DOM, we need to do the same.
+        convert_entities($xmldoc);
+    }
     return $xmldoc;
 
 }
+
+sub convert_entities {
+    my $node = shift;
+    foreach my $n (@{ $node->childNodes }) {
+        if ($n->nodeType == TEXT_NODE) {
+            my $val = $n->nodeValue;
+            $val =~ s/&#x([0-9a-fA-F]+);/hex_to_utf8($1)/ge;
+            $n->nodeValue($val);
+        }
+        else {
+             convert_entities($n);
+        }
+    }
+}
+
+sub hex_to_utf8 {
+    my $hex = shift;
+    # Protect against accidentally re-introducing unescaped XML markup
+    if ($hex =~ m/^0*26$/) {
+        return '&amp;';
+    }
+    elsif ($hex =~ m/^0*3c$/i) {
+        return '&lt;';
+    }
+    elsif ($hex =~ m/^0*3e$/i) {
+        return '&gt;';
+    }
+    else {
+        # The encode_utf is needed to avoid generating wide character
+        # warnings when this output is printed.  I think it just
+        # removes the utf8 flag from the text.
+        return Encode::encode_utf8(chr(hex($hex)));
+    }
+}
+
 
 sub fixup_spaces {
     my $xmldoc = shift;
