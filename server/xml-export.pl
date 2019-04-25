@@ -869,7 +869,7 @@ sub ad_hoc_fixes {
 
     # Hyginus Myth
     if ($file eq 'phi1263001.xml') {
-        $out =~ s#<label [^>]*><supplied>QVI PIISSIMI FVERVNT\.</supplied></label>\s*<div type="par" n="4">#<div type="par" n="4">\n<label><supplied>QVI PIISSIMI FVERVNT.</supplied></label>#;
+        $out =~ s#<label ([^>]*)><supplied>QVI PIISSIMI FVERVNT\.</supplied></label>\s*<div ([^>]*)>#<div $2>\n<label $1><supplied>QVI PIISSIMI FVERVNT.</supplied></label>#;
     }
     # Porphyry on Horace
     if ($file =~ m/^phi1512/) {
