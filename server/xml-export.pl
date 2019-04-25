@@ -399,7 +399,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 }
                 # We seem to have a prose section which starts in the coming line
                 if (((not $is_verse)
-                     and ($chunk !~ m#[$punct]\s*$#)
+                     and ($chunk !~ m#[$punct][\s\$\&\"\d\@]*$#)
                      and ($chunk =~ m/\S/))
                     # But we need to rule out titles and headings, so
                     # we exclude "t" and where the section is back to 1
