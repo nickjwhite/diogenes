@@ -713,7 +713,7 @@ sub post_process_xml {
         my $sib = $node->nextNonBlankSibling;
         if ($sib and $sib->nodeName eq 'head') {
             $node->appendText(' ');
-            $node->appendText($sib->textContent);
+            $node->appendChild($_) foreach $sib->childNodes;
             $sib->unbindNode;
         }
     }

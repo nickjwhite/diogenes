@@ -724,7 +724,7 @@ sub post_process_xml {
             my $sib = $node->nextNonBlankSibling;
             if ($sib and $sib->nodeName eq 'head') {
                 $node->appendChild($xmldoc->createTextNode(' '));
-                $node->appendChild($xmldoc->createTextNode($sib->textContent));
+                $node->appendChild($_) foreach @{ $sib->childNodes };
                 # We have to remove nodes from the list manually; it is not live and does not update automatically
                 $nodelist->removeNode($sib);
                 $sib->unbindNode;
