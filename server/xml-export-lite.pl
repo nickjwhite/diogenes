@@ -783,6 +783,21 @@ sub post_process_xml {
         }
     }
 
+    # BetaHtml.pm uses <i> <super> and <small>, so we need to change
+    # those into TEI-compatible markup.
+    foreach my $node ($xmldoc->getElementsByTagName('i')) {
+        $node->setNodeName('hi');
+        $node->setAttribute('rend', 'italic');
+    }
+    foreach my $node ($xmldoc->getElementsByTagName('super')) {
+        $node->setNodeName('hi');
+        $node->setAttribute('rend', 'superscript');
+    }
+    foreach my $node ($xmldoc->getElementsByTagName('small')) {
+        $node->setNodeName('hi');
+        $node->setAttribute('rend', 'small');
+    }
+
     fixup_spaces($xmldoc);
 
     if ($opt_u) {
