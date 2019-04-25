@@ -33,8 +33,8 @@ my $dirname = 'diogenes-xml';
 sub VERSION_MESSAGE {print "xml-export.pl, Diogenes version $Diogenes::Base::Version\n"}
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts ('alprho:c:sn:vd');
-our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_n);
+getopts ('alprho:c:sn:vdt');
+our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_n, $opt_t);
 sub HELP_MESSAGE {
     my $corpora = join ', ', sort values %Diogenes::Base::choices;
     print qq{
@@ -61,13 +61,14 @@ The following optional switches are supported:
 
 -v        Verbose info on progress of conversion
 -n        Comma-separated list of author numbers to convert
--d        DigiLibLT compatibility; equal to -rpa
+-d        DigiLibLT compatibility; equal to -rpat
 -r        Convert book numbers to Roman numerals
 -p        Mark paragraphs as milestones rather than divs
 -a        Suppress translating indentation into <space> tags
 -l        Pretty-print XML using xmllint
 -s        Validate output against Relax NG Schema (via Jing;
           requires Java runtime)
+-t        Translate div labels to DigiLibLT labels
 
 };
 }
@@ -347,10 +348,15 @@ AUTH: foreach my $auth_num (@all_auths) {
                 @relevant_levels = @divs;
                 push @relevant_levels, 0 if $is_verse;
 
-                for (keys %div_labels) {
-                    if (exists $div_translations{$div_labels{$_}}) {
-                        $div_labels{$_} =
-                            $div_translations{$div_labels{$_}};
+                # TEI does not like spaces in the type attribute
+                $div_labels{$_} =~ s/\s+/-/g foreach (keys %div_labels);
+
+                if ($opt_t) {
+                    for (keys %div_labels) {
+                        if (exists $div_translations{$div_labels{$_}}) {
+                            $div_labels{$_} =
+                              $div_translations{$div_labels{$_}};
+                        }
                     }
                 }
                 foreach (@divs) {
