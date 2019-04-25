@@ -517,6 +517,7 @@ sub convert_chunk {
     $chunk =~ s#((?:[^\}]|\}[^4]|\}4[^3])*?)\}43#<seg type="Danielis" rend="italic">$1</seg>#g;
 
     $chunk =~ s#\{\d+([^\}]+)(?:\}\d+|$)#<head>$1</head>#g;
+    $chunk =~ s#(?:^|\{\d+)([^\}]+)(?:\}\d+)#<head>$1</head>#g;
     # Speakers in e.g. Eclogues: {M.}
     $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
 
