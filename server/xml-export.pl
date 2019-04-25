@@ -175,7 +175,6 @@ my %div_translations = (
                         column => 'col',
 );
 use charnames qw(:full :short latin greek);
-binmode(STDOUT, ":utf8");
 
 my $authtab = File::Spec->catfile( $path, 'authtab.xml' );
 open( AUTHTAB, ">$authtab" ) or die "Could not create $authtab\n";
@@ -623,6 +622,12 @@ sub write_xml_file {
         $xmldoc = milestones($xmldoc);
     }
 
+    # At this point, the text is a mixture of utf8 (Greek) and hex
+    # entities for more obscure punctuation, etc.  Unfortunately, the
+    # serialisation function insists on flattening all the entities
+    # out to utf8 (the alternative is to output ascii with everything
+    # as entities).  The -u flag on the Lite version of this script
+    # produces compatible output.
     $text = $xmldoc->toString;
 
     $text = ad_hoc_fixes($text, $file);
