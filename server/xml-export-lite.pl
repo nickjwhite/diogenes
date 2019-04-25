@@ -492,8 +492,19 @@ sub convert_chunk {
     $chunk =~ s#\&#&amp;#g;
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
-    # Not necessary (like &apos;). Strictly, > is not necessary in text, either.
-    # $chunk =~ s#\"\d*#&quot;#g;
+
+    # Quotation marks (" not necessary to escape in XML text nodes).
+    $chunk =~ s/(&amp|[\$\d\s\n~])\"3\"3/$1&#x201c;/g;
+    $chunk =~ s/(&amp;|[\$\d\s\n~])\"3/$1&#x2018;/g;
+    $chunk =~ s/\"3\"3/&#x201d;/g;
+    $chunk =~ s/\"3/&#x2019;/g;
+
+    $chunk =~ s/(&amp;|[\$\d\s\n~])\"[67]/$1&#xab;/g;
+    $chunk =~ s/\"[67]/&#xbb;/g;
+
+    $chunk =~ s/(&amp;|[\x01-\x1f@\$\d\s\n~])\"\d?/$1&#x201c;/g;
+    $chunk =~ s/\"\d?/&#x201d;/g;
+    $chunk =~ s/\"\d+/"/g;
 
     # Speakers in drama: {&7 ... }& {40&7 ... }40&
     $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
