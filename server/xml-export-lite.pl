@@ -695,7 +695,7 @@ sub post_process_xml {
     foreach my $node (@{ $xmldoc->getElementsByTagName('div') },
                       @{ $xmldoc->getElementsByTagName('l') }) {
         my $n = $node->getAttribute('n');
-        if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
+        if ($n and $n =~ m/^t\d?$/) {
             # We need a copy of the list, or the children die when the parent is removed.
             my @nodelist = @{ $node->childNodes };
             foreach my $child (@nodelist) {
@@ -908,7 +908,7 @@ sub milestones {
     }
     return $xmldoc;
 }
-#=cut
+
 sub ad_hoc_fixes {
     # This is for fixing desperate special cases.
     my $out = shift;
