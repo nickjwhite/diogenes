@@ -710,7 +710,7 @@ sub post_process_xml {
             # In most cases, the node has a <head> or <label>, which
             # can be promoted.
             my $has_head = 0;
-            foreach ($node->childNodes) {
+            foreach (@{ $node->childNodes }) {
                 $has_head++ if $_->nodeName =~ m/^head|label$/;
             }
             if ($has_head) {
