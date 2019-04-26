@@ -541,7 +541,8 @@ sub convert_chunk {
 #      $chunk =~
 #          s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
 
-
+    # Clean up stray markup
+    $chunk =~ s#\}\d*##g;
 
 
     # # and *#
