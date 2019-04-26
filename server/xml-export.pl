@@ -557,7 +557,10 @@ sub convert_chunk {
     # normal dagger
     $chunk =~ s/%157/&#134;/g;
 
-    $chunk =~ s#%(\d+)#$Diogenes::BetaHtml::percent{$1}#g;
+    # FIXME.  This quiets errors when a match is not found in the
+    # hash, but we should look in the Beta Code Manual to see if any
+    # more of these have been added to Unicode in recent years.
+    $chunk =~ s/%(\d+)/$Diogenes::BetaHtml::percent{$1}||'&#134;'.$1/ge;
     # Use more standard glyphs for dagger and double
     $chunk =~ s/%/&#134;/g;
     $chunk =~ s/&#2020;/&#134;/g;
