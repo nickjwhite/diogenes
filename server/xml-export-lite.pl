@@ -787,7 +787,7 @@ sub post_process_xml {
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         my $sib = $node->previousSibling;
         while ($sib) {
-            if ($sib->nodeName eq 'l' or $sib->nodeName eq 'p') {
+            if ($sib->nodeName eq 'l' or $sib->nodeName eq 'p' or $sib->nodeName eq 'label') {
                 $node->nodeName('label');
                 last;
             }
