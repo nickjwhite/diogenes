@@ -784,7 +784,7 @@ sub post_process_xml {
 
     # There may still be solitary <head>s that are not first item in
     # the <div>, so change <head>s preceded by <p> or <l> to <label>s.
-    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+    foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         my $sib = $node->previousSibling;
         while ($sib) {
             if ($sib->nodeName eq 'l' or $sib->nodeName eq 'p') {
@@ -813,16 +813,16 @@ sub post_process_xml {
 
     # BetaHtml.pm uses <i> <super> and <small>, so we need to change
     # those into TEI-compatible markup.
-    foreach my $node ($xmldoc->getElementsByTagName('i')) {
-        $node->setNodeName('hi');
+    foreach my $node (@{ $xmldoc->getElementsByTagName('i') }) {
+        $node->nodeName('hi');
         $node->setAttribute('rend', 'italic');
     }
-    foreach my $node ($xmldoc->getElementsByTagName('super')) {
-        $node->setNodeName('hi');
+    foreach my $node (@{ $xmldoc->getElementsByTagName('super') }) {
+        $node->nodeName('hi');
         $node->setAttribute('rend', 'superscript');
     }
-    foreach my $node ($xmldoc->getElementsByTagName('small')) {
-        $node->setNodeName('hi');
+    foreach my $node (@{ $xmldoc->getElementsByTagName('small') }) {
+        $node->nodeName('hi');
         $node->setAttribute('rend', 'small');
     }
 
