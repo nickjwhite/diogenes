@@ -703,10 +703,24 @@ sub post_process_xml {
                       $xmldoc->getElementsByTagName('div'),) {
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/) {
-            foreach my $child ($node->childNodes) {
-                $node->parentNode->insertBefore( $child, $node );
+            # In most cases, the node has a <head> or <label>, which
+            # can be promoted.
+            my $has_head = 0;
+            foreach ($node->childNodes) {
+                $has_head++ if $_->nodeName =~ m/^head|label$/;
             }
-            $node->unbindNode;
+            if ($has_head) {
+                foreach my $child ($node->childNodes) {
+                    $node->parentNode->insertBefore( $child, $node );
+                }
+                $node->unbindNode;
+            }
+            elsif ($node->nodeName eq 'l') {
+                # In those rare cases where there is just plain text
+                # within an <l>, we wrap it in a label instead.
+                $node->removeAttribute('n');
+                $node->setNodeName('label');
+            }
         }
     }
 
