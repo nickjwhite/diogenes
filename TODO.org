@@ -1,3 +1,10 @@
+* Current
+Add Diogenes version number to XML headers.
+Add provision to specify prose or verse.
+For poetic writers, all works titled fragment should be verse.
+Option to print name of work before conversion.
+Unify both export scripts.
+
 * Finish XML output functionality
 
 Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
@@ -10,8 +17,8 @@ Check out XML::Tidy for indentation at the end.
 And test install on MDS/NCPS
 
 * Post-release
-** Fix all XML validation errors
-** Adapt latex output code to enhance XML; extend schema
+** Adapt latex output code to enhance XML
+** Look through Beta Code Manual and add more Unicode
 
 * Long-term, aspirational to-do items
 ** Clean-up various Perl warnings.

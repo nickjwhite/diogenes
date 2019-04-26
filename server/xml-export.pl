@@ -771,11 +771,25 @@ sub post_process_xml {
         }
     }
 
+    # There may still be solitary <head>s that are not first item in
+    # the <div>, so change <head>s preceded by <p> or <l> to <label>s.
+    foreach my $node ($xmldoc->getElementsByTagName('head')) {
+        my $sib = $node->previousSibling;
+        while ($sib) {
+            if ($sib->nodeName eq 'l' or $sib->nodeName eq 'p') {
+                $node->setNodeName('label');
+                last;
+            }
+            $sib = $sib->previousSibling;
+        }
+    }
+
     # Some texts have an EXPLICIT within a <label>, which generally fall
     # after the end of the div, so we tuck them into the end of the
     # preceding div.
     foreach my $node ($xmldoc->getElementsByTagName('label')) {
         if ($node->textContent =~ m/EXPLICIT/) {
+            $node->setNodeName('trailer');
             my $sib = $node;
             while ($sib = $sib->previousSibling) {
                 if ($sib->nodeName eq 'div') {
