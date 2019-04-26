@@ -826,6 +826,17 @@ sub post_process_xml {
         $node->setAttribute('rend', 'small');
     }
 
+    # Some texts are nothing but titles in a <head>, so we provide an empty div.
+    my $body = $xmldoc->getElementsByTagName('body')->[0];
+    my $has_content = 0;
+    foreach (@{ $body->childNodes }) {
+        $has_content++ if $_->nodeType != TEXT_NODE and $_->nodeName ne 'head';
+    }
+    if (not $has_content) {
+        $body->appendChild($xmldoc->createElement('div'));
+    }
+
+
     fixup_spaces($xmldoc);
 
     if ($opt_u) {
