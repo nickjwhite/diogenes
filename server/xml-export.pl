@@ -923,6 +923,12 @@ sub ad_hoc_fixes {
         $out =~ s#</label>\]#\]</label>#g;
     }
 
+    # Arrianus
+    if ($file eq 'tlg2650001.xml') {
+        $out =~ s#\[<head>#<head>\[#g;
+        $out =~ s#</head>\]#\]</head>#g;
+    }
+
     # Hyginus Myth
     if ($file eq 'phi1263001.xml') {
         $out =~ s#<label ([^>]*)><supplied>QVI PIISSIMI FVERVNT\.</supplied></label>\s*<div ([^>]*)>#<div $2>\n<label $1><supplied>QVI PIISSIMI FVERVNT.</supplied></label>#;
