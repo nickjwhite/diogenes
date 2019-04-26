@@ -469,6 +469,21 @@ dagger_dbl 		 => '&#135;',
 # UTF-8-CB is precomposed (form C), preferring the base page.
 # UTF-8-DB is decomposed (form D), preferring the base page.
 
+# Addendum (2019).  Over the decades since this file was created, its
+# non-Unicode encodings have (thankfully) become obsolete.  Macs have
+# transitioned to using normal form C (e.g. silently converting text
+# copied onto the clipboard from D to C).  So UTF-8-CB is the only
+# encoding still relevant today.  In conection with creating the XML
+# export functionality, I have filled in the combinations that were
+# originally left blank because they were and are still not part of
+# Unicode.  This was done by using combining diacrits and (for capital
+# letters) sometimes free-standing diacrit groups; these are marked
+# with the comment comb or double respectively.  So the CB encoding
+# is no longer strictly made up of pre-composed characters.  This was
+# done to suppress warnings and to provide some indication of what the
+# text says.  The resulting vowel+diacrit combinations may be
+# nonsensical, but this is a problem for the person using the output.
+
 $Diogenes::Base::encoding{'UTF-8-CX'} = {
 
 # This entry tells us that this particular encoding includes glyphs 
@@ -1027,7 +1042,7 @@ diaer_peri 		=> "῁",
 
 iota_subscript 	=> "ͺ",
 longum 			=> "¯",
-breve 			=> "",
+breve 			=> "˘",
 
 #
 # Funny letters
@@ -1039,6 +1054,7 @@ rho_asper	 => "ῥ",
 Rho_asper	 => "Ῥ",
 rho_lenis 	 => "ῤ",
 Rho_lenis 	 => "Ρ", # not defined by Unicode
+rho_oxy          => "ρ", # error
 digamma 	 => "ϝ", 
 Digamma 	 => "Ϝ",
 koppa 		 => "ϟ",
@@ -1046,6 +1062,7 @@ Koppa 		 => "Ϟ",
 sampi 		 => "ϡ",   
 Sampi 		 => "Ϡ",   
 Special		 => "h", # *J is used by Cornell epigraphy database for aspirates
+special          => "?", # This is usually just an encoding error
 
 #
 # alpha with accents
@@ -1060,11 +1077,12 @@ alpha_asper_oxy  => "ἅ",
 alpha_lenis_bary => "ἂ",    
 alpha_asper_bary => "ἃ",	
 alpha_lenis_peri => "ἆ",
-alpha_asper_peri => "ἇ",     
+alpha_asper_peri => "ἇ",
+alpha_diaer      => "α̈", # comb
 
 Alpha_oxy        => "Ά", # 0386 
 Alpha_bary       => "Ὰ",
-Alpha_peri       => "",  
+Alpha_peri       => "῀Α", # double
 Alpha_lenis      => "Ἀ",       
 Alpha_asper      => "Ἁ",       
 Alpha_lenis_oxy  => "Ἄ",       
@@ -1072,7 +1090,8 @@ Alpha_asper_oxy  => "Ἅ",
 Alpha_lenis_bary => "Ἂ",    
 Alpha_asper_bary => "Ἃ",	
 Alpha_lenis_peri => "Ἆ",
-Alpha_asper_peri => "Ἇ",     
+Alpha_asper_peri => "Ἇ",
+Alpha_diaer      => "Α̈",  # comb
 
 #
 # alpha with accents and iota subscript
@@ -1091,9 +1110,9 @@ alpha_lenis_peri_isub => "ᾆ",
 alpha_asper_peri_isub => "ᾇ",    
 
 Alpha_isub       	  => "ᾼ",
-Alpha_oxy_isub        => "",     
-Alpha_bary_isub       => "",        
-Alpha_peri_isub       => "",        
+Alpha_oxy_isub        => "´ᾼ", # double
+Alpha_bary_isub       => "`ᾼ", # double
+Alpha_peri_isub       => "῀ᾼ", # double
 Alpha_lenis_isub      => "ᾈ",     
 Alpha_asper_isub      => "ᾉ",     
 Alpha_lenis_oxy_isub  => "ᾌ",     
@@ -1108,27 +1127,28 @@ Alpha_asper_peri_isub => "ᾏ",
 #
 epsilon_oxy        => "έ",
 epsilon_bary       => "ὲ",     
-epsilon_peri 	   => "ε̄", # macron for epigraphy    
+epsilon_peri 	   => "ε͂",
 epsilon_lenis      => "ἐ",        
 epsilon_asper      => "ἑ",        
 epsilon_lenis_oxy  => "ἔ",        
 epsilon_asper_oxy  => "ἕ",        
 epsilon_lenis_bary => "ἒ",        
 epsilon_asper_bary => "ἓ",	 
-epsilon_asper_peri => "ἑ̄",
-epsilon_lenis_peri => "ἐ̄", 
+epsilon_asper_peri => "ἑ͂",
+epsilon_lenis_peri => "ἐ͂",
+epsilon_diaer      => "ε̈",
 
 Epsilon_oxy        => "Έ",
 Epsilon_bary       => "Ὲ",     
-Epsilon_peri 	   => "̄Ε", # macron for epigraphy, etc.       
+Epsilon_peri 	   => "Ε͂",
 Epsilon_lenis      => "Ἐ",        
 Epsilon_asper      => "Ἑ",        
 Epsilon_lenis_oxy  => "Ἔ",        
 Epsilon_asper_oxy  => "Ἕ",        
 Epsilon_lenis_bary => "Ἒ",        
 Epsilon_asper_bary => "Ἓ",	 
-Epsilon_asper_peri => "Ἑ̄",
-Epsilon_lenis_peri => "Ἐ̄", 
+Epsilon_asper_peri => "Ἑ͂",
+Epsilon_lenis_peri => "Ἐ͂",
 
 #					 
 # eta with accents			 
@@ -1144,10 +1164,11 @@ eta_lenis_bary => "ἢ",
 eta_asper_bary => "ἣ",
 eta_lenis_peri => "ἦ",
 eta_asper_peri => "ἧ",
+eta_diaer      => "η̈",
 
 Eta_oxy        => "Ή",
 Eta_bary       => "Ὴ",
-Eta_peri       => "",
+Eta_peri       => "῀Η", # double
 Eta_lenis      => "Ἠ",
 Eta_asper      => "Ἡ",
 Eta_lenis_oxy  => "Ἤ",
@@ -1156,6 +1177,7 @@ Eta_lenis_bary => "Ἢ",
 Eta_asper_bary => "Ἣ",
 Eta_lenis_peri => "Ἦ",
 Eta_asper_peri => "Ἧ",
+Eta_diaer      => "Η̈",
 
 #
 # eta with accents and iota subscript
@@ -1175,9 +1197,9 @@ eta_lenis_peri_isub => "ᾖ",
 eta_asper_peri_isub => "ᾗ",  
 
 Eta_isub      		=> "ῌ",      
-Eta_oxy_isub        => "",  
-Eta_bary_isub       => "",  
-Eta_peri_isub       => "",  
+Eta_oxy_isub        => "´ῌ", # double
+Eta_bary_isub       => "`ῌ", # double
+Eta_peri_isub       => "῀ῌ", # double
 Eta_lenis_isub      => "ᾘ",  
 Eta_asper_isub      => "ᾙ",  
 Eta_lenis_oxy_isub  => "ᾜ",  
@@ -1205,10 +1227,16 @@ iota_diaer      => "ϊ",
 iota_diaer_oxy  => "ΐ",
 iota_diaer_bary => "ῒ",
 iota_diaer_peri => "ῗ",
+iota_diaer_lenis => "ϊ̓", # comb
+iota_diaer_asper => "ϊ̔", # comb
+iota_diaer_asper_oxy => "ΐ̔", # comb
+iota_diaer_lenis_oxy => "ΐ̓", # comb
+iota_diaer_lenis_peri => "ῗ̓", # comb
+iota_diaer_asper_peri => "ῗ̔", # comb
 
 Iota_oxy        => "Ί",
 Iota_bary       => "Ὶ",
-Iota_peri       => "",
+Iota_peri       => "῀Ι", # double
 Iota_lenis      => "Ἰ",
 Iota_asper      => "Ἱ",
 Iota_lenis_oxy  => "Ἴ",
@@ -1218,35 +1246,39 @@ Iota_asper_bary => "Ἳ",
 Iota_lenis_peri => "Ἶ",
 Iota_asper_peri => "Ἷ",
 Iota_diaer      => "Ϊ",
-Iota_diaer_oxy  => "",
-Iota_diaer_bary => "",
+Iota_diaer_oxy  => "´Ϊ", # double
+Iota_diaer_bary => "`Ϊ", # double
+Iota_diaer_lenis => "᾿Ϊ", # double
+Iota_diaer_asper => "῾Ϊ", # double
 
 #
 # omicron with accents
 #
 omicron_oxy        => "ό",
 omicron_bary       => "ὸ",
-omicron_peri 	   => "ο̄",  #macron for epigraphy          
+omicron_peri 	   => "ο͂",
 omicron_lenis      => "ὀ",
 omicron_asper      => "ὁ",
 omicron_lenis_oxy  => "ὄ",
 omicron_asper_oxy  => "ὅ",
 omicron_lenis_bary => "ὂ",
 omicron_asper_bary => "ὃ",
-omicron_asper_peri => "ὁ̄",    
-omicron_lenis_peri => "ὀ̄",        
+omicron_asper_peri => "ὁ͂",
+omicron_lenis_peri => "ὀ͂",
+omicron_diaer      => "ο̈",
 
 Omicron_oxy        => "Ό",
 Omicron_bary       => "Ὸ",
-Omicron_peri 	   => "Ο̄",           
+Omicron_peri 	   => "Ο͂",
 Omicron_lenis      => "Ὀ",
 Omicron_asper      => "Ὁ",
 Omicron_lenis_oxy  => "Ὄ",
 Omicron_asper_oxy  => "Ὅ",
 Omicron_lenis_bary => "Ὂ",
 Omicron_asper_bary => "Ὃ",
-Omicron_asper_peri => "Ὁ̄",    
-Omicron_lenis_peri => "Ὀ̄",        
+Omicron_asper_peri => "Ὁ͂",
+Omicron_lenis_peri => "Ὀ͂",
+Omicron_diaer      => "Ο̈",
 
 #
 # upsilon with accents
@@ -1266,21 +1298,24 @@ upsilon_diaer      => "ϋ",
 upsilon_diaer_oxy  => "ΰ", 
 upsilon_diaer_bary => "ῢ",
 upsilon_diaer_peri => "ῧ",
+upsilon_isub       => "υι", # occasional error
+upsilon_diaer_asper => "ϋ̔", # comb
+upsilon_diaer_asper_oxy => "ΰ̔", # comb
 
 Upsilon_oxy        => "Ύ",
 Upsilon_bary       => "Ὺ",
-Upsilon_peri       => "",
-Upsilon_lenis      => "",
+Upsilon_peri       => "῀Υ", # double
+Upsilon_lenis      => "᾿Υ", # double
 Upsilon_asper      => "Ὑ",
-Upsilon_lenis_oxy  => "",
+Upsilon_lenis_oxy  => "῎Υ", # double
 Upsilon_asper_oxy  => "Ὕ",
-Upsilon_lenis_bary => "",
+Upsilon_lenis_bary => "῍Υ", # double
 Upsilon_asper_bary => "Ὓ",
-Upsilon_lenis_peri => "",
+Upsilon_lenis_peri => "῏Υ", # double
 Upsilon_asper_peri => "Ὗ",
 Upsilon_diaer      => "Ϋ",
-Upsilon_diaer_oxy  => "", 
-Upsilon_diaer_bary => "",
+Upsilon_diaer_oxy  => "Ύ̈", # comb
+Upsilon_diaer_bary => "Ὺ̈", # comb
 
 #
 # omega with accents
@@ -1299,7 +1334,7 @@ omega_asper_peri => "ὧ",
 
 Omega_oxy        => "Ώ",
 Omega_bary       => "Ὼ",
-Omega_peri       => "",
+Omega_peri       => "῀Ω", # double
 Omega_lenis      => "Ὠ",
 Omega_asper      => "Ὡ",
 Omega_lenis_oxy  => "Ὤ",
@@ -1308,6 +1343,7 @@ Omega_lenis_bary => "Ὢ",
 Omega_asper_bary => "Ὣ",
 Omega_lenis_peri => "Ὦ",
 Omega_asper_peri => "Ὧ",
+Omega_diaer      => "Ω̈",
 
 #
 # omega with accents and iota subscript
@@ -1326,9 +1362,9 @@ omega_lenis_peri_isub => "ᾦ",
 omega_asper_peri_isub => "ᾧ",  
 
 Omega_isub      	  => "ῼ",     
-Omega_oxy_isub        => "",
-Omega_bary_isub       => "", 
-Omega_peri_isub       => "",
+Omega_oxy_isub        => "´ῼ", # double
+Omega_bary_isub       => "`ῼ", # double
+Omega_peri_isub       => "῀ῼ", # double
 Omega_lenis_isub      => "ᾨ", 
 Omega_asper_isub      => "ᾩ",
 Omega_lenis_oxy_isub  => "ᾬ",
