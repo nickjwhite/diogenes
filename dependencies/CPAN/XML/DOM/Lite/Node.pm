@@ -176,7 +176,16 @@ sub setAttribute {
         nodeValue => $value
     });
     return $value;
+}
 
+sub removeAttribute {
+    my ($self, $attname) = @_;
+    for (my $x = 0; $x < $self->{attributes}->length; $x++) {
+        if ($self->{attributes}->[$x]->{nodeName} eq $attname) {
+            return splice (@{ $self->{attributes} }, $x, 1);
+        }
+    }
+    die "$attname is not an attribute of $self";
 }
 
 sub firstChild {
