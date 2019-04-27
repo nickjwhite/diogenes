@@ -725,7 +725,7 @@ sub post_process_xml {
             elsif ($node->nodeName eq 'l') {
                 # In those rare cases where there is just plain text within an <l>, we wrap it in a label instead.
                 $node->removeAttribute('n');
-                $node->setNodeName('label');
+                $node->nodeName('label');
             }
         }
     }
