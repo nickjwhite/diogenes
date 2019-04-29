@@ -557,8 +557,8 @@ sub convert_chunk {
 #      $chunk =~
 #          s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
 
-
-
+    # Clean up stray markup
+    $chunk =~ s#\}\d*##g;
 
     # # and *#
     $chunk =~ s/\*#(\d+)/$Diogenes::BetaHtml::starhash{$1}/g;
@@ -988,6 +988,12 @@ sub ad_hoc_fixes {
     if ($file eq 'phi0830001.xml') {
         $out =~ s#\[(<label [^>]*>)#$1\[#g;
         $out =~ s#</label>\]#\]</label>#g;
+    }
+
+    # Arrianus
+    if ($file eq 'tlg2650001.xml') {
+        $out =~ s#\[<head>#<head>\[#g;
+        $out =~ s#</head>\]#\]</head>#g;
     }
 
     # Hyginus Myth
