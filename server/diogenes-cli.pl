@@ -50,7 +50,7 @@ use vars qw($opt_l $opt_w $opt_g $opt_b $opt_r $opt_p $opt_O $opt_R
 			$opt_B $opt_e $opt_h $opt_m $opt_N $opt_C
 			$opt_u $opt_U $opt_W $opt_o $opt_D $opt_P
 			$opt_F $opt_8 $opt_7 $opt_3 $opt_k $opt_j
-			$opt_t $opt_Z $opt_X);
+			$opt_t $opt_Z $opt_X $opt_1);
 
 delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};   # Make %ENV safer
 $ENV{'PATH'} = "/bin/:/usr/bin/";
@@ -76,7 +76,7 @@ my $mode = '';
 
 &display_help unless @ARGV;
 &display_help unless 
-getopts('FWwlgbriIpORdsvMCxfazBehu873tZPN:n:c:m:U:o:D:k:j:X:');
+getopts('FWwlgbriIpORdsvMCxfazBehu873tZP1N:n:c:m:U:o:D:k:j:X:');
 
 $args{type} = 'tlg' if $opt_g;
 $args{type} = 'tlg' if $opt_t;
@@ -132,6 +132,7 @@ if (not $opt_b and ($opt_i or $opt_I or $opt_M))
 }
 # Output with formatting codes stripped and hits highlighted, as default.
 $args{highlight} = 1 unless $opt_O;
+$Diogenes::Base::cgi_flag = 1 if $opt_1;
 
 die "You must specify a pattern. \n" unless @ARGV or $opt_b or $opt_Z or $opt_U;
 my @patterns = @ARGV;

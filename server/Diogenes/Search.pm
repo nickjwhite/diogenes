@@ -71,8 +71,11 @@ sub pgrep
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
                 undef $self->{seen}{$ARGV};
-                push @{ $self->{seen}{$ARGV} }, pos $buf 
-                    while ($buf =~ m#$pattern#g);
+                undef $self->{match_start}{$ARGV};
+                while ($buf =~ m#$pattern#g) {
+                    push @{ $self->{seen}{$ARGV} }, pos $buf;
+                    push @{ $self->{match_start}{$ARGV} }, $-[0];
+                }
                 if ($self->{seen}{$ARGV})
                 {
                     my $auth_num = $ARGV;
@@ -592,8 +595,7 @@ sub extract_hits
                          ($self->{work_num}) != $self->{current_work});  
             
         }
-        
-        $start = $offset - 2;
+        $start = $self->{match_start}{$auth}[$match] - 2;
                 
         # Get context block
         if ($self->{numeric_context}) 
@@ -696,9 +698,12 @@ sub extract_hits
                 (@{ $self->{pattern_list} });
             my $matching_sets = values %matches;
             print STDERR "+ $result\n" if $self->{debug};
-#                       print STDERR "+ ".$self->{pattern_list}[0]."\n" if $self->{debug};
+            # print STDERR "+ ".$self->{pattern_list}[0]."\n" if $self->{debug};
             print STDERR "+ $matching_sets: $auth, $offset\n" if $self->{debug};
-            die "ERROR: Disappearing Match!\n" unless $matching_sets;
+#            my $seens = join ':', @{ $self->{seen}{$auth} };
+#            print STDERR  "$seens\n";
+
+            die "ERROR: Disappearing Match!!\n" unless $matching_sets;
             next HIT unless $matching_sets >= $self->{min_matches_int};
             next HIT if $self->{reject_pattern} and $result =~ m/$self->{reject_pattern}/;
         }
