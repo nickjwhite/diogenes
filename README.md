@@ -89,10 +89,11 @@ Additional features
 
 Diogenes has a number of other features which predate the development
 of the standalone app and which are no longer fully supported but
-which may still work.  These include a command-line interface (dio),
-LaTeX output, and support for a wide variety of pre-Unicode encodings
-for Ancient Greek.  XML export can also be done by running the
-xml-export.pl script from the command line.
+which may still work.  These include a command-line interface
+(`diogenes-cli.pl`), LaTeX output, and support for a wide variety of
+pre-Unicode encodings for Ancient Greek.  More options for XML export
+are available by running the xml-export.pl script from the command
+line.
 
 Building the morphology data & dictionaries
 -------------------------------------------
