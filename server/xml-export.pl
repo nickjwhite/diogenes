@@ -271,6 +271,9 @@ AUTH: foreach my $auth_num (@all_auths) {
                         $line = $2;
                     }
                     else {
+                        # We arrive here only in tlg1386016.xml,
+                        # section 75, where one word is hyphenated
+                        # twice, spanning three lines.
                         warn "No solution: $chunk \n\n$line\n";
                     }
                 }

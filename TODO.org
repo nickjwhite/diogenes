@@ -5,6 +5,12 @@ For poetic writers, all works titled fragment should be verse.
 Option to print name of work before conversion.
 Unify both export scripts.
 Test libxml's relaxng validation
+restart perl server when it crashes
+don't move <head>s to start of div ...
+then test "no solution" case
+
+for prose, think about starting a new <p> whenever there is a <space> at the very start of a line.
+
 
 * Finish XML output functionality
 
