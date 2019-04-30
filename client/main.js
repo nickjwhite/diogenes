@@ -1,5 +1,5 @@
 const {app, BrowserWindow, Menu, MenuItem, ipcMain, session} = require('electron')
-const {execFile} = require('child_process')
+const {spawn} = require('child_process')
 const path = require('path')
 const process = require('process')
 const fs = require('fs')
@@ -241,7 +241,7 @@ function startServer () {
 		serverPath = path.join(app.getAppPath(), '..', '..', 'server', 'diogenes-server.pl')
 	}
 
-	let server = execFile(perlName, [serverPath], {'windowsHide': true})
+        let server = spawn(perlName, [serverPath], {'windowsHide': true})
 	server.stdout.on('data', (data) => {
 		console.log('server stdout: ' + data)
 	})
