@@ -139,9 +139,11 @@ sub pgrep
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
                 undef $self->{seen}{$author};
-                
-                push @{ $self->{seen}{$author} }, (pos $buf) 
-                    while $buf =~ m#$pattern#g;
+                undef $self->{match_start}{$ARGV};
+                while ($buf =~ m#$pattern#g) {
+                    push @{ $self->{seen}{$author} }, (pos $buf);
+                    push @{ $self->{match_start}{$author} }, $-[0];
+                }
                 $self->extract_hits($author);
             }
         }
