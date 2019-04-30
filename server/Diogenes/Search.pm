@@ -27,7 +27,6 @@ sub do_search
 sub pgrep 
 {
     my $self = shift;
-        
     chdir "$self->{cdrom_dir}" or 
         $self->barf ("cannot chdir to $self->{cdrom_dir} ($!)");
     print STDERR "\nCurrent dir: ",`pwd`, 
@@ -61,13 +60,19 @@ sub pgrep
         # Do the (full-file) search.  
         #print Data::Dumper->Dump(\@ARGV);
         while ($buf = <>) 
-        { 
+        {
             # Search for the minimum necessary number of patterns
             for (   my $pass = 0; $pass <= $final_pass; $pass++  )
             {
                 # Before each pass, make sure that the browser is still listening;
                 # SIGPIPE does not work under MS Windows
-                return if $Diogenes_Daemon::flag and not print ("\0");
+                my $success = print ("\0");
+                if (not $success) {
+                    print STDERR "Test print failed! $!\n";
+                    return if $Diogenes_Daemon::flag;
+                } else {
+                    print STDERR "OK!\n" if $self->{debug};
+                }
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
                 undef $self->{seen}{$ARGV};
@@ -134,8 +139,12 @@ sub pgrep
             # This does the search, storing the locations in %seen
             # Search for the minimum necessary number of patterns
             for (   my $pass = 0; $pass <= $final_pass; $pass++  )
-            {
-                return if $Diogenes_Daemon::flag and not print ("\0");
+              {
+                my $success = print ("\0");
+                if (not $success) {
+                    print STDERR "Test print failed! $!\n";
+                    return if $Diogenes_Daemon::flag;
+                }
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
                 undef $self->{seen}{$author};
@@ -561,6 +570,7 @@ sub extract_hits
         # is to start at the beginning of the correct block
         $last_offset = $offset;
         $offset = $self->{seen}{$auth}[$match];
+        print STDERR "Match num: $match; offset: $offset\n" if $self->{debug};
         my $buf_start  = (($offset >> 13) << 13);
         
         # Optimize case where one hit comes close after the previous,
