@@ -18,6 +18,8 @@ Implement sub-corpora by allowing a list of author numbers.  In cgi script, flat
 
 Check out XML::Tidy for indentation at the end.
 
+Go through beta code manual and pick up all unicode equivs.
+
 * Generate patch for XML::DOM::Lite
 
 * Test on Windows USB stick

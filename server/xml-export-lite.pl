@@ -561,8 +561,8 @@ sub convert_chunk {
     $chunk =~ s#\}\d*##g;
 
     # # and *#
-    $chunk =~ s/\*#(\d+)/$Diogenes::BetaHtml::starhash{$1}/g;
-    $chunk =~ s/(?<!&)#(\d+)/$Diogenes::BetaHtml::hash{$1}||'??'/ge;
+    $chunk =~ s/\*#(\d+)/$Diogenes::BetaHtml::starhash{$1}||print STDERR "Missing *#: $1\n";'??'/ge;
+    $chunk =~ s/(?<!&)#(\d+)/$Diogenes::BetaHtml::hash{$1}||print STDERR "Missing #: $1\n";'??'/ge;
     $chunk =~ s/(?<!&)#/&#x0374;/g;
 
     # some punctuation
@@ -571,13 +571,10 @@ sub convert_chunk {
 
     # "inverted dagger", used in Augustus imp., not in Unicode so use
     # normal dagger
-    $chunk =~ s/%157/&#134;/g;
+    $chunk =~ s/%157/&#x2020;/g;
 
-    $chunk =~ s#%(\d+)#$Diogenes::BetaHtml::percent{$1}#g;
-    # Use more standard glyphs for dagger and double
-    $chunk =~ s/%/&#134;/g;
-    $chunk =~ s/&#2020;/&#134;/g;
-    $chunk =~ s/&#2021;/&#135;/g;
+    $chunk =~ s#%(\d+)#$Diogenes::BetaHtml::percent{$1}||print STDERR "Missing %: $1\n";'??'#ge;
+    $chunk =~ s/%/&#x2020;/g;
 
     # @ (whitespace)
     ## Sometimes these appear at the end of a line, to no apparent purpose.
@@ -608,8 +605,8 @@ sub convert_chunk {
     # [] (brackets of all sorts)
     if (0) {
         # This would be to keep typographical markup
-        $chunk =~ s#\[(\d+)#$Diogenes::BetaHtml::bra{$1}#g;
-        $chunk =~ s#\](\d+)#$Diogenes::BetaHtml::ket{$1}#g;
+        $chunk =~ s#\[(\d+)#$Diogenes::BetaHtml::bra{$1}||print STDERR "Missing [: $1\n";'??'#ge;
+        $chunk =~ s#\](\d+)#$Diogenes::BetaHtml::ket{$1}||print STDERR "Missing ]: $1\n";'??'#ge;
     }
     else {
         # We try to convert editorial symbols to TEI markup.  This may
@@ -632,8 +629,6 @@ sub convert_chunk {
         $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
 
         $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
-        $chunk =~ s!&#13[45];([^\n])&#13[45];!<unclear>$1</unclear>!g;
-        $chunk =~ s!&#13[45];!<unclear/>!g;
     }
 
     $chunk =~ s#\`##g;
