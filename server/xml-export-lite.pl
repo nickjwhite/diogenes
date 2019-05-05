@@ -696,18 +696,18 @@ sub post_process_xml {
     my $parser = Parser->new();
     my $xmldoc = $parser->parse($in);
 
-    # Change <space>s to rend attr.  Best to do this first, and then
+    # Change spaces to rend attr.  Best to do this first, and then
     # again last, to take into account changes in between.
     fixup_spaces($xmldoc);
 
     # Remove all div and l elements with n="t", preserving content;
-    # these are just titles and usually have a <head>, so should not
+    # these are just titles and usually have a head, so should not
     # appear in a separate div or line.
     foreach my $node (@{ $xmldoc->getElementsByTagName('div') },
                       @{ $xmldoc->getElementsByTagName('l') }) {
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/) {
-            # In most cases, the node has a <head> or <label>, which
+            # In most cases, the node has a head or label, which
             # can be promoted.
             my $has_head = 0;
             foreach (@{ $node->childNodes }) {
@@ -723,17 +723,17 @@ sub post_process_xml {
                 $node->unbindNode;
             }
             elsif ($node->nodeName eq 'l') {
-                # In those rare cases where there is just plain text within an <l>, we wrap it in a label instead.
+                # In those rare cases where there is just plain text within an l, we wrap it in a label instead.
                 $node->removeAttribute('n');
                 $node->nodeName('label');
             }
         }
     }
 
-    # <head>s often appear inside <p> and <l>, which isn't valid.  So
-    # we move the <head> to just before its parent, and then delete
-    # the former parent if it has only whitespace content.
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
+    # heads often appear inside p and l, which isn't valid.  So we
+    # move the head to just before its parent, and then delete the
+    # former parent if it has only whitespace content.
         my $parent = $node->parentNode;
         if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
             $parent->parentNode->insertBefore($node, $parent);
@@ -741,7 +741,7 @@ sub post_process_xml {
         }
     }
 
-    # When there are two <head>s in immediate succession, it's usually
+    # When there are two heads in immediate succession, it's usually
     # just a line break, so we unify them
     my $nodelist = $xmldoc->getElementsByTagName('head');
     foreach my $node (@{ $nodelist }) {
@@ -757,9 +757,9 @@ sub post_process_xml {
         }
     }
 
-    # Any remaining <space> within a <head> is just superfluous
+    # Any remaining 'space' within a 'head' is just superfluous
     # indentation left over from the unification of a multi-line set
-    # of <head>s, so should just be removed.
+    # of 'head's, so should just be removed.
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         foreach my $child (@{ $node->childNodes }) {
             if ($child->nodeName eq 'space') {
@@ -768,10 +768,10 @@ sub post_process_xml {
         }
     }
 
-    # Some texts have multiple <head>s spread throughout a single
-    # <div> or <body>, such as when these represent the titles of
+    # Some texts have multiple 'head's spread throughout a single
+    # 'div' or 'body', such as when these represent the titles of
     # works to which a list of fragments have been assigned.  When
-    # this happens, we change the <head>s to <label>s, of which we are
+    # this happens, we change the 'head's to 'label's, of which we are
     # allowed to have more than one.
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         my $parent = $node->parentNode;
@@ -782,8 +782,8 @@ sub post_process_xml {
         }
     }
 
-    # There may still be solitary <head>s that are not first item in
-    # the <div>, so change <head>s preceded by <p> or <l> to <label>s.
+    # There may still be solitary 'head's that are not first item in
+    # the 'div', so change 'head's preceded by 'p' or 'l' to 'label's.
     foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
         my $sib = $node->previousSibling;
         while ($sib) {
@@ -795,7 +795,7 @@ sub post_process_xml {
         }
     }
 
-    # Some texts have an EXPLICIT within a <label>, which generally fall
+    # Some texts have an EXPLICIT within a 'label', which generally fall
     # after the end of the div, so we tuck them into the end of the
     # preceding div.
     foreach my $node (@{ $xmldoc->getElementsByTagName('label') }) {
@@ -811,7 +811,7 @@ sub post_process_xml {
         }
     }
 
-    # BetaHtml.pm uses <i> <super> and <small>, so we need to change
+    # BetaHtml.pm uses 'i' 'super' and 'small', so we need to change
     # those into TEI-compatible markup.
     foreach my $node (@{ $xmldoc->getElementsByTagName('i') }) {
         $node->nodeName('hi');
@@ -826,7 +826,7 @@ sub post_process_xml {
         $node->setAttribute('rend', 'small');
     }
 
-    # Some texts are nothing but titles in a <head>, so we provide an empty div.
+    # Some texts are nothing but titles in a 'head', so we provide an empty div.
     my $body = $xmldoc->getElementsByTagName('body')->[0];
     my $has_content = 0;
     foreach (@{ $body->childNodes }) {
@@ -884,8 +884,8 @@ sub hex_to_utf8 {
 
 sub fixup_spaces {
     my $xmldoc = shift;
-    # Change <space> to indentation at start of para, line, etc.  Note
-    # that this is an imperfect heuristic.  A <space> at the start of
+    # Change 'space' to indentation at start of para, line, etc.  Note
+    # that this is an imperfect heuristic.  A 'space' at the start of
     # a line of verse from a fragmentary papyrus is probably correct,
     # and really should not be converted to indentation.
     foreach my $node (@{ $xmldoc->getElementsByTagName('space')} ) {
@@ -895,11 +895,11 @@ sub fixup_spaces {
         }
         my $parent = $node->parentNode;
         my $quantity = $node->getAttribute('quantity') || '1';
-        # If <space> comes right before (allowing whitespace).
+        # If 'space' comes right before (allowing whitespace).
         if ($next and $next->nodeName =~ m/^l|p|head|label$/) {
             $next->setAttribute('rend',"indent($quantity)");
             $node->unbindNode;
-        } # If <space> comes right after (allowing whitespace).
+        } # If 'space' comes right after (allowing whitespace).
         elsif ($parent and $parent->nodeName =~ m/^l|p|head|label$/) {
             my $child = $parent->firstChild;
             while ($child and $child->nodeType == TEXT_NODE and $child->nodeValue =~ m/^\s*$/s) {
