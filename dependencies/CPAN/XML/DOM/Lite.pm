@@ -74,9 +74,12 @@ XML::DOM::Lite - Lite Pure Perl XML DOM Parser Kit
     # ... do stuff
  }
  $node->attributes->{foo} = "bar";          # or as hashref (overload)
-  
- $nodeList = $node->getElementsByTagName("child"); # deep
  
+ # A new list, not live
+ $nodeList = $node->getElementsByTagName("child"); # deep
+ # A live list
+ $nodeList = $node->childNodes;
+
  $node->insertBefore($newchild, $refchild);
  $node->replaceChild($newchild, $refchild);
  
