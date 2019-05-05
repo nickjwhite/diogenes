@@ -695,7 +695,8 @@ sub post_process_xml {
 
     # Remove all div and l elements with n="t", preserving content;
     # these are just titles and usually have a <head>, so should not
-    # appear in a separate div or line.
+    # appear in a separate div or line.  FIXME: and we should remove
+    # any <div>s or <l>s inside, though preserving their content.
     foreach my $node ($xmldoc->getElementsByTagName('l'),
                       $xmldoc->getElementsByTagName('div'),) {
         my $n = $node->getAttribute('n');
@@ -721,6 +722,13 @@ sub post_process_xml {
         }
     }
 
+    # FIXME When the <head> is the first non-blank child of the <p> or
+    # <l> we move the <head> to just before its parent, and then
+    # delete the former parent if it has only whitespace content.  But
+    # we must not do that elsewhere, for in texts with <div>s that do
+    # not respect text structure (such as Stephanus pages), a heading
+    # can appear anywhere.
+
     # <head>s often appear inside <p> and <l>, which isn't valid.  So
     # we move the <head> to just before its parent, and then delete
     # the former parent if it has only whitespace content.
@@ -732,6 +740,7 @@ sub post_process_xml {
         }
     }
 
+    # FIXME: not always true.  Do this only when the two <head>s are together in a <div n="t"> or <l n="t1"><l n="t2"> situation.
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
@@ -743,6 +752,7 @@ sub post_process_xml {
         }
     }
 
+    # FIXME: remove this
     # Any remaining <space> within a <head> is just superfluous
     # indentation left over from the unification of a multi-line set
     # of <head>s, so should just be removed.
