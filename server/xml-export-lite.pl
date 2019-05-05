@@ -730,26 +730,35 @@ sub post_process_xml {
         }
     }
 
-    foreach my $node (@{ $xmldoc->getElementsByTagName('head') }) {
     # heads often appear inside p and l, which isn't valid.  So we
     # move the head to just before its parent, and then delete the
     # former parent if it has only whitespace content.
+    my $nodelist = $xmldoc->getElementsByTagName('head');
+    foreach my $node (@{ $nodelist }) {
         my $parent = $node->parentNode;
         if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
             $parent->parentNode->insertBefore($node, $parent);
-            $parent->unbindNode unless $parent->textContent =~ m/\S/;
+            unless ($parent->textContent =~ m/\S/) {
+                $parent->unbindNode;
+            }
         }
     }
 
     # When there are two heads in immediate succession, it's usually
     # just a line break, so we unify them
-    my $nodelist = $xmldoc->getElementsByTagName('head');
+    $nodelist = $xmldoc->getElementsByTagName('head');
     foreach my $node (@{ $nodelist }) {
         if ($node) {
             my $sib = $node->nextNonBlankSibling;
             if ($sib and $sib->nodeName eq 'head') {
                 $node->appendChild($xmldoc->createTextNode(' '));
-                $node->appendChild($_) foreach @{ $sib->childNodes };
+                # childNodes returns a reference to a live list which
+                # appendChild modifies, so we cannot iterate over it
+                # reliably without copying its contents first.
+                my @nodelist2 = @{ $sib->childNodes };
+                foreach my $n (@nodelist2) {
+                    $node->appendChild($n);
+                }
                 # We have to remove nodes from the list manually; it is not live and does not update automatically
                 $nodelist->removeNode($sib);
                 $sib->unbindNode;
