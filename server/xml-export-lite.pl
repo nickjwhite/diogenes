@@ -561,8 +561,12 @@ sub convert_chunk {
     $chunk =~ s#\}\d*##g;
 
     # # and *#
-    $chunk =~ s/\*#(\d+)/$Diogenes::BetaHtml::starhash{$1}||print STDERR "Missing *#: $1\n";'??'/ge;
-    $chunk =~ s/(?<!&)#(\d+)/$Diogenes::BetaHtml::hash{$1}||print STDERR "Missing #: $1\n";'??'/ge;
+    $chunk =~ s/\*#(\d+)/if(exists $Diogenes::BetaHtml::starhash{$1})
+                             {$Diogenes::BetaHtml::starhash{$1}} else
+                             {print STDERR "Missing *#: $1\n";"*#$1??"}/ge;
+    $chunk =~ s/(?<!&)#(\d+)/if(exists $Diogenes::BetaHtml::hash{$1})
+                             {$Diogenes::BetaHtml::hash{$1}} else
+                             {print STDERR "Missing #: $1\n";"#$1??"}/ge;
     $chunk =~ s/(?<!&)#/&#x0374;/g;
 
     # some punctuation
@@ -573,7 +577,9 @@ sub convert_chunk {
     # normal dagger
     $chunk =~ s/%157/&#x2020;/g;
 
-    $chunk =~ s#%(\d+)#$Diogenes::BetaHtml::percent{$1}||print STDERR "Missing %: $1\n";'??'#ge;
+    $chunk =~ s#%(\d+)#if(exists $Diogenes::BetaHtml::percent{$1})
+                       {$Diogenes::BetaHtml::percent{$1}} else
+                       {print STDERR "Missing %: $1\n";"%$1??"}#ge;
     $chunk =~ s/%/&#x2020;/g;
 
     # @ (whitespace)
@@ -605,8 +611,12 @@ sub convert_chunk {
     # [] (brackets of all sorts)
     if (0) {
         # This would be to keep typographical markup
-        $chunk =~ s#\[(\d+)#$Diogenes::BetaHtml::bra{$1}||print STDERR "Missing [: $1\n";'??'#ge;
-        $chunk =~ s#\](\d+)#$Diogenes::BetaHtml::ket{$1}||print STDERR "Missing ]: $1\n";'??'#ge;
+        $chunk =~ s#\[(\d+)#if(exists $Diogenes::BetaHtml::bra{$1})
+                             {$Diogenes::BetaHtml::bra{$1}} else
+                             {print STDERR "Missing [: $1\n";"[$1??"}#ge;
+        $chunk =~ s#\](\d+)#if(exists $Diogenes::BetaHtml::ket{$1})
+                             {$Diogenes::BetaHtml::ket{$1}} else
+                             {print STDERR "Missing ]: $1\n";"]$1??"}#ge;
     }
     else {
         # We try to convert editorial symbols to TEI markup.  This may
