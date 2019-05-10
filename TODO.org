@@ -1,4 +1,7 @@
 * Current
+
+Fix no solution: tlg1386016.xml
+
 Add Diogenes version number to XML headers.
 Add provision to specify prose or verse.
 For poetic writers, all works titled fragment should be verse.
@@ -11,6 +14,9 @@ then test "no solution" case
 
 for prose, think about starting a new <p> whenever there is a <space> at the very start of a line.
 
+Remove if (0) and put that section after else.
+
+Check scholia
 
 * Finish XML output functionality
 

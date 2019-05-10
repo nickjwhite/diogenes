@@ -35,6 +35,7 @@ use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;
 use Diogenes::BetaHtml;
+use Diogenes::BetaXml;
 
 my $dirname = 'diogenes-xml';
 
