@@ -11,9 +11,9 @@
 # library (XML::DOM::Lite), which is shipped with Diogenes, because
 # that does not entail any additional binary dependencies for the
 # desktop application.  But if installation of the XML::LibXML modules
-# is detected, then libxml is used instead, because it is faster.  The
-# XML output from both modes of operation should be identical (please
-# file a bug report if not).
+# is detected, then libxml is used instead, because it is a bit
+# faster.  The XML output from both modes of operation should be
+# identical (please file a bug report if not).
 
 # There are command-line switches to force use of XML::DOM:Lite or
 # XML::LibXML.  When using libxml, additional functionality, which has
@@ -272,7 +272,7 @@ AUTH: foreach my $auth_num (@all_auths) {
         $auth_num.$query->{txt_suffix};
     my $punct = q{_.;:!?};
     local undef $/;
-    print "Converting $auth_name ($auth_num)\n" if $debug;
+    print "Author: $auth_name ($auth_num)\n" if $debug;
     open( IN, $filename_in ) or die "Could not open $filename_in\n";
     $buf = <IN>;
     close IN or die "Could not close $filename_in";
@@ -403,6 +403,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 $header =~ s#__VERSION__#$Diogenes::Base::Version#;
 
                 $is_verse = is_work_verse($auth_num, $work_num);
+                print "  Converting $work_name " .  ($is_verse ? "(verse)" : "(prose)") . ".\n";
 #                 print "$auth_num: $work_num, $is_verse\n" if $debug;
                 %div_labels = %{ $level_label{$corpus}{$auth_num}{$work_num} };
                 @divs = reverse sort numerically keys %div_labels;
@@ -737,7 +738,7 @@ sub write_xml_file {
     print AUTHTAB "  </work>\n";
 
     if ($opt_s) {
-        print "Validating $file ... ";
+        print "    Validating $file ... ";
         die "Error: Java is required for validation, but java not found"
             unless which 'java';
         # xmllint validation errors can be misleading; jing is better

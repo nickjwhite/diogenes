@@ -2,7 +2,6 @@
 
 Fix no solution: tlg1386016.xml
 
-Add Diogenes version number to XML headers.
 Add provision to specify prose or verse.
 For poetic writers, all works titled fragment should be verse.
 Option to print name of work before conversion.
