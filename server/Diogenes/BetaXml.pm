@@ -15,6 +15,7 @@ $Diogenes::BetaHtml::hash{107}  = '<g source="hash-107" ref="Two Dashes and Thre
 $Diogenes::BetaHtml::hash{108}  = '<g source="hash-108" ref="Three Dashes and Two Dots"/>';
 $Diogenes::BetaHtml::hash{124}  = '<g source="hash-124" ref="Two Dashes and Three Dots"/>';
 $Diogenes::BetaHtml::hash{126}  = '<g source="hash-126" ref="Two Dashes and Four Dots"/>';
+$Diogenes::BetaHtml::hash{157}  = '<g source="hash-157" ref="Six Dots"/>';
 $Diogenes::BetaHtml::hash{243}  = '<g source="hash-243" ref="Unknown"/>';
 $Diogenes::BetaHtml::hash{246}  = '<g source="hash-246" ref="Heaven"/>';
 $Diogenes::BetaHtml::hash{247}  = '<g source="hash-247" ref="Earth"/>';
@@ -76,6 +77,14 @@ $Diogenes::BetaHtml::hash{705}  = '<g source="hash-705" ref="Unknown"/>';
 $Diogenes::BetaHtml::hash{706}  = '<g source="hash-706" ref="Unknown"/>';
 $Diogenes::BetaHtml::hash{707}  = '<g source="hash-707" ref="Unknown"/>';
 $Diogenes::BetaHtml::hash{708}  = '<g source="hash-708" ref="Unknown"/>';
+
+$Diogenes::BetaHtml::hash{1106} = '<abbr source="hash-1106">¼</abbr>';
+$Diogenes::BetaHtml::hash{1112} = '<g source="hash-1112" ref="Unknown"/>';
+$Diogenes::BetaHtml::hash{1113} = '<g source="hash-1113" ref="Unknown"/>';
+$Diogenes::BetaHtml::hash{1118} = '<g source="hash-1118" ref="Unknown"/>';
+$Diogenes::BetaHtml::hash{1120} = '<g source="hash-1120" ref="Unknown"/>';
+$Diogenes::BetaHtml::hash{1122} = '<g source="hash-1122" ref="Unknown"/>';
+$Diogenes::BetaHtml::hash{1134} = '<g source="hash-1134" ref="Unknown"/>';
 
 $Diogenes::BetaHtml::hash{1315} = '<abbr source="hash-1315">ΜΡ</abbr>';
 $Diogenes::BetaHtml::hash{1321}  = '<g source="hash-1321" ref="ἡλιακόν"/>';
