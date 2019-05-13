@@ -27,6 +27,22 @@ Go through beta code manual and pick up all unicode equivs.
 
 * Generate patch for XML::DOM::Lite
 
+
+* Save file
+https://stackoverflow.com/questions/40501424/save-loaded-html-file-from-electron-app
+let file = new File([document.documentElement.outerHTML]
+           , "file-" + new Date().getTime() + ".html"
+           , {type:"text/html", lastModified:new Date().getTime()});
+
+// your content is into a variable named 'content'
+var fs = require('fs');
+try { fs.writeFileSync('myfile.txt', content, 'utf-8'); }
+catch(e) { alert('Failed to save the file !'); }
+
+* Fix HTTP Header overflow
+With large number of inflected forms, REQUEST_URI_TOO_LARGE.
+Try switching to POST.
+
 * Test on Windows USB stick
 And test install on MDS/NCPS
 
