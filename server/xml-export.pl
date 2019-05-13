@@ -64,7 +64,7 @@ There are two mandatory switches:
         option all authors will be converted.  Valid values are:
         $corpora
 
--o      Path to the parent of the output directory. If the supplied path 
+-o      Path to the parent of the output directory. If the supplied path
         contains a directory called $resources, only the
         components of the path up to that directory will be used; if
         it does not, $resources will be appended to the supplied
@@ -83,14 +83,14 @@ Further optional switches are supported:
 -v      Verbose info on progress of conversion
 -n      Comma-separated list of author numbers to convert
 -d      DigiLibLT compatibility; equal to -rpat (requires libxml)
--r      Convert book numbers to Roman numerals 
+-r      Convert book numbers to Roman numerals
 -p      Mark paragraphs as milestones rather than divs (requires libxml)
 -a      Suppress translating indentation into <space> tags
 -l      Pretty-print XML using xmllint (requires libxml)
 -s      Validate output against Relax NG Schema (via Jing;
           requires Java runtime)
 -t      Translate div labels to DigiLibLT labels
--e      When using XML::DOM::Lite, do not convert hex entities to utf8 
+-e      When using XML::DOM::Lite, do not convert hex entities to utf8
           (libxml2 insists upon converting to utf8)
 
 };
@@ -403,7 +403,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 $header =~ s#__VERSION__#$Diogenes::Base::Version#;
 
                 $is_verse = is_work_verse($auth_num, $work_num);
-                print "  Converting $work_name " .  ($is_verse ? "(verse)" : "(prose)") . ".\n";
+                print "  Converting $work_name " .  ($is_verse ? "(lines)" : "(prose)") . " ($auth_num:$work_num).\n";
 #                 print "$auth_num: $work_num, $is_verse\n" if $debug;
                 %div_labels = %{ $level_label{$corpus}{$auth_num}{$work_num} };
                 @divs = reverse sort numerically keys %div_labels;
@@ -721,7 +721,7 @@ sub write_xml_file {
         my $serializer = XML::DOM::Lite::Serializer->new(indent=>'none');
         $text = $serializer->serializeToString($xmldoc);
     }
-    
+
     $text = ad_hoc_fixes($text, $file);
 
     my $file_path = File::Spec->catfile( $path, $file );
@@ -758,7 +758,7 @@ sub write_xml_file {
 sub post_process_xml {
     my $in = shift;
     my $file = shift;
-    
+
     my ($parser, $xmldoc);
     if ($libxml) {
         $parser = XML::LibXML->new({huge=>1});
@@ -773,7 +773,7 @@ sub post_process_xml {
     # and then again at the end, to take into account changes in
     # between.
     fixup_spaces($xmldoc);
-    
+
     # FIXME: and we should remove any 'div's or 'l's inside, though
     # preserving their content.
 
@@ -833,9 +833,9 @@ sub post_process_xml {
                     $node->nodeName('label');
                 }
             }
-        }   
+        }
     }
-    
+
     # FIXME When the 'head' is the first non-blank child of the 'p' or
     # 'l' we move the 'head' to just before its parent, and then
     # delete the former parent if it has only whitespace content.  But
@@ -846,7 +846,7 @@ sub post_process_xml {
     # A 'head' often appears inside 'p' or 'l', which isn't valid.  So
     # we move the 'head' to just before its parent, and then delete
     # the former parent if it has only whitespace content.
-        
+
     if ($libxml) {
         foreach my $node ($xmldoc->getElementsByTagName('head')) {
             my $parent = $node->parentNode;
@@ -870,7 +870,7 @@ sub post_process_xml {
     }
 
     # FIXME: not always true.  Do this only when the two <head>s are together in a <div n="t"> or <l n="t1"><l n="t2"> situation.
-    
+
     # When there are two 'head's in immediate succession, it's usually
     # just a line break, so we unify them.
     if ($libxml) {
@@ -1078,7 +1078,7 @@ sub post_process_xml {
         # XML::DOM::Lite, we need to do the same.
         convert_entities($xmldoc);
     }
-    
+
     return $xmldoc;
 }
 
@@ -1171,14 +1171,14 @@ sub fixup_spaces {
                     $node->unbindNode;
                 }
             }
-        }        
+        }
     }
 }
 
 sub milestones {
     die "Milestones not implemented yet with XML::DOM::Lite\n." unless $libxml;
     my $xmldoc = shift;
-    
+
     # Added this at the request of DigiLibLT.  They prefer paragraph
     # divs to be converted into milestones, so that <div type="par"
     # n="1"> becomes <milestone unit="par" n="1"/> and the
@@ -1193,7 +1193,7 @@ sub milestones {
             # Find nodes with a child of at least one <div type="par">
             $xpc->findnodes('//*[x:div/@type="par"]',$xmldoc)) {
             my $new_p = $xmldoc->createElementNS( $xmlns, 'p');
-            
+
             $new_p->appendText("\n");
             foreach my $child ($node->nonBlankChildNodes) {
                 $new_p->appendChild($child);
@@ -1272,13 +1272,98 @@ sub ad_hoc_fixes {
 
 sub is_work_verse {
     my ($auth_num, $work_num) = @_;
-    # Heuristic to tell prose from verse: a work is verse if its lowest
-    # level of markup is "verse" rather than "line", if the author has
-    # an "Lyr." in their name or if the ratio of hyphens is very low.
-#     print "$query->{auth_num}, $work_num\n";
+
+    # All documentary corpora (papyri and inscriptions) are "verse", because line breaks and line numbers are significant.
+    return 1 if $corpus =~ m/^chr|ddp|ins$/;
+
+    # Two lists of hard-coded exceptions to the heuristic (prose is 0,
+    # verse is 1).  verse_auths applies to all works.
+    my %verse_auths = (
+        'tlg:0019' => 1,
+        'tlg:0031' => 0,
+        'tlg:0085' => 1,
+        'tlg:0384' => 0,
+        'tlg:0388' => 0,
+        'tlg:0434' => 1,
+        'tlg:0527' => 0,
+        'tlg:0538' => 0,
+        'tlg:0552' => 0,
+        'tlg:0744' => 0,
+        'tlg:1379' => 0,
+        'tlg:1463' => 0,
+        'tlg:1719' => 0,
+        'tlg:1734' => 0,
+        'tlg:1760' => 0,
+        'tlg:2017' => 0,
+        'tlg:2021' => 0,
+        'tlg:2022' => 0,
+        'tlg:2035' => 0,
+        'tlg:2042' => 0,
+        'tlg:2062' => 0,
+        'tlg:2074' => 0,
+        'tlg:2102' => 0,
+        'tlg:2762' => 0,
+        'tlg:2866' => 0,
+        'tlg:3002' => 0,
+        'tlg:3177' => 0,
+        'tlg:4015' => 0,
+        'tlg:4085' => 0,
+        'tlg:4090' => 0,
+        'tlg:4102' => 0,
+        'tlg:4110' => 0,
+        'tlg:4117' => 0,
+        'tlg:4292' => 0,
+        'tlg:4333' => 0,
+        );
+    my %verse_works = (
+        'phi:0474:056' => 0,
+        'phi:0474:059' => 0,
+        'phi:0474:061' => 0,
+        'phi:0474:063' => 0,
+        'phi:0684:011' => 0,
+        'phi:0684:015' => 0,
+        'phi:0684:016' => 0,
+        'phi:0684:017' => 0,
+        'phi:1212:007' => 0,
+        'tlg:0059:007' => 0,
+        'tlg:0059:010' => 0,
+        'tlg:0059:015' => 0,
+        'tlg:0059:037' => 0,
+        'tlg:0062:070' => 0,
+        'tlg:0096:016' => 0,
+        'tlg:0096:017' => 0,
+        'tlg:0212:003' => 0,
+        'tlg:0212:004' => 1,
+        'tlg:0319:004' => 1,
+        'tlg:1466:002' => 1,
+        'tlg:2702:021' => 0,
+        'tlg:2968:001' => 0,
+        'tlg:3141:005' => 0,
+        'tlg:4066:001' => 1,
+        'tlg:4066:005' => 0,
+        'tlg:4066:008' => 0,
+        'tlg:5014:016' => 0,
+        'tlg:5014:020' => 0,
+        );
+    my $key = $corpus . ':' . $auth_num;
+    if (exists $verse_auths{$key}) {
+        return $verse_auths{$key};
+    }
+    $key = $corpus . ':' . $auth_num . ':' . $work_num;
+    if (exists $verse_works{$key}) {
+        return $verse_works{$key};
+    }
+
+    # Heuristic to tell prose from verse: a work is verse if its
+    # lowest level of markup is "verse" rather than "line", if the
+    # author has an "Lyr." etc. in their name or if the ratio of
+    # hyphens is very low.  Prose authors often wrote epigrams.
     my $bottom = $level_label{$corpus}{$auth_num}{$work_num}{0};
-    return 1 if $bottom =~ /verse/;
-    return 1 if $auth_name =~ /Lyr\./;
+    return 1 if $bottom =~ m/verse/;
+    return 1 if $auth_name =~ m/Lyr\.|Epic/;
+    return 1 if $work_name =~ m/^Epigramma/;
+    return 1 if $work_name =~ m/poetica/i;
+    return 0 if $work_name =~ m/sententiae/i;
 
     my $start_block = $work_start_block{$corpus}{$query->{auth_num}}{$work_num};
     my $next = $work_num;
@@ -1341,5 +1426,3 @@ sub roman {
     }
     return $roman ? lc $roman : $arg;
 }
-
-
