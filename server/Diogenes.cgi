@@ -939,6 +939,7 @@ $output{browser} = sub
         my $auth = (keys %auths)[0];
         $st{author} = [keys %auths]->[0];
         $output{browser_works}->();
+        return;
     }
 
     $print_title->('Diogenes Author Browser');
