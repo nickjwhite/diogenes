@@ -562,6 +562,28 @@ sub convert_chunk {
     $chunk =~ s#&amp;\d*##g;
     $chunk =~ s#\$\d*##g;
 
+    # Quotation marks: it's not necessary to escape " in XML text nodes.
+
+    $chunk =~ s/\"1/&#x201E;/g;
+    $chunk =~ s/\"2/&#x201C;/g;
+
+    $chunk =~ s/(&amp|[\@\^\$\d\s\n~])\"3\"3/$1&#x201c;/g;
+    $chunk =~ s/(&amp;|[\@\^\$\d\s\n~])\"3/$1&#x2018;/g;
+    $chunk =~ s/\"3\"3/&#x201d;/g;
+    $chunk =~ s/\"3/&#x2019;/g;
+
+    $chunk =~ s/\"4/&#x201A;/g;
+    $chunk =~ s/\"5/&#x201B;/g;
+
+    $chunk =~ s/(&amp;|[\@\^\$\d\s\n~])\"6/$1&#x00AB;/g;
+    $chunk =~ s/\"6/&#x00BB;/g;
+
+    $chunk =~ s/(&amp;|[\@\^\$\d\s\n~])\"7/$1&#x2039;/g;
+    $chunk =~ s/\"7/&#x203A;/g;
+
+    $chunk =~ s/(&amp;|[\x01-\x1f\@\^@\$\d\s\n~])\"\d+/$1&#x201C;/g;
+    $chunk =~ s/\"\d+/&#x201D;/g;
+
     # {} titles, marginalia, misc.
 
     # Fix unbalanced markup
