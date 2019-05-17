@@ -1,19 +1,8 @@
 * Current
 
-Fix no solution: tlg1386016.xml
-
-Add provision to specify prose or verse.
-For poetic writers, all works titled fragment should be verse.
-Option to print name of work before conversion.
-Unify both export scripts.
-Test libxml's relaxng validation
-restart perl server when it crashes
-don't move <head>s to start of div ...
-then test "no solution" case
-
-for prose, think about starting a new <p> whenever there is a <space> at the very start of a line.
-
 Remove if (0) and put that section after else.
+
+don't move <head>s to start of div ...
 
 Check scholia
 
