@@ -519,50 +519,34 @@ sub convert_chunk {
              A => "\N{A with diaeresis}", E => "\N{E with diaeresis}", I => "\N{I with diaeresis}", O => "\N{O with diaeresis}", U => "\N{U with diaeresis}");
     my %circum = (a => "\N{a with circumflex}", e => "\N{e with circumflex}", i => "\N{i with circumflex}", o => "\N{o with circumflex}", u => "\N{u with circumflex}",
              A => "\N{A with circumflex}", E => "\N{E with circumflex}", I => "\N{I with circumflex}", O => "\N{O with circumflex}", U => "\N{U with circumflex}");
-    my %ampersand_dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small capitals", 10 => "small", 11 => "small bold", 13 => "small italic", 20 => "large ", 21 => "large bold", 23 => "large italic");
+    my %ampersand_dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small-caps", 8 => "small-caps italic", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "superscript italic", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript");
+    my %braces = (4 => "Unconventional form", 5 => "Altered form", 6 => "Discarded form", 7 => "Discarded reading", 8 => "Numerical equivalent", 9 => "Alternate reading", 10 => "Text missing", 25 => "Inscriptional form", 26 => "Rectified form", 27 => "Alternate reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial text", 70 => "Editorial text", 71 => "Abbreviation", 72 => "Structural note", 73 => "Musical direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 95 => "Colophon", 100 => "Added text" 101 => "Original text"  );
 
-    # remove hyphenation
+    # Remove hyphenation
     $chunk =~ s#(\S+)\-\s*(?:\@*\d*\s*)\n(\S+)#$1$2\n#g;
 
-    # Greek
+    # Beta Greek to Unicode
     if ($lang eq 'g') {
         $query->greek_with_latin(\$chunk);
     }
     else {
         $query->latin_with_greek(\$chunk);
     }
+
     # Latin accents
     $chunk =~ s#([aeiouAEIOU])\/#$acute{$1}#g;
     $chunk =~ s#([aeiouAEIOU])\\#$grave{$1};#g;
     $chunk =~ s#([aeiouAEIOU])\=#$circum{$1}#g;
     $chunk =~ s#([aeiouAEIOU])\+#$diaer{$1}#g;
 
-    $chunk =~ s#\[2{43#{43\[2#g; #fix improper nesting in Servius
-
     # Escape XML reserved chars
     $chunk =~ s#\&#&amp;#g;
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
 
-    # Quotation marks (" not necessary to escape in XML text nodes).
-    $chunk =~ s/(&amp|[\$\d\s\n~])\"3\"3/$1&#x201c;/g;
-    $chunk =~ s/(&amp;|[\$\d\s\n~])\"3/$1&#x2018;/g;
-    $chunk =~ s/\"3\"3/&#x201d;/g;
-    $chunk =~ s/\"3/&#x2019;/g;
+    # Font switching.
 
-    $chunk =~ s/(&amp;|[\$\d\s\n~])\"[67]/$1&#xab;/g;
-    $chunk =~ s/\"[67]/&#xbb;/g;
-
-    $chunk =~ s/(&amp;|[\x01-\x1f@\$\d\s\n~])\"\d?/$1&#x201c;/g;
-    $chunk =~ s/\"\d?/&#x201d;/g;
-    $chunk =~ s/\"\d+/"/g;
-
-    # Speakers in drama: {&7 ... }& {40&7 ... }40&
-    $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
-    $chunk =~ s#\{40([^}]*)\}40#<label type="speaker">$1</label>#g;
-    $chunk =~ s#\{41([^}]*)\}41#<label type="stage-direction">$1</label>#g;
-
-    # Font switching.  Beta does not always nest these properly: e.g
+    # Beta does not always nest these properly: e.g
     # "HS &7<ccc&>", so we could try to bring trailing markup inside:
     # $chunk =~
     # s#(?:\$|&amp;)(\d+)(.*)(?:\$|&amp;)\d*((?:\]|\}|&gt;)\d*)#my$tail=$3||'';exists
@@ -593,6 +577,9 @@ sub convert_chunk {
     $chunk =~ s#(?:^|\{\d+)([^\}]+)(?:\}\d+)#<head>$1</head>#g;
     # Speakers in e.g. Eclogues: {M.}
     $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
+    # Enumerated types of braces
+    $chunk =~ s#\{(\d+)(.*?)\}\g1#exists
+                      $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text characters">$2</seg>}#ge;
 
 #     $chunk =~
 #         s#(<hi rend[^>]+>)(.*)<head>(.*)</hi>(.*)</head>#$1$2<head>$3</head>$4</hi>#gs;
