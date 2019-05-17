@@ -637,9 +637,29 @@ sub convert_chunk {
     $chunk =~ s#&lt;13(?!\d)(.*?)&gt;13(?!\d)#<seg type="Single spacing">$1</seg>#gs;
     $chunk =~ s#&lt;14(?!\d)(.*?)&gt;14(?!\d)#<seg type="Interlinear text">$1</seg>#gs;
     $chunk =~ s#&lt;15(?!\d)(.*?)&gt;15(?!\d)#<hi rend="Marginalia">$1</seg>#gs;
-    $chunk =~ s/&lt;16(?!\d)/&#x2035;/g;
-    $chunk =~ s/&gt;16(?!\d)/&#x2032;/g;
+    $chunk =~ s/&lt;1[69](?!\d)/&#x2035;/g;
+    $chunk =~ s/&gt;1[69](?!\d)/&#x2032;/g;
+    $chunk =~ s#&lt;17(?!\d)(.*?)&gt;17(?!\d)#<hi rend="double-underline">$1</hi>#gs;
+    $chunk =~ s#&lt;18(?!\d)(.*?)&gt;18(?!\d)#<hi rend="line-through">$1</hi>#gs;
+    $chunk =~ s#&lt;2[01](?!\d)(.*?)&gt;2[01](?!\d)#<hi rend="letter-spacing">$1</hi>#gs;
+    $chunk =~ s#&lt;30(?!\d)(.*?)&gt;30(?!\d)#<hi rend="overline">$1</hi>#gs;
+    $chunk =~ s#&lt;31(?!\d)(.*?)&gt;31(?!\d)#<hi rend="line-through">$1</hi>#gs;
+    $chunk =~ s#&lt;32(?!\d)(.*?)&gt;32(?!\d)#<hi rend="overline underline">$1</hi>#gs;
+    $chunk =~ s/&lt;33(?!\d)(.*?)&gt;33(?!\d)/<hi rend="overline">&#x221A;$1<\/hi>/gs;
+    $chunk =~ s/&lt;34(?!\d)(.*?)\%3(.*?)&gt;34(?!\d)/<sup>$1<\/sup>&#x2044;<sub>$2<\/sub>/gs;
+    $chunk =~ s/&lt;5(\d)(?!\d)(.*?)&gt;5\g1(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
+    $chunk =~ s/&lt;60(?!\d)(.*?)&gt;60(?!\d)/<seg type="Preferred text">$1<\/seg>/gs;
+    $chunk =~ s/&lt;61(?!\d)(.*?)&gt;61(?!\d)/<seg type="Post-erasure">$1<\/seg>/gs;
+    $chunk =~ s/&lt;62(?!\d)(.*?)&gt;62(?!\d)/<hi rend="overline">$1<\/hi>/gs;
+    $chunk =~ s/&lt;63(?!\d)(.*?)&gt;63(?!\d)/<seg type="Post-correction">$1<\/seg>/gs;
+    $chunk =~ s/&lt;6[45](?!\d)(.*?)&gt;6[45](?!\d)/<hi rend="boxed">$1<\/hi>/gs;
+    $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
+    $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
+    $chunk =~ s/&lt;7\d(?!\d)(.*?)&gt;7\d(?!\d)/<seg type="Diagram">$1<\/seg>/gs;
+    $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard text direction">$1</seg>#gs;
+    $chunk =~ s#&lt;100(?!\d)(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
 
+    # Tidy up unbalanced markup
     $chunk =~ s#&lt;\d*#&lt;#g;
     $chunk =~ s#&gt;\d*#&gt;#g;
 
