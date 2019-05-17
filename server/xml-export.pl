@@ -663,6 +663,39 @@ sub convert_chunk {
     $chunk =~ s/(&amp;|[\x01-\x1f\@\^@\$\d\s\n~])\"\d+/$1&#x201C;/g;
     $chunk =~ s/\"\d+/&#x201D;/g;
 
+    # [] (brackets of all sorts) # FIXME!
+    if (0) {
+        # This would be to keep typographical markup
+        $chunk =~ s#\[(\d+)#if(exists $Diogenes::BetaHtml::bra{$1})
+                             {$Diogenes::BetaHtml::bra{$1}} else
+                             {print STDERR "Missing [: $1\n";"[$1??"}#ge;
+        $chunk =~ s#\](\d+)#if(exists $Diogenes::BetaHtml::ket{$1})
+                             {$Diogenes::BetaHtml::ket{$1}} else
+                             {print STDERR "Missing ]: $1\n";"]$1??"}#ge;
+    }
+    else {
+        # We try to convert editorial symbols to TEI markup.  This may
+        # not always work!
+
+        $chunk =~ s#\[1#(#g;
+        $chunk =~ s#\]1#)#g;
+        $chunk =~ s#\[2#&lt;#g;
+        $chunk =~ s#\]2#&gt;#g;
+        $chunk =~ s#\[3#{#g;
+        $chunk =~ s#\]3#}#g;
+        $chunk =~ s#\[(\d+)#[#g;
+        $chunk =~ s#\](\d+)#]#g;
+
+        $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
+        $chunk =~ s#\[([^\]\n])\]#<del>$1</del>#g;
+
+        $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;
+        $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;
+        $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
+
+        $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
+    }
+
 
     # # and *#
     $chunk =~ s/\*#(\d+)/if(exists $Diogenes::BetaHtml::starhash{$1})
@@ -713,38 +746,6 @@ sub convert_chunk {
     }
 
 
-    # [] (brackets of all sorts) # FIXME!
-    if (0) {
-        # This would be to keep typographical markup
-        $chunk =~ s#\[(\d+)#if(exists $Diogenes::BetaHtml::bra{$1})
-                             {$Diogenes::BetaHtml::bra{$1}} else
-                             {print STDERR "Missing [: $1\n";"[$1??"}#ge;
-        $chunk =~ s#\](\d+)#if(exists $Diogenes::BetaHtml::ket{$1})
-                             {$Diogenes::BetaHtml::ket{$1}} else
-                             {print STDERR "Missing ]: $1\n";"]$1??"}#ge;
-    }
-    else {
-        # We try to convert editorial symbols to TEI markup.  This may
-        # not always work!
-
-        $chunk =~ s#\[1#(#g;
-        $chunk =~ s#\]1#)#g;
-        $chunk =~ s#\[2#&lt;#g;
-        $chunk =~ s#\]2#&gt;#g;
-        $chunk =~ s#\[3#{#g;
-        $chunk =~ s#\]3#}#g;
-        $chunk =~ s#\[(\d+)#[#g;
-        $chunk =~ s#\](\d+)#]#g;
-
-        $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
-        $chunk =~ s#\[([^\]\n])\]#<del>$1</del>#g;
-
-        $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;
-        $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;
-        $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
-
-        $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
-    }
 
     $chunk =~ s#\`##g;
 
