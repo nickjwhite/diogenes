@@ -592,7 +592,7 @@ sub convert_chunk {
     # No number: usually speakers in drama, pastoral, etc.
     $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
 
-    # Clean up any stray braces
+    # Clean up any unmatched braces
     $chunk =~ s#\}\d*##g;
     $chunk =~ s#\{\d*##g;
 
@@ -637,7 +637,7 @@ sub convert_chunk {
     $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard text direction">$1</seg>#gs;
     $chunk =~ s#&lt;100(?!\d)(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
 
-    # Tidy up unbalanced markup
+    # Tidy up unbalanced <> markup
     $chunk =~ s#&lt;\d*#&lt;#g;
     $chunk =~ s#&gt;\d*#&gt;#g;
 
@@ -663,38 +663,25 @@ sub convert_chunk {
     $chunk =~ s/(&amp;|[\x01-\x1f\@\^@\$\d\s\n~])\"\d+/$1&#x201C;/g;
     $chunk =~ s/\"\d+/&#x201D;/g;
 
-    # [] (brackets of all sorts) # FIXME!
-    if (0) {
-        # This would be to keep typographical markup
-        $chunk =~ s#\[(\d+)#if(exists $Diogenes::BetaHtml::bra{$1})
-                             {$Diogenes::BetaHtml::bra{$1}} else
-                             {print STDERR "Missing [: $1\n";"[$1??"}#ge;
-        $chunk =~ s#\](\d+)#if(exists $Diogenes::BetaHtml::ket{$1})
-                             {$Diogenes::BetaHtml::ket{$1}} else
-                             {print STDERR "Missing ]: $1\n";"]$1??"}#ge;
-    }
-    else {
-        # We try to convert editorial symbols to TEI markup.  This may
-        # not always work!
+    # [] (brackets, etc.)
 
-        $chunk =~ s#\[1#(#g;
-        $chunk =~ s#\]1#)#g;
-        $chunk =~ s#\[2#&lt;#g;
-        $chunk =~ s#\]2#&gt;#g;
-        $chunk =~ s#\[3#{#g;
-        $chunk =~ s#\]3#}#g;
-        $chunk =~ s#\[(\d+)#[#g;
-        $chunk =~ s#\](\d+)#]#g;
+    $chunk =~ s#\[(\d+)#if(exists $Diogenes::BetaHtml::bra{$1})
+              {$Diogenes::BetaHtml::bra{$1}} else
+              {print STDERR "Missing [: $1\n";"[$1??"}#ge;
+    $chunk =~ s#\](\d+)#if(exists $Diogenes::BetaHtml::ket{$1})
+              {$Diogenes::BetaHtml::ket{$1}} else
+              {print STDERR "Missing ]: $1\n";"]$1??"}#ge;
 
-        $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
-        $chunk =~ s#\[([^\]\n])\]#<del>$1</del>#g;
+    # Some extra markup related to brackets.
+    $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
+    $chunk =~ s#\[([^\]\n])\]#<del>$1</del>#g;
 
-        $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;
-        $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;
-        $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
+    $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;
+    $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;
+    $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
 
-        $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
-    }
+    $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
+
 
 
     # # and *#
