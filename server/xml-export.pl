@@ -682,9 +682,16 @@ sub convert_chunk {
 
     $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
 
+    # % special characters
+
+    $chunk =~ s#%(\d+)#if(exists $Diogenes::BetaHtml::percent{$1})
+                       {$Diogenes::BetaHtml::percent{$1}} else
+                       {print STDERR "Missing %: $1\n";"%$1??"}#ge;
+    $chunk =~ s/%/&#x2020;/g;
 
 
-    # # and *#
+    # # and *# special chars
+
     $chunk =~ s/\*#(\d+)/if(exists $Diogenes::BetaHtml::starhash{$1})
                              {$Diogenes::BetaHtml::starhash{$1}} else
                              {print STDERR "Missing *#: $1\n";"*#$1??"}/ge;
@@ -693,18 +700,10 @@ sub convert_chunk {
                              {print STDERR "Missing #: $1\n";"#$1??"}/ge;
     $chunk =~ s/(?<!&)#/&#x0374;/g;
 
-    # some punctuation
+    # Some further punctuation
     $chunk =~ s/_/\ -\ /g;
     $chunk =~ s/!/./g;
 
-    # "inverted dagger", used in Augustus imp., not in Unicode so use
-    # normal dagger
-    $chunk =~ s/%157/&#x2020;/g;
-
-    $chunk =~ s#%(\d+)#if(exists $Diogenes::BetaHtml::percent{$1})
-                       {$Diogenes::BetaHtml::percent{$1}} else
-                       {print STDERR "Missing %: $1\n";"%$1??"}#ge;
-    $chunk =~ s/%/&#x2020;/g;
 
     # Whitespace
 
@@ -732,8 +731,7 @@ sub convert_chunk {
         $chunk =~ s#\^#<space quantity="0.25"/>#g;
     }
 
-
-
+    # Remove end-of-digit escapes
     $chunk =~ s#\`##g;
 
     return $chunk;
