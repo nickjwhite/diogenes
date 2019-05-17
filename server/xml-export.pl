@@ -331,8 +331,9 @@ AUTH: foreach my $auth_num (@all_auths) {
                     else {
                         # We arrive here only in tlg1386016.xml,
                         # section 75, where one word is hyphenated
-                        # twice, spanning three lines.
-                        warn "No solution: $chunk \n\n$line\n";
+                        # twice, spanning three lines.  This results in
+                        # an unavoidable hyphenation across sections.
+                        # warn "No solution: $chunk \n\n$line\n";
                     }
                 }
                 $body .= convert_chunk($chunk, $lang);
