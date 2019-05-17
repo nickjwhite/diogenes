@@ -586,34 +586,38 @@ sub convert_chunk {
 
     # {} titles, marginalia, misc.
 
+    # Fix improper nesting in Servius
+    $chunk =~ s#\[2{43#{43\[2#g;
+
     # Fix unbalanced markup
     $chunk =~ s/{2\@{2#10}2/{2#10/g;
 
     $chunk =~ s#\{1((?:[^\}]|\}[^1])*?)(?:\}1|$)#<head>$1</head>#g;
     $chunk =~ s#\{2((?:[^\}]|\}[^2])*?)(?:\}2|$)#<hi rend="marginalia">$1</hi>#g;
+    $chunk =~ s#\{90((?:[^\}]|\}[^9]|\}9[^0])*?)(?:\}90|$)#<hi rend="marginalia">$1</hi>#g;
+    $chunk =~ s#\{3((?:[^\}]|\}[^3])*?)(?:\}3|$)#<ref>$1</ref>#g;
+
+    # Speakers in drama: {&7 ... }& {40&7 ... }40&
+    $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
+    $chunk =~ s#\{40([^}]*)\}40#<label type="speaker">$1</label>#g;
+    $chunk =~ s#\{80([^}]*)\}80#<label type="speaker">$1</label>#g;
+    $chunk =~ s#\{41([^}]*)\}41#<label type="stage-direction">$1</label>#g;
+
     # Servius
     $chunk =~ s#\{43((?:[^\}]|\}[^4]|\}4[^3])*?)(?:\}43|$)#<seg type="Danielis" rend="italic">$1</seg>#g;
     $chunk =~ s#((?:[^\}]|\}[^4]|\}4[^3])*?)\}43#<seg type="Danielis" rend="italic">$1</seg>#g;
 
-    $chunk =~ s#\{\d+([^\}]+)(?:\}\d+|$)#<head>$1</head>#g;
-    $chunk =~ s#(?:^|\{\d+)([^\}]+)(?:\}\d+)#<head>$1</head>#g;
-    # Speakers in e.g. Eclogues: {M.}
-    $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
     # Enumerated types of braces
     $chunk =~ s#\{(\d+)(.*?)\}\g1#exists
                       $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text characters">$2</seg>}#ge;
 
-#     $chunk =~
-#         s#(<hi rend[^>]+>)(.*)<head>(.*)</hi>(.*)</head>#$1$2<head>$3</head>$4</hi>#gs;
-#         s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
-#     $chunk =~
-#         s#<head>(.*)(<hi rend[^>]+>)(.*)</head>(.*)</hi>#<head>$1$2$3</hi>$4</head>#gs;
-#         s#(<head>.*?)(<hi .*?)</head>(.*?)</hi>#$1foo$2</hi>$3</head>#gs;
-#      $chunk =~
-#          s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
+    # No number: usually speakers in drama, pastoral, etc.
+    $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
 
-    # Clean up stray markup
+    # Clean up any stray braces
     $chunk =~ s#\}\d*##g;
+    $chunk =~ s#\{\d*##g;
+
     # <> Text decoration
 
     $chunk =~ s#&lt;(?!\d)(.*?)&gt;(?!\d)#<hi rend="overline">$1</hi>#gs;
@@ -639,6 +643,7 @@ sub convert_chunk {
     $chunk =~ s#&lt;\d*#&lt;#g;
     $chunk =~ s#&gt;\d*#&gt;#g;
 
+
     # # and *#
     $chunk =~ s/\*#(\d+)/if(exists $Diogenes::BetaHtml::starhash{$1})
                              {$Diogenes::BetaHtml::starhash{$1}} else
@@ -661,31 +666,32 @@ sub convert_chunk {
                        {print STDERR "Missing %: $1\n";"%$1??"}#ge;
     $chunk =~ s/%/&#x2020;/g;
 
-    # @ (whitespace)
+    # Whitespace
+
     ## Sometimes these appear at the end of a line, to no apparent purpose.
     $chunk =~ s#@+\s*$##g;
     $chunk =~ s#@\d+\s*$##g;
     $chunk =~ s#@+\s*\n#\n#g;
     $chunk =~ s#@\d+\s*\n#\n#g;
 
+    $chunk =~ s#@1#<pb/>#g;
+    $chunk =~ s#@6#<lb/><lb/>#g;
+    $chunk =~ s#@9#<gap/>#g;
+
     if ($opt_a) {
         $chunk =~ s#@@+\d*#    #g;
         $chunk =~ s#@\d+#  #g;
         $chunk =~ s#@# #g;
+        $chunk =~ s#\^(\d+)#' ' x ($1/4)#ge;
+        $chunk =~ s#\^# #ge;
     } else {
         $chunk =~ s#@(\d+)#q{<space quantity="}.$1.q{"/>}#ge;
         $chunk =~ s#(@@+)#q{<space quantity="}.(length $1).q{"/>}#ge;
         $chunk =~ s#@#<space/>#g;
-        $chunk =~ s#\^(\d+)#q{<space quantity="}.$1.q{"/>}#ge;
-        $chunk =~ s#\^#<space/>#g;
+        $chunk =~ s#\^(\d+)#q{<space quantity="}.($1/4).q{"/>}#ge;
+        $chunk =~ s#\^#<space quantity="0.25"/>#g;
     }
 
-    # Not sure if <> are used in PHI texts
-    $chunk =~ s#&lt;1(?!\d)((?:(?!\>|$).)+)(?:&gt;1(?!\d))#<hi rend="underline">$1</hi>#gs;
-    $chunk =~ s#&lt;6(?!\d)((?:(?!\>|$).)+)(?:&gt;6(?!\d))#<hi rend="superscript">$1</hi>#gs;
-    $chunk =~ s#&lt;7(?!\d)((?:(?!\>|$).)+)(?:&gt;7(?!\d))#<hi rend="subscript">$1</hi>#gs;
-    $chunk =~ s#&lt;\d*#&lt;#g;
-    $chunk =~ s#&gt;\d*#&gt;#g;
 
     # [] (brackets of all sorts) # FIXME!
     if (0) {
@@ -807,6 +813,18 @@ sub post_process_xml {
     # and then again at the end, to take into account changes in
     # between.
     fixup_spaces($xmldoc);
+
+##### do this here?
+#     $chunk =~
+#         s#(<hi rend[^>]+>)(.*)<head>(.*)</hi>(.*)</head>#$1$2<head>$3</head>$4</hi>#gs;
+#         s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
+#     $chunk =~
+#         s#<head>(.*)(<hi rend[^>]+>)(.*)</head>(.*)</hi>#<head>$1$2$3</hi>$4</head>#gs;
+#         s#(<head>.*?)(<hi .*?)</head>(.*?)</hi>#$1foo$2</hi>$3</head>#gs;
+#      $chunk =~
+#          s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
+
+
 
     # FIXME: and we should remove any 'div's or 'l's inside, though
     # preserving their content.
