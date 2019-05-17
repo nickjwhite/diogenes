@@ -614,6 +614,30 @@ sub convert_chunk {
 
     # Clean up stray markup
     $chunk =~ s#\}\d*##g;
+    # <> Text decoration
+
+    $chunk =~ s#&lt;(?!\d)(.*?)&gt;(?!\d)#<hi rend="overline">$1</hi>#gs;
+    $chunk =~ s#&lt;1(?!\d)(.*?)&gt;1(?!\d)#<hi rend="underline">$1</hi>#gs;
+    $chunk =~ s/&lt;2(?!\d)/&#x2035;/g;
+    $chunk =~ s/&gt;2(?!\d)/&#x2032;/g;
+    $chunk =~ s/&lt;3(?!\d)(.)(.*?)&gt;3(?!\d)/$1&#x0361;$2/gs;
+    $chunk =~ s/&lt;4(?!\d)(.)(.*?)&gt;4(?!\d)/$1&#x035C;$2/gs;
+    $chunk =~ s/&lt;5(?!\d)(.)(.*?)&gt;5(?!\d)/$1&#x035D;$2/gs;
+    $chunk =~ s#&lt;6(?!\d)(.*?)&gt;6(?!\d)#<hi rend="superscript">$1</hi>#gs;
+    $chunk =~ s#&lt;7(?!\d)(.*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
+    $chunk =~ s#&lt;8(?!\d)(.*?)&gt;8(?!\d)#<hi rend="double-underline">$1</hi>#gs;
+    $chunk =~ s#&lt;9(?!\d)(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</hi>#gs;
+    $chunk =~ s#&lt;10(?!\d)(.*?)&gt;10(?!\d)#<seg type="Stacked text, lower">$1</seg>#gs;
+    $chunk =~ s#&lt;11(?!\d)(.*?)&gt;11(?!\d)#<seg type="Stacked text, upper">$1</seg>#gs;
+    $chunk =~ s#&lt;12(?!\d)(.*?)&gt;12(?!\d)#<seg type="Non-standard text direction">$1</seg>#gs;
+    $chunk =~ s#&lt;13(?!\d)(.*?)&gt;13(?!\d)#<seg type="Single spacing">$1</seg>#gs;
+    $chunk =~ s#&lt;14(?!\d)(.*?)&gt;14(?!\d)#<seg type="Interlinear text">$1</seg>#gs;
+    $chunk =~ s#&lt;15(?!\d)(.*?)&gt;15(?!\d)#<hi rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s/&lt;16(?!\d)/&#x2035;/g;
+    $chunk =~ s/&gt;16(?!\d)/&#x2032;/g;
+
+    $chunk =~ s#&lt;\d*#&lt;#g;
+    $chunk =~ s#&gt;\d*#&gt;#g;
 
     # # and *#
     $chunk =~ s/\*#(\d+)/if(exists $Diogenes::BetaHtml::starhash{$1})
