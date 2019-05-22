@@ -546,19 +546,19 @@ sub convert_chunk {
 
     # Font switching.
 
-    # Beta does not always nest these properly: e.g
-    # "HS &7<ccc&>", so we could try to bring trailing markup inside:
-    # $chunk =~
-    # s#(?:\$|&amp;)(\d+)(.*)(?:\$|&amp;)\d*((?:\]|\}|&gt;)\d*)#my$tail=$3||'';exists
-    # $ampersand_dollar{$1} ? qq{<hi
-    # rend="$ampersand_dollar{$1}">$2$tail</hi>} : qq{$2$tail}#ge;
-    # but this fails when markup is nested correctly: e.g. "{40&7Phaedria& [2&7Dorias&]2}40
-    # Only way to deal with the inconsistency is to throw away font
-    # information (which is usually superfluous anyway) when there is
-    # any balanced markup inside:
-    $chunk =~ s#(?:\$|&amp;)(\d+)([^&{}\[\]]+)(?:\$|&amp;)\d*#exists
-        $ampersand_dollar{$1} ? qq{<hi rend="$ampersand_dollar{$1}">$2</hi>} : qq{$2}#ge;
+    # Font markup is terminated by next change of font or return to
+    # normal font (or end of chunk).
 
+    $chunk =~ s#(?:\$|&amp;)(\d+)(.*?)(?=\$|&amp;|\z)#exists
+        $ampersand_dollar{$1} ? qq{<hi rend="$ampersand_dollar{$1}">$2</hi>} : qq{$2}#ges;
+
+    # The lookahead assertion above that indicates the end of the
+    # scope of the font change deliberately does not capture that
+    # indicator, so that it can also match as the beginning of the
+    # next font change.  This behind leaves many indicators of a
+    # return to the normal font, which do not thus match to start a
+    # new range of markup. So we have to remove these at the end.
+    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:\$|&amp;)\d+)/;
     $chunk =~ s#&amp;\d*##g;
     $chunk =~ s#\$\d*##g;
 
@@ -597,6 +597,10 @@ sub convert_chunk {
     $chunk =~ s#\{\d*##g;
 
     # <> Text decoration
+
+    # Some of these do not nest properly with respect to font changes:
+    # e.g "HS &7<ccc&>".  This problem can be disguised by using <hi>
+    # elements for both, so that the group ends with </hi></hi>.
 
     $chunk =~ s#&lt;(?!\d)(.*?)&gt;(?!\d)#<hi rend="overline">$1</hi>#gs;
     $chunk =~ s#&lt;1(?!\d)(.*?)&gt;1(?!\d)#<hi rend="underline">$1</hi>#gs;
