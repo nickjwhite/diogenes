@@ -520,7 +520,7 @@ sub convert_chunk {
     my %circum = (a => "\N{a with circumflex}", e => "\N{e with circumflex}", i => "\N{i with circumflex}", o => "\N{o with circumflex}", u => "\N{u with circumflex}",
              A => "\N{A with circumflex}", E => "\N{E with circumflex}", I => "\N{I with circumflex}", O => "\N{O with circumflex}", U => "\N{U with circumflex}");
     my %ampersand_dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small-caps", 8 => "small-caps italic", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "superscript italic", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript");
-    my %braces = (4 => "Unconventional form", 5 => "Altered form", 6 => "Discarded form", 7 => "Discarded reading", 8 => "Numerical equivalent", 9 => "Alternate reading", 10 => "Text missing", 25 => "Inscriptional form", 26 => "Rectified form", 27 => "Alternate reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial text", 70 => "Editorial text", 71 => "Abbreviation", 72 => "Structural note", 73 => "Musical direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 95 => "Colophon", 100 => "Added text", 101 => "Original text"  );
+    my %braces = (2 => "Marginalia", 4 => "Unconventional form", 5 => "Altered form", 6 => "Discarded form", 7 => "Discarded reading", 8 => "Numerical equivalent", 9 => "Alternate reading", 10 => "Text missing", 25 => "Inscriptional form", 26 => "Rectified form", 27 => "Alternate reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial text", 70 => "Editorial text", 71 => "Abbreviation", 72 => "Structural note", 73 => "Musical direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 90 => "Marginalia", 95 => "Colophon", 100 => "Added text", 101 => "Original text"  );
 
     # Remove hyphenation
     $chunk =~ s#(\S+)\-\s*(?:\@*\d*\s*)\n(\S+)#$1$2\n#g;
@@ -546,6 +546,11 @@ sub convert_chunk {
 
     # Font switching.
 
+    # Fix improperly nested markup.
+    # Speakers in Latin drama: {&7 ... }& {40&7 ... }40&
+    $chunk =~ s#\}40\&#\&\}40#gs;
+    $chunk =~ s#\}\&#\&\}#gs;
+
     # Font markup is terminated by next change of font or return to
     # normal font (or end of chunk).
 
@@ -564,42 +569,38 @@ sub convert_chunk {
 
     # {} titles, marginalia, misc.
 
-    # Fix improper nesting in Servius
-    $chunk =~ s#\[2{43#{43\[2#g;
+    # Fix unbalanced markup ??
+#    $chunk =~ s/{2\@{2#10}2/{2#10/g;
 
-    # Fix unbalanced markup
-    $chunk =~ s/{2\@{2#10}2/{2#10/g;
+    # Elements other than plain <seg>
+    $chunk =~ s#\{1(.*?)(?:\}1|\z)#<head>$1</head>#gs;
+    $chunk =~ s#\{3(.*?)(?:\}1|\z)#<ref>$1</ref>#gs;
 
-    $chunk =~ s#\{1((?:[^\}]|\}[^1])*?)(?:\}1|$)#<head>$1</head>#g;
-    $chunk =~ s#\{2((?:[^\}]|\}[^2])*?)(?:\}2|$)#<seg type="marginalia">$1</seg>#g;
-    $chunk =~ s#\{90((?:[^\}]|\}[^9]|\}9[^0])*?)(?:\}90|$)#<seg type="marginalia">$1</seg>#g;
-    $chunk =~ s#\{3((?:[^\}]|\}[^3])*?)(?:\}3|$)#<ref>$1</ref>#g;
-
-    # Speakers in drama: {&7 ... }& {40&7 ... }40&
-    $chunk =~ s#\{(?:40)?&amp;7([^}]*)\}(?:40)?#<label type="speaker">$1</label>#g;
-    $chunk =~ s#\{40([^}]*)\}40#<label type="speaker">$1</label>#g;
-    $chunk =~ s#\{80([^}]*)\}80#<label type="speaker">$1</label>#g;
-    $chunk =~ s#\{41([^}]*)\}41#<label type="stage-direction">$1</label>#g;
+    # Speakers, etc.
+    # No number: usually speakers in drama, pastoral, etc.
+    $chunk =~ s#\{(?!\d)(.*?)\}(?!\d)#<label type="speaker">$1</label>#gs;
+    $chunk =~ s#\{40(.*?)\}40#<label type="speaker">$1</label>#gs;
+    $chunk =~ s#\{80(.*?)\}80#<label type="speaker">$1</label>#gs;
+    $chunk =~ s#\{41(.*?)\}41#<label type="stage-direction">$1</label>#gs;
 
     # Servius
-    $chunk =~ s#\{43((?:[^\}]|\}[^4]|\}4[^3])*?)(?:\}43|$)#<seg type="Danielis" rend="italic">$1</seg>#g;
-    $chunk =~ s#((?:[^\}]|\}[^4]|\}4[^3])*?)\}43#<seg type="Danielis" rend="italic">$1</seg>#g;
+    $chunk =~ s#\[2{43#{43\[2#g; # Fix improper nesting
+    $chunk =~ s#\{43(.*?)\}43#<seg type="Danielis" rend="italic">$1</seg>#gs;
 
-    # Enumerated types of braces
+    # Other types of braces
     $chunk =~ s#\{(\d+)(.*?)\}\g1#exists
-                      $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text characters">$2</seg>}#ge;
+                      $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text characters">$2</seg>}#ges;
 
-    # No number: usually speakers in drama, pastoral, etc.
-    $chunk =~ s#\{([^\}]+)\}#<label type="speaker">$1</label>#g;
+    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([{}]\d*)/;
 
     # Clean up any unmatched braces
-    $chunk =~ s#\}\d*##g;
-    $chunk =~ s#\{\d*##g;
+    # $chunk =~ s#\}\d*##g;
+    # $chunk =~ s#\{\d*##g;
 
     # <> Text decoration
 
     # Some of these do not nest properly with respect to font changes:
-    # e.g "HS &7<ccc&>".  This problem can be disguised by using <hi>
+    # e.g "HS &7<ccc&>".  This problem can be evaded by using <hi>
     # elements for both, so that the group ends with </hi></hi>.
 
     $chunk =~ s#&lt;(?!\d)(.*?)&gt;(?!\d)#<hi rend="overline">$1</hi>#gs;
@@ -641,9 +642,11 @@ sub convert_chunk {
     $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard text direction">$1</seg>#gs;
     $chunk =~ s#&lt;100(?!\d)(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
 
+    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
+
     # Tidy up unbalanced <> markup
-    $chunk =~ s#&lt;\d*#&lt;#g;
-    $chunk =~ s#&gt;\d*#&gt;#g;
+    # $chunk =~ s#&lt;\d*#&lt;#g;
+    # $chunk =~ s#&gt;\d*#&gt;#g;
 
     # Quotation marks: it's not necessary to escape " in XML text nodes.
 
@@ -675,6 +678,8 @@ sub convert_chunk {
     $chunk =~ s#\](\d+)#if(exists $Diogenes::BetaHtml::ket{$1})
               {$Diogenes::BetaHtml::ket{$1}} else
               {print STDERR "Missing ]: $1\n";"]$1??"}#ge;
+
+    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([\]\[]\d+)/;
 
     # Some extra markup related to brackets.
     $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
