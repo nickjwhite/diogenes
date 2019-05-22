@@ -147,7 +147,7 @@ package Diogenes::BetaHtml;
      185 => "&#x2319;",
      186 => "&#x1D242;",
      187 => "&#x00AC;",
-     187 => "&#x031A;",
+     188 => "&#x031A;",
     );
 
 %Diogenes::BetaHtml::bra =

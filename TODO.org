@@ -1,8 +1,10 @@
 * Current
 
-Remove if (0) and put that section after else.
+Add coptic xml output
 
 don't move <head>s to start of div ...
+
+Merge subsequent <hi> elements when attribs identical.  Also when nested.
 
 Check scholia
 

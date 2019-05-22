@@ -520,7 +520,7 @@ sub convert_chunk {
     my %circum = (a => "\N{a with circumflex}", e => "\N{e with circumflex}", i => "\N{i with circumflex}", o => "\N{o with circumflex}", u => "\N{u with circumflex}",
              A => "\N{A with circumflex}", E => "\N{E with circumflex}", I => "\N{I with circumflex}", O => "\N{O with circumflex}", U => "\N{U with circumflex}");
     my %ampersand_dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small-caps", 8 => "small-caps italic", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "superscript italic", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript");
-    my %braces = (4 => "Unconventional form", 5 => "Altered form", 6 => "Discarded form", 7 => "Discarded reading", 8 => "Numerical equivalent", 9 => "Alternate reading", 10 => "Text missing", 25 => "Inscriptional form", 26 => "Rectified form", 27 => "Alternate reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial text", 70 => "Editorial text", 71 => "Abbreviation", 72 => "Structural note", 73 => "Musical direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 95 => "Colophon", 100 => "Added text" 101 => "Original text"  );
+    my %braces = (4 => "Unconventional form", 5 => "Altered form", 6 => "Discarded form", 7 => "Discarded reading", 8 => "Numerical equivalent", 9 => "Alternate reading", 10 => "Text missing", 25 => "Inscriptional form", 26 => "Rectified form", 27 => "Alternate reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial text", 70 => "Editorial text", 71 => "Abbreviation", 72 => "Structural note", 73 => "Musical direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 95 => "Colophon", 100 => "Added text", 101 => "Original text"  );
 
     # Remove hyphenation
     $chunk =~ s#(\S+)\-\s*(?:\@*\d*\s*)\n(\S+)#$1$2\n#g;
@@ -571,8 +571,8 @@ sub convert_chunk {
     $chunk =~ s/{2\@{2#10}2/{2#10/g;
 
     $chunk =~ s#\{1((?:[^\}]|\}[^1])*?)(?:\}1|$)#<head>$1</head>#g;
-    $chunk =~ s#\{2((?:[^\}]|\}[^2])*?)(?:\}2|$)#<hi rend="marginalia">$1</hi>#g;
-    $chunk =~ s#\{90((?:[^\}]|\}[^9]|\}9[^0])*?)(?:\}90|$)#<hi rend="marginalia">$1</hi>#g;
+    $chunk =~ s#\{2((?:[^\}]|\}[^2])*?)(?:\}2|$)#<seg type="marginalia">$1</seg>#g;
+    $chunk =~ s#\{90((?:[^\}]|\}[^9]|\}9[^0])*?)(?:\}90|$)#<seg type="marginalia">$1</seg>#g;
     $chunk =~ s#\{3((?:[^\}]|\}[^3])*?)(?:\}3|$)#<ref>$1</ref>#g;
 
     # Speakers in drama: {&7 ... }& {40&7 ... }40&
@@ -717,9 +717,10 @@ sub convert_chunk {
     $chunk =~ s#@+\s*\n#\n#g;
     $chunk =~ s#@\d+\s*\n#\n#g;
 
-    $chunk =~ s#@1#<pb/>#g;
-    $chunk =~ s#@6#<lb/><lb/>#g;
-    $chunk =~ s#@9#<gap/>#g;
+    # Line/page breaks
+    $chunk =~ s#\@1#<pb/>#g;
+    $chunk =~ s#\@6#<lb/><lb/>#g;
+    $chunk =~ s#\@9#<gap/>#g;
 
     if ($opt_a) {
         $chunk =~ s#@@+\d*#    #g;
