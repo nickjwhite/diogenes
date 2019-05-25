@@ -521,7 +521,7 @@ sub convert_chunk {
     my %circum = (a => "\N{a with circumflex}", e => "\N{e with circumflex}", i => "\N{i with circumflex}", o => "\N{o with circumflex}", u => "\N{u with circumflex}",
              A => "\N{A with circumflex}", E => "\N{E with circumflex}", I => "\N{I with circumflex}", O => "\N{O with circumflex}", U => "\N{U with circumflex}");
     my %ampersand_dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small-caps", 8 => "small-caps italic", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "superscript italic", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript");
-    my %braces = (2 => "Marginalia", 4 => "Unconventional form", 5 => "Altered form", 6 => "Discarded form", 7 => "Discarded reading", 8 => "Numerical equivalent", 9 => "Alternate reading", 10 => "Text missing", 25 => "Inscriptional form", 26 => "Rectified form", 27 => "Alternate reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial text", 70 => "Editorial text", 71 => "Abbreviation", 72 => "Structural note", 73 => "Musical direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 90 => "Marginalia", 95 => "Colophon", 100 => "Added text", 101 => "Original text"  );
+    my %braces = (4 => "Unconventional-form", 5 => "Altered-form", 6 => "Discarded-form", 7 => "Discarded-reading", 8 => "Numerical-equivalent", 9 => "Alternate-reading", 10 => "Text-missing", 25 => "Inscriptional-form", 26 => "Rectified-form", 27 => "Alternate-reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial-text", 70 => "Editorial-text", 71 => "Abbreviation", 72 => "Structural-note", 73 => "Musical-direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 95 => "Colophon", 100 => "Added-text", 101 => "Original-text"  );
 
     # Remove hyphenation
     $chunk =~ s#(\S+)\-\s*(?:\@*\d*\s*)\n(\S+)#$1$2\n#g;
@@ -593,7 +593,7 @@ sub convert_chunk {
 
     # Other types of braces
     $chunk =~ s#\{(\d+)(.*?)\}\g1#exists
-                      $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text characters">$2</seg>}#ges;
+                      $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text-characters">$2</seg>}#ges;
 
     print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([{}]\d*)/;
 
@@ -618,12 +618,12 @@ sub convert_chunk {
     $chunk =~ s#&lt;7(?!\d)(.*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
     $chunk =~ s#&lt;8(?!\d)(.*?)&gt;8(?!\d)#<hi rend="double-underline">$1</hi>#gs;
     $chunk =~ s#&lt;9(?!\d)(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</hi>#gs;
-    $chunk =~ s#&lt;10(?!\d)(.*?)&gt;10(?!\d)#<seg type="Stacked text, lower">$1</seg>#gs;
-    $chunk =~ s#&lt;11(?!\d)(.*?)&gt;11(?!\d)#<seg type="Stacked text, upper">$1</seg>#gs;
-    $chunk =~ s#&lt;12(?!\d)(.*?)&gt;12(?!\d)#<seg type="Non-standard text direction">$1</seg>#gs;
-    $chunk =~ s#&lt;13(?!\d)(.*?)&gt;13(?!\d)#<seg type="Single spacing">$1</seg>#gs;
-    $chunk =~ s#&lt;14(?!\d)(.*?)&gt;14(?!\d)#<seg type="Interlinear text">$1</seg>#gs;
-    $chunk =~ s#&lt;15(?!\d)(.*?)&gt;15(?!\d)#<hi rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#&lt;10(?!\d)(.*?)&gt;10(?!\d)#<seg rend="Stacked-text-lower">$1</seg>#gs;
+    $chunk =~ s#&lt;11(?!\d)(.*?)&gt;11(?!\d)#<seg rend="Stacked-text-upper">$1</seg>#gs;
+    $chunk =~ s#&lt;12(?!\d)(.*?)&gt;12(?!\d)#<seg rend="Non-standard-text-direction">$1</seg>#gs;
+    $chunk =~ s#&lt;13(?!\d)(.*?)&gt;13(?!\d)#<seg rend="Single-spacing">$1</seg>#gs;
+    $chunk =~ s#&lt;14(?!\d)(.*?)&gt;14(?!\d)#<seg rend="Interlinear-text">$1</seg>#gs;
+    $chunk =~ s#&lt;15(?!\d)(.*?)&gt;15(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
     $chunk =~ s/&lt;1[69](?!\d)/&#x2035;/g;
     $chunk =~ s/&gt;1[69](?!\d)/&#x2032;/g;
     $chunk =~ s#&lt;17(?!\d)(.*?)&gt;17(?!\d)#<hi rend="double-underline">$1</hi>#gs;
@@ -635,7 +635,7 @@ sub convert_chunk {
     $chunk =~ s/&lt;33(?!\d)(.*?)&gt;33(?!\d)/<hi rend="overline">&#x221A;$1<\/hi>/gs;
     $chunk =~ s/&lt;34(?!\d)(.*?)\%3(.*?)&gt;34(?!\d)/<sup>$1<\/sup>&#x2044;<sub>$2<\/sub>/gs;
     $chunk =~ s/&lt;5(\d)(?!\d)(.*?)&gt;5\g1(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
-    $chunk =~ s/&lt;60(?!\d)(.*?)&gt;60(?!\d)/<seg type="Preferred text">$1<\/seg>/gs;
+    $chunk =~ s/&lt;60(?!\d)(.*?)&gt;60(?!\d)/<seg type="Preferred-text">$1<\/seg>/gs;
     $chunk =~ s/&lt;61(?!\d)(.*?)&gt;61(?!\d)/<seg type="Post-erasure">$1<\/seg>/gs;
     $chunk =~ s/&lt;62(?!\d)(.*?)&gt;62(?!\d)/<hi rend="overline">$1<\/hi>/gs;
     $chunk =~ s/&lt;63(?!\d)(.*?)&gt;63(?!\d)/<seg type="Post-correction">$1<\/seg>/gs;
@@ -643,8 +643,12 @@ sub convert_chunk {
     $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
     $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
     $chunk =~ s/&lt;7\d(?!\d)(.*?)&gt;7\d(?!\d)/<seg type="Diagram">$1<\/seg>/gs;
-    $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard text direction">$1</seg>#gs;
+    $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard-text-direction">$1</seg>#gs;
     $chunk =~ s#&lt;100(?!\d)(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
+
+    # Letterspacing often covers large amounts of text across chunks
+    $chunk =~ s#&lt;2[01](?!\d)([^<]*?)#<hi rend="letter-spacing">$1</hi>#gs;
+    $chunk =~ s#([^>]*?)&gt;2[01](?!\d)#<hi rend="letter-spacing">$1</hi>#gs;
 
     print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
 
