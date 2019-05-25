@@ -96,6 +96,7 @@ Further optional switches are supported:
 };
 }
 my $debug = $opt_v ? 1 : 0;
+binmode(STDERR, ":encoding(UTF-8)");
 
 # Default to use libxml if installed.
 my $libxml = 1;
@@ -539,6 +540,9 @@ sub convert_chunk {
     $chunk =~ s#([aeiouAEIOU])\=#$circum{$1}#g;
     $chunk =~ s#([aeiouAEIOU])\+#$diaer{$1}#g;
 
+    # Convert utf8 bytes to utf8 characters, so that we match chars correctly.
+    utf8::decode($chunk);
+
     # Escape XML reserved chars
     $chunk =~ s#\&#&amp;#g;
     $chunk =~ s#\<#&lt;#g;
@@ -752,7 +756,7 @@ sub write_xml_file {
 
     if ($debug) {
         my $tmpfile = File::Spec->catfile( $path, $file) . '.tmp';
-        open( OUT, ">$tmpfile" ) or die $!;
+        open( OUT, ">:encoding(UTF-8)", "$tmpfile" ) or die $!;
         print OUT $text;
         close(OUT) or die $!;
     }
@@ -771,7 +775,7 @@ sub write_xml_file {
         # ascii with everything as entities).  When using
         # XML::DOM::Lite, the -e flag can be used to suppress the
         # flattening of hex entities to utf8.
-        $text = $xmldoc->toString;
+        $text = $xmldoc->documentElement->toString;
     }
     else {
         my $serializer = XML::DOM::Lite::Serializer->new(indent=>'none');
@@ -787,7 +791,7 @@ sub write_xml_file {
         close(LINT) or die "Could not close xmllint!\n";
     }
     else {
-        open( OUT, ">$file_path" ) or die "Could not create $file\n";
+        open( OUT, ">:encoding(UTF-8)", "$file_path" ) or die "Could not create $file\n";
         print OUT $text;
         close(OUT) or die "Could not close $file\n";
     }
@@ -1177,10 +1181,7 @@ sub hex_to_utf8 {
         return '&gt;';
     }
     else {
-        # The encode_utf is needed to avoid generating wide character
-        # warnings when this output is printed.  I think it just
-        # removes the utf8 flag from the text.
-        return Encode::encode_utf8(chr(hex($hex)));
+        return chr(hex($hex));
     }
 }
 
