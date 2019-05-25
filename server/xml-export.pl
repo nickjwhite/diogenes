@@ -510,6 +510,10 @@ print AUTHTAB "</authtab>\n";
 close(AUTHTAB) or die "Could not close authtab.xml\n";
 
 sub convert_chunk {
+    # Converting chunkwise leads to problems when balanced markup is
+    # split between chunks.  These are treated as special cases below.
+    # The alternative would be to convert the whole work, but then we
+    # would have to escape the structural XML added above.
     my ($chunk, $lang) = @_;
 
     my %acute = (a => "\N{a with acute}", e => "\N{e with acute}", i => "\N{i with acute}", o => "\N{o with acute}", u => "\N{u with acute}",
@@ -577,12 +581,22 @@ sub convert_chunk {
 #    $chunk =~ s/{2\@{2#10}2/{2#10/g;
 
     # Elements other than plain <seg>
-    $chunk =~ s#\{1(.*?)(?:\}1|\z)#<head>$1</head>#gs;
-    $chunk =~ s#\{3(.*?)(?:\}1|\z)#<ref>$1</ref>#gs;
+    $chunk =~ s#\{1(?!\d)(.*?)\}1(?!\d)#<head>$1</head>#gs;
+    # Some verse heads run over two lines and thus two chunks.
+    $chunk =~ s#^[\s\@]*\{1(?!\d)(.*?)\z#<head>$1</head>#gms;
+    $chunk =~ s#^(.*?)\}1(?!\d)\s*\z#<head>$1</head>#gms;
+    $chunk =~ s#^\}\d*##gms;
+
+    $chunk =~ s#\{2(?!\d)(.*?)\}2(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#\{90(.*?)\}90#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#\{3(?!\d)(.*?)\}3(?!\d)#<ref>$1</ref>#gs;
 
     # Speakers, etc.
     # No number: usually speakers in drama, pastoral, etc.
     $chunk =~ s#\{(?!\d)(.*?)\}(?!\d)#<label type="speaker">$1</label>#gs;
+    $chunk =~ s#^[\s\@]*\{(?!\d)(.*?)$#<label type="speaker">$1</label>#gms;
+#    $chunk =~ s#^(.*?)\}(?!\d)$#<label type="speaker">$1</label>#gms;
+
     $chunk =~ s#\{40(.*?)\}40#<label type="speaker">$1</label>#gs;
     $chunk =~ s#\{80(.*?)\}80#<label type="speaker">$1</label>#gs;
     $chunk =~ s#\{41(.*?)\}41#<label type="stage-direction">$1</label>#gs;
