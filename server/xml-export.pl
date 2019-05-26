@@ -478,6 +478,16 @@ AUTH: foreach my $auth_num (@all_auths) {
                     $hanging_div = $temp;
                     $chunk .= "\n";
                 }
+                elsif ($chunk =~ m/\{\_\s*$/) {
+                    # For divs that end with some text at eol that
+                    # needs to go with the next div (e.g. {_ in
+                    # Plato).
+                    $chunk =~ s/(\{\_\s*)$//;
+                    my $tmp = $1;
+                    $body .= convert_chunk($chunk, $lang);
+                    $chunk = $tmp;
+                    $body .= $temp;
+                }
                 else {
                     $body .= convert_chunk($chunk, $lang);
                     $chunk = '';
