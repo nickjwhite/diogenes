@@ -80,7 +80,7 @@ instead.  This default can be overridden:
 
 Further optional switches are supported:
 
--v      Verbose info on progress of conversion
+-v      Verbose info on progress of conversion and debugging.
 -n      Comma-separated list of author numbers to convert
 -d      DigiLibLT compatibility; equal to -rpat (requires libxml)
 -r      Convert book numbers to Roman numerals
@@ -524,7 +524,8 @@ sub convert_chunk {
              A => "\N{A with diaeresis}", E => "\N{E with diaeresis}", I => "\N{I with diaeresis}", O => "\N{O with diaeresis}", U => "\N{U with diaeresis}");
     my %circum = (a => "\N{a with circumflex}", e => "\N{e with circumflex}", i => "\N{i with circumflex}", o => "\N{o with circumflex}", u => "\N{u with circumflex}",
              A => "\N{A with circumflex}", E => "\N{E with circumflex}", I => "\N{I with circumflex}", O => "\N{O with circumflex}", U => "\N{U with circumflex}");
-    my %ampersand_dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small-caps", 8 => "small-caps italic", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "superscript italic", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript");
+    my %ampersand = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small-caps", 8 => "small-caps italic", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "superscript italic", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript", 30 => "very-small", 40 => "very-large");
+    my %dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 6 => "superscript bold", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "small superscript bold", 18 => "small", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript", 28 => "large", 30 => "very-small", 40 => "very-large");
     my %braces = (4 => "Unconventional-form", 5 => "Altered-form", 6 => "Discarded-form", 7 => "Discarded-reading", 8 => "Numerical-equivalent", 9 => "Alternate-reading", 10 => "Text-missing", 25 => "Inscriptional-form", 26 => "Rectified-form", 27 => "Alternate-reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial-text", 70 => "Editorial-text", 71 => "Abbreviation", 72 => "Structural-note", 73 => "Musical-direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 95 => "Colophon", 100 => "Added-text", 101 => "Original-text"  );
 
     # Remove hyphenation
@@ -554,26 +555,39 @@ sub convert_chunk {
 
     # Font switching.
 
-    # Fix improperly nested markup.
-    # Speakers in Latin drama: {&7 ... }& {40&7 ... }40&
-    $chunk =~ s#\}40\&#\&\}40#gs;
-    $chunk =~ s#\}\&#\&\}#gs;
+    # These numbered font commands should be treated as & or $
+    $chunk =~ s#\&amp;(6|9|19)#\&amp;#g;
+    $chunk =~ s#\$(8|9|18|70)#\$#g;
+
+    # Improperly nested font-switching markup is ubiquitous: e.g. {&7
+    # ... }& {40&7 ... }40&. We deal with this by bringing leading font
+    # commands into the brace construction (and terminating the
+    # font-switching commands at the closing brace).
+    $chunk =~ s#([\$\&]\d*)(\{\d*)#$2$1#gs;
 
     # Font markup is terminated by next change of font or return to
-    # normal font (or end of chunk).
+    # normal font or closing brace or end of chunk.
+    $chunk =~ s#\&amp;(\d+)([^{]*?)(?=\$|\&amp;|\}|\z)#exists
+        $ampersand{$1} ? qq{<hi rend="$ampersand{$1}">$2</hi>} : qq{$2}#ges;
+    $chunk =~ s#\$(\d+)([^{]*?)(?=\$|\&amp;|\}|\z)#exists
+        $dollar{$1} ? qq{<hi rend="$dollar{$1}">$2</hi>} : qq{$2}#ges;
 
-    $chunk =~ s#(?:\$|&amp;)(\d+)(.*?)(?=\$|&amp;|\z)#exists
-        $ampersand_dollar{$1} ? qq{<hi rend="$ampersand_dollar{$1}">$2</hi>} : qq{$2}#ges;
+    # The look-ahead assertion above deliberately does not capture
+    # trailing font-change indicators, so that they can also match as
+    # the beginning of the next font change.  This behind leaves many
+    # indicators of a return to the normal font ($ and &), which do not thus
+    # match to start a new range of markup. So we have to remove these
+    # at the end.
 
-    # The lookahead assertion above that indicates the end of the
-    # scope of the font change deliberately does not capture that
-    # indicator, so that it can also match as the beginning of the
-    # next font change.  This behind leaves many indicators of a
-    # return to the normal font, which do not thus match to start a
-    # new range of markup. So we have to remove these at the end.
-    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:\$|&amp;)\d+)/;
-    $chunk =~ s#&amp;\d*##g;
-    $chunk =~ s#\$\d*##g;
+    if ($debug) {
+        print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:\$|&amp;)\d+)/;
+        $chunk =~ s#\&amp;(?!\d)##g;
+        $chunk =~ s#\$(?!\d)##g;
+    }
+    else {
+        $chunk =~ s#\&amp;\d*##g;
+        $chunk =~ s#\$\d*##g;
+    }
 
     # {} titles, marginalia, misc.
 
