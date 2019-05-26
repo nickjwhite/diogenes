@@ -464,7 +464,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 }
                 # We seem to have a prose section which starts in the coming line
                 if (((not $is_verse)
-                     and ($chunk !~ m#[$punct][\s\$\&\"\d\@\{\}\[\]\<\>]*$#)
+                     and ($chunk !~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#)
                      and ($chunk =~ m/\S/))
                     # Fragments are problematic should not hang from one to the next.
                     and (not ($div_labels{1} =~ m/frag/i and $query->{level}{0} eq '1'))
