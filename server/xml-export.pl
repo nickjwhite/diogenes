@@ -598,7 +598,7 @@ sub convert_chunk {
     $chunk =~ s#\{1(?!\d)(.*?)\}1(?!\d)#<head>$1</head>#gs;
     # Some verse heads run over two lines and thus two chunks.
     $chunk =~ s#^[\s\@]*\{1(?!\d)(.*?)\z#<head>$1</head>#gms;
-    $chunk =~ s#^(.*?)\}1(?!\d)\s*\z#<head>$1</head>#gms;
+    $chunk =~ s#\A(.*?)\}1(?!\d)#<head>$1</head>#gms;
     $chunk =~ s#^\}\d*##gms;
 
     $chunk =~ s#\{2(?!\d)(.*?)\}2(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
@@ -623,11 +623,14 @@ sub convert_chunk {
     $chunk =~ s#\{(\d+)(.*?)\}\g1#exists
                       $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text-characters">$2</seg>}#ges;
 
-    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([{}]\d*)/;
-
-    # Clean up any unmatched braces
-    # $chunk =~ s#\}\d*##g;
-    # $chunk =~ s#\{\d*##g;
+    if ($debug) {
+        print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([{}]\d*)/;
+    }
+    else {
+        # Clean up any unmatched braces
+        $chunk =~ s#\}\d*##g;
+        $chunk =~ s#\{\d*##g;
+    }
 
     # <> Text decoration
 
@@ -678,11 +681,14 @@ sub convert_chunk {
     $chunk =~ s#&lt;2[01](?!\d)([^<]*?)#<hi rend="letter-spacing">$1</hi>#gs;
     $chunk =~ s#([^>]*?)&gt;2[01](?!\d)#<hi rend="letter-spacing">$1</hi>#gs;
 
-    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
-
-    # Tidy up unbalanced <> markup
-    # $chunk =~ s#&lt;\d*#&lt;#g;
-    # $chunk =~ s#&gt;\d*#&gt;#g;
+    if ($debug) {
+        print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
+    }
+    else {
+        # Tidy up unbalanced <> markup
+        $chunk =~ s#&lt;\d*#&lt;#g;
+        $chunk =~ s#&gt;\d*#&gt;#g;
+    }
 
     # Quotation marks: it's not necessary to escape " in XML text nodes.
 
