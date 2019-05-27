@@ -577,6 +577,61 @@ sub convert_chunk {
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
 
+    # Fix ad-hoc special cases of improper nesting that yield invalid XML; do
+    # this before further fiddling that make them harder to match.
+    if ($auth_name eq 'Sophocles Trag.') {
+        # {$10*A.}
+        $chunk =~ s#(\{\$10.*)\}(?!\$)#$1\$\}#gs;
+    }
+    elsif ($auth_name eq 'Aristophanes Comic.') {
+        # {2<2$#15$3>2}2 and ^16<2_>2$3{2#523}2
+        $chunk =~ s#\{2\&lt;2\$\#15\$3\&gt;2\}2#\{2\&lt;2\$\#15\&gt;2\}2#gs;
+        $chunk =~ s#\$3\{2\#523\}2#\{2\#523\}2#gs;
+    }
+    elsif ($auth_name eq 'Scylax Perieg.') {
+        $chunk =~ s#\$10Παλαίτυρος πόλις#Παλαίτυρος πόλις#gs;
+    }
+    elsif ($auth_name eq 'Aesopus Scr. Fab. et Aesopica') {
+        # {1$10O)/NOS KAI\ LEONTH=}1 and {1$10LE/WN KAI\ TAU=ROI DU/O}1
+        $chunk =~ s#\{1\$10(.*?)\}1#\{1\$10$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Abydenus Hist.') {
+        $chunk =~ s#\{1\&amp;ABYDENI#\&amp; \{1\&amp;ABYDENI#gs;
+    }
+    elsif ($auth_name eq 'Ion Phil. et Poeta') {
+        $chunk =~ s#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1\$10#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1 \$10#gs;
+    }
+    elsif ($auth_name eq 'Alcaeus Lyr.') {
+        # <15[     $1]!W?N>15
+        $chunk =~ s#(\$\d+[^\$]+)&gt;15#$1\$\&gt;15#gs;
+        # $11<10!LO#7>10<11N?GA>11
+        $chunk =~ s#\$11\&lt;10([^&]+)\&gt;10#\&lt;10\$11$1\$\&gt;10#gs;
+        # <15$1THNAGXO?NH$6N$9$1>15 and <15$1]MELONTODEENEKE?![!!]!>15
+        $chunk =~ s#(\&lt;15\$1)([^&]+)(&gt;15)#$1$2\$$3#gs;
+    }
+    elsif ($auth_name eq 'Cassius Dio Hist. Dio Cassius') {
+        # {1$10 ... }1 -> should extend to whole contents
+        $chunk =~ s#\{1\$10#\$10 \{1#gs;
+        $chunk =~ s#\$10\{1#\$10 \{1#gs;
+        $chunk =~ s#\}1\$#\}1 \$#gs;
+    }
+    elsif ($auth_name eq 'Eupolis Comic.') {
+        # {2$#523$3}2
+        $chunk =~ s#\$3\}2#\}2 \$3#gs;
+    }
+    elsif ($auth_name eq 'Heron Mech.') {
+        # <70A B G ... KT$4A ... KD>70
+        $chunk =~ s#(\&lt;70[^\$]*\$\d[^&]*)\&gt;70#$1\$\&gt;70#gs;
+    }
+    elsif ($auth_name eq 'Alexander Phil.') {
+        # p. 47b15 ${1<20 ... }1
+        $chunk =~ s#(\{1&lt;20[^\}]*)(\}1)#$1\&gt;20$2#gs;
+    }
+    elsif ($auth_name eq 'Lysias Orat.') {
+        # $10 ... {1&PLATONICA.$}1
+        $chunk =~ s#\{1\&amp;#\$ \{1\&amp;#gs;
+    }
+
     # Font switching.
 
     # These numbered font commands should be treated as & or $
