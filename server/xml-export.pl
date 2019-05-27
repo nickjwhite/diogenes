@@ -97,7 +97,10 @@ Further optional switches are supported:
 };
 }
 my $debug = $opt_v ? 1 : 0;
+
+use utf8;
 binmode(STDERR, ":encoding(UTF-8)");
+binmode(STDOUT, ":encoding(UTF-8)");
 
 # Default to use libxml if installed.
 my $libxml = 1;
@@ -239,7 +242,7 @@ my %div_translations = (
 use charnames qw(:full :short latin greek);
 
 my $authtab = File::Spec->catfile( $path, 'authtab.xml' );
-open( AUTHTAB, ">$authtab" ) or die "Could not create $authtab\n";
+open( AUTHTAB, ">:encoding(UTF-8)", "$authtab" ) or die "Could not create $authtab\n";
 AUTHTAB->autoflush(1);
 print AUTHTAB qq{<authtab corpus="$corpus">\n};
 
@@ -278,6 +281,7 @@ AUTH: foreach my $auth_num (@all_auths) {
     if ($lang eq 'g') {
         $query->latin_with_greek(\$auth_name);
     }
+    utf8::decode($auth_name);
     $auth_name = strip_formatting($auth_name);
     my $filename_in = $query->{cdrom_dir}.$query->{file_prefix}.
         $auth_num.$query->{txt_suffix};
@@ -388,6 +392,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 if ($lang eq 'g') {
                     $query->latin_with_greek(\$work_name);
                 }
+                utf8::decode($work_name);
                 $work_name = strip_formatting($work_name);
                 $query->{work_num} = $work_num;
                 $filename_out = $corpus.$auth_num.$work_num.'.xml';
@@ -395,6 +400,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 if ($lang eq 'g') {
                     $query->latin_with_greek(\$source);
                 }
+                utf8::decode($source);
                 $source = strip_formatting($source);
                 $source =~ s#\s*\n\s*# #g;
                 $body = '';
