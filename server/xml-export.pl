@@ -692,7 +692,7 @@ sub convert_chunk {
     # Some verse heads run over two lines and thus two chunks.
     $chunk =~ s#^[\s\@]*\{1(?!\d)(.*?)\z#<head>$1</head>#gms;
     $chunk =~ s#\A(.*?)\}1(?!\d)#<head>$1</head>#gms;
-    $chunk =~ s#^\}\d*##gms;
+    #$chunk =~ s#^\}\d*##gms;
 
     $chunk =~ s#\{2(?!\d)(.*?)\}2(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
     $chunk =~ s#\{90(.*?)\}90#<seg rend="Marginalia">$1</seg>#gs;
@@ -741,7 +741,7 @@ sub convert_chunk {
     $chunk =~ s#&lt;6(?!\d)(.*?)&gt;6(?!\d)#<hi rend="superscript">$1</hi>#gs;
     $chunk =~ s#&lt;7(?!\d)(.*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
     $chunk =~ s#&lt;8(?!\d)(.*?)&gt;8(?!\d)#<hi rend="double-underline">$1</hi>#gs;
-    $chunk =~ s#&lt;9(?!\d)(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</hi>#gs;
+    $chunk =~ s#&lt;9(?!\d)(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</seg>#gs;
     $chunk =~ s#&lt;10(?!\d)(.*?)&gt;10(?!\d)#<seg rend="Stacked-text-lower">$1</seg>#gs;
     $chunk =~ s#&lt;11(?!\d)(.*?)&gt;11(?!\d)#<seg rend="Stacked-text-upper">$1</seg>#gs;
     $chunk =~ s#&lt;12(?!\d)(.*?)&gt;12(?!\d)#<seg rend="Non-standard-text-direction">$1</seg>#gs;
@@ -773,6 +773,9 @@ sub convert_chunk {
     # Letterspacing often covers large amounts of text across chunks
     $chunk =~ s#&lt;2[01](?!\d)([^<]*?)#<hi rend="letter-spacing">$1</hi>#gs;
     $chunk =~ s#([^>]*?)&gt;2[01](?!\d)#<hi rend="letter-spacing">$1</hi>#gs;
+    # Marginalia sometimes consists of consecutive unterminated lines
+    $chunk =~ s#&lt;15(?!\d)([^<]*?)#<hi rend="Marginalia">$1</hi>#gs;
+
 
     if ($debug) {
         print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
