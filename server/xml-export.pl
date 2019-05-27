@@ -47,8 +47,8 @@ my $resources = 'Diogenes-Resources';
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 sub VERSION_MESSAGE {print "xml-export.pl, Diogenes version $Diogenes::Base::Version\n"}
-getopts ('alprho:c:sn:vdetx');
-our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_d, $opt_n, $opt_e, $opt_t, $opt_x);
+getopts ('alprho:c:sn:N:vdetx');
+our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_d, $opt_n, $opt_e, $opt_t, $opt_x, $opt_N);
 
 sub HELP_MESSAGE {
     my $corpora = join ', ', sort values %Diogenes::Base::choices;
@@ -80,8 +80,9 @@ instead.  This default can be overridden:
 
 Further optional switches are supported:
 
--v      Verbose info on progress of conversion and debugging.
+-v      Verbose info on progress of conversion and debugging
 -n      Comma-separated list of author numbers to convert
+-N      Author number to start at
 -d      DigiLibLT compatibility; equal to -rpat (requires libxml)
 -r      Convert book numbers to Roman numerals
 -p      Mark paragraphs as milestones rather than divs (requires libxml)
@@ -138,6 +139,7 @@ if ($opt_d) {
 }
 die "Error: option -p currently requires libxml.\n" if $opt_p and not $libxml;
 die "Error: option -e requires XML::DOM::Lite.\n" if $opt_e and $libxml;
+die "Error: options -n and -N are incompatible.\n" if $opt_n and $opt_N;
 
 # Output path
 my $path;
@@ -260,6 +262,14 @@ if ($opt_n) {
         @all_auths = $opt_n;
     }
 }
+elsif ($opt_N) {
+    my $num;
+    while ($num = shift @all_auths) {
+        last if $num >= $opt_N
+    }
+    unshift @all_auths, $num;
+}
+
 AUTH: foreach my $auth_num (@all_auths) {
     $real_num = $query->parse_idt ($auth_num);
     $query->{auth_num} = $auth_num;
