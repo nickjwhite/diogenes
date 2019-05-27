@@ -634,22 +634,36 @@ sub convert_chunk {
 
     # Font switching.
 
-    # These numbered font commands should be treated as & or $
+    #FIXME
+    # 2. Try marking solo braces to start and end of chunk.  Remove special cases for others.  Remove } at very start and { at very end.
+    # 3. Do same for <>.
+
+    # Improperly nested font-switching markup is ubiquitous: e.g. {&7
+    # ... }&; {40&7 ... }40&; <20$10{1*GELW/|WN.>20$}1. We deal with
+    # this by standardising the nesting when the markup is
+    # consecutive: from outer to inner, braces, angle brackets, font
+    # switching.  We bring leading font commands into the brace
+    # construction.  We also bring <> starting tags inside any {} and
+    # fonts inside <>.  This can cause problems, e.g. when a font
+    # change is deliberately made just after a closing brace; some of
+    # these are caught as ad-hoc exceptions above.
+    $chunk =~ s#((?:\$|\&amp;)\d*)(\{\d*)#$2$1#gs;
+    $chunk =~ s#(\}\d*)((?:\$|\&amp;)\d*)#$2$1#gs;
+    $chunk =~ s#(\&lt;\d*)(\{\d*)#$2$1#gs;
+    $chunk =~ s#(\}\d*)(\&gt;\d*)#$2$1#gs;
+    $chunk =~ s#((?:\$|\&amp;)\d*)(\&lt;\d*)#$2$1#gs;
+    $chunk =~ s#(\&gt;\d*)((?:\$|\&amp;)\d*)#$2$1#gs;
+
+    # These numbered font commands must be treated as plain & or $
     $chunk =~ s#\&amp;(6|9|19)#\&amp;#g;
     $chunk =~ s#\$(8|9|18|70)#\$#g;
 
-    # Improperly nested font-switching markup is ubiquitous: e.g. {&7
-    # ... }& {40&7 ... }40&. We deal with this by bringing leading font
-    # commands into the brace construction (and terminating the
-    # font-switching commands at the closing brace).
-    $chunk =~ s#([\$\&]\d*)(\{\d*)#$2$1#gs;
-
     # Font markup is terminated by next change of font or return to
-    # normal font or closing brace or end of chunk.
-    $chunk =~ s#\&amp;(\d+)([^{]*?)(?=\$|\&amp;|\}|\z)#exists
+    # normal font or end of chunk.
+    $chunk =~ s#\&amp;(\d+)(.*?)(?=\$|\&amp;|\z)#exists
         $ampersand{$1} ? qq{<hi rend="$ampersand{$1}">$2</hi>} : qq{$2}#ges;
-    $chunk =~ s#\$(\d+)([^{]*?)(?=\$|\&amp;|\}|\z)#exists
-        $dollar{$1} ? qq{<hi rend="$dollar{$1}">$2</hi>} : qq{$2}#ges;
+    $chunk =~ s#\$(\d+)(.*?)(?=\$|\&amp;|\z)#exists
+                        $dollar{$1} ? qq{<hi rend="$dollar{$1}">$2</hi>} : qq{$2}#ges;
 
     # The look-ahead assertion above deliberately does not capture
     # trailing font-change indicators, so that they can also match as
