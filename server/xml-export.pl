@@ -772,7 +772,9 @@ sub convert_chunk {
     $chunk =~ s#&lt;6(?!\d)(.*?)&gt;6(?!\d)#<hi rend="superscript">$1</hi>#gs;
     $chunk =~ s#&lt;7(?!\d)(.*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
     $chunk =~ s#&lt;8(?!\d)(.*?)&gt;8(?!\d)#<hi rend="double-underline">$1</hi>#gs;
-    $chunk =~ s#&lt;9(?!\d)(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</seg>#gs;
+    $chunk =~ s#&lt;9(?!\d)(.*?)(?:&gt;9(?!\d)|\z)#<seg type="lemma" rend="bold">$1</seg>#gs;
+    $chunk =~ s#\A(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</seg>#gs;
+
     $chunk =~ s#&lt;10(?!\d)(.*?)&gt;10(?!\d)#<seg rend="Stacked-text-lower">$1</seg>#gs;
     $chunk =~ s#&lt;11(?!\d)(.*?)&gt;11(?!\d)#<seg rend="Stacked-text-upper">$1</seg>#gs;
     $chunk =~ s#&lt;12(?!\d)(.*?)&gt;12(?!\d)#<seg rend="Non-standard-text-direction">$1</seg>#gs;
@@ -788,7 +790,7 @@ sub convert_chunk {
     $chunk =~ s#&lt;31(?!\d)(.*?)&gt;31(?!\d)#<hi rend="line-through">$1</hi>#gs;
     $chunk =~ s#&lt;32(?!\d)(.*?)&gt;32(?!\d)#<hi rend="overline underline">$1</hi>#gs;
     $chunk =~ s/&lt;33(?!\d)(.*?)&gt;33(?!\d)/<hi rend="overline">&#x221A;$1<\/hi>/gs;
-    $chunk =~ s/&lt;34(?!\d)(.*?)\%3(.*?)&gt;34(?!\d)/<sup>$1<\/sup>&#x2044;<sub>$2<\/sub>/gs;
+    $chunk =~ s/&lt;34(?!\d)(.*?)\%3(.*?)&gt;34(?!\d)/<hi rend="superscript">$1<\/hi>&#x2044;<hi rend="subscript">$2<\/hi>/gs;
     $chunk =~ s/&lt;5(\d)(?!\d)(.*?)&gt;5\g1(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
     $chunk =~ s/&lt;60(?!\d)(.*?)&gt;60(?!\d)/<seg type="Preferred-text">$1<\/seg>/gs;
     $chunk =~ s/&lt;61(?!\d)(.*?)&gt;61(?!\d)/<seg type="Post-erasure">$1<\/seg>/gs;
@@ -797,7 +799,11 @@ sub convert_chunk {
     $chunk =~ s/&lt;6[45](?!\d)(.*?)&gt;6[45](?!\d)/<hi rend="boxed">$1<\/hi>/gs;
     $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
     $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
-    $chunk =~ s/&lt;7\d(?!\d)(.*?)&gt;7\d(?!\d)/<seg type="Diagram">$1<\/seg>/gs;
+    $chunk =~ s/&lt;70(?!\d)(.*?)&gt;70(?!\d)/<seg type="Diagram">$1<\/seg>/gs;
+    $chunk =~ s/&lt;71(?!\d)(.*?)&gt;71(?!\d)/<seg type="Diagram-section">$1<\/seg>/gs;
+    $chunk =~ s/&lt;72(?!\d)(.*?)&gt;72(?!\d)/<seg type="Diagram-caption">$1<\/seg>/gs;
+    $chunk =~ s/&lt;73(?!\d)(.*?)&gt;73(?!\d)/<seg type="Diagram-level-3">$1<\/seg>/gs;
+    $chunk =~ s/&lt;74(?!\d)(.*?)&gt;74(?!\d)/<seg type="Diagram-level-4">$1<\/seg>/gs;
     $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard-text-direction">$1</seg>#gs;
     $chunk =~ s#&lt;100(?!\d)(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
 
