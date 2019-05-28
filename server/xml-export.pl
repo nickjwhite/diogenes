@@ -555,6 +555,12 @@ sub convert_chunk {
     # Remove hyphenation
     $chunk =~ s#(\S+)\-\s*(?:\@*\d*\s*)\n(\S+)#$1$2\n#g;
 
+    # Fix missing Greek/Latin language indicators
+    if ($auth_name eq 'Cyrillus Theol.') {
+        $chunk =~ s#(\{1\&IN DANIELEM PROPHETAM\.)\>9\}1#$1\$\}1#gs;
+        $chunk =~ s#\[\&cod\. A\.\>9\s*A\)KAKI\/AS\]#\[\&cod. A. \$A\)KAKI\/AS\]#gsm;
+    }
+
     # Beta Greek to Unicode
     if ($lang eq 'g') {
         $query->greek_with_latin(\$chunk);
@@ -655,8 +661,140 @@ sub convert_chunk {
         $chunk =~ s#\$\d\}1#\$\}1#gs;
         $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
     }
-
-
+    elsif ($auth_name eq 'Vettius Valens Astrol.') {
+        $chunk =~ s#(ἀστέρων|πλείους|μερισμοί)(\.(?:\]2)?\}1)#$1\&gt;20$2\&lt;20#gs;
+    }
+    elsif ($auth_name eq 'Eusebius Scr. Eccl. et Theol.') {
+        $chunk =~ s#(ἐχθρούς σου ὑποπόδιον τῶν ποδῶν σου\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Porphyrius Phil.') {
+        $chunk =~ s#\$10\&lt;10#\$10\`\&lt;10#gs;
+        $chunk =~ s#\&gt;11\$#\&gt;11\`\$#gs;
+    }
+    elsif ($auth_name eq 'Athanasius Theol.') {
+        $chunk =~ s#(κατὰ αἱρέσεων|ΗΜΩΝ ΑΘΑΝΑΣΙΟΥ|β\# λόγου|ΛΟΓΟΣ ΠΡΩΤΟΣ|λαϊκοὺς συνετέθη)\.\}1#$1\.\$\}1#gs;
+        $chunk =~ s#(τὴν ἐμὴν ἀφίημι ὑμῖν\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Diophantus Math.') {
+        $chunk =~ s#(\$\d*)(\&lt;34)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Basilius Theol.') {
+        $chunk =~ s#(οὐ μὴ κριθῆτε\."6|Κεφάλ\. α\#.)(\}1)#$1\$$2#gs;
+        $chunk =~ s#(\@ἐπαγγελίαν ἔχει\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Paulus Astrol.') {
+        # <70{1 Heading stays inside Diagram (later changed to label)
+        $chunk =~ s#\lt;70\{1#\lt;70\`\{1#gs;
+    }
+    elsif ($auth_name eq 'Socrates Scholasticus Hist.') {
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Joannes Chrysostomus Scr. Eccl. John Chrysostom') {
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Didymus Caecus Scr. Eccl. Didymus the Blind') {
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
+        $chunk =~ s#(βροτοῖς ἀδίδακτος ἀκούει\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Hippolytus Scr. Eccl.') {
+        $chunk =~ s#(\{1\$10(?:Ἱππολύτου|Ἀπολιναρίου)\.)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Timaeus Sophista Gramm.') {
+        $chunk =~ s#(\$\d)(\&lt;9)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Gennadius I Scr. Eccl.') {
+        $chunk =~ s#(Gal 4,17)\$10\}1#$1\}1\$10#gs;
+    }
+    elsif ($auth_name eq 'Basilius Scr. Eccl.') {
+        $chunk =~ s#(Λόγος γ\#\.)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Oecumenius Phil. et Rhet.') {
+        $chunk =~ s#(Phil 3,14|Thess 2,16|Tim 5,10|Tit 1,12|Hebr 2,14|Hebr 5,1)\$10\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Joannes Damascenus Scr. Eccl. et Theol. John of Damascus') {
+        $chunk =~ s#(τοῦ Διαιτητοῦ)\.\}1#$1\.\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Symeon Metaphrastes Biogr. et Hist.') {
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Anonymi In Aristotelis Ethica Nicomachea Phil.') {
+        # In retrospect, should have just deleted all of the <20 >20.
+        $chunk =~ s#(\[2κεφ\. ζ\#\.\]2)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(ἑαυτὰ ἀγαθῶν\. κεφ\. θ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(τιμίων ἡ εὐδαιμονία\. κεφ\. ιθ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(ἐλλείψεως φθείρονται\. κεφ\. β\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#\{1(Περὶ τῆς ἐναντιότητος τῶν)#\&gt;20\{1\&lt;20$1#gs;
+        $chunk =~ s#(τῆς μεσότητος τυγχάνειν\. κεφ\. η\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(Περὶ ἀνδρείας\. κεφ\. η\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#\{1(Περὶ ἀνδρείας, ὅτι ὁ ἀνδρεῖος περὶ τὰ φοβερὰ)#\&gt;20\{1\&lt;20$1#gs;
+        $chunk =~ s#(Περὶ σωφροσύνης\. κεφ\. ι\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(ἡ σωφροσύνη καὶ ἡ ἀκολασία\. \nκεφ\. ιβ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#\{1(Ὅτι ἡ ἀκολασία μᾶλλον ἑκούσιόν ἐστιν)#\&gt;20\{1\&lt;20$1#gs;
+        $chunk =~ s#(Περὶ μεγαλοπρεπείας. κεφ. γ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(ἀδικεῖν καὶ μὴ ἄδικον εἶναι. κεφ. η\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(\{1\&lt;20Περὶ φρονήσεως. κεφ.)#\&gt;20$1#gs;
+        $chunk =~ s#(Περὶ φιλίας. κεφ. α\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(ἐνεργείᾳ φίλοις \nεἶναι\. κεφ\. \#2\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+        $chunk =~ s#(Περὶ ἡδονῆς. κεφ. α\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+    }
+    elsif ($auth_name eq 'Michael Phil.') {
+        $chunk =~ s#(παρὰ τὸ προστιθέναι τι συλλογίζονται\.)\}1#$1\&gt;20\}1\&lt;20#gs;
+    }
+    elsif ($auth_name eq 'Proclus Phil.') {
+        # These do not nest at all within their diagram
+        $chunk =~ s#\$10#\$#gs;
+        $chunk =~ s#(ἐνεργείαις τελειότητος)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Theophanes Confessor Chronogr.') {
+        $chunk =~ s#\$10#\$#gs;
+    }
+    elsif ($auth_name eq 'Theodoretus Scr. Eccl. et Theol.') {
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
+        $chunk =~ s#(ἀποκαλύψεις ἡρμήνευσε\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Cyrillus Theol.') {
+        $chunk =~ s#\$10\}3#\}3\$10#gs;
+        $chunk =~ s#\{1ΨΑΛΜΟΣ Λ\#2\&gt;9\}1#\{1ΨΑΛΜΟΣ Λ\#2\}1#gs;
+        $chunk =~ s#(\@τῇ σαρκί μου\.)(\&gt;9)#$1\$$2#gs;
+        $chunk =~ s#\{1\&lt;9ΨΑΛΜΟΣ ΜΕ\#\.\}1#\{1ΨΑΛΜΟΣ ΜΕ\#\.\}1#gs;
+        $chunk =~ s#(Εὐφράνθητε, δίκαιοι, ἐν τῷ Κυρίῳ\.)\&gt;9#$1#gs;
+        $chunk =~ s#(εἰς μετοικίαν πορεύσεται\.)\&gt;9#$1#gs;
+        $chunk =~ s#(Πνεύματος εἰς τὴν Γαλιλαίαν\.)\&gt;9#$1#gs;
+        $chunk =~ s#(καὶ Σίμων, \$3ὑπακοή\.)\&gt;9#$1#gs;
+        $chunk =~ s#(τὸν Σατανᾶν, κ\.τ\.λ\.)\&gt;9#$1#gs;
+        $chunk =~ s#(ὁ πλούσιος, καὶ ἐτάφη, κ\.τ\.λ\.)\&gt;9#$1#gs;
+        $chunk =~ s#(\{1ΚΕΦΑΛ. ΚΑ\#\.)\&gt;9\}1#$1\}1#gs;
+        $chunk =~ s#(ὢν, οὐ ψεύδεται\.)\&gt;9#$1#gs;
+        $chunk =~ s#(καὶ ὅσα τούτοις ὅμοια\.)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Georgius Choeroboscus Gramm.') {
+        $chunk =~ s#(πώεος τοῦ γόνυος)\&gt;20( καὶ )\&lt;20(γουνός)#$1$2$3#gs;
+    }
+    elsif ($auth_name eq 'Catenae (Novum Testamentum)') {
+        $chunk =~ s#(συμβουλευτικῆς πρὸς σωτηρίαν αὐτῶν\.)\}1#$1\$\}1#gs;
+        $chunk =~ s#(καὶ ἀνανεώσεως τῶν Ἀποστόλων\.)\}1#$1\$\}1#gs;
+        $chunk =~ s#(ἀκωλύτως κηρύσσειν τὸν Χριστόν\.)\}1#$1\$\}1#gs;
+        $chunk =~ s#(Περὶ χειροτονίας τῶν ἑπτὰ Διακόνων\.)\}1#$1\$\}1#gs;
+        $chunk =~ s#(μαστίξαντες ἀπέλυσαν\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Diodorus Scr. Eccl.') {
+        $chunk =~ s#(\{1\&amp;Röm 9,11)\$10\}1#$1\}1#gs;
+    }
+    elsif ($auth_name eq 'Severianus Scr. Eccl.') {
+        $chunk =~ s#(\&amp;Röm 4,20)\$10#$1#gs;
+        $chunk =~ s#(\&amp;\`1 Kor 7,17)\$10#$1#gs;
+        $chunk =~ s#(\&amp;\`1 Kor 15,19)\$10#$1#gs;
+    }
+    elsif ($auth_name eq 'Commentaria In Dionysii Thracis Artem Grammaticam') {
+        $chunk =~ s#(Σ\&amp;4d)(?!\&amp;)#$1\&amp;#gs;
+        $chunk =~ s#(μέσων, οἷον ἕβδομος ὄγδοος\.)#$1\$#gs;
+        $chunk =~ s#(Θεῷ εἰς τὰ προλεγόμενα τῆς γραμματικῆς)\&gt;20#$1#gs;
+        $chunk =~ s#(hymn\. in Merc\. 263\%1\]2\$)10#$1#gs;
+        $chunk =~ s#(\$10\s*Περὶ γραμματικῆς\.)\}1#$1\$\}1#gs;
+        $chunk =~ s#\$10##gs;  # I give up
+        $chunk =~ s#(\{1\§\s)\&amp;#\$\`$1#gs;
+        $chunk =~ s#(\§\s)\&amp;(\`12)#$1$2#gs;
+    }
 
     # Font switching.
 
