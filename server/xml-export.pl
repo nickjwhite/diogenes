@@ -883,18 +883,18 @@ sub convert_chunk {
     $chunk =~ s/!/./g;
 
 
-    # Whitespace
-
-    ## Sometimes these appear at the end of a line, to no apparent purpose.
-    $chunk =~ s#@+\s*$##g;
-    $chunk =~ s#@\d+\s*$##g;
-    $chunk =~ s#@+\s*\n#\n#g;
-    $chunk =~ s#@\d+\s*\n#\n#g;
+    # Whitespace  FIXME: do all numbered items properly
 
     # Line/page breaks
-    $chunk =~ s#\@1#<pb/>#g;
-    $chunk =~ s#\@6#<lb/><lb/>#g;
-    $chunk =~ s#\@9#<gap/>#g;
+    $chunk =~ s#\@1(?!\d)#<pb/>#g;
+    $chunk =~ s#\@6(?!\d)#<lb/><lb/>#g;
+    $chunk =~ s#\@9(?!\d)#<gap/>#g;
+
+    ## Sometimes these appear at the end of a line, to no apparent purpose.
+    # $chunk =~ s#@+\s*$##g;
+    # $chunk =~ s#@\d+\s*$##g;
+    # $chunk =~ s#@+\s*\n#\n#g;
+    # $chunk =~ s#@\d+\s*\n#\n#g;
 
     if ($opt_a) {
         $chunk =~ s#@@+\d*#    #g;
@@ -903,11 +903,11 @@ sub convert_chunk {
         $chunk =~ s#\^(\d+)#' ' x ($1/4)#ge;
         $chunk =~ s#\^# #ge;
     } else {
-        $chunk =~ s#@(\d+)#q{<space quantity="}.$1.q{"/>}#ge;
-        $chunk =~ s#(@@+)#q{<space quantity="}.(length $1).q{"/>}#ge;
-        $chunk =~ s#@#<space/>#g;
+        $chunk =~ s#(@@+)(?!\d)#q{<space quantity="}.(length $1).q{"/>}#ge;
+        $chunk =~ s#@(?!\d)#<space/>#g;
         $chunk =~ s#\^(\d+)#q{<space quantity="}.($1/4).q{"/>}#ge;
         $chunk =~ s#\^#<space quantity="0.25"/>#g;
+        $chunk =~ s#@(\d*)##g;
     }
 
     # Remove end-of-digit escapes
