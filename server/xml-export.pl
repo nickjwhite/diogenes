@@ -577,8 +577,10 @@ sub convert_chunk {
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
 
-    # Fix ad-hoc special cases of improper nesting that yield invalid XML; do
-    # this before further fiddling that make them harder to match.
+    # Fix ad-hoc special cases of improper nesting that yield invalid
+    # XML and where our rearranging of font commands below will have
+    # incorrect results; we do this before further fiddling that make
+    # them harder to match.
     if ($auth_name eq 'Sophocles Trag.') {
         # {$10*A.}
         $chunk =~ s#(\{\$10.*)\}(?!\$)#$1\$\}#gs;
@@ -596,11 +598,11 @@ sub convert_chunk {
         $chunk =~ s#\{1\$10(.*?)\}1#\{1\$10$1\$\}1#gs;
     }
     elsif ($auth_name eq 'Abydenus Hist.') {
-        $chunk =~ s#\{1\&amp;ABYDENI#\&amp; \{1\&amp;ABYDENI#gs;
+        $chunk =~ s#\{1\&amp;ABYDENI#\&amp;`\{1\&amp;ABYDENI#gs;
     }
-    elsif ($auth_name eq 'Ion Phil. et Poeta') {
-        $chunk =~ s#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1\$10#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1 \$10#gs;
-    }
+    # elsif ($auth_name eq 'Ion Phil. et Poeta') {
+    #     $chunk =~ s#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1\$10#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1`\$10#gs;
+    # }
     elsif ($auth_name eq 'Alcaeus Lyr.') {
         # <15[     $1]!W?N>15
         $chunk =~ s#(\$\d+[^\$]+)&gt;15#$1\$\&gt;15#gs;
@@ -611,13 +613,13 @@ sub convert_chunk {
     }
     elsif ($auth_name eq 'Cassius Dio Hist. Dio Cassius') {
         # {1$10 ... }1 -> should extend to whole contents
-        $chunk =~ s#\{1\$10#\$10 \{1#gs;
-        $chunk =~ s#\$10\{1#\$10 \{1#gs;
-        $chunk =~ s#\}1\$#\}1 \$#gs;
+        $chunk =~ s#\{1\$10#\$10`\{1#gs;
+        $chunk =~ s#\$10\{1#\$10`\{1#gs;
+        $chunk =~ s#\}1\$#\}1`\$#gs;
     }
     elsif ($auth_name eq 'Eupolis Comic.') {
         # {2$#523$3}2
-        $chunk =~ s#\$3\}2#\}2 \$3#gs;
+        $chunk =~ s#\$3\}2#\}2`\$3#gs;
     }
     elsif ($auth_name eq 'Heron Mech.') {
         # <70A B G ... KT$4A ... KD>70
@@ -629,10 +631,38 @@ sub convert_chunk {
     }
     elsif ($auth_name eq 'Lysias Orat.') {
         # $10 ... {1&PLATONICA.$}1
-        $chunk =~ s#\{1\&amp;#\$ \{1\&amp;#gs;
+        $chunk =~ s#\{1\&amp;#\$`\{1\&amp;#gs;
+    }
+    elsif ($auth_name eq 'Comica Adespota (CGFPR)') {
+        # <2{_}>2$3{[ <- belongs outside
+        $chunk =~ s#\$3\{\[#\$3\`\{\[#gs;
+    }
+    elsif ($auth_name eq 'Hierophilus Phil. et Soph.') {
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Anonyma De Musica Scripta Bellermanniana') {
+        $chunk =~ s#\$1\&lt;4#\$1\`\&lt;4#gs;
+    }
+    elsif ($auth_name eq 'Democritus Phil.') {
+        $chunk =~ s#\{1#\$\`\{1#gs;
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
+        $chunk =~ s#\&lt;20(Ἠθικά|Ἀσύντακτα|Μαθηματικά|Μουσικά)\.#\&lt;20$1\.\&gt;20#gs;
+    }
+    elsif ($auth_name eq 'Historia Alexandri Magni') {
+        $chunk =~ s#\&lt;13\{1(.*?)\}1#\{1$1\}1\`\&lt;13#gs;
+    }
+    elsif ($auth_name eq 'Pseudo-Auctores Hellenistae (PsVTGr)') {
+        $chunk =~ s#\$\d\}1#\$\}1#gs;
+        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
     }
 
+
+
     # Font switching.
+
+    # These numbered font commands must be treated as plain & or $
+    $chunk =~ s#\&amp;(6|9|19)#\&amp;#g;
+    $chunk =~ s#\$(8|9|18|70)#\$#g;
 
     #FIXME
     # 2. Try marking solo braces to start and end of chunk.  Remove special cases for others.  Remove } at very start and { at very end.
@@ -640,23 +670,24 @@ sub convert_chunk {
 
     # Improperly nested font-switching markup is ubiquitous: e.g. {&7
     # ... }&; {40&7 ... }40&; <20$10{1*GELW/|WN.>20$}1. We deal with
-    # this by standardising the nesting when the markup is
-    # consecutive: from outer to inner, braces, angle brackets, font
-    # switching.  We bring leading font commands into the brace
-    # construction.  We also bring <> starting tags inside any {} and
-    # fonts inside <>.  This can cause problems, e.g. when a font
-    # change is deliberately made just after a closing brace; some of
-    # these are caught as ad-hoc exceptions above.
+    # this by standardising the nesting order when the markup is
+    # consecutive.  From outer to inner: braces, angle brackets, font
+    # switching.  We thus bring leading font commands into the brace
+    # construction and also trailing non-numbered font commands.  When
+    # the closing brace is followed by a numbered font changing
+    # command, we insert a return to the baseline font just before the brace.
+    # We also bring <> starting tags inside any {} and bring fonts
+    # inside <> just as for {}.  Problems arising from this approach
+    # are treated as ad-hoc exceptions above, where we insert a back-tick
+    # to separate elements of markup that we do not want to swap in.
     $chunk =~ s#((?:\$|\&amp;)\d*)(\{\d*)#$2$1#gs;
-    $chunk =~ s#(\}\d*)((?:\$|\&amp;)\d*)#$2$1#gs;
+    $chunk =~ s#(\}\d*)(\$|\&amp;)(?!\d)#$2$1#gs;
+    $chunk =~ s#(\}\d*)(\$|\&amp;)(?=\d)#$2$1$2#gs;
     $chunk =~ s#(\&lt;\d*)(\{\d*)#$2$1#gs;
     $chunk =~ s#(\}\d*)(\&gt;\d*)#$2$1#gs;
     $chunk =~ s#((?:\$|\&amp;)\d*)(\&lt;\d*)#$2$1#gs;
-    $chunk =~ s#(\&gt;\d*)((?:\$|\&amp;)\d*)#$2$1#gs;
-
-    # These numbered font commands must be treated as plain & or $
-    $chunk =~ s#\&amp;(6|9|19)#\&amp;#g;
-    $chunk =~ s#\$(8|9|18|70)#\$#g;
+    $chunk =~ s#(\&gt;\d*)(\$|\&amp;)(?!\d)#$2$1#gs;
+    $chunk =~ s#(\&gt;\d*)(\$|\&amp;)(?=\d)#$2$1$2#gs;
 
     # Font markup is terminated by next change of font or return to
     # normal font or end of chunk.
