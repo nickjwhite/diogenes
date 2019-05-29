@@ -325,6 +325,8 @@ AUTH: foreach my $auth_num (@all_auths) {
         elsif ($code >> 7) {
             # Close previous line
             if ($hanging_div) {
+                # Change to: We have come to the end of the line *after* the indication of a new prose div, and the previous line did not seem a suitable place to break (mainly for lack of punctuation.  If there is suitable punctuation in the current line, break there (after any trailing markup), preferring major punctuation to minor.  If there is no punctuation in the current line and the previous line did not end with a hyphen, break at the end of the previous line (suitable for cases when the div was not really hanging, such as for n="t" title sections).  If the previous line did end in a hyphen, break at the first comma, or, failing that, at the first space in the line.
+
                 # If we come to the end of a line without finding
                 # punctuation and we still have an prose div hanging
                 # from the previous line, close the div out at start
@@ -505,6 +507,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                     $body .= $temp;
                 }
                 else {
+                    # Verse, or a prose div that ends at the end of the current line, with suitable punctuation at its end.
                     $body .= convert_chunk($chunk, $lang);
                     $chunk = '';
                     $body .= $temp;
@@ -517,6 +520,7 @@ AUTH: foreach my $auth_num (@all_auths) {
         }
         else {
             $line .= $char;
+            # FIXME: remove this (move it earlier).
             if ($hanging_div and $char =~ m#[$punct]#) {
                 # We have found a suitable punctuation mark to close
                 # out a hanging prose div
