@@ -253,7 +253,7 @@ $args{bib_info} = 1;
 $args{perseus_links} = 0;
 
 my $query = new Diogenes::Browser(%args);
-my ($buf, $i, $auth_name, $real_num, $work_name, $body, $header, $is_verse, $hanging_div);
+my ($buf, $i, $auth_name, $real_num, $work_name, $body, $header, $is_verse, $hanging_div, $flag);
 
 my @all_auths = sort keys %{ $Diogenes::Base::auths{$corpus} };
 if ($opt_n) {
@@ -796,6 +796,11 @@ sub convert_chunk {
         $chunk =~ s#(\§\s)\&amp;(\`12)#$1$2#gs;
     }
 
+    $flag = 1 if $chunk =~ m/Περὶ ἀμύλου\./;
+    $flag = 0 if $chunk =~ m/Περὶ κριθίνων ἄρτων\./;
+    print STDERR ">>$chunk\n\n" if $flag;
+
+
     # Font switching.
 
     # These numbered font commands must be treated as plain & or $
@@ -818,6 +823,7 @@ sub convert_chunk {
     # inside <> just as for {}.  Problems arising from this approach
     # are treated as ad-hoc exceptions above, where we insert a back-tick
     # to separate elements of markup that we do not want to swap in.
+
     $chunk =~ s#((?:\$|\&amp;)\d*)(\{\d*)#$2$1#gs;
     $chunk =~ s#(\}\d*)(\$|\&amp;)(?!\d)#$2$1#gs;
     $chunk =~ s#(\}\d*)(\$|\&amp;)(?=\d)#$2$1$2#gs;
@@ -831,15 +837,16 @@ sub convert_chunk {
     # normal font or end of chunk.
     $chunk =~ s#\&amp;(\d+)(.*?)(?=\$|\&amp;|\z)#exists
         $ampersand{$1} ? qq{<hi rend="$ampersand{$1}">$2</hi>} : qq{$2}#ges;
+
     $chunk =~ s#\$(\d+)(.*?)(?=\$|\&amp;|\z)#exists
                         $dollar{$1} ? qq{<hi rend="$dollar{$1}">$2</hi>} : qq{$2}#ges;
 
     # The look-ahead assertion above deliberately does not capture
-    # trailing font-change indicators, so that they can also match as
-    # the beginning of the next font change.  This behind leaves many
-    # indicators of a return to the normal font ($ and &), which do not thus
-    # match to start a new range of markup. So we have to remove these
-    # at the end.
+    # trailing font-change indicators, in order that they can also
+    # match as the beginning of the next font change.  This behind
+    # leaves many indicators of a return to the normal font ($ and &),
+    # which do not thus match to start a new range of markup. So we
+    # have to remove these at the end.
 
     if ($debug) {
         print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:\$|&amp;)\d+)/;
@@ -851,7 +858,52 @@ sub convert_chunk {
         $chunk =~ s#\$\d*##g;
     }
 
-    # {} titles, marginalia, misc.
+    # Font commands are a state machine rather than balanced markup,
+    # but {} and <> are different: they are supposed to be balanced
+    # (we can ignore [] variants, as these are punctuation rather than
+    # markup).  Markup with {} and <> is not always balanced,
+    # sometimes by error, sometimes because of deliberately eccentric
+    # markup, sometimes because the chunking has cut across a balanced
+    # pair, which is especially common when the structural citation
+    # scheme follows the pagination of an edition (e.g Stephanus, but
+    # also for many theological texts).  The chunking problem could be
+    # eliminated if all structural markup were turned into milestones
+    # (which can be spanned by tags) rather than divs.
+
+    # When a balanced pair has been split by chunking into divs, the
+    # correct solution is to create two spans: one from the opening to
+    # the end of the div and the second from the start of the new div
+    # to the closing.  But this is problematic in the case of
+    # unbalanced markup that is the result of error or a deliberate
+    # practice of unbalanced markup.  It can result in many large
+    # spans incorrectly marked up and a pile-up of spurious markup at
+    # the start and end of divs.
+
+    # For practical reasons, only markup with braces {} is handled in
+    # this way, by extending isolated examples to the beginning or end
+    # of the chunk.  Braces tend to be structural and are used more
+    # sparingly and carefully.  By contrast, markup with angle
+    # brackets <> is mainly typographical and is more carelessly
+    # deployed.  There is a large amount of stray unbalanced markup,
+    # and it would not be desirable to span from all of these to the
+    # beginning or end of the chunk.  On the other hand, it might not
+    # be right to remove the unbalanced markup entirely.  So as a
+    # compromise, for unbalanced <> markup, we extend the span to the
+    # start or end of the line.  In some cases, this is clearly
+    # intended (as when opening markup is repeated at the start of
+    # every line, with the closing markup only at the end of the
+    # passage).  In other cases, it may not be quite right, but it is
+    # impossible to know in these cases what should be right.  Where
+    # balanced <> markup has been split by chunking, it means that
+    # there will be cases where the spans are not as long as they
+    # should be and there is a gap in the middle.
+
+    # All of this still yields improperly nested, invalid XML, so we
+    # have the ad-hoc fixes to get the XML to the stage where it can
+    # reliably be manipulated in order to coerce it into validating
+    # against the schema.
+
+    #### {} titles, marginalia, misc.
 
     # Fix unbalanced markup ??
 #    $chunk =~ s/{2\@{2#10}2/{2#10/g;
