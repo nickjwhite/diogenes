@@ -909,33 +909,54 @@ sub convert_chunk {
 #    $chunk =~ s/{2\@{2#10}2/{2#10/g;
 
     # Elements other than plain <seg>
-    $chunk =~ s#\{1(?!\d)(.*?)\}1(?!\d)#<head>$1</head>#gs;
-    # Some verse heads run over two lines and thus two chunks.
-    $chunk =~ s#^[\s\@]*\{1(?!\d)(.*?)\z#<head>$1</head>#gms;
-    $chunk =~ s#\A(.*?)\}1(?!\d)#<head>$1</head>#gms;
-    #$chunk =~ s#^\}\d*##gms;
 
+    # Heads
+    $chunk =~ s#\{1(?!\d)(.*?)\}1(?!\d)#<head>$1</head>#gs;
+    # Unbalanced heads.
+    $chunk =~ s#\{1(?!\d)(.*?)\z#<head>$1</head>#gms;
+    $chunk =~ s#\A(.*?)\}1(?!\d)#<head>$1</head>#gms;
+
+    # Marginalia
     $chunk =~ s#\{2(?!\d)(.*?)\}2(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#\{2(?!\d)(.*?)\z#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#\A(.*?)\}2(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
+
     $chunk =~ s#\{90(.*?)\}90#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#\{90(.*?)\z#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#\A(.*?)\}90#<seg rend="Marginalia">$1</seg>#gs;
+
     $chunk =~ s#\{3(?!\d)(.*?)\}3(?!\d)#<ref>$1</ref>#gs;
+    $chunk =~ s#\{3(?!\d)(.*?)\z#<ref>$1</ref>#gs;
+    $chunk =~ s#\A(.*?)\}3(?!\d)#<ref>$1</ref>#gs;
 
     # Speakers, etc.
+
     # No number: usually speakers in drama, pastoral, etc.
     $chunk =~ s#\{(?!\d)(.*?)\}(?!\d)#<label type="speaker">$1</label>#gs;
-    $chunk =~ s#^[\s\@]*\{(?!\d)(.*?)$#<label type="speaker">$1</label>#gms;
-#    $chunk =~ s#^(.*?)\}(?!\d)$#<label type="speaker">$1</label>#gms;
+    $chunk =~ s#\{(?!\d)(.*?)\z#<label type="speaker">$1</label>#gs;
+    $chunk =~ s#\A(.*?)\}(?!\d)#<label type="speaker">$1</label>#gs;
 
-    $chunk =~ s#\{40(.*?)\}40#<label type="speaker">$1</label>#gs;
-    $chunk =~ s#\{80(.*?)\}80#<label type="speaker">$1</label>#gs;
+    $chunk =~ s#\{([48]0)(.*?)\}\g1#<label type="speaker">$2</label>#gs;
+    $chunk =~ s#\{[48]0(.*?)\z#<label type="speaker">$1</label>#gs;
+    $chunk =~ s#\A(.*?)\}[48]0#<label type="speaker">$1</label>#gs;
+
     $chunk =~ s#\{41(.*?)\}41#<label type="stage-direction">$1</label>#gs;
+    $chunk =~ s#\{41(.*?)\z#<label type="stage-direction">$1</label>#gs;
+    $chunk =~ s#\A(.*?)\}41#<label type="stage-direction">$1</label>#gs;
 
     # Servius
     $chunk =~ s#\[2{43#{43\[2#g; # Fix improper nesting
     $chunk =~ s#\{43(.*?)\}43#<seg type="Danielis" rend="italic">$1</seg>#gs;
 
-    # Other types of braces
+    # All other types of braces, using <seg>
     $chunk =~ s#\{(\d+)(.*?)\}\g1#exists
                       $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text-characters">$2</seg>}#ges;
+
+    $chunk =~ s#\{(\d+)(.*?)\}\z#exists
+                      $braces{$1} ? qq{<seg type="$braces{$1}">$2</seg>} : qq{<seg type="Non-text-characters">$2</seg>}#ges;
+
+    $chunk =~ s#\A(.*?)\}(\d+)#exists
+                      $braces{$2} ? qq{<seg type="$braces{$2}">$1</seg>} : qq{<seg type="Non-text-characters">$1</seg>}#ges;
 
     if ($debug) {
         print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([{}]\d*)/;
@@ -946,63 +967,165 @@ sub convert_chunk {
         $chunk =~ s#\{\d*##g;
     }
 
-    # <> Text decoration
+    #### <> Text decoration
 
     # Some of these do not nest properly with respect to font changes:
     # e.g "HS &7<ccc&>".  This problem can be evaded by using <hi>
     # elements for both, so that the group ends with </hi></hi>.
 
     $chunk =~ s#&lt;(?!\d)(.*?)&gt;(?!\d)#<hi rend="overline">$1</hi>#gs;
+    $chunk =~ s#&lt;(?!\d)(.*?)$#<hi rend="overline">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;(?!\d)#<hi rend="overline">$1</hi>#gs;
+
     $chunk =~ s#&lt;1(?!\d)(.*?)&gt;1(?!\d)#<hi rend="underline">$1</hi>#gs;
+    $chunk =~ s#&lt;1(?!\d)(.*?)$#<hi rend="underline">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;1(?!\d)#<hi rend="underline">$1</hi>#gs;
+
     $chunk =~ s/&lt;2(?!\d)/&#x2035;/g;
     $chunk =~ s/&gt;2(?!\d)/&#x2032;/g;
+
     $chunk =~ s/&lt;3(?!\d)(.)(.*?)&gt;3(?!\d)/$1&#x0361;$2/gs;
+    $chunk =~ s/&lt;3(?!\d)(.)(.*?)$/$1&#x0361;$2/gs;
+    $chunk =~ s/^(.)(.*?)&gt;3(?!\d)/$1&#x0361;$2/gs;
+
     $chunk =~ s/&lt;4(?!\d)(.)(.*?)&gt;4(?!\d)/$1&#x035C;$2/gs;
+    $chunk =~ s/&lt;4(?!\d)(.)(.*?)$/$1&#x035C;$2/gs;
+    $chunk =~ s/^(.)(.*?)&gt;4(?!\d)/$1&#x035C;$2/gs;
+
     $chunk =~ s/&lt;5(?!\d)(.)(.*?)&gt;5(?!\d)/$1&#x035D;$2/gs;
+    $chunk =~ s/&lt;5(?!\d)(.)(.*?)$/$1&#x035D;$2/gs;
+    $chunk =~ s/^(.)(.*?)&gt;5(?!\d)/$1&#x035D;$2/gs;
+
     $chunk =~ s#&lt;6(?!\d)(.*?)&gt;6(?!\d)#<hi rend="superscript">$1</hi>#gs;
+    $chunk =~ s#&lt;6(?!\d)(.*?)$#<hi rend="superscript">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;6(?!\d)#<hi rend="superscript">$1</hi>#gs;
+
     $chunk =~ s#&lt;7(?!\d)(.*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
+    $chunk =~ s#&lt;7(?!\d)(.*?)$#<hi rend="subscript">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
+
     $chunk =~ s#&lt;8(?!\d)(.*?)&gt;8(?!\d)#<hi rend="double-underline">$1</hi>#gs;
-    $chunk =~ s#&lt;9(?!\d)(.*?)(?:&gt;9(?!\d)|\z)#<seg type="lemma" rend="bold">$1</seg>#gs;
-    $chunk =~ s#\A(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</seg>#gs;
+    $chunk =~ s#&lt;8(?!\d)(.*?)$#<hi rend="double-underline">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;8(?!\d)#<hi rend="double-underline">$1</hi>#gs;
+
+    $chunk =~ s#&lt;9(?!\d)(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</seg>#gs;
+    $chunk =~ s#&lt;9(?!\d)(.*?)$#<seg type="lemma" rend="bold">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;9(?!\d)#<seg type="lemma" rend="bold">$1</seg>#gs;
 
     $chunk =~ s#&lt;10(?!\d)(.*?)&gt;10(?!\d)#<seg rend="Stacked-text-lower">$1</seg>#gs;
+    $chunk =~ s#&lt;10(?!\d)(.*?)$#<seg rend="Stacked-text-lower">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;10(?!\d)#<seg rend="Stacked-text-lower">$1</seg>#gs;
+
     $chunk =~ s#&lt;11(?!\d)(.*?)&gt;11(?!\d)#<seg rend="Stacked-text-upper">$1</seg>#gs;
+    $chunk =~ s#&lt;11(?!\d)(.*?)$#<seg rend="Stacked-text-upper">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;11(?!\d)#<seg rend="Stacked-text-upper">$1</seg>#gs;
+
     $chunk =~ s#&lt;12(?!\d)(.*?)&gt;12(?!\d)#<seg rend="Non-standard-text-direction">$1</seg>#gs;
+    $chunk =~ s#&lt;12(?!\d)(.*?)$#<seg rend="Non-standard-text-direction">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;12(?!\d)#<seg rend="Non-standard-text-direction">$1</seg>#gs;
+
     $chunk =~ s#&lt;13(?!\d)(.*?)&gt;13(?!\d)#<seg rend="Single-spacing">$1</seg>#gs;
+    $chunk =~ s#&lt;13(?!\d)(.*?)$#<seg rend="Single-spacing">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;13(?!\d)#<seg rend="Single-spacing">$1</seg>#gs;
+
     $chunk =~ s#&lt;14(?!\d)(.*?)&gt;14(?!\d)#<seg rend="Interlinear-text">$1</seg>#gs;
+    $chunk =~ s#&lt;14(?!\d)(.*?)$#<seg rend="Interlinear-text">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;14(?!\d)#<seg rend="Interlinear-text">$1</seg>#gs;
+
     $chunk =~ s#&lt;15(?!\d)(.*?)&gt;15(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#&lt;15(?!\d)(.*?)$#<seg rend="Marginalia">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;15(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
+
     $chunk =~ s/&lt;1[69](?!\d)/&#x2035;/g;
     $chunk =~ s/&gt;1[69](?!\d)/&#x2032;/g;
+
     $chunk =~ s#&lt;17(?!\d)(.*?)&gt;17(?!\d)#<hi rend="double-underline">$1</hi>#gs;
+    $chunk =~ s#&lt;17(?!\d)(.*?)$#<hi rend="double-underline">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;17(?!\d)#<hi rend="double-underline">$1</hi>#gs;
+
     $chunk =~ s#&lt;18(?!\d)(.*?)&gt;18(?!\d)#<hi rend="line-through">$1</hi>#gs;
-    $chunk =~ s#&lt;2[01](?!\d)(.*?)&gt;2[01](?!\d)#<hi rend="letter-spacing">$1</hi>#gs;
+    $chunk =~ s#&lt;18(?!\d)(.*?)$#<hi rend="line-through">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;18(?!\d)#<hi rend="line-through">$1</hi>#gs;
+
+    $chunk =~ s#&lt;2([01])(?!\d)(.*?)&gt;2\g1(?!\d)#<hi rend="letter-spacing">$2</hi>#gs;
+    $chunk =~ s#&lt;2[01](?!\d)(.*?)$#<hi rend="letter-spacing">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;2[01](?!\d)#<hi rend="letter-spacing">$1</hi>#gs;
+
     $chunk =~ s#&lt;30(?!\d)(.*?)&gt;30(?!\d)#<hi rend="overline">$1</hi>#gs;
+    $chunk =~ s#&lt;30(?!\d)(.*?)$#<hi rend="overline">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;30(?!\d)#<hi rend="overline">$1</hi>#gs;
+
     $chunk =~ s#&lt;31(?!\d)(.*?)&gt;31(?!\d)#<hi rend="line-through">$1</hi>#gs;
+    $chunk =~ s#&lt;31(?!\d)(.*?)$#<hi rend="line-through">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;31(?!\d)#<hi rend="line-through">$1</hi>#gs;
+
     $chunk =~ s#&lt;32(?!\d)(.*?)&gt;32(?!\d)#<hi rend="overline underline">$1</hi>#gs;
+    $chunk =~ s#&lt;32(?!\d)(.*?)$#<hi rend="overline underline">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;32(?!\d)#<hi rend="overline underline">$1</hi>#gs;
+
     $chunk =~ s/&lt;33(?!\d)(.*?)&gt;33(?!\d)/<hi rend="overline">&#x221A;$1<\/hi>/gs;
+    $chunk =~ s/&lt;33(?!\d)(.*?)$/<hi rend="overline">&#x221A;$1<\/hi>/gs;
+    $chunk =~ s/^(.*?)&gt;33(?!\d)/<hi rend="overline">&#x221A;$1<\/hi>/gs;
+
     $chunk =~ s/&lt;34(?!\d)(.*?)\%3(.*?)&gt;34(?!\d)/<hi rend="superscript">$1<\/hi>&#x2044;<hi rend="subscript">$2<\/hi>/gs;
+    $chunk =~ s/&lt;34(?!\d)(.*?)$/<hi rend="superscript">$1<\/hi>&#x2044;<hi rend="subscript">$2<\/hi>/gs;
+    $chunk =~ s/^(.*?)&gt;34(?!\d)/<hi rend="superscript">$1<\/hi>&#x2044;<hi rend="subscript">$2<\/hi>/gs;
+
     $chunk =~ s/&lt;5(\d)(?!\d)(.*?)&gt;5\g1(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
+    $chunk =~ s/&lt;5\d(?!\d)(.*?)$/<seg type="Unknown">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;5\d(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
+
     $chunk =~ s/&lt;60(?!\d)(.*?)&gt;60(?!\d)/<seg type="Preferred-text">$1<\/seg>/gs;
+    $chunk =~ s/&lt;60(?!\d)(.*?)$/<seg type="Preferred-text">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;60(?!\d)/<seg type="Preferred-text">$1<\/seg>/gs;
+
     $chunk =~ s/&lt;61(?!\d)(.*?)&gt;61(?!\d)/<seg type="Post-erasure">$1<\/seg>/gs;
+    $chunk =~ s/&lt;61(?!\d)(.*?)$/<seg type="Post-erasure">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;61(?!\d)/<seg type="Post-erasure">$1<\/seg>/gs;
+
     $chunk =~ s/&lt;62(?!\d)(.*?)&gt;62(?!\d)/<hi rend="overline">$1<\/hi>/gs;
+    $chunk =~ s/&lt;62(?!\d)(.*?)$/<hi rend="overline">$1<\/hi>/gs;
+    $chunk =~ s/^(.*?)&gt;62(?!\d)/<hi rend="overline">$1<\/hi>/gs;
+
     $chunk =~ s/&lt;63(?!\d)(.*?)&gt;63(?!\d)/<seg type="Post-correction">$1<\/seg>/gs;
-    $chunk =~ s/&lt;6[45](?!\d)(.*?)&gt;6[45](?!\d)/<hi rend="boxed">$1<\/hi>/gs;
-    $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
-    $chunk =~ s/&lt;6[6789](?!\d)(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
+    $chunk =~ s/&lt;63(?!\d)(.*?)$/<seg type="Post-correction">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;63(?!\d)/<seg type="Post-correction">$1<\/seg>/gs;
+
+    $chunk =~ s/&lt;(6[45])(?!\d)(.*?)&gt;\g1(?!\d)/<hi rend="boxed">$2<\/hi>/gs;
+    $chunk =~ s/&lt;6[45](?!\d)(.*?)$/<hi rend="boxed">$1<\/hi>/gs;
+    $chunk =~ s/^(.*?)&gt;6[45](?!\d)/<hi rend="boxed">$1<\/hi>/gs;
+
+    $chunk =~ s/&lt;(6[6789])(?!\d)(.*?)&gt;\g1(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
+    $chunk =~ s/&lt;6[6789](?!\d)(.*?)$/<seg type="Unknown">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;6[6789](?!\d)/<seg type="Unknown">$1<\/seg>/gs;
+
     $chunk =~ s/&lt;70(?!\d)(.*?)&gt;70(?!\d)/<seg type="Diagram">$1<\/seg>/gs;
+    $chunk =~ s/&lt;70(?!\d)(.*?)$/<seg type="Diagram">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;70(?!\d)/<seg type="Diagram">$1<\/seg>/gs;
+
     $chunk =~ s/&lt;71(?!\d)(.*?)&gt;71(?!\d)/<seg type="Diagram-section">$1<\/seg>/gs;
+    $chunk =~ s/&lt;71(?!\d)(.*?)$/<seg type="Diagram-section">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;71(?!\d)/<seg type="Diagram-section">$1<\/seg>/gs;
+
     $chunk =~ s/&lt;72(?!\d)(.*?)&gt;72(?!\d)/<seg type="Diagram-caption">$1<\/seg>/gs;
+    $chunk =~ s/&lt;72(?!\d)(.*?)$/<seg type="Diagram-caption">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;72(?!\d)/<seg type="Diagram-caption">$1<\/seg>/gs;
+
     $chunk =~ s/&lt;73(?!\d)(.*?)&gt;73(?!\d)/<seg type="Diagram-level-3">$1<\/seg>/gs;
+    $chunk =~ s/&lt;73(?!\d)(.*?)$/<seg type="Diagram-level-3">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;73(?!\d)/<seg type="Diagram-level-3">$1<\/seg>/gs;
+
     $chunk =~ s/&lt;74(?!\d)(.*?)&gt;74(?!\d)/<seg type="Diagram-level-4">$1<\/seg>/gs;
+    $chunk =~ s/&lt;74(?!\d)(.*?)$/<seg type="Diagram-level-4">$1<\/seg>/gs;
+    $chunk =~ s/^(.*?)&gt;74(?!\d)/<seg type="Diagram-level-4">$1<\/seg>/gs;
+
     $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard-text-direction">$1</seg>#gs;
+    $chunk =~ s#&lt;90(?!\d)(.*?)$#<seg type="Non-standard-text-direction">$1</seg>#gs;
+    $chunk =~ s#^(.*?)&gt;90(?!\d)#<seg type="Non-standard-text-direction">$1</seg>#gs;
+
     $chunk =~ s#&lt;100(?!\d)(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
-
-    # Letterspacing often covers large amounts of text across chunks
-    $chunk =~ s#&lt;2[01](?!\d)([^<]*?)#<hi rend="letter-spacing">$1</hi>#gs;
-    $chunk =~ s#([^>]*?)&gt;2[01](?!\d)#<hi rend="letter-spacing">$1</hi>#gs;
-    # Marginalia sometimes consists of consecutive unterminated lines
-    $chunk =~ s#&lt;15(?!\d)([^<]*?)#<hi rend="Marginalia">$1</hi>#gs;
-
+    $chunk =~ s#&lt;100(?!\d)(.*?)$#<hi rend="line-through">$1</hi>#gs;
+    $chunk =~ s#^(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
 
     if ($debug) {
         print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
