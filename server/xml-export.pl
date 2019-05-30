@@ -551,10 +551,17 @@ sub convert_chunk {
     my %dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 6 => "superscript bold", 10 => "small", 11 => "small bold", 12 => "small bold italic", 13 => "small italic", 14 => "small superscript", 15 => "small subscript", 16 => "small superscript bold", 18 => "small", 20 => "large ", 21 => "large bold", 22 => "large bold italic", 23 => "large italic", 24 => "large superscript", 25 => "large subscript", 28 => "large", 30 => "very-small", 40 => "very-large");
     my %braces = (4 => "Unconventional-form", 5 => "Altered-form", 6 => "Discarded-form", 7 => "Discarded-reading", 8 => "Numerical-equivalent", 9 => "Alternate-reading", 10 => "Text-missing", 25 => "Inscriptional-form", 26 => "Rectified-form", 27 => "Alternate-reading", 28 => "Date", 29 => "Emendation", 44 => "Quotation", 45 => "Explanatory", 46 => "Citation", 48 => "Editorial-text", 70 => "Editorial-text", 71 => "Abbreviation", 72 => "Structural-note", 73 => "Musical-direction", 74 => "Cross-ref", 75 => "Image", 76 => "Cross-ref", 95 => "Colophon", 100 => "Added-text", 101 => "Original-text"  );
 
-    # Remove hyphenation
-    $chunk =~ s#(\S+)\-\s*(?:\@*\d*\s*)\n(\S+)#$1$2\n#g;
+    # Fix bad hyphenation
+    if ($auth_name eq 'Cassius Dio Hist. Dio Cassius') {
+        # Capito- @1 {1[&Zonaras 7, 23.$]}1 &3lium, (across a div border)
+        $chunk =~ s#(in praesidiis agebant ad Capito)-.*\z#$1lium, #gms;
+        $chunk =~ s#\A.*?lium, (partim agrum vicinum populabantur)#$1#gms;
+    }
 
-    # Fix missing Greek/Latin language indicators
+    # Remove all hyphenation
+    $chunk =~ s#(\S+)\-(\s*\@*\d*\s*)\n(\S+)#$1$3$2\n#g;
+
+    # Fix missing Greek/Latin language switching indicators
     if ($auth_name eq 'Cyrillus Theol.') {
         $chunk =~ s#(\{1\&IN DANIELEM PROPHETAM\.)\>9\}1#$1\$\}1#gs;
         $chunk =~ s#\[\&cod\. A\.\>9\s*A\)KAKI\/AS\]#\[\&cod. A. \$A\)KAKI\/AS\]#gsm;
