@@ -540,12 +540,7 @@ print AUTHTAB "</authtab>\n";
 close(AUTHTAB) or die "Could not close authtab.xml\n";
 
 sub convert_chunk {
-    # Converting chunkwise leads to problems when balanced markup is
-    # split between chunks.  These are treated as special cases below.
-    # The alternative would be to convert the whole work, but then we
-    # would have to escape the structural XML added above.  And we
-    # would still have the problem where page-based structures (e.g
-    # Stephanus) cut across balanced markup.
+
     my ($chunk, $lang) = @_;
 
     my %acute = (a => "\N{a with acute}", e => "\N{e with acute}", i => "\N{i with acute}", o => "\N{o with acute}", u => "\N{u with acute}", A => "\N{A with acute}", E => "\N{E with acute}", I => "\N{I with acute}", O => "\N{O with acute}", U => "\N{U with acute}");
@@ -587,10 +582,12 @@ sub convert_chunk {
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
 
-    # Fix ad-hoc special cases of improper nesting that yield invalid
-    # XML and where our rearranging of font commands below will have
-    # incorrect results; we do this before further fiddling that make
-    # them harder to match.
+    # Fix ad-hoc special cases of improper nesting or missing markup
+    # that will yield XML that is not well-formed.  We also
+    # preemptively interfere in cases where our rearranging of font
+    # commands below will have incorrect results.  We make these
+    # changes early, because subsequent code will make the text harder
+    # to match.
     if ($auth_name eq 'Sophocles Trag.') {
         # {$10*A.}
         $chunk =~ s#(\{\$10.*)\}(?!\$)#$1\$\}#gs;
@@ -811,10 +808,6 @@ sub convert_chunk {
     $chunk =~ s#\&amp;(6|9|19)#\&amp;#g;
     $chunk =~ s#\$(8|9|18|70)#\$#g;
 
-    #FIXME
-    # 2. Try marking solo braces to start and end of chunk.  Remove special cases for others.  Remove } at very start and { at very end.
-    # 3. Do same for <>.
-
     # Improperly nested font-switching markup is ubiquitous: e.g. {&7
     # ... }&; {40&7 ... }40&; <20$10{1*GELW/|WN.>20$}1. We deal with
     # this by standardising the nesting order when the markup is
@@ -862,6 +855,8 @@ sub convert_chunk {
         $chunk =~ s#\$\d*##g;
     }
 
+    #### Balanced markup
+
     # Font commands are a state machine rather than balanced markup,
     # but {} and <> are different: they are supposed to be balanced
     # (we can ignore [] variants, as these are punctuation rather than
@@ -872,42 +867,50 @@ sub convert_chunk {
     # scheme follows the pagination of an edition (e.g Stephanus, but
     # also for many theological texts).  The chunking problem could be
     # eliminated if all structural markup were turned into milestones
-    # (which can be spanned by tags) rather than divs.
+    # (which can be spanned by tags) rather than divs.  But this would
+    # badly violate the spirit if not the letter of the TEI
+    # guidelines.
 
     # When a balanced pair has been split by chunking into divs, the
     # correct solution is to create two spans: one from the opening to
     # the end of the div and the second from the start of the new div
     # to the closing.  But this is problematic in the case of
-    # unbalanced markup that is the result of error or a deliberate
-    # practice of unbalanced markup.  It can result in many large
-    # spans incorrectly marked up and a pile-up of spurious markup at
-    # the start and end of divs.
+    # unbalanced markup that is the result not of chunking but of
+    # error or a deliberate practice of unbalanced markup.  It can
+    # result in many large spans incorrectly marked up and a pile-up
+    # of spurious markup at the start and end of divs.
 
-    # For practical reasons, only markup with braces {} is handled in
-    # this way, by extending isolated examples to the beginning or end
-    # of the chunk.  Braces tend to be structural and are used more
-    # sparingly and carefully.  By contrast, markup with angle
-    # brackets <> is mainly typographical and is more carelessly
-    # deployed.  There is a large amount of stray unbalanced markup,
-    # and it would not be desirable to span from all of these to the
-    # beginning or end of the chunk.  On the other hand, it might not
-    # be right to remove the unbalanced markup entirely.  So as a
-    # compromise, for unbalanced <> markup, we extend the span to the
-    # start or end of the line.  In some cases, this is clearly
-    # intended (as when opening markup is repeated at the start of
-    # every line, with the closing markup only at the end of the
-    # passage).  In other cases, it may not be quite right, but it is
-    # impossible to know in these cases what should be right.  Where
-    # balanced <> markup has been split by chunking, it means that
-    # there will be cases where the spans are not as long as they
-    # should be and there is a gap in the middle.
+    # For practical reasons, what we do here is to apply only to
+    # markup with braces {} the treatment of extending an unpaired
+    # start or end brace to the beginning or end of the chunk.  Braces
+    # tend to be structural and are used more sparingly and carefully.
+    # By contrast, markup with angle brackets <> is mainly
+    # typographical and is more carelessly deployed.  In some cases,
+    # this is clearly intended (as when opening markup is repeated at
+    # the start of every line, with the closing markup only at the end
+    # of the passage).  Thus there is a large amount of stray
+    # unbalanced <> markup which is not due to chunking, and it would
+    # not be desirable to span from all of these to the beginning or
+    # end of the chunk.  On the other hand, it would not be right to
+    # remove the unbalanced markup entirely.  So as a compromise, for
+    # unpaired <> markup, we proceed more cautiously, matching only up
+    # to the next/previous XML tag.  This should minimize the amount
+    # of unbalanced markup and large spurious spans created by this
+    # guesswork.  But it does mean that where balanced <> markup has
+    # been split by chunking, it means that there will be cases where
+    # the spans are not as long as they should be and there is a gap
+    # in the middle.
 
-    # All of this still yields improperly nested, invalid XML, so we
-    # have the ad-hoc fixes to get the XML to the stage where it can
-    # reliably be manipulated in order to coerce it into validating
-    # against the schema.
+    # To summarize, we match paired {} and <> within chunks freely.
+    # For leftover unpaired braces, we match to the start/end of
+    # chunk.  For leftover unpaired angle brackets, we match only to
+    # the next/previous XML markup. In this final case, order of
+    # matching is important, as earlier matched constructions will
+    # create XML tags that will interfere with subsequent spans.
+    # Despite these precautions, there are texts that need ad-hoc
+    # fixes to avoid generating ill-formed XML.
 
-    #### {} titles, marginalia, misc.
+    #### {} Titles, marginalia, misc.
 
     # Fix unbalanced markup ??
 #    $chunk =~ s/{2\@{2#10}2/{2#10/g;
