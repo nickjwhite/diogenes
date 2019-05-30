@@ -609,14 +609,14 @@ sub convert_chunk {
     }
     elsif ($auth_name eq 'Aesopus Scr. Fab. et Aesopica') {
         # {1$10O)/NOS KAI\ LEONTH=}1 and {1$10LE/WN KAI\ TAU=ROI DU/O}1
-        $chunk =~ s#\{1\$10(.*?)\}1#\{1\$10$1\$\}1#gs;
+        $chunk =~ s#\{1\$10(.*?[^\$])\}1#\{1\$10$1\$\}1#gs;
     }
     elsif ($auth_name eq 'Abydenus Hist.') {
         $chunk =~ s#\{1\&amp;ABYDENI#\&amp;`\{1\&amp;ABYDENI#gs;
     }
-    # elsif ($auth_name eq 'Ion Phil. et Poeta') {
-    #     $chunk =~ s#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1\$10#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1`\$10#gs;
-    # }
+    elsif ($auth_name eq 'Ion Phil. et Poeta') {
+        $chunk =~ s#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1\$10#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1`\$10#gs;
+    }
     elsif ($auth_name eq 'Alcaeus Lyr.') {
         # <15[     $1]!W?N>15
         $chunk =~ s#(\$\d+[^\$]+)&gt;15#$1\$\&gt;15#gs;
@@ -646,6 +646,9 @@ sub convert_chunk {
     elsif ($auth_name eq 'Lysias Orat.') {
         # $10 ... {1&PLATONICA.$}1
         $chunk =~ s#\{1\&amp;#\$`\{1\&amp;#gs;
+    }
+    elsif ($auth_name eq 'Menander Comic.') {
+        $chunk =~ s#\{(ΨΕΥΔΗΡΑΚΛΗΣ\}1)#\{1$1#gs;
     }
     elsif ($auth_name eq 'Comica Adespota (CGFPR)') {
         # <2{_}>2$3{[ <- belongs outside
@@ -804,9 +807,9 @@ sub convert_chunk {
         $chunk =~ s#(\§\s)\&amp;(\`12)#$1$2#gs;
     }
 
-    $flag = 1 if $chunk =~ m/Περὶ ἀμύλου\./;
-    $flag = 0 if $chunk =~ m/Περὶ κριθίνων ἄρτων\./;
-    print STDERR ">>$chunk\n\n" if $flag;
+    # $flag = 1 if $chunk =~ m/Περὶ ἀμύλου\./;
+    # $flag = 0 if $chunk =~ m/Περὶ κριθίνων ἄρτων\./;
+    # print STDERR ">>$chunk\n\n" if $flag;
 
 
     # Font switching.
@@ -1232,7 +1235,7 @@ sub convert_chunk {
 
     # Line/page breaks
     $chunk =~ s#\@1(?!\d)#<pb/>#g;
-    $chunk =~ s#\@6(?!\d)#<lb/><lb/>#g;
+    $chunk =~ s#\@6(?!\d)#<lb/>#g;
     $chunk =~ s#\@9(?!\d)#<gap/>#g;
 
     ## Sometimes these appear at the end of a line, to no apparent purpose.
