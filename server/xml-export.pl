@@ -806,6 +806,44 @@ sub convert_chunk {
         $chunk =~ s#(\{1\§\s)\&amp;#\$\`$1#gs;
         $chunk =~ s#(\§\s)\&amp;(\`12)#$1$2#gs;
     }
+    elsif ($auth_name eq 'Etymologicum Symeonis') {
+        $chunk =~ s#\&lt;9\&lt;(ἀγαί\&gt;9)#\&lt;\&lt;9$1#gs;
+        $chunk =~ s#(\&amp;4a\$)(\&lt;9ἀκούσματα\&gt;9)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Concilia Oecumenica (ACO)') {
+        $chunk =~ s#(κατὰ Νεστορίου τοῦ αἱρετικοῦ)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Magica') {
+        $chunk =~ s#(αεηοπυω\s+α\s+ωυοιηεα)(\&gt;20\&gt;71)#$1\$$2#gs;
+        $chunk =~ s#(\&lt;70\&lt;20\&lt;12)(\$10)(ιαεωβαφρενεμουνοθιλαρικριφιαευεαιφιρκι)#$2$1$3#gs;
+        $chunk =~ s#(\{1)(\$10)(\[\&lt;20Ὁμηρομαντεῖον·\&gt;20\]\}1)#$1$3\`$2#gs;
+        $chunk =~ s#\&lt;71\&lt;20(ιαεωβαφρενεμουνοθιλαρικριφιαευεαιφιρκιραλιθονυομενερφαβωεαι)#\&lt;20\&lt;71$1#gs;
+        $chunk =~ s#(\@\@\@\@\@ω)(\&gt;20)(\&gt;71)(\s+\&lt;71.συρημενη)#$1$3$2$4#gms;
+    }
+    elsif ($auth_name eq 'Scholia In Aeschylum') {
+        $chunk =~ s#(οἰωνοσκοπητικόν  εἰς ἡπατικόν  καὶ εἰς θυτικόν.)(\&gt;70)#$1\$\$2#gs;
+    }
+    elsif ($auth_name eq 'Scholia In Aristophanem') {
+        $chunk =~ s#(\&amp;4\`\d+)(?![\$\&])#$1\$#gs;
+        $chunk =~ s#(\&amp;4G\d?)(?![\$\&])#$1\$#gs;
+        $chunk =~ s#(\{2\&amp;10vet Tr\$)10(\}2)#$1$2#gs;
+        $chunk =~ s#\&amp;4\{1(ARGUMENTA}1)#\{1\&amp;$1#gs;
+        $chunk =~ s#(\&amp;3[a-z]+)(?![\$\&])#$1\$#gs;
+        $chunk =~ s#(\{2\&amp;10Tr\&amp;)3(\}2)#$1$2#gs;
+        $chunk =~ s#(\{2\&amp;10(?:vet|Tr|vet Tr))(\}2)#$1\$$2#gs;
+        $chunk =~ s#(\&amp;4bis)(?![\$\&])#$1\$#gs;
+        $chunk =~ s#(\&lt;10)(ὄμβριον,"|Τριτογενείης\%10)\&gt;20\&gt;10#$1$2\&gt;10\&gt;20#gs;
+        $chunk =~ s#(φέρω )\&amp;10(vel )\$10(φέρων)#$1$2$3#gs;
+        $chunk =~ s#(\&lt;11)(\$10)(οἴμωζεν ἂν\&gt;11) (\&lt;10)(οἴμωξεν ἄν\&gt;10)#$2\`$4$5 $1$3\`\$#gs;
+        $chunk =~ s#\&lt;11\$10\&lt;20#\$10\`\&lt;20\`\&lt;11#gs;
+        $chunk =~ s#\&lt;11\&lt;20\$10#\$10\`\&lt;20\`\&lt;11#gs;
+        $chunk =~ s#\&gt;20\$\&gt;10#\&gt;10\`\gt20;\`\$#gs;
+        $chunk =~ s#\&lt;11\$10#\$10\`\&lt;11#gs;
+        $chunk =~ s#\$[·]?\&gt;10#\&gt;10\`\$#gs;
+        $chunk =~ s#\&gt;10\$#\&gt;10\`\$#gs;
+        $chunk =~ s#\&lt;10\$10#\$10\`\&lt;10#gs;
+        $chunk =~ s#\$\&gt;11#\&gt;11\`\$#gs;
+    }
 
     # $flag = 1 if $chunk =~ m/Περὶ ἀμύλου\./;
     # $flag = 0 if $chunk =~ m/Περὶ κριθίνων ἄρτων\./;
@@ -1029,6 +1067,14 @@ sub convert_chunk {
     $chunk =~ s/&lt;74(?!\d)(.*?)&gt;74(?!\d)/<seg type="Diagram-level-4">$1<\/seg>/gs;
     $chunk =~ s#&lt;90(?!\d)(.*?)&gt;90(?!\d)#<seg type="Non-standard-text-direction">$1</seg>#gs;
     $chunk =~ s#&lt;100(?!\d)(.*?)&gt;100(?!\d)#<hi rend="line-through">$1</hi>#gs;
+
+    # Up to now, we have translated markup to XML as literally as
+    # possible, matching balanced pairs of {} and <> and isolated {}
+    # to the beginning/end of chunk.  Where this results in malformed
+    # XML, we intervene manually.  But there comes a point where that
+    # is no longer practical, so for isolated <> markup, which very
+    # often appears unbalanced in the texts, we have to take a more
+    # conservative approach.
 
     # Unpaired <> markup.  We only match to next/previous XML tag.
     # Order is significant: from most likely to be long spans to
@@ -1917,6 +1963,7 @@ sub is_work_verse {
         'tlg:0212:003' => 0,
         'tlg:0212:004' => 1,
         'tlg:0319:004' => 1,
+        'tlg:0662:004' => 1,
         'tlg:1466:002' => 1,
         'tlg:2702:021' => 0,
         'tlg:2968:001' => 0,
