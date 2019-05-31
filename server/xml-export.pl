@@ -482,8 +482,9 @@ AUTH: foreach my $auth_num (@all_auths) {
                 }
                 # We seem to have a prose section which starts in the coming line
                 if (((not $is_verse)
-                     and ($chunk !~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#)
-                     and ($chunk =~ m/\S/))
+                     and $auth_name !~ m/scholia|maurus servius/i
+                     and $chunk !~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#
+                     and $chunk =~ m/\S/)
                     # Fragments are problematic should not hang from one to the next.
                     and (not ($div_labels{1} =~ m/frag/i and $query->{level}{0} eq '1'))
                     # But we need to rule out titles and headings, so
@@ -595,7 +596,13 @@ sub convert_chunk {
     # commands below will have incorrect results.  We make these
     # changes early, because subsequent code will make the text harder
     # to match.
-    if ($auth_name eq 'Sophocles Trag.') {
+
+    if ($auth_name eq 'Maurus Servius Honoratus Servius') {
+        # @@&7qvid&{43&7ve&}43
+        $chunk =~ s#(\&amp;7qvid\&amp;)(\{43\&amp;7ve\&amp;\}43)#$1\`$2#gs;
+        $chunk =~ s#(\&amp;7evmenides\&amp;)(\{43\&amp;7qve satae)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Sophocles Trag.') {
         # {$10*A.}
         $chunk =~ s#(\{\$10.*)\}(?!\$)#$1\$\}#gs;
     }
@@ -837,12 +844,35 @@ sub convert_chunk {
         $chunk =~ s#(\&lt;11)(\$10)(οἴμωζεν ἂν\&gt;11) (\&lt;10)(οἴμωξεν ἄν\&gt;10)#$2\`$4$5 $1$3\`\$#gs;
         $chunk =~ s#\&lt;11\$10\&lt;20#\$10\`\&lt;20\`\&lt;11#gs;
         $chunk =~ s#\&lt;11\&lt;20\$10#\$10\`\&lt;20\`\&lt;11#gs;
-        $chunk =~ s#\&gt;20\$\&gt;10#\&gt;10\`\gt20;\`\$#gs;
+        $chunk =~ s#\&gt;20\$\&gt;10#\&gt;10\`\&gt20;\`\$#gs;
         $chunk =~ s#\&lt;11\$10#\$10\`\&lt;11#gs;
         $chunk =~ s#\$[·]?\&gt;10#\&gt;10\`\$#gs;
         $chunk =~ s#\&gt;10\$#\&gt;10\`\$#gs;
         $chunk =~ s#\&lt;10\$10#\$10\`\&lt;10#gs;
         $chunk =~ s#\$\&gt;11#\&gt;11\`\$#gs;
+    }
+    elsif ($auth_name eq 'Scholia In Euclidem') {
+        $chunk =~ s#(\&lt;70)(\$10)#$2\`$1#gs;
+        $chunk =~ s#(\&gt;70)(\$)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Scholia In Homerum') {
+        $chunk =~ s#(δὲ ἐπιχέαντες. \&amp;1b) #$1\$ #gms;
+        $chunk =~ s#(ὅπλοις ὁπλίζεις αὐτὴν καθ'\s+ἡμῶν. \&amp;1T) #$1\$ #gms;
+        $chunk =~ s#(στροφοδινεῖν καὶ οἱονεὶ σκοτίζειν. \&amp;1b) #$1\$ #gms;
+    }
+    elsif ($auth_name eq 'Scholia In Platonem') {
+        $chunk =~ s#(?<!\$ \n)(\&lt;70)#\$\`$1#gms;
+        $chunk =~ s#(\&lt;72)\$10(ὑπεροχὴ β\#\&gt;72)#$1$2#gms;
+        $chunk =~ s#(\@ῥυθμοῦ)(\&gt;70)#$1\$$2#gms;
+        $chunk =~ s#(\@κατ' ὠφέλειαν)\$10(\&gt;70)#$1$2#gms;
+        $chunk =~ s#(\$10 \[1ποιεῖν)#$1\$#gms;
+        $chunk =~ s#(\$10)(\&lt;10λέγειν\&gt;10)#\$1\`$2#gms;
+        $chunk =~ s#\$10((?:\]1)?\&gt;70)#$1#gms;
+        $chunk =~ s#\$10(\]1\.\&gt;70)#\$$1#gms;
+        $chunk =~ s#(\&lt;70\$10τῆς κινήσεως)#$1\$#gms;
+    }
+    elsif ($auth_name eq 'Scholia In Theocritum') {
+        $chunk =~ s#\{2#\$\`\{2#gms;
     }
 
     # $flag = 1 if $chunk =~ m/Περὶ ἀμύλου\./;
@@ -960,9 +990,6 @@ sub convert_chunk {
 
     #### {} Titles, marginalia, misc.
 
-    # Fix unbalanced markup ??
-#    $chunk =~ s/{2\@{2#10}2/{2#10/g;
-
     # Elements other than plain <seg>
 
     # Heads
@@ -1000,7 +1027,6 @@ sub convert_chunk {
     $chunk =~ s#\A(.*?)\}41#<label type="stage-direction">$1</label>#gs;
 
     # Servius
-    $chunk =~ s#\[2{43#{43\[2#g; # Fix improper nesting
     $chunk =~ s#\{43(.*?)\}43#<seg type="Danielis" rend="italic">$1</seg>#gs;
 
     # All other types of braces, using <seg>
@@ -1032,9 +1058,9 @@ sub convert_chunk {
 
     $chunk =~ s#&lt;(?!\d)(.*?)&gt;(?!\d)#<hi rend="overline">$1</hi>#gs;
     $chunk =~ s#&lt;1(?!\d)(.*?)&gt;1(?!\d)#<hi rend="underline">$1</hi>#gs;
-    $chunk =~ s/&lt;3(?!\d)(.)(.*?)&gt;3(?!\d)/$1&#x0361;$2/gs;
-    $chunk =~ s/&lt;4(?!\d)(.)(.*?)&gt;4(?!\d)/$1&#x035C;$2/gs;
-    $chunk =~ s/&lt;5(?!\d)(.)(.*?)&gt;5(?!\d)/$1&#x035D;$2/gs;
+    $chunk =~ s/&lt;3(?!\d)(.*?)&gt;3(?!\d)/&#x0361;$1/gs;
+    $chunk =~ s/&lt;4(?!\d)(.*?)&gt;4(?!\d)/&#x035C;$1/gs;
+    $chunk =~ s/&lt;5(?!\d)(.*?)&gt;5(?!\d)/&#x035D;$1/gs;
     $chunk =~ s#&lt;6(?!\d)(.*?)&gt;6(?!\d)#<hi rend="superscript">$1</hi>#gs;
     $chunk =~ s#&lt;7(?!\d)(.*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
     $chunk =~ s#&lt;8(?!\d)(.*?)&gt;8(?!\d)#<hi rend="double-underline">$1</hi>#gs;
@@ -1060,7 +1086,7 @@ sub convert_chunk {
     $chunk =~ s/&lt;63(?!\d)(.*?)&gt;63(?!\d)/<seg type="Post-correction">$1<\/seg>/gs;
     $chunk =~ s/&lt;(6[45])(?!\d)(.*?)&gt;\g1(?!\d)/<hi rend="boxed">$2<\/hi>/gs;
     $chunk =~ s/&lt;(6[6789])(?!\d)(.*?)&gt;\g1(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
-    $chunk =~ s/&lt;70(?!\d)(.*?)&gt;70(?!\d)/<seg type="Diagram">$1<\/seg>/gs;
+    $chunk =~ s/&lt;70(?!\d)(.*?)&gt;70(?!\d)/<seg type="Diagram" xml:space="preserve">$1<\/seg>/gs;
     $chunk =~ s/&lt;71(?!\d)(.*?)&gt;71(?!\d)/<seg type="Diagram-section">$1<\/seg>/gs;
     $chunk =~ s/&lt;72(?!\d)(.*?)&gt;72(?!\d)/<seg type="Diagram-caption">$1<\/seg>/gs;
     $chunk =~ s/&lt;73(?!\d)(.*?)&gt;73(?!\d)/<seg type="Diagram-level-3">$1<\/seg>/gs;
@@ -1189,14 +1215,14 @@ sub convert_chunk {
     $chunk =~ s/&lt;2(?!\d)/&#x2035;/g;
     $chunk =~ s/&gt;2(?!\d)/&#x2032;/g;
 
-    $chunk =~ s/&lt;3(?!\d)([^<>]*?)/\ &#x0361;$1/gs;
-    $chunk =~ s/([^<>]*?)&gt;3(?!\d)/\ &#x0361;$1/gs;
+    $chunk =~ s/&lt;3(?!\d)([^<>]*?)/&#x0361;$1/gs;
+    $chunk =~ s/([^<>]*?)&gt;3(?!\d)/&#x0361;$1/gs;
 
-    $chunk =~ s/&lt;4(?!\d)([^<>]*?)/\ &#x035C;$1/gs;
-    $chunk =~ s/([^<>]*?)&gt;4(?!\d)/\ &#x035C;$1/gs;
+    $chunk =~ s/&lt;4(?!\d)([^<>]*?)/&#x035C;$1/gs;
+    $chunk =~ s/([^<>]*?)&gt;4(?!\d)/&#x035C;$1/gs;
 
-    $chunk =~ s/&lt;5(?!\d)([^<>]*?)/\ &#x035D;$1/gs;
-    $chunk =~ s/([^<>]*?)&gt;5(?!\d)/\ &#x035D;$1/gs;
+    $chunk =~ s/&lt;5(?!\d)([^<>]*?)/&#x035D;$1/gs;
+    $chunk =~ s/([^<>]*?)&gt;5(?!\d)/&#x035D;$1/gs;
 
     $chunk =~ s/&lt;1[69](?!\d)/&#x2035;/g;
     $chunk =~ s/&gt;1[69](?!\d)/&#x2032;/g;
@@ -1973,6 +1999,7 @@ sub is_work_verse {
         'tlg:4066:008' => 0,
         'tlg:5014:016' => 0,
         'tlg:5014:020' => 0,
+        'tlg:5035:001' => 0,
         );
     my $key = $corpus . ':' . $auth_num;
     if (exists $verse_auths{$key}) {
