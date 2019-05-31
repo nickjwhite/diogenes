@@ -1,22 +1,27 @@
 * Current
 
-Add coptic xml output
+fix handing div algorithm
 
-Check for unconverted Greek by looking for passages with lots of */\=
+Add coptic xml output
 
 don't move <head>s to start of div ...
 
 Merge subsequent <hi> elements when attribs identical.  Also when nested.
+If you have a seg without rend which only contains a hi, merge its rend
 
-Check scholia
+check how it words with ddp, etc.
 
 * Finish XML output functionality
 
 Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
 
-Check out XML::Tidy for indentation at the end.
+* Write up notes on XML output
+** Markup is for layout rather than semantic (with a couple of exceptions)
+** Structure is line-based, for both poetry and prose
+*** We have to guess.  Sometimes wrongly.  Explain heuristic
 
-Go through beta code manual and pick up all unicode equivs.
+
+
 
 * Generate patch for XML::DOM::Lite
 

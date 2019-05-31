@@ -287,7 +287,7 @@ AUTH: foreach my $auth_num (@all_auths) {
         $auth_num.$query->{txt_suffix};
     my $punct = q{_.;:!?};
     local undef $/;
-    print "Author: $auth_name ($auth_num)\n" if $debug;
+    print "Author: $auth_name ($auth_num)\n";
     open( IN, $filename_in ) or die "Could not open $filename_in\n";
     $buf = <IN>;
     close IN or die "Could not close $filename_in";
@@ -584,6 +584,13 @@ sub convert_chunk {
 
     # Convert utf8 bytes to utf8 characters, so that we match chars correctly.
     utf8::decode($chunk);
+
+    # Check for unconverted Greek, because of missing $
+    my $num_diacrits = () = $chunk =~ /[\/\\\=]/g;
+    my $ratio = $num_diacrits/length $chunk;
+    if ($ratio > 0.05) {
+        print STDERR "This looks like unconverted Greek: $chunk\n\n";
+    }
 
     # Escape XML reserved chars
     $chunk =~ s#\&#&amp;#g;
