@@ -285,7 +285,8 @@ AUTH: foreach my $auth_num (@all_auths) {
     $auth_name = strip_formatting($auth_name);
     my $filename_in = $query->{cdrom_dir}.$query->{file_prefix}.
         $auth_num.$query->{txt_suffix};
-    my $punct = q{_.;:!?};
+    my $punct = q{_.;:!?%};
+    my @punct = qw(\%\d* \_ \. \; \: \! \?);
     local undef $/;
     print "Author: $auth_name ($auth_num)\n";
     open( IN, $filename_in ) or die "Could not open $filename_in\n";
@@ -325,17 +326,41 @@ AUTH: foreach my $auth_num (@all_auths) {
         elsif ($code >> 7) {
             # Close previous line
             if ($hanging_div) {
-                # Change to: We have come to the end of the line *after* the indication of a new prose div, and the previous line did not seem a suitable place to break (mainly for lack of punctuation.  If there is suitable punctuation in the current line, break there (after any trailing markup), preferring major punctuation to minor.  If there is no punctuation in the current line and the previous line did not end with a hyphen, break at the end of the previous line (suitable for cases when the div was not really hanging, such as for n="t" title sections).  If the previous line did end in a hyphen, break at the first comma, or, failing that, at the first space in the line.
+                # We have come to the end of the line *after* the
+                # indication of a new prose div, and the previous line
+                # did not seem a suitable place to break (mainly for
+                # lack of punctuation.  If there is suitable
+                # punctuation in the current line, break there (after
+                # any trailing markup), preferring major punctuation
+                # to minor.  If there is no punctuation in the current
+                # line and the previous line did not end with a
+                # hyphen, break at the end of the previous line
+                # (suitable for cases when the div was not really
+                # hanging, such as for n="t" title sections).  If the
+                # previous line did end in a hyphen, break at the
+                # first comma, or, failing that, at the first space in
+                # the line.
 
-                # If we come to the end of a line without finding
-                # punctuation and we still have an prose div hanging
-                # from the previous line, close the div out at start
-                # of previous line.  This happens, e.g. when the div
-                # was not really hanging as for n="t" title sections.
-                if ($chunk =~ m/-\s*$/) {
-                    # But first we check to make sure there is no
-                    # hyphenation hanging over.  If so, break at a
-                    # comma, or, failing that, at the first space in
+                if ($chunk =~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#
+                    or $line =~ m/[$punct]/) {
+                    for my $p (@punct) {
+                        my $re1 = qr/$p[\s\$\&\"\d\@\}\]\>]*\z/ms;
+                        my $re2 = qr/\A(.*?)($p[\s\$\&\"\d\@\}\]\>]*)(.*?)\z/ms;
+                        if ($chunk =~ $re1) {
+                            # print STDERR "$&\n";
+                            last;
+                        }
+                        elsif ($line =~ $re2) {
+                            $chunk .= $1.$2;
+                            $line = $3;
+                            # print STDERR "$re2::$1::$2::$line\n";
+                            last;
+                        }
+                    }
+                }
+                elsif ($chunk =~ m/-\s*$/) {
+                    # If there is a hyphenation hanging over, break at
+                    # a comma, or, failing that, at the first space in
                     # the line.
                     if ($line =~ m/(.*?),(.*)/) {
                         $chunk .= $1 . ',';
@@ -353,6 +378,13 @@ AUTH: foreach my $auth_num (@all_auths) {
                         # warn "No solution: $chunk \n\n$line\n";
                     }
                 }
+
+                # If we come to the end of a line without finding
+                # punctuation and we still have an prose div hanging
+                # from the previous line, close the div out at start
+                # of previous line.  This happens, e.g. when the div
+                # was not really hanging as for n="t" title sections.
+
                 $body .= convert_chunk($chunk, $lang);
                 $chunk = '';
                 $body .= $hanging_div;
@@ -480,10 +512,12 @@ AUTH: foreach my $auth_num (@all_auths) {
                 else {
                     $temp .= q{<p>};
                 }
-                # We seem to have a prose section which starts in the coming line
+                # We have a prose section which either starts at the
+                # end of this line, or in the coming line; we have to
+                # wait to decide.
                 if (((not $is_verse)
                      and $auth_name !~ m/scholia|maurus servius/i
-                     and $chunk !~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#
+                   #  and $chunk !~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#
                      and $chunk =~ m/\S/)
                     # Fragments are problematic should not hang from one to the next.
                     and (not ($div_labels{1} =~ m/frag/i and $query->{level}{0} eq '1'))
@@ -521,17 +555,6 @@ AUTH: foreach my $auth_num (@all_auths) {
         }
         else {
             $line .= $char;
-            # FIXME: remove this (move it earlier).
-            if ($hanging_div and $char =~ m#[$punct]#) {
-                # We have found a suitable punctuation mark to close
-                # out a hanging prose div
-                $chunk .= $line;
-                $line = '';
-                $body .= convert_chunk($chunk, $lang);
-                $chunk = '';
-                $body .= $hanging_div;
-                $hanging_div = '';
-            }
         }
     }
     # We never get here
@@ -587,7 +610,8 @@ sub convert_chunk {
 
     # Check for unconverted Greek, because of missing $
     my $num_diacrits = () = $chunk =~ /[\/\\\=]/g;
-    my $ratio = $num_diacrits/length $chunk;
+    my $ratio = 0;
+    $ratio = $num_diacrits/length $chunk if length $chunk;
     if ($ratio > 0.05) {
         print STDERR "This looks like unconverted Greek: $chunk\n\n";
     }
