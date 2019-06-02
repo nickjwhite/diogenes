@@ -285,8 +285,9 @@ AUTH: foreach my $auth_num (@all_auths) {
     $auth_name = strip_formatting($auth_name);
     my $filename_in = $query->{cdrom_dir}.$query->{file_prefix}.
         $auth_num.$query->{txt_suffix};
-    my $punct = q{_.;:!?%};
-    my @punct = qw(\%\d* \_ \. \; \: \! \?);
+    # Punctuation at which to prefer breaking for a new prose div.
+    my @punct = qw(\%17 \%5 \%3 \%16 \%19 \%103 \_ \. \; \: \! \? \%1);
+    my $punct = join '|', @punct;
     local undef $/;
     print "Author: $auth_name ($auth_num)\n";
     open( IN, $filename_in ) or die "Could not open $filename_in\n";
@@ -341,8 +342,8 @@ AUTH: foreach my $auth_num (@all_auths) {
                 # first comma, or, failing that, at the first space in
                 # the line.
 
-                if ($chunk =~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#
-                    or $line =~ m/[$punct]/) {
+                if ($chunk =~ m#($punct)[\s\$\&\"\d\@\}\]\>]*$#
+                    or $line =~ m/($punct)/) {
                     for my $p (@punct) {
                         my $re1 = qr/$p[\s\$\&\"\d\@\}\]\>]*\z/ms;
                         my $re2 = qr/\A(.*?)($p[\s\$\&\"\d\@\}\]\>]*)(.*?)\z/ms;
@@ -517,7 +518,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 # wait to decide.
                 if (((not $is_verse)
                      and $auth_name !~ m/scholia|maurus servius/i
-                   #  and $chunk !~ m#[$punct][\s\$\&\"\d\@\}\]\>]*$#
+                   #  and $chunk !~ m#($punct)[\s\$\&\"\d\@\}\]\>]*$#
                      and $chunk =~ m/\S/)
                     # Fragments are problematic should not hang from one to the next.
                     and (not ($div_labels{1} =~ m/frag/i and $query->{level}{0} eq '1'))
