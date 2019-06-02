@@ -1,19 +1,26 @@
 * Current
 
-fix handing div algorithm
+** hanging div only for | and ||, not other percents
+** refactor ad-hoc subroutine
+*** merge with other subroutine
+*** change all entities to <>&
 
-Add coptic xml output
+** Change font re-arrangement
+Bring trailing plain &$ into {} and <>, but when it has a number, leave it there and add a plain one inside.
 
-don't move <head>s to start of div ...
+** don't move <head>s to start of div
+And other pending changes to post-processing
 
-Merge subsequent <hi> elements when attribs identical.  Also when nested.
-If you have a seg without rend which only contains a hi, merge its rend
+** Post-processing: Merge elements
+*** Merge identical elements with identical attribs when adjacent or only whitespace nodes intervene. 
+*** When an element has only one non-blank child, and the child is a <hi> element, move the rend attrib to the parent (check for duplicates) and delete the child (promoting its children).
+*** If a <hi> element has a parent which includes the same rend attrib, delete the element (and promote its children).
 
-check how it words with ddp, etc.
+** check how export words with ddp, etc.
+** Add coptic xml output
 
-* Finish XML output functionality
-
-Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
+** Integrate XML output in application
+In cgi script, flatten custom corpus to export any author mentioned.
 
 * Write up notes on XML output
 ** Markup is for layout rather than semantic (with a couple of exceptions)
@@ -44,13 +51,12 @@ Try switching to POST.
 * Test on Windows USB stick
 And test install on MDS/NCPS
 
-* Post-release
-** Adapt latex output code to enhance XML
-** Look through Beta Code Manual and add more Unicode
 
-* Long-term, aspirational to-do items
-** Clean-up various Perl warnings.
+* Long-term to-do items
 ** Try to restart diogenes-server if it is killed
 ** Implement print menu item
 ** Make settings page shorter and clearer
-   roughly a variant of firstrun page, but ensure that it still works outside of electron
+   roughly a variant of firstrun page, but ensure that it still works outside of elect
+** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page
+https://github.com/pjheslin/diogenes/issues/20
+(and shift move back/forward buttons to the far left where they won't get covered by Perseus window.
