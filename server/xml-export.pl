@@ -617,300 +617,14 @@ sub convert_chunk {
         print STDERR "This looks like unconverted Greek: $chunk\n\n";
     }
 
+    # Make ad-hoc changes to text in particular files that would lead to
+    # malformed XML if not fixed.
+    ad_hoc_fixes(\$chunk);
+
     # Escape XML reserved chars
     $chunk =~ s#\&#&amp;#g;
     $chunk =~ s#\<#&lt;#g;
     $chunk =~ s#\>#&gt;#g;
-
-    # Fix ad-hoc special cases of improper nesting or missing markup
-    # that will yield XML that is not well-formed.  We also
-    # preemptively interfere in cases where our rearranging of font
-    # commands below will have incorrect results.  We make these
-    # changes early, because subsequent code will make the text harder
-    # to match.
-
-    if ($auth_name eq 'Maurus Servius Honoratus Servius') {
-        # @@&7qvid&{43&7ve&}43
-        $chunk =~ s#(\&amp;7qvid\&amp;)(\{43\&amp;7ve\&amp;\}43)#$1\`$2#gs;
-        $chunk =~ s#(\&amp;7evmenides\&amp;)(\{43\&amp;7qve satae)#$1\`$2#gs;
-    }
-    elsif ($auth_name eq 'Sophocles Trag.') {
-        # {$10*A.}
-        $chunk =~ s#(\{\$10.*)\}(?!\$)#$1\$\}#gs;
-    }
-    elsif ($auth_name eq 'Aristophanes Comic.') {
-        # {2<2$#15$3>2}2 and ^16<2_>2$3{2#523}2
-        $chunk =~ s#\{2\&lt;2\$\#15\$3\&gt;2\}2#\{2\&lt;2\$\#15\&gt;2\}2#gs;
-        $chunk =~ s#\$3\{2\#523\}2#\{2\#523\}2#gs;
-    }
-    elsif ($auth_name eq 'Scylax Perieg.') {
-        $chunk =~ s#\$10Παλαίτυρος πόλις#Παλαίτυρος πόλις#gs;
-    }
-    elsif ($auth_name eq 'Aesopus Scr. Fab. et Aesopica') {
-        # {1$10O)/NOS KAI\ LEONTH=}1 and {1$10LE/WN KAI\ TAU=ROI DU/O}1
-        $chunk =~ s#\{1\$10(.*?[^\$])\}1#\{1\$10$1\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Abydenus Hist.') {
-        $chunk =~ s#\{1\&amp;ABYDENI#\&amp;`\{1\&amp;ABYDENI#gs;
-    }
-    elsif ($auth_name eq 'Ion Phil. et Poeta') {
-        $chunk =~ s#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1\$10#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1`\$10#gs;
-    }
-    elsif ($auth_name eq 'Alcaeus Lyr.') {
-        # <15[     $1]!W?N>15
-        $chunk =~ s#(\$\d+[^\$]+)&gt;15#$1\$\&gt;15#gs;
-        # $11<10!LO#7>10<11N?GA>11
-        $chunk =~ s#\$11\&lt;10([^&]+)\&gt;10#\&lt;10\$11$1\$\&gt;10#gs;
-        # <15$1THNAGXO?NH$6N$9$1>15 and <15$1]MELONTODEENEKE?![!!]!>15
-        $chunk =~ s#(\&lt;15\$1)([^&]+)(&gt;15)#$1$2\$$3#gs;
-    }
-    elsif ($auth_name eq 'Cassius Dio Hist. Dio Cassius') {
-        # {1$10 ... }1 -> should extend to whole contents
-        $chunk =~ s#\{1\$10#\$10`\{1#gs;
-        $chunk =~ s#\$10\{1#\$10`\{1#gs;
-        $chunk =~ s#\}1\$#\}1`\$#gs;
-    }
-    elsif ($auth_name eq 'Eupolis Comic.') {
-        # {2$#523$3}2
-        $chunk =~ s#\$3\}2#\}2`\$3#gs;
-    }
-    elsif ($auth_name eq 'Heron Mech.') {
-        # <70A B G ... KT$4A ... KD>70
-        $chunk =~ s#(\&lt;70[^\$]*\$\d[^&]*)\&gt;70#$1\$\&gt;70#gs;
-    }
-    elsif ($auth_name eq 'Alexander Phil.') {
-        # p. 47b15 ${1<20 ... }1
-        $chunk =~ s#(\{1&lt;20[^\}]*)(\}1)#$1\&gt;20$2#gs;
-    }
-    elsif ($auth_name eq 'Lysias Orat.') {
-        # $10 ... {1&PLATONICA.$}1
-        $chunk =~ s#\{1\&amp;#\$`\{1\&amp;#gs;
-    }
-    elsif ($auth_name eq 'Menander Comic.') {
-        $chunk =~ s#\{(ΨΕΥΔΗΡΑΚΛΗΣ\}1)#\{1$1#gs;
-    }
-    elsif ($auth_name eq 'Comica Adespota (CGFPR)') {
-        # <2{_}>2$3{[ <- belongs outside
-        $chunk =~ s#\$3\{\[#\$3\`\{\[#gs;
-    }
-    elsif ($auth_name eq 'Hierophilus Phil. et Soph.') {
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Anonyma De Musica Scripta Bellermanniana') {
-        $chunk =~ s#\$1\&lt;4#\$1\`\&lt;4#gs;
-    }
-    elsif ($auth_name eq 'Democritus Phil.') {
-        $chunk =~ s#\{1#\$\`\{1#gs;
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-        $chunk =~ s#\&lt;20(Ἠθικά|Ἀσύντακτα|Μαθηματικά|Μουσικά)\.#\&lt;20$1\.\&gt;20#gs;
-    }
-    elsif ($auth_name eq 'Historia Alexandri Magni') {
-        $chunk =~ s#\&lt;13\{1(.*?)\}1#\{1$1\}1\`\&lt;13#gs;
-    }
-    elsif ($auth_name eq 'Pseudo-Auctores Hellenistae (PsVTGr)') {
-        $chunk =~ s#\$\d\}1#\$\}1#gs;
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Vettius Valens Astrol.') {
-        $chunk =~ s#(ἀστέρων|πλείους|μερισμοί)(\.(?:\]2)?\}1)#$1\&gt;20$2\&lt;20#gs;
-    }
-    elsif ($auth_name eq 'Eusebius Scr. Eccl. et Theol.') {
-        $chunk =~ s#(ἐχθρούς σου ὑποπόδιον τῶν ποδῶν σου\.)#$1\$#gs;
-    }
-    elsif ($auth_name eq 'Porphyrius Phil.') {
-        $chunk =~ s#\$10\&lt;10#\$10\`\&lt;10#gs;
-        $chunk =~ s#\&gt;11\$#\&gt;11\`\$#gs;
-    }
-    elsif ($auth_name eq 'Athanasius Theol.') {
-        $chunk =~ s#(κατὰ αἱρέσεων|ΗΜΩΝ ΑΘΑΝΑΣΙΟΥ|β\# λόγου|ΛΟΓΟΣ ΠΡΩΤΟΣ|λαϊκοὺς συνετέθη)\.\}1#$1\.\$\}1#gs;
-        $chunk =~ s#(τὴν ἐμὴν ἀφίημι ὑμῖν\.)#$1\$#gs;
-    }
-    elsif ($auth_name eq 'Diophantus Math.') {
-        $chunk =~ s#(\$\d*)(\&lt;34)#$1\`$2#gs;
-    }
-    elsif ($auth_name eq 'Basilius Theol.') {
-        $chunk =~ s#(οὐ μὴ κριθῆτε\."6|Κεφάλ\. α\#.)(\}1)#$1\$$2#gs;
-        $chunk =~ s#(\@ἐπαγγελίαν ἔχει\.)#$1\$#gs;
-    }
-    elsif ($auth_name eq 'Paulus Astrol.') {
-        # <70{1 Heading stays inside Diagram (later changed to label)
-        $chunk =~ s#\lt;70\{1#\lt;70\`\{1#gs;
-    }
-    elsif ($auth_name eq 'Socrates Scholasticus Hist.') {
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Joannes Chrysostomus Scr. Eccl. John Chrysostom') {
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Didymus Caecus Scr. Eccl. Didymus the Blind') {
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-        $chunk =~ s#(βροτοῖς ἀδίδακτος ἀκούει\.)#$1\$#gs;
-    }
-    elsif ($auth_name eq 'Hippolytus Scr. Eccl.') {
-        $chunk =~ s#(\{1\$10(?:Ἱππολύτου|Ἀπολιναρίου)\.)\}1#$1\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Timaeus Sophista Gramm.') {
-        $chunk =~ s#(\$\d)(\&lt;9)#$1\`$2#gs;
-    }
-    elsif ($auth_name eq 'Gennadius I Scr. Eccl.') {
-        $chunk =~ s#(Gal 4,17)\$10\}1#$1\}1\$10#gs;
-    }
-    elsif ($auth_name eq 'Basilius Scr. Eccl.') {
-        $chunk =~ s#(Λόγος γ\#\.)\}1#$1\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Oecumenius Phil. et Rhet.') {
-        $chunk =~ s#(Phil 3,14|Thess 2,16|Tim 5,10|Tit 1,12|Hebr 2,14|Hebr 5,1)\$10\}1#$1\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Joannes Damascenus Scr. Eccl. et Theol. John of Damascus') {
-        $chunk =~ s#(τοῦ Διαιτητοῦ)\.\}1#$1\.\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Symeon Metaphrastes Biogr. et Hist.') {
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Anonymi In Aristotelis Ethica Nicomachea Phil.') {
-        # In retrospect, should have just deleted all of the <20 >20.
-        $chunk =~ s#(\[2κεφ\. ζ\#\.\]2)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(ἑαυτὰ ἀγαθῶν\. κεφ\. θ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(τιμίων ἡ εὐδαιμονία\. κεφ\. ιθ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(ἐλλείψεως φθείρονται\. κεφ\. β\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#\{1(Περὶ τῆς ἐναντιότητος τῶν)#\&gt;20\{1\&lt;20$1#gs;
-        $chunk =~ s#(τῆς μεσότητος τυγχάνειν\. κεφ\. η\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(Περὶ ἀνδρείας\. κεφ\. η\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#\{1(Περὶ ἀνδρείας, ὅτι ὁ ἀνδρεῖος περὶ τὰ φοβερὰ)#\&gt;20\{1\&lt;20$1#gs;
-        $chunk =~ s#(Περὶ σωφροσύνης\. κεφ\. ι\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(ἡ σωφροσύνη καὶ ἡ ἀκολασία\. \nκεφ\. ιβ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#\{1(Ὅτι ἡ ἀκολασία μᾶλλον ἑκούσιόν ἐστιν)#\&gt;20\{1\&lt;20$1#gs;
-        $chunk =~ s#(Περὶ μεγαλοπρεπείας. κεφ. γ\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(ἀδικεῖν καὶ μὴ ἄδικον εἶναι. κεφ. η\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(\{1\&lt;20Περὶ φρονήσεως. κεφ.)#\&gt;20$1#gs;
-        $chunk =~ s#(Περὶ φιλίας. κεφ. α\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(ἐνεργείᾳ φίλοις \nεἶναι\. κεφ\. \#2\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-        $chunk =~ s#(Περὶ ἡδονῆς. κεφ. α\#\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-    }
-    elsif ($auth_name eq 'Michael Phil.') {
-        $chunk =~ s#(παρὰ τὸ προστιθέναι τι συλλογίζονται\.)\}1#$1\&gt;20\}1\&lt;20#gs;
-    }
-    elsif ($auth_name eq 'Proclus Phil.') {
-        # These do not nest at all within their diagram
-        $chunk =~ s#\$10#\$#gs;
-        $chunk =~ s#(ἐνεργείαις τελειότητος)#$1\$#gs;
-    }
-    elsif ($auth_name eq 'Theophanes Confessor Chronogr.') {
-        $chunk =~ s#\$10#\$#gs;
-    }
-    elsif ($auth_name eq 'Theodoretus Scr. Eccl. et Theol.') {
-        $chunk =~ s#(?<!\$)\}1#\$\}1#gs;
-        $chunk =~ s#(ἀποκαλύψεις ἡρμήνευσε\.)#$1\$#gs;
-    }
-    elsif ($auth_name eq 'Cyrillus Theol.') {
-        $chunk =~ s#\$10\}3#\}3\$10#gs;
-        $chunk =~ s#\{1ΨΑΛΜΟΣ Λ\#2\&gt;9\}1#\{1ΨΑΛΜΟΣ Λ\#2\}1#gs;
-        $chunk =~ s#(\@τῇ σαρκί μου\.)(\&gt;9)#$1\$$2#gs;
-        $chunk =~ s#\{1\&lt;9ΨΑΛΜΟΣ ΜΕ\#\.\}1#\{1ΨΑΛΜΟΣ ΜΕ\#\.\}1#gs;
-        $chunk =~ s#(Εὐφράνθητε, δίκαιοι, ἐν τῷ Κυρίῳ\.)\&gt;9#$1#gs;
-        $chunk =~ s#(εἰς μετοικίαν πορεύσεται\.)\&gt;9#$1#gs;
-        $chunk =~ s#(Πνεύματος εἰς τὴν Γαλιλαίαν\.)\&gt;9#$1#gs;
-        $chunk =~ s#(καὶ Σίμων, \$3ὑπακοή\.)\&gt;9#$1#gs;
-        $chunk =~ s#(τὸν Σατανᾶν, κ\.τ\.λ\.)\&gt;9#$1#gs;
-        $chunk =~ s#(ὁ πλούσιος, καὶ ἐτάφη, κ\.τ\.λ\.)\&gt;9#$1#gs;
-        $chunk =~ s#(\{1ΚΕΦΑΛ. ΚΑ\#\.)\&gt;9\}1#$1\}1#gs;
-        $chunk =~ s#(ὢν, οὐ ψεύδεται\.)\&gt;9#$1#gs;
-        $chunk =~ s#(καὶ ὅσα τούτοις ὅμοια\.)\}1#$1\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Georgius Choeroboscus Gramm.') {
-        $chunk =~ s#(πώεος τοῦ γόνυος)\&gt;20( καὶ )\&lt;20(γουνός)#$1$2$3#gs;
-    }
-    elsif ($auth_name eq 'Catenae (Novum Testamentum)') {
-        $chunk =~ s#(συμβουλευτικῆς πρὸς σωτηρίαν αὐτῶν\.)\}1#$1\$\}1#gs;
-        $chunk =~ s#(καὶ ἀνανεώσεως τῶν Ἀποστόλων\.)\}1#$1\$\}1#gs;
-        $chunk =~ s#(ἀκωλύτως κηρύσσειν τὸν Χριστόν\.)\}1#$1\$\}1#gs;
-        $chunk =~ s#(Περὶ χειροτονίας τῶν ἑπτὰ Διακόνων\.)\}1#$1\$\}1#gs;
-        $chunk =~ s#(μαστίξαντες ἀπέλυσαν\.)#$1\$#gs;
-    }
-    elsif ($auth_name eq 'Diodorus Scr. Eccl.') {
-        $chunk =~ s#(\{1\&amp;Röm 9,11)\$10\}1#$1\}1#gs;
-    }
-    elsif ($auth_name eq 'Severianus Scr. Eccl.') {
-        $chunk =~ s#(\&amp;Röm 4,20)\$10#$1#gs;
-        $chunk =~ s#(\&amp;\`1 Kor 7,17)\$10#$1#gs;
-        $chunk =~ s#(\&amp;\`1 Kor 15,19)\$10#$1#gs;
-    }
-    elsif ($auth_name eq 'Commentaria In Dionysii Thracis Artem Grammaticam') {
-        $chunk =~ s#(Σ\&amp;4d)(?!\&amp;)#$1\&amp;#gs;
-        $chunk =~ s#(μέσων, οἷον ἕβδομος ὄγδοος\.)#$1\$#gs;
-        $chunk =~ s#(Θεῷ εἰς τὰ προλεγόμενα τῆς γραμματικῆς)\&gt;20#$1#gs;
-        $chunk =~ s#(hymn\. in Merc\. 263\%1\]2\$)10#$1#gs;
-        $chunk =~ s#(\$10\s*Περὶ γραμματικῆς\.)\}1#$1\$\}1#gs;
-        $chunk =~ s#\$10##gs;  # I give up
-        $chunk =~ s#(\{1\§\s)\&amp;#\$\`$1#gs;
-        $chunk =~ s#(\§\s)\&amp;(\`12)#$1$2#gs;
-    }
-    elsif ($auth_name eq 'Etymologicum Symeonis') {
-        $chunk =~ s#\&lt;9\&lt;(ἀγαί\&gt;9)#\&lt;\&lt;9$1#gs;
-        $chunk =~ s#(\&amp;4a\$)(\&lt;9ἀκούσματα\&gt;9)#$1\`$2#gs;
-    }
-    elsif ($auth_name eq 'Concilia Oecumenica (ACO)') {
-        $chunk =~ s#(κατὰ Νεστορίου τοῦ αἱρετικοῦ)\}1#$1\$\}1#gs;
-    }
-    elsif ($auth_name eq 'Magica') {
-        $chunk =~ s#(αεηοπυω\s+α\s+ωυοιηεα)(\&gt;20\&gt;71)#$1\$$2#gs;
-        $chunk =~ s#(\&lt;70\&lt;20\&lt;12)(\$10)(ιαεωβαφρενεμουνοθιλαρικριφιαευεαιφιρκι)#$2$1$3#gs;
-        $chunk =~ s#(\{1)(\$10)(\[\&lt;20Ὁμηρομαντεῖον·\&gt;20\]\}1)#$1$3\`$2#gs;
-        $chunk =~ s#\&lt;71\&lt;20(ιαεωβαφρενεμουνοθιλαρικριφιαευεαιφιρκιραλιθονυομενερφαβωεαι)#\&lt;20\&lt;71$1#gs;
-        $chunk =~ s#(\@\@\@\@\@ω)(\&gt;20)(\&gt;71)(\s+\&lt;71.συρημενη)#$1$3$2$4#gms;
-    }
-    elsif ($auth_name eq 'Scholia In Aeschylum') {
-        $chunk =~ s#(οἰωνοσκοπητικόν  εἰς ἡπατικόν  καὶ εἰς θυτικόν.)(\&gt;70)#$1\$\$2#gs;
-    }
-    elsif ($auth_name eq 'Scholia In Aristophanem') {
-        $chunk =~ s#(\&amp;4\`\d+)(?![\$\&])#$1\$#gs;
-        $chunk =~ s#(\&amp;4G\d?)(?![\$\&])#$1\$#gs;
-        $chunk =~ s#(\{2\&amp;10vet Tr\$)10(\}2)#$1$2#gs;
-        $chunk =~ s#\&amp;4\{1(ARGUMENTA}1)#\{1\&amp;$1#gs;
-        $chunk =~ s#(\&amp;3[a-z]+)(?![\$\&])#$1\$#gs;
-        $chunk =~ s#(\{2\&amp;10Tr\&amp;)3(\}2)#$1$2#gs;
-        $chunk =~ s#(\{2\&amp;10(?:vet|Tr|vet Tr))(\}2)#$1\$$2#gs;
-        $chunk =~ s#(\&amp;4bis)(?![\$\&])#$1\$#gs;
-        $chunk =~ s#(\&lt;10)(ὄμβριον,"|Τριτογενείης\%10)\&gt;20\&gt;10#$1$2\&gt;10\&gt;20#gs;
-        $chunk =~ s#(φέρω )\&amp;10(vel )\$10(φέρων)#$1$2$3#gs;
-        $chunk =~ s#(\&lt;11)(\$10)(οἴμωζεν ἂν\&gt;11) (\&lt;10)(οἴμωξεν ἄν\&gt;10)#$2\`$4$5 $1$3\`\$#gs;
-        $chunk =~ s#\&lt;11\$10\&lt;20#\$10\`\&lt;20\`\&lt;11#gs;
-        $chunk =~ s#\&lt;11\&lt;20\$10#\$10\`\&lt;20\`\&lt;11#gs;
-        $chunk =~ s#\&gt;20\$\&gt;10#\&gt;10\`\&gt;20\`\$#gs;
-        $chunk =~ s#\&lt;11\$10#\$10\`\&lt;11#gs;
-        $chunk =~ s#\$[·]?\&gt;10#\&gt;10\`\$#gs;
-        $chunk =~ s#\&gt;10\$#\&gt;10\`\$#gs;
-        $chunk =~ s#\&lt;10\$10#\$10\`\&lt;10#gs;
-        $chunk =~ s#\$\&gt;11#\&gt;11\`\$#gs;
-    }
-    elsif ($auth_name eq 'Scholia In Euclidem') {
-        $chunk =~ s#(\&lt;70)(\$10)#$2\`$1#gs;
-        $chunk =~ s#(\&gt;70)(\$)#$1\`$2#gs;
-    }
-    elsif ($auth_name eq 'Scholia In Homerum') {
-        $chunk =~ s#(δὲ ἐπιχέαντες. \&amp;1b) #$1\$ #gms;
-        $chunk =~ s#(ὅπλοις ὁπλίζεις αὐτὴν καθ'\s+ἡμῶν. \&amp;1T) #$1\$ #gms;
-        $chunk =~ s#(στροφοδινεῖν καὶ οἱονεὶ σκοτίζειν. \&amp;1b) #$1\$ #gms;
-    }
-    elsif ($auth_name eq 'Scholia In Platonem') {
-        $chunk =~ s#(?<!\$ \n)(\&lt;70)#\$\`$1#gms;
-        $chunk =~ s#(\&lt;72)\$10(ὑπεροχὴ β\#\&gt;72)#$1$2#gms;
-        $chunk =~ s#(\@ῥυθμοῦ)(\&gt;70)#$1\$$2#gms;
-        $chunk =~ s#(\@κατ' ὠφέλειαν)\$10(\&gt;70)#$1$2#gms;
-        $chunk =~ s#(\$10 \[1ποιεῖν)#$1\$#gms;
-        $chunk =~ s#(\$10)(\&lt;10λέγειν\&gt;10)#\$1\`$2#gms;
-        $chunk =~ s#\$10((?:\]1)?\&gt;70)#$1#gms;
-        $chunk =~ s#\$10(\]1\.\&gt;70)#\$$1#gms;
-        $chunk =~ s#(\&lt;70\$10τῆς κινήσεως)#$1\$#gms;
-    }
-    elsif ($auth_name eq 'Scholia In Theocritum') {
-        $chunk =~ s#\{2#\$\`\{2#gms;
-    }
-
-    # $flag = 1 if $chunk =~ m/Περὶ ἀμύλου\./;
-    # $flag = 0 if $chunk =~ m/Περὶ κριθίνων ἄρτων\./;
-    # print STDERR ">>$chunk\n\n" if $flag;
-
 
     # Font switching.
 
@@ -1368,67 +1082,301 @@ sub convert_chunk {
     return $chunk;
 }
 
-sub write_xml_file {
-    my ($file, $text) = @_;
+sub ad_hoc_fixes {
 
-    if ($debug) {
-        my $tmpfile = File::Spec->catfile( $path, $file) . '.tmp';
-        open( OUT, ">:encoding(UTF-8)", "$tmpfile" ) or die $!;
-        print OUT $text;
-        close(OUT) or die $!;
+    # Fix ad-hoc special cases of improper nesting or missing markup
+    # that will yield XML that is not well-formed.  We also
+    # preemptively interfere in cases where our rearranging of font
+    # commands below will have incorrect results.  We make these
+    # changes early, because subsequent code will make the text harder
+    # to match, but after conversion of Greek to Unicode, for legibility.
+
+    my $ref = shift;
+
+    if ($auth_name eq 'Titus Calpurnius Siculus') {
+        $$ref =~ s#\[\{40#\{40\[#g;
+        $$ref =~ s#\}40\]#\]\}40#g;
     }
-
-    my $xmldoc = post_process_xml($text, $file);
-
-    if ($opt_p) {
-        $xmldoc = milestones($xmldoc);
+    elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
+        # @@&7qvid&{43&7ve&}43
+        $$ref =~ s#(\&7qvid\&)(\{43\&7ve\&\}43)#$1\`$2#gs;
+        $$ref =~ s#(\&7evmenides\&)(\{43\&7qve satae)#$1\`$2#gs;
     }
-
-    if ($libxml) {
-        # At this point, the text is a mixture of utf8 (Greek) and hex
-        # entities for more obscure punctuation, etc.  Unfortunately,
-        # the serialisation function for libxml insists on flattening
-        # all the entities out to utf8 (the alternative is to output
-        # ascii with everything as entities).  When using
-        # XML::DOM::Lite, the -e flag can be used to suppress the
-        # flattening of hex entities to utf8.
-        $text = $xmldoc->documentElement->toString;
+    elsif ($auth_name eq 'Sophocles Trag.') {
+        # {$10*A.}
+        $$ref =~ s#(\{\$10.*)\}(?!\$)#$1\$\}#gs;
     }
-    else {
-        my $serializer = XML::DOM::Lite::Serializer->new(indent=>'none');
-        $text = $serializer->serializeToString($xmldoc);
+    elsif ($auth_name eq 'Aristophanes Comic.') {
+        # {2<2$#15$3>2}2 and ^16<2_>2$3{2#523}2
+        $$ref =~ s#\{2\<2\$\#15\$3\>2\}2#\{2\<2\$\#15\>2\}2#gs;
+        $$ref =~ s#\$3\{2\#523\}2#\{2\#523\}2#gs;
     }
-
-    $text = ad_hoc_fixes($text, $file);
-
-    my $file_path = File::Spec->catfile( $path, $file );
-    if ($opt_l) {
-        open(LINT, "|xmllint --format - >$file_path") or die "Can't open xmllint: $!";
-        print LINT $text;
-        close(LINT) or die "Could not close xmllint!\n";
+    elsif ($auth_name eq 'Scylax Perieg.') {
+        $$ref =~ s#\$10Παλαίτυρος πόλις#Παλαίτυρος πόλις#gs;
     }
-    else {
-        open( OUT, ">:encoding(UTF-8)", "$file_path" ) or die "Could not create $file\n";
-        print OUT $text;
-        close(OUT) or die "Could not close $file\n";
+    elsif ($auth_name eq 'Aesopus Scr. Fab. et Aesopica') {
+        # {1$10O)/NOS KAI\ LEONTH=}1 and {1$10LE/WN KAI\ TAU=ROI DU/O}1
+        $$ref =~ s#\{1\$10(.*?[^\$])\}1#\{1\$10$1\$\}1#gs;
     }
-    print AUTHTAB "  </work>\n";
-
-    if ($opt_s) {
-        print "    Validating $file ... ";
-        die "Error: Java is required for validation, but java not found"
-            unless which 'java';
-        # xmllint validation errors can be misleading; jing is better
-        # my $ret = `xmllint --noout --relaxng digiliblt.rng $file_path`;
-        # my $ret = `java -jar jing.jar -c digiliblt.rnc $file_path`;
-        my $ret = `java -jar jing.jar -c tei_all.rnc $file_path`;
-        if ($ret) {
-            print "Invalid.\n";
-            print $ret;
-        }
-        else {
-            print "Valid.\n";
-        }
+    elsif ($auth_name eq 'Abydenus Hist.') {
+        $$ref =~ s#\{1\&ABYDENI#\&`\{1\&ABYDENI#gs;
+    }
+    elsif ($auth_name eq 'Ion Phil. et Poeta') {
+        $$ref =~ s#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1\$10#\{1ΟΜΦΑΛΗ ΣΑΤΥΡΟΙ\}1`\$10#gs;
+    }
+    elsif ($auth_name eq 'Alcaeus Lyr.') {
+        # <15[     $1]!W?N>15
+        $$ref =~ s#(\$\d+[^\$]+)\>15#$1\$\>15#gs;
+        # $11<10!LO#7>10<11N?GA>11
+        $$ref =~ s#\$11\<10([^&]+)\>10#\<10\$11$1\$\>10#gs;
+        # <15$1THNAGXO?NH$6N$9$1>15 and <15$1]MELONTODEENEKE?![!!]!>15
+        $$ref =~ s#(\<15\$1)([^&]+)(\>15)#$1$2\$$3#gs;
+    }
+    elsif ($auth_name eq 'Cassius Dio Hist. Dio Cassius') {
+        # {1$10 ... }1 -> should extend to whole contents
+        $$ref =~ s#\{1\$10#\$10`\{1#gs;
+        $$ref =~ s#\$10\{1#\$10`\{1#gs;
+        $$ref =~ s#\}1\$#\}1`\$#gs;
+    }
+    elsif ($auth_name eq 'Eupolis Comic.') {
+        # {2$#523$3}2
+        $$ref =~ s#\$3\}2#\}2`\$3#gs;
+    }
+    elsif ($auth_name eq 'Heron Mech.') {
+        # <70A B G ... KT$4A ... KD>70
+        $$ref =~ s#(\<70[^\$]*\$\d[^&]*)\>70#$1\$\>70#gs;
+    }
+    elsif ($auth_name eq 'Alexander Phil.') {
+        # p. 47b15 ${1<20 ... }1
+        $$ref =~ s#(\{1<20[^\}]*)(\}1)#$1\>20$2#gs;
+    }
+    elsif ($auth_name eq 'Lysias Orat.') {
+        # $10 ... {1&PLATONICA.$}1
+        $$ref =~ s#\{1\&#\$`\{1\&#gs;
+    }
+    elsif ($auth_name eq 'Menander Comic.') {
+        $$ref =~ s#\{(ΨΕΥΔΗΡΑΚΛΗΣ\}1)#\{1$1#gs;
+    }
+    elsif ($auth_name eq 'Comica Adespota (CGFPR)') {
+        # <2{_}>2$3{[ <- belongs outside
+        $$ref =~ s#\$3\{\[#\$3\`\{\[#gs;
+    }
+    elsif ($auth_name eq 'Hierophilus Phil. et Soph.') {
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Anonyma De Musica Scripta Bellermanniana') {
+        $$ref =~ s#\$1\<4#\$1\`\<4#gs;
+    }
+    elsif ($file eq 'Arrianus Epic.') {
+        $$ref =~ s#\[\{1#\{1\[#g;
+        $$ref =~ s#\}1\]#\]\}1#g;
+    }
+    elsif ($auth_name eq 'Democritus Phil.') {
+        $$ref =~ s#\{1#\$\`\{1#gs;
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+        $$ref =~ s#\<20(Ἠθικά|Ἀσύντακτα|Μαθηματικά|Μουσικά)\.#\<20$1\.\>20#gs;
+    }
+    elsif ($auth_name eq 'Historia Alexandri Magni') {
+        $$ref =~ s#\<13\{1(.*?)\}1#\{1$1\}1\`\<13#gs;
+    }
+    elsif ($auth_name eq 'Pseudo-Auctores Hellenistae (PsVTGr)') {
+        $$ref =~ s#\$\d\}1#\$\}1#gs;
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Vettius Valens Astrol.') {
+        $$ref =~ s#(ἀστέρων|πλείους|μερισμοί)(\.(?:\]2)?\}1)#$1\>20$2\<20#gs;
+    }
+    elsif ($auth_name eq 'Eusebius Scr. Eccl. et Theol.') {
+        $$ref =~ s#(ἐχθρούς σου ὑποπόδιον τῶν ποδῶν σου\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Porphyrius Phil.') {
+        $$ref =~ s#\$10\<10#\$10\`\<10#gs;
+        $$ref =~ s#\>11\$#\>11\`\$#gs;
+    }
+    elsif ($auth_name eq 'Athanasius Theol.') {
+        $$ref =~ s#(κατὰ αἱρέσεων|ΗΜΩΝ ΑΘΑΝΑΣΙΟΥ|β\# λόγου|ΛΟΓΟΣ ΠΡΩΤΟΣ|λαϊκοὺς συνετέθη)\.\}1#$1\.\$\}1#gs;
+        $$ref =~ s#(τὴν ἐμὴν ἀφίημι ὑμῖν\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Diophantus Math.') {
+        $$ref =~ s#(\$\d*)(\<34)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Basilius Theol.') {
+        $$ref =~ s#(οὐ μὴ κριθῆτε\."6|Κεφάλ\. α\#.)(\}1)#$1\$$2#gs;
+        $$ref =~ s#(\@ἐπαγγελίαν ἔχει\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Paulus Astrol.') {
+        # <70{1 Heading stays inside Diagram (later changed to label)
+        $$ref =~ s#\lt;70\{1#\lt;70\`\{1#gs;
+    }
+    elsif ($auth_name eq 'Socrates Scholasticus Hist.') {
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Joannes Chrysostomus Scr. Eccl. John Chrysostom') {
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Didymus Caecus Scr. Eccl. Didymus the Blind') {
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+        $$ref =~ s#(βροτοῖς ἀδίδακτος ἀκούει\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Hippolytus Scr. Eccl.') {
+        $$ref =~ s#(\{1\$10(?:Ἱππολύτου|Ἀπολιναρίου)\.)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Timaeus Sophista Gramm.') {
+        $$ref =~ s#(\$\d)(\<9)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Gennadius I Scr. Eccl.') {
+        $$ref =~ s#(Gal 4,17)\$10\}1#$1\}1\$10#gs;
+    }
+    elsif ($auth_name eq 'Basilius Scr. Eccl.') {
+        $$ref =~ s#(Λόγος γ\#\.)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Oecumenius Phil. et Rhet.') {
+        $$ref =~ s#(Phil 3,14|Thess 2,16|Tim 5,10|Tit 1,12|Hebr 2,14|Hebr 5,1)\$10\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Joannes Damascenus Scr. Eccl. et Theol. John of Damascus') {
+        $$ref =~ s#(τοῦ Διαιτητοῦ)\.\}1#$1\.\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Symeon Metaphrastes Biogr. et Hist.') {
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Anonymi In Aristotelis Ethica Nicomachea Phil.') {
+        # In retrospect, should have just deleted all of the <20 >20.
+        $$ref =~ s#(\[2κεφ\. ζ\#\.\]2)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(ἑαυτὰ ἀγαθῶν\. κεφ\. θ\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(τιμίων ἡ εὐδαιμονία\. κεφ\. ιθ\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(ἐλλείψεως φθείρονται\. κεφ\. β\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#\{1(Περὶ τῆς ἐναντιότητος τῶν)#\>20\{1\<20$1#gs;
+        $$ref =~ s#(τῆς μεσότητος τυγχάνειν\. κεφ\. η\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(Περὶ ἀνδρείας\. κεφ\. η\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#\{1(Περὶ ἀνδρείας, ὅτι ὁ ἀνδρεῖος περὶ τὰ φοβερὰ)#\>20\{1\<20$1#gs;
+        $$ref =~ s#(Περὶ σωφροσύνης\. κεφ\. ι\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(ἡ σωφροσύνη καὶ ἡ ἀκολασία\. \nκεφ\. ιβ\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#\{1(Ὅτι ἡ ἀκολασία μᾶλλον ἑκούσιόν ἐστιν)#\>20\{1\<20$1#gs;
+        $$ref =~ s#(Περὶ μεγαλοπρεπείας. κεφ. γ\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(ἀδικεῖν καὶ μὴ ἄδικον εἶναι. κεφ. η\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(\{1\<20Περὶ φρονήσεως. κεφ.)#\>20$1#gs;
+        $$ref =~ s#(Περὶ φιλίας. κεφ. α\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(ἐνεργείᾳ φίλοις \nεἶναι\. κεφ\. \#2\#\.)\}1#$1\>20\}1\<20#gs;
+        $$ref =~ s#(Περὶ ἡδονῆς. κεφ. α\#\.)\}1#$1\>20\}1\<20#gs;
+    }
+    elsif ($auth_name eq 'Michael Phil.') {
+        $$ref =~ s#(παρὰ τὸ προστιθέναι τι συλλογίζονται\.)\}1#$1\>20\}1\<20#gs;
+    }
+    elsif ($auth_name eq 'Proclus Phil.') {
+        # These do not nest at all within their diagram
+        $$ref =~ s#\$10#\$#gs;
+        $$ref =~ s#(ἐνεργείαις τελειότητος)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Theophanes Confessor Chronogr.') {
+        $$ref =~ s#\$10#\$#gs;
+    }
+    elsif ($auth_name eq 'Theodoretus Scr. Eccl. et Theol.') {
+        $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
+        $$ref =~ s#(ἀποκαλύψεις ἡρμήνευσε\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Cyrillus Theol.') {
+        $$ref =~ s#\$10\}3#\}3\$10#gs;
+        $$ref =~ s#\{1ΨΑΛΜΟΣ Λ\#2\>9\}1#\{1ΨΑΛΜΟΣ Λ\#2\}1#gs;
+        $$ref =~ s#(\@τῇ σαρκί μου\.)(\>9)#$1\$$2#gs;
+        $$ref =~ s#\{1\<9ΨΑΛΜΟΣ ΜΕ\#\.\}1#\{1ΨΑΛΜΟΣ ΜΕ\#\.\}1#gs;
+        $$ref =~ s#(Εὐφράνθητε, δίκαιοι, ἐν τῷ Κυρίῳ\.)\>9#$1#gs;
+        $$ref =~ s#(εἰς μετοικίαν πορεύσεται\.)\>9#$1#gs;
+        $$ref =~ s#(Πνεύματος εἰς τὴν Γαλιλαίαν\.)\>9#$1#gs;
+        $$ref =~ s#(καὶ Σίμων, \$3ὑπακοή\.)\>9#$1#gs;
+        $$ref =~ s#(τὸν Σατανᾶν, κ\.τ\.λ\.)\>9#$1#gs;
+        $$ref =~ s#(ὁ πλούσιος, καὶ ἐτάφη, κ\.τ\.λ\.)\>9#$1#gs;
+        $$ref =~ s#(\{1ΚΕΦΑΛ. ΚΑ\#\.)\>9\}1#$1\}1#gs;
+        $$ref =~ s#(ὢν, οὐ ψεύδεται\.)\>9#$1#gs;
+        $$ref =~ s#(καὶ ὅσα τούτοις ὅμοια\.)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Georgius Choeroboscus Gramm.') {
+        $$ref =~ s#(πώεος τοῦ γόνυος)\>20( καὶ )\<20(γουνός)#$1$2$3#gs;
+    }
+    elsif ($auth_name eq 'Catenae (Novum Testamentum)') {
+        $$ref =~ s#(συμβουλευτικῆς πρὸς σωτηρίαν αὐτῶν\.)\}1#$1\$\}1#gs;
+        $$ref =~ s#(καὶ ἀνανεώσεως τῶν Ἀποστόλων\.)\}1#$1\$\}1#gs;
+        $$ref =~ s#(ἀκωλύτως κηρύσσειν τὸν Χριστόν\.)\}1#$1\$\}1#gs;
+        $$ref =~ s#(Περὶ χειροτονίας τῶν ἑπτὰ Διακόνων\.)\}1#$1\$\}1#gs;
+        $$ref =~ s#(μαστίξαντες ἀπέλυσαν\.)#$1\$#gs;
+    }
+    elsif ($auth_name eq 'Diodorus Scr. Eccl.') {
+        $$ref =~ s#(\{1\&Röm 9,11)\$10\}1#$1\}1#gs;
+    }
+    elsif ($auth_name eq 'Severianus Scr. Eccl.') {
+        $$ref =~ s#(\&Röm 4,20)\$10#$1#gs;
+        $$ref =~ s#(\&\`1 Kor 7,17)\$10#$1#gs;
+        $$ref =~ s#(\&\`1 Kor 15,19)\$10#$1#gs;
+    }
+    elsif ($auth_name eq 'Commentaria In Dionysii Thracis Artem Grammaticam') {
+        $$ref =~ s#(Σ\&4d)(?!\&)#$1\&#gs;
+        $$ref =~ s#(μέσων, οἷον ἕβδομος ὄγδοος\.)#$1\$#gs;
+        $$ref =~ s#(Θεῷ εἰς τὰ προλεγόμενα τῆς γραμματικῆς)\>20#$1#gs;
+        $$ref =~ s#(hymn\. in Merc\. 263\%1\]2\$)10#$1#gs;
+        $$ref =~ s#(\$10\s*Περὶ γραμματικῆς\.)\}1#$1\$\}1#gs;
+        $$ref =~ s#\$10##gs;  # I give up
+        $$ref =~ s#(\{1\§\s)\&#\$\`$1#gs;
+        $$ref =~ s#(\§\s)\&(\`12)#$1$2#gs;
+    }
+    elsif ($auth_name eq 'Etymologicum Symeonis') {
+        $$ref =~ s#\<9\<(ἀγαί\>9)#\<\<9$1#gs;
+        $$ref =~ s#(\&4a\$)(\<9ἀκούσματα\>9)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Concilia Oecumenica (ACO)') {
+        $$ref =~ s#(κατὰ Νεστορίου τοῦ αἱρετικοῦ)\}1#$1\$\}1#gs;
+    }
+    elsif ($auth_name eq 'Magica') {
+        $$ref =~ s#(αεηοπυω\s+α\s+ωυοιηεα)(\>20\>71)#$1\$$2#gs;
+        $$ref =~ s#(\<70\<20\<12)(\$10)(ιαεωβαφρενεμουνοθιλαρικριφιαευεαιφιρκι)#$2$1$3#gs;
+        $$ref =~ s#(\{1)(\$10)(\[\<20Ὁμηρομαντεῖον·\>20\]\}1)#$1$3\`$2#gs;
+        $$ref =~ s#\<71\<20(ιαεωβαφρενεμουνοθιλαρικριφιαευεαιφιρκιραλιθονυομενερφαβωεαι)#\<20\<71$1#gs;
+        $$ref =~ s#(\@\@\@\@\@ω)(\>20)(\>71)(\s+\<71.συρημενη)#$1$3$2$4#gms;
+    }
+    elsif ($auth_name eq 'Scholia In Aeschylum') {
+        $$ref =~ s#(οἰωνοσκοπητικόν  εἰς ἡπατικόν  καὶ εἰς θυτικόν.)(\>70)#$1\$\$2#gs;
+    }
+    elsif ($auth_name eq 'Scholia In Aristophanem') {
+        $$ref =~ s#(\&4\`\d+)(?![\$\&])#$1\$#gs;
+        $$ref =~ s#(\&4G\d?)(?![\$\&])#$1\$#gs;
+        $$ref =~ s#(\{2\&10vet Tr\$)10(\}2)#$1$2#gs;
+        $$ref =~ s#\&4\{1(ARGUMENTA}1)#\{1\&$1#gs;
+        $$ref =~ s#(\&3[a-z]+)(?![\$\&])#$1\$#gs;
+        $$ref =~ s#(\{2\&10Tr\&)3(\}2)#$1$2#gs;
+        $$ref =~ s#(\{2\&10(?:vet|Tr|vet Tr))(\}2)#$1\$$2#gs;
+        $$ref =~ s#(\&4bis)(?![\$\&])#$1\$#gs;
+        $$ref =~ s#(\<10)(ὄμβριον,"|Τριτογενείης\%10)\>20\>10#$1$2\>10\>20#gs;
+        $$ref =~ s#(φέρω )\&10(vel )\$10(φέρων)#$1$2$3#gs;
+        $$ref =~ s#(\<11)(\$10)(οἴμωζεν ἂν\>11) (\<10)(οἴμωξεν ἄν\>10)#$2\`$4$5 $1$3\`\$#gs;
+        $$ref =~ s#\<11\$10\<20#\$10\`\<20\`\<11#gs;
+        $$ref =~ s#\<11\<20\$10#\$10\`\<20\`\<11#gs;
+        $$ref =~ s#\>20\$\>10#\>10\`\>20\`\$#gs;
+        $$ref =~ s#\<11\$10#\$10\`\<11#gs;
+        $$ref =~ s#\$[·]?\>10#\>10\`\$#gs;
+        $$ref =~ s#\>10\$#\>10\`\$#gs;
+        $$ref =~ s#\<10\$10#\$10\`\<10#gs;
+        $$ref =~ s#\$\>11#\>11\`\$#gs;
+    }
+    elsif ($auth_name eq 'Scholia In Euclidem') {
+        $$ref =~ s#(\<70)(\$10)#$2\`$1#gs;
+        $$ref =~ s#(\>70)(\$)#$1\`$2#gs;
+    }
+    elsif ($auth_name eq 'Scholia In Homerum') {
+        $$ref =~ s#(δὲ ἐπιχέαντες. \&1b) #$1\$ #gms;
+        $$ref =~ s#(ὅπλοις ὁπλίζεις αὐτὴν καθ'\s+ἡμῶν. \&1T) #$1\$ #gms;
+        $$ref =~ s#(στροφοδινεῖν καὶ οἱονεὶ σκοτίζειν. \&1b) #$1\$ #gms;
+    }
+    elsif ($auth_name eq 'Scholia In Platonem') {
+        $$ref =~ s#(?<!\$ \n)(\<70)#\$\`$1#gms;
+        $$ref =~ s#(\<72)\$10(ὑπεροχὴ β\#\>72)#$1$2#gms;
+        $$ref =~ s#(\@ῥυθμοῦ)(\>70)#$1\$$2#gms;
+        $$ref =~ s#(\@κατ' ὠφέλειαν)\$10(\>70)#$1$2#gms;
+        $$ref =~ s#(\$10 \[1ποιεῖν)#$1\$#gms;
+        $$ref =~ s#(\$10)(\<10λέγειν\>10)#\$1\`$2#gms;
+        $$ref =~ s#\$10((?:\]1)?\>70)#$1#gms;
+        $$ref =~ s#\$10(\]1\.\>70)#\$$1#gms;
+        $$ref =~ s#(\<70\$10τῆς κινήσεως)#$1\$#gms;
+    }
+    elsif ($auth_name eq 'Scholia In Theocritum') {
+        $$ref =~ s#\{2#\$\`\{2#gms;
     }
 }
 
@@ -1923,38 +1871,68 @@ sub milestones {
     return $xmldoc;
 }
 
-sub ad_hoc_fixes {
-    # This is for fixing desperate special cases.
-    my $out = shift;
-    my $file = shift;
+sub write_xml_file {
+    my ($file, $text) = @_;
 
-    # Calpurnius Siculus
-    if ($file eq 'phi0830001.xml') {
-        $out =~ s#\[(<label [^>]*>)#$1\[#g;
-        $out =~ s#</label>\]#\]</label>#g;
+    if ($debug) {
+        my $tmpfile = File::Spec->catfile( $path, $file) . '.tmp';
+        open( OUT, ">:encoding(UTF-8)", "$tmpfile" ) or die $!;
+        print OUT $text;
+        close(OUT) or die $!;
     }
 
-    # Arrianus
-    if ($file eq 'tlg2650001.xml') {
-        $out =~ s#\[<head>#<head>\[#g;
-        $out =~ s#</head>\]#\]</head>#g;
+    my $xmldoc = post_process_xml($text, $file);
+
+    if ($opt_p) {
+        $xmldoc = milestones($xmldoc);
     }
 
-    # Hyginus Myth
-    if ($file eq 'phi1263001.xml') {
-        $out =~ s#<label ([^>]*)><supplied>QVI PIISSIMI FVERVNT\.</supplied></label>\s*<div ([^>]*)>#<div $2>\n<label $1><supplied>QVI PIISSIMI FVERVNT.</supplied></label>#;
+    if ($libxml) {
+        # At this point, the text is a mixture of utf8 (Greek) and hex
+        # entities for more obscure punctuation, etc.  Unfortunately,
+        # the serialisation function for libxml insists on flattening
+        # all the entities out to utf8 (the alternative is to output
+        # ascii with everything as entities).  When using
+        # XML::DOM::Lite, the -e flag can be used to suppress the
+        # flattening of hex entities to utf8.
+        $text = $xmldoc->documentElement->toString;
     }
-    # Porphyry on Horace
-    if ($file =~ m/^phi1512/) {
-        # Not all of the Sermones have this heading and this one for
-        # poem 3 is in the middle of the scholia to poem 2.
-        $out =~ s#(<head [^>]*>EGLOGA III</head>.*?</p>\n)#<div type="lemma" n="t">$1</div>#s;
-        # Another bizzarely placed heading
-        $out =~ s#<head [^>]*>\[DE SATVRA</head>\s*<div type="lemma" n="12a">#<div type="lemma" n="12a"><head>DE SATURA</head>#;
+    else {
+        my $serializer = XML::DOM::Lite::Serializer->new(indent=>'none');
+        $text = $serializer->serializeToString($xmldoc);
     }
 
-    return $out;
+    my $file_path = File::Spec->catfile( $path, $file );
+    if ($opt_l) {
+        open(LINT, "|xmllint --format - >$file_path") or die "Can't open xmllint: $!";
+        print LINT $text;
+        close(LINT) or die "Could not close xmllint!\n";
+    }
+    else {
+        open( OUT, ">:encoding(UTF-8)", "$file_path" ) or die "Could not create $file\n";
+        print OUT $text;
+        close(OUT) or die "Could not close $file\n";
+    }
+    print AUTHTAB "  </work>\n";
+
+    if ($opt_s) {
+        print "    Validating $file ... ";
+        die "Error: Java is required for validation, but java not found"
+            unless which 'java';
+        # xmllint validation errors can be misleading; jing is better
+        # my $ret = `xmllint --noout --relaxng digiliblt.rng $file_path`;
+        # my $ret = `java -jar jing.jar -c digiliblt.rnc $file_path`;
+        my $ret = `java -jar jing.jar -c tei_all.rnc $file_path`;
+        if ($ret) {
+            print "Invalid.\n";
+            print $ret;
+        }
+        else {
+            print "Valid.\n";
+        }
+    }
 }
+
 
 sub is_work_verse {
     my ($auth_num, $work_num) = @_;

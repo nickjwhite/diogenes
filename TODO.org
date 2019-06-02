@@ -1,10 +1,5 @@
 * Current
 
-** hanging div only for | and ||, not other percents
-** refactor ad-hoc subroutine
-*** merge with other subroutine
-*** change all entities to <>&
-
 ** Change font re-arrangement
 Bring trailing plain &$ into {} and <>, but when it has a number, leave it there and add a plain one inside.
 
