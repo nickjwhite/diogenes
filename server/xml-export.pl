@@ -1048,23 +1048,23 @@ sub convert_chunk {
     $chunk =~ s/_/\ -\ /g;
     $chunk =~ s/!/./g;
 
-    # Whitespace  FIXME: do all numbered items properly
+    # Whitespace, etc.
 
     # Line/page breaks
     $chunk =~ s#\@1(?!\d)#<pb/>#g;
     $chunk =~ s#\@2(?!\d)#<cb/>#g;
     $chunk =~ s#\@3(?!\d)#<figure/>#g;
-    $chunk =~ s#\@4(?!\d)#<table>#g;
-    $chunk =~ s#\@5(?!\d)#</table>#g;
+    $chunk =~ s#\@4(?!\d)#<seg type="table-start"/>#g;
+    $chunk =~ s#\@5(?!\d)#<seg type="table-end"/>#g;
     $chunk =~ s#\@6(?!\d)#<lb/>#g;
-    $chunk =~ s#\@7(?!\d)#<milestone rend="horizontal-rule"/>#g;
-    $chunk =~ s#\@8(?!\d)#<milestone type="new-citation"/>#g;
+    $chunk =~ s#\@7(?!\d)#<hi rend="horizontal-rule"/>#g;
+    $chunk =~ s#\@8(?!\d)#<seg type="new-citation"/>#g;
     $chunk =~ s#\@9(?!\d)#<gap/>#g;
-    $chunk =~ s#\@11(?!\d)#<milestone type="table-cell">#g;
-    $chunk =~ s#\@12(?!\d)#<milestone type="table-cell">#g;
+    $chunk =~ s#\@11(?!\d)#<seg unit="table" type="cell"/>#g;
+    $chunk =~ s#\@12(?!\d)#<seg unit="table" type="cell"/>#g;
     $chunk =~ s#\@2\d(?!\d)#<cb/>#g;
-    $chunk =~ s#\@30(?!\d)#<milestone type="new-para">#g;
-    $chunk =~ s#\@30(?!\d)#<milestone type="caesura" rend="space">#g;
+    $chunk =~ s#\@30(?!\d)#<seg type="new-para"/>#g;
+    $chunk =~ s#\@30(?!\d)#<seg type="caesura" rend="space"/>#g;
     $chunk =~ s#\@7[03](?!\d)#<quote>#g;
     $chunk =~ s#\@7[14](?!\d)#</quote>#g;
 
