@@ -1406,66 +1406,10 @@ sub post_process_xml {
     # between.
     fixup_spaces($xmldoc);
 
-    # Remove all div and l elements with n="t" (recursively), while
-    # preserving all other content; these are just titles and usually
-    # have a 'head' inside, so should not appear in a separate div or
-    # line.
-    if ($libxml) {
-        foreach my $node ($xmldoc->getElementsByTagName('l'),
-                          $xmldoc->getElementsByTagName('div'),) {
-            my $n = $node->getAttribute('n');
-            if ($n and $n =~ m/^t\d?$/) {
-                delete_and_promote($node, qr/^(div|l)$/);
-            }
-        }
-    }
-    else {
-        foreach my $node (@{ $xmldoc->getElementsByTagName('div') },
-                          @{ $xmldoc->getElementsByTagName('l') }) {
-            my $n = $node->getAttribute('n');
-            if ($n and $n =~ m/^t\d?$/) {
-                delete_and_promote($node, qr/^(div|l)$/);
-            }
-        }
-    }
-
-    # FIXME When the 'head' is the first non-blank child of the 'p' or
-    # 'l' we move the 'head' to just before its parent, and then
-    # delete the former parent if it has only whitespace content.  But
-    # we must not do that elsewhere, for in texts with 'div's that do
-    # not respect text structure -- such as Stephanus pages -- a heading
-    # can appear anywhere.
-
-    # A 'head' often appears inside 'p' or 'l', which isn't valid.  So
-    # we move the 'head' to just before its parent, and then delete
-    # the former parent if it has only whitespace content.
-
-    if ($libxml) {
-        foreach my $node ($xmldoc->getElementsByTagName('head')) {
-            my $parent = $node->parentNode;
-            if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
-                $parent->parentNode->insertBefore($node, $parent);
-                $parent->unbindNode unless $parent->textContent =~ m/\S/;
-            }
-        }
-    }
-    else {
-        my $nodelist = $xmldoc->getElementsByTagName('head');
-        foreach my $node (@{ $nodelist }) {
-            my $parent = $node->parentNode;
-            if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
-                $parent->parentNode->insertBefore($node, $parent);
-                unless ($parent->textContent =~ m/\S/) {
-                    $parent->unbindNode;
-                }
-            }
-        }
-    }
-
-    # FIXME: not always true.  Do this only when the two <head>s are together in a <div n="t"> or <l n="t1"><l n="t2"> situation.
-
-    # When there are two 'head's in immediate succession, it's usually
-    # just a line break, so we unify them.
+    # When there are two 'head's in immediate succession within a
+    # single div (e.g. with n="t\d*"), it's usually just a line break,
+    # so we unify them (before getting rid of the divs in the next
+    # step.
     if ($libxml) {
         foreach my $node ($xmldoc->getElementsByTagName('head')) {
             my $sib = $node->nextNonBlankSibling;
@@ -1501,7 +1445,71 @@ sub post_process_xml {
         }
     }
 
-    # FIXME: remove this
+    # Remove all div and l elements with n="t" (recursively), while
+    # preserving all other content; these are just titles and usually
+    # have a 'head' inside, so should not appear in a separate div or
+    # line.
+    if ($libxml) {
+        foreach my $node ($xmldoc->getElementsByTagName('l'),
+                          $xmldoc->getElementsByTagName('div'),) {
+            my $n = $node->getAttribute('n');
+            if ($n and $n =~ m/^(t\d*|\d*t)$/) {
+                delete_and_promote($node, qr/^(div|l)$/);
+            }
+        }
+    }
+    else {
+        foreach my $node (@{ $xmldoc->getElementsByTagName('div') },
+                          @{ $xmldoc->getElementsByTagName('l') }) {
+            my $n = $node->getAttribute('n');
+            if ($n and $n =~ m/^t\d?$/) {
+                delete_and_promote($node, qr/^(div|l)$/);
+            }
+        }
+    }
+
+    # A 'head' generally appears inside 'p' or 'l', which isn't valid.
+    # When the 'head' is the first non-blank child of the 'p' or 'l'
+    # we move the 'head' to just before its parent, and then delete
+    # the former parent if it has only whitespace content.  But we
+    # must not move heads that appear elsewhere, for in texts with
+    # 'div's that do not respect text structure -- such as Stephanus
+    # pages -- a heading can appear anywhere, so in these cases we
+    # change the 'head' to a 'label'.
+    if ($libxml) {
+        foreach my $node ($xmldoc->getElementsByTagName('head')) {
+            my $parent = $node->parentNode;
+            if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
+                if ($node->isSameNode($parent->firstChild)) {
+                    $parent->parentNode->insertBefore($node, $parent);
+                    $parent->unbindNode unless $parent->textContent =~ m/\S/;
+                }
+                else {
+                    $node->setNodeName('label');
+                }
+            }
+        }
+    }
+    else {
+        my $nodelist = $xmldoc->getElementsByTagName('head');
+        foreach my $node (@{ $nodelist }) {
+            my $parent = $node->parentNode;
+            if ($parent->nodeName eq 'l' or $parent->nodeName eq 'p') {
+                if ($node eq $parent->firstChild) {
+                    $parent->parentNode->insertBefore($node, $parent);
+                    unless ($parent->textContent =~ m/\S/) {
+                        $parent->unbindNode;
+                    }
+                }
+                else {
+                    $node->nodeName('label');
+                }
+            }
+        }
+    }
+
+
+    # FIXME: remove this?
 
     # Any remaining 'space' within a 'head' is just superfluous
     # indentation left over from the unification of a multi-line set
@@ -1529,7 +1537,7 @@ sub post_process_xml {
     # 'div' or 'body', such as when these represent the titles of
     # works to which a list of fragments have been assigned.  When
     # this happens, we change the 'head's to 'label's, of which we are
-    # allowed to have more than one.
+    # allowed to have more than one after the first.
     if ($libxml) {
         foreach my $node ($xmldoc->getElementsByTagName('head')) {
             my $parent = $node->parentNode;
