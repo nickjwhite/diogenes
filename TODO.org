@@ -2,7 +2,6 @@
 
 ** don't move <head>s to start of div
 And other pending changes to post-processing
-Figure out why removing n="t" divs has stopped working
 
 ** Post-processing: Merge elements
 *** Merge identical elements with identical attribs when adjacent or only whitespace nodes intervene. 

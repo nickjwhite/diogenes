@@ -1048,7 +1048,6 @@ sub convert_chunk {
     $chunk =~ s/_/\ -\ /g;
     $chunk =~ s/!/./g;
 
-
     # Whitespace  FIXME: do all numbered items properly
 
     # Line/page breaks
@@ -1407,47 +1406,16 @@ sub post_process_xml {
     # between.
     fixup_spaces($xmldoc);
 
-##### do this here?
-#     $chunk =~
-#         s#(<hi rend[^>]+>)(.*)<head>(.*)</hi>(.*)</head>#$1$2<head>$3</head>$4</hi>#gs;
-#         s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
-#     $chunk =~
-#         s#<head>(.*)(<hi rend[^>]+>)(.*)</head>(.*)</hi>#<head>$1$2$3</hi>$4</head>#gs;
-#         s#(<head>.*?)(<hi .*?)</head>(.*?)</hi>#$1foo$2</hi>$3</head>#gs;
-#      $chunk =~
-#          s#(<hi rend.*?)(<head>.*?)</hi>(.*)</head>#$1$2</head>$3</hi>#gs;
-
-
-
-    # FIXME: and we should remove any 'div's or 'l's inside, though
-    # preserving their content.
-
-    # Remove all div and l elements with n="t", preserving content;
-    # these are just titles and usually have a 'head' inside, so
-    # should not appear in a separate div or line.
+    # Remove all div and l elements with n="t" (recursively), while
+    # preserving all other content; these are just titles and usually
+    # have a 'head' inside, so should not appear in a separate div or
+    # line.
     if ($libxml) {
         foreach my $node ($xmldoc->getElementsByTagName('l'),
                           $xmldoc->getElementsByTagName('div'),) {
             my $n = $node->getAttribute('n');
             if ($n and $n =~ m/^t\d?$/) {
-                # In most cases, the node has a 'head' or 'label', which
-                # can be promoted.
-                my $has_head = 0;
-                foreach ($node->childNodes) {
-                    $has_head++ if $_->nodeName =~ m/^head|label$/;
-                }
-                if ($has_head) {
-                    foreach my $child ($node->childNodes) {
-                        $node->parentNode->insertBefore( $child, $node );
-                    }
-                    $node->unbindNode;
-                }
-                elsif ($node->nodeName eq 'l') {
-                    # In those rare cases where there is just plain text
-                    # within an 'l', we wrap it in a label instead.
-                    $node->removeAttribute('n');
-                    $node->setNodeName('label');
-                }
+                delete_and_promote($node, qr/^(div|l)$/);
             }
         }
     }
@@ -1456,27 +1424,7 @@ sub post_process_xml {
                           @{ $xmldoc->getElementsByTagName('l') }) {
             my $n = $node->getAttribute('n');
             if ($n and $n =~ m/^t\d?$/) {
-                # In most cases, the node has a 'head' or 'label', which
-                # can be promoted.
-                my $has_head = 0;
-                foreach (@{ $node->childNodes }) {
-                    $has_head++ if $_->nodeName =~ m/^head|label$/;
-                }
-                if ($has_head) {
-                    # We need a copy of the list, or the children die when
-                    # the parent is removed.
-                    my @nodelist = @{ $node->childNodes };
-                    foreach my $child (@nodelist) {
-                        $node->parentNode->insertBefore( $child, $node );
-                    }
-                    $node->unbindNode;
-                }
-                elsif ($node->nodeName eq 'l') {
-                    # In those rare cases where there is just plain
-                    # text within an 'l', we wrap it in a label instead.
-                    $node->removeAttribute('n');
-                    $node->nodeName('label');
-                }
+                delete_and_promote($node, qr/^(div|l)$/);
             }
         }
     }
@@ -1725,6 +1673,39 @@ sub post_process_xml {
     }
 
     return $xmldoc;
+}
+
+sub delete_and_promote {
+    # Delete a node, but keep all of its contents, except for nodes
+    # that match $pat, and do this recursively.
+    my $node = shift;
+    my $pat = shift;
+    my $top = shift || $node;
+    if ($libxml) {
+        foreach my $child ($node->childNodes) {
+            if ($child->nodeName =~ m/$pat/) {
+                delete_and_promote($child, $pat, $top);
+            }
+            else {
+                $top->parentNode->insertBefore( $child, $top );
+            }
+        }
+        $node->unbindNode;
+    }
+    else {
+        # We need a copy of the list, or the children die when
+        # the parent is removed.
+        my @nodelist = @{ $node->childNodes };
+        foreach my $child (@nodelist) {
+            if ($child->nodeName =~ m/$pat/) {
+                delete_and_promote($child, $pat, $top);
+            }
+            else {
+                $top->parentNode->insertBefore( $child, $top );
+            }
+        }
+        $node->unbindNode;
+    }
 }
 
 sub convert_entities {
