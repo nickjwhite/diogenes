@@ -600,6 +600,14 @@ sub convert_chunk {
         $query->latin_with_greek(\$chunk);
     }
 
+    # Check for unconverted Greek, because of missing $
+    my $num_diacrits = () = $chunk =~ /[\/\\\=]/g;
+    my $ratio = 0;
+    $ratio = $num_diacrits/length $chunk if length $chunk;
+    if ($ratio > 0.05) {
+        print STDERR "This looks like unconverted Greek: $chunk\n\n";
+    }
+
     # Latin accents
     $chunk =~ s#([aeiouAEIOU])\/#$acute{$1}#g;
     $chunk =~ s#([aeiouAEIOU])\\#$grave{$1};#g;
@@ -608,14 +616,6 @@ sub convert_chunk {
 
     # Convert utf8 bytes to utf8 characters, so that we match chars correctly.
     utf8::decode($chunk);
-
-    # Check for unconverted Greek, because of missing $
-    my $num_diacrits = () = $chunk =~ /[\/\\\=]/g;
-    my $ratio = 0;
-    $ratio = $num_diacrits/length $chunk if length $chunk;
-    if ($ratio > 0.05) {
-        print STDERR "This looks like unconverted Greek: $chunk\n\n";
-    }
 
     # Make ad-hoc changes to text in particular files that would lead to
     # malformed XML if not fixed.
