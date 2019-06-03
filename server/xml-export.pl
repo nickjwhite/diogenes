@@ -1053,15 +1053,23 @@ sub convert_chunk {
 
     # Line/page breaks
     $chunk =~ s#\@1(?!\d)#<pb/>#g;
+    $chunk =~ s#\@2(?!\d)#<cb/>#g;
+    $chunk =~ s#\@3(?!\d)#<figure/>#g;
+    $chunk =~ s#\@4(?!\d)#<table>#g;
+    $chunk =~ s#\@5(?!\d)#</table>#g;
     $chunk =~ s#\@6(?!\d)#<lb/>#g;
+    $chunk =~ s#\@7(?!\d)#<milestone rend="horizontal-rule"/>#g;
+    $chunk =~ s#\@8(?!\d)#<milestone type="new-citation"/>#g;
     $chunk =~ s#\@9(?!\d)#<gap/>#g;
+    $chunk =~ s#\@11(?!\d)#<milestone type="table-cell">#g;
+    $chunk =~ s#\@12(?!\d)#<milestone type="table-cell">#g;
+    $chunk =~ s#\@2\d(?!\d)#<cb/>#g;
+    $chunk =~ s#\@30(?!\d)#<milestone type="new-para">#g;
+    $chunk =~ s#\@30(?!\d)#<milestone type="caesura" rend="space">#g;
+    $chunk =~ s#\@7[03](?!\d)#<quote>#g;
+    $chunk =~ s#\@7[14](?!\d)#</quote>#g;
 
-    ## Sometimes these appear at the end of a line, to no apparent purpose.
-    # $chunk =~ s#@+\s*$##g;
-    # $chunk =~ s#@\d+\s*$##g;
-    # $chunk =~ s#@+\s*\n#\n#g;
-    # $chunk =~ s#@\d+\s*\n#\n#g;
-
+    # Space
     if ($opt_a) {
         $chunk =~ s#@@+\d*#    #g;
         $chunk =~ s#@\d+#  #g;
