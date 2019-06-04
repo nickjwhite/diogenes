@@ -1428,7 +1428,12 @@ sub post_process_xml {
     # adjacent or separated only by whitespace.  This happens,
     # e.g. when there was switching between bold Greek and Latin text.
 
-    merge_nodes($xmldoc->documentElement);
+    if ($libxml) {
+        merge_nodes_libxml($xmldoc->documentElement);
+    }
+    else {
+        merge_nodes_lite($xmldoc->documentElement);
+    }
 
     # BetaHtml.pm uses 'i', 'super' and 'small', so we need to change
     # those into TEI-compatible markup.
@@ -1497,8 +1502,6 @@ sub post_process_xml {
 }
 
 # Clean up a number of inelegant artefacts of the original markup
-# (particularly when text switch back and forth frequently between the
-# Greek and Latin alphabet).
 
 # 1. When an element has a component of a 'rend' attribute string that
 # is already present in a direct ancestor, that component can be
@@ -1507,89 +1510,171 @@ sub post_process_xml {
 
 # 2. Merge contents of two nodes which are identical in terms of name
 # and attributes, when they are adjacent or separated only by
-# whitespace.
+# whitespace. (Very common when a text switches back and forth
+# frequently between the Greek and Latin alphabets.)
 
-sub merge_nodes {
+sub merge_nodes_libxml {
     my $node = shift;
     my $rend = shift || '';
     # print $node->nodeName;
-    if ($libxml) {
-        return unless $node->nodeType == XML_ELEMENT_NODE();
-        my $attr = $node->getAttribute('rend') || '';
-        while ($attr =~ m/(\S+)/g) {
-            my $r = $1;
-            $rend .= "$r " unless $rend =~ m/\b$r\b/;
-        }
-      CHILD: foreach my $child ($node->childNodes) {
-          # print $child->nodeName;
-          next CHILD unless $child->nodeType == XML_ELEMENT_NODE();
-          # Recurse
-          merge_nodes($child, $rend);
+    return unless $node->nodeType == XML_ELEMENT_NODE();
+    my $attr = $node->getAttribute('rend') || '';
+    while ($attr =~ m/(\S+)/g) {
+        my $r = $1;
+        $rend .= "$r " unless $rend =~ m/\b$r\b/;
+    }
+  CHILD: foreach my $child ($node->childNodes) {
+      # print $child->nodeName;
+      next CHILD unless $child->nodeType == XML_ELEMENT_NODE();
+      # Recurse
+      merge_nodes_libxml($child, $rend);
 
-          # Delete redundant rend components already present in an ancestor.
-          my $child_attr = $child->getAttribute('rend') || '';
-          my $orig_attr = $child_attr;
-          while ($rend =~ m/(\S+)/g) {
-              my $r = $1;
-              $child_attr =~ s/\b$r\b//g;
+      # Delete redundant rend components already present in an ancestor.
+      my $child_attr = $child->getAttribute('rend') || '';
+      my $orig_attr = $child_attr;
+      while ($rend =~ m/(\S+)/g) {
+          my $r = $1;
+          $child_attr =~ s/\b$r\b//g;
+      }
+      if ($child_attr ne $orig_attr) {
+          $child_attr =~ s/^\s+//g;
+          $child_attr =~ s/\s+$//g;
+          $child_attr =~ s/s+/ /g;
+          if ($child_attr =~ m/\S/) {
+              $child->setAttribute('rend', $child_attr);
+              print STDERR "Modifying rend: $orig_attr to $child_attr\n"
           }
-          if ($child_attr ne $orig_attr) {
-              $child_attr =~ s/^\s+//g;
-              $child_attr =~ s/\s+$//g;
-              $child_attr =~ s/s+/ /g;
-              if ($child_attr =~ m/\S/) {
-                  $child->setAttribute('rend', $child_attr);
-                  print STDERR "Modifying rend: $orig_attr to $child_attr\n"
+          else {
+              $child->removeAttribute('rend');
+              if ($child->nodeName eq 'hi') {
+                  # <hi> serves no purpose without @rend
+                  $node->appendChild($_) foreach $child->childNodes;
+                  $child->unbindNode;
+                  print STDERR "Deleting superfluous <hi> after removing $orig_attr\n";
+                  next CHILD;
               }
               else {
-                  $child->removeAttribute('rend');
-                  if ($child->nodeName eq 'hi') {
-                      # <hi> serves no purpose without @rend
-                      $node->appendChild($_) foreach $child->childNodes;
-                      $child->unbindNode;
-                      print STDERR "Deleting superfluous <hi> after removing $orig_attr\n";
-                      next CHILD;
-                  }
-                  else {
-                      print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n";
-                  }
+                  print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n";
               }
           }
+      }
 
-          # Merge identical neighbours.
-          my $ws = '';
-          my $sib = $child->nextSibling;
-        SIB: while ($sib) {
-            if ($sib->nodeName eq 'gap') {
-                # Successive 'gap's indicate individual missing lines.
+      # Merge identical neighbours.
+      my $ws = '';
+      my $sib = $child->nextSibling;
+    SIB: while ($sib) {
+        if ($sib->nodeName eq 'gap') {
+            # Successive 'gap's indicate individual missing lines.
+            $sib = $sib->nextSibling;
+            next SIB;
+        }
+        if ($sib->nodeType == XML_TEXT_NODE() and $sib->data =~ m/^\s*$/s) {
+            $ws .= $sib->data;
+            $sib = $sib->nextSibling;
+            next SIB;
+        }
+        elsif ($sib->nodeType == XML_ELEMENT_NODE()) {
+            if (($child->nodeName eq $sib->nodeName)
+                and
+                (compare_attributes($child, $sib))) {
+                print STDERR "Merging away ".$sib->nodeName."\n";
+                $child->appendText($ws) if $ws;
+                $child->appendChild($_) foreach $sib->childNodes;
+                my $old = $sib;
                 $sib = $sib->nextSibling;
-                next SIB;
-            }
-            if ($sib->nodeType == XML_TEXT_NODE() and $sib->data =~ m/^\s*$/s) {
-                $ws .= $sib->data;
-                $sib = $sib->nextSibling;
-                next SIB;
-            }
-            elsif ($sib->nodeType == XML_ELEMENT_NODE()) {
-                if (($child->nodeName eq $sib->nodeName)
-                    and
-                    (compare_attributes($child, $sib))) {
-                    print STDERR "Merging away ".$sib->nodeName."\n";
-                    $child->appendText($ws) if $ws;
-                    $child->appendChild($_) foreach $sib->childNodes;
-                    my $old = $sib;
-                    $sib = $sib->nextSibling;
-                    $old->unbindNode;
-                }
-                else {
-                    next CHILD;
-                }
+                $old->unbindNode;
             }
             else {
                 next CHILD;
             }
         }
+        else {
+            next CHILD;
+        }
+    }
+    }
+}
+
+sub merge_nodes_lite {
+    my $node = shift;
+    my $rend = shift || '';
+    # print $node->nodeName;
+    return unless $node->nodeType == ELEMENT_NODE();
+    my $attr = $node->getAttribute('rend') || '';
+    while ($attr =~ m/(\S+)/g) {
+        my $r = $1;
+        $rend .= "$r " unless $rend =~ m/\b$r\b/;
+    }
+  CHILD: foreach my $child (@{ $node->childNodes }) {
+      # print $child->nodeName;
+      next CHILD unless $child->nodeType == ELEMENT_NODE();
+      # Recurse
+      merge_nodes_lite($child, $rend);
+
+      # Delete redundant rend components already present in an ancestor.
+      my $child_attr = $child->getAttribute('rend') || '';
+      my $orig_attr = $child_attr;
+      while ($rend =~ m/(\S+)/g) {
+          my $r = $1;
+          $child_attr =~ s/\b$r\b//g;
       }
+      if ($child_attr ne $orig_attr) {
+          $child_attr =~ s/^\s+//g;
+          $child_attr =~ s/\s+$//g;
+          $child_attr =~ s/s+/ /g;
+          if ($child_attr =~ m/\S/) {
+              $child->setAttribute('rend', $child_attr);
+              print STDERR "Modifying rend: $orig_attr to $child_attr\n"
+          }
+          else {
+              $child->removeAttribute('rend');
+              if ($child->nodeName eq 'hi') {
+                  # <hi> serves no purpose without @rend
+                  $node->appendChild($_) foreach @{ $child->childNodes };
+                  $child->unbindNode;
+                  print STDERR "Deleting superfluous <hi> after removing $orig_attr\n";
+                  next CHILD;
+              }
+              else {
+                  print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n";
+              }
+          }
+      }
+
+      # Merge identical neighbours.
+      my $ws = '';
+      my $sib = $child->nextSibling;
+    SIB: while ($sib) {
+        if ($sib->nodeName eq 'gap') {
+            # Successive 'gap's indicate individual missing lines.
+            $sib = $sib->nextSibling;
+            next SIB;
+        }
+        if ($sib->nodeType == TEXT_NODE() and $sib->nodeValue =~ m/^\s*$/s) {
+            $ws .= $sib->nodeValue;
+            $sib = $sib->nextSibling;
+            next SIB;
+        }
+        elsif ($sib->nodeType == ELEMENT_NODE()) {
+            #print $child->nodeName .'::'. $sib->nodeName ."\n";
+            if (($child->nodeName eq $sib->nodeName)
+                and
+                (compare_attributes($child, $sib))) {
+                print STDERR "Merging away ".$sib->nodeName."\n";
+                $child->appendChild($node->ownerDocument->createTextNode($ws)) if $ws;;
+                $child->appendChild($_) foreach @{ $sib->childNodes };
+                my $old = $sib;
+                $sib = $sib->nextSibling;
+                $old->unbindNode;
+            }
+            else {
+                next CHILD;
+            }
+        }
+        else {
+            next CHILD;
+        }
+    }
     }
 }
 
@@ -1601,8 +1686,17 @@ sub compare_attributes {
         if (@att1 == @att2 and @att1 == grep $att1[$_] eq $att2[$_], 0..$#att1) { return 1 }
         return 0;
     }
-}
+    else {
+        my (@att1, @att2);
+        push @att1, $_.'="'.$n1->attributes->{$_}.'"' for keys %{ $n1->attributes };
+        push @att2, $_.'="'.$n2->attributes->{$_}.'"' for keys %{ $n2->attributes };
+        @att1 = sort @att1;
+        @att2 = sort @att2;
+        if (@att1 == @att2 and @att1 == grep $att1[$_] eq $att2[$_], 0..$#att1) { return 1 }
+        return 0;
 
+    }
+}
 
 sub convert_entities {
     my $node = shift;
