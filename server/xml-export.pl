@@ -740,13 +740,23 @@ sub convert_chunk {
 
     #### {} Titles, marginalia, misc.
 
+    # We really cannot use the TEI 'head' element to represent the {1
+    # }1 construct, because its permitted range of use is so much more
+    # restricted.  It sometimes appears in its own 'div' or 'l' with n
+    # ~ t; sometimes at the start of a proper 'div'; and these would
+    # work OK as TEI 'head's.  But very often that is mixed with more
+    # scattered usage.  The problem is particularly acute in those
+    # texts whose 'div' structure is based upon some form of
+    # pagination, because the number and position of headers has no
+    # relationship to the structure.
+
     # Elements other than plain <seg>
 
     # Heads
-    $chunk =~ s#\{1(?!\d)(.*?)\}1(?!\d)#<head>$1</head>#gs;
+    $chunk =~ s#\{1(?!\d)(.*?)\}1(?!\d)#<label type="head">$1</label>#gs;
     # Unbalanced heads.
-    $chunk =~ s#\{1(?!\d)(.*?)\z#<head>$1</head>#gms;
-    $chunk =~ s#\A(.*?)\}1(?!\d)#<head>$1</head>#gms;
+    $chunk =~ s#\{1(?!\d)(.*?)\z#<label type="head">$1</label>#gms;
+    $chunk =~ s#\A(.*?)\}1(?!\d)#<label type="head">$1</label>#gms;
 
     # Marginalia
     $chunk =~ s#\{2(?!\d)(.*?)\}2(?!\d)#<seg rend="Marginalia">$1</seg>#gs;
