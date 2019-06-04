@@ -1494,38 +1494,54 @@ sub post_process_xml {
     return $xmldoc;
 }
 
-sub delete_and_promote {
-    # Delete a node, but keep all of its contents, except for nodes
-    # that match $pat, and do this recursively.
+# Merge contents of two identical nodes (in terms of name and
+# attributes) when they are adjacent or separated only by whitespace.
+sub merge_nodes {
     my $node = shift;
-    my $pat = shift;
-    my $top = shift || $node;
     if ($libxml) {
-        foreach my $child ($node->childNodes) {
-            if ($child->nodeName =~ m/$pat/) {
-                delete_and_promote($child, $pat, $top);
+      CHILD: foreach my $child ($node->childNodes) {
+          merge_nodes($child);
+          my $ws = '';
+          my $sib = $child->nextSibling;
+        SIB: while ($sib) {
+            if ($sib->nodeType == XML_TEXT_NODE() and $sib->data =~ m/^\s*$/s) {
+                $ws .= $sib->data;
+                $sib = $sib->nextSibling;
+                next SIB;
+            }
+            elsif ($sib->nodeType == XML_ELEMENT_NODE()) {
+                if (($child->nodeName eq $sib->nodeName)
+                    and
+                    (compare_attributes($child, $sib))) {
+                    print STDERR "Merging away ".$sib->nodeName."\n";
+                    $child->appendText($ws) if $ws;
+                    $child->appendChild($_) foreach $sib->childNodes;
+                    my $old = $sib;
+                    $sib = $sib->nextSibling;
+                    $old->unbindNode;
+                }
+                else {
+                    next CHILD;
+                }
             }
             else {
-                $top->parentNode->insertBefore( $child, $top );
+                next CHILD;
             }
         }
-        $node->unbindNode;
-    }
-    else {
-        # We need a copy of the list, or the children die when
-        # the parent is removed.
-        my @nodelist = @{ $node->childNodes };
-        foreach my $child (@nodelist) {
-            if ($child->nodeName =~ m/$pat/) {
-                delete_and_promote($child, $pat, $top);
-            }
-            else {
-                $top->parentNode->insertBefore( $child, $top );
-            }
-        }
-        $node->unbindNode;
+      }
     }
 }
+
+sub compare_attributes {
+    my ($n1, $n2) = @_;
+    if ($libxml) {
+        my @att1 = sort $n1->attributes;
+        my @att2 = sort $n2->attributes;
+        if (@att1 == @att2 and @att1 == grep $att1[$_] eq $att2[$_], 0..$#att1) { return 1 }
+        return 0;
+    }
+}
+
 
 sub convert_entities {
     my $node = shift;
