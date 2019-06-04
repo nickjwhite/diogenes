@@ -587,7 +587,11 @@ sub convert_chunk {
     $chunk =~ s#(\S+)\-(\s*\@*\d*\s*)\n(\S+)#$1$3$2\n#g;
 
     # Fix missing Greek/Latin language switching indicators
-    if ($auth_name eq 'Cyrillus Theol.') {
+    if ($auth_name eq 'Iustinianus Justinian Digest') {
+        # chunking error
+        $chunk =~ s#(\*\(\/INA MHDE\\ PERI\\ TW\=N BEBAIWQH\=NAI DUNAME\/NWN)#\$$1#;
+    }
+    elsif ($auth_name eq 'Cyrillus Theol.') {
         $chunk =~ s#(\{1\&IN DANIELEM PROPHETAM\.)\>9\}1#$1\$\}1#gs;
         $chunk =~ s#\[\&cod\. A\.\>9\s*A\)KAKI\/AS\]#\[\&cod. A. \$A\)KAKI\/AS\]#gsm;
     }
@@ -1060,8 +1064,8 @@ sub convert_chunk {
     $chunk =~ s#\@7(?!\d)#<hi rend="horizontal-rule"/>#g;
     $chunk =~ s#\@8(?!\d)#<seg type="new-citation"/>#g;
     $chunk =~ s#\@9(?!\d)#<gap/>#g;
-    $chunk =~ s#\@11(?!\d)#<seg unit="table" type="cell"/>#g;
-    $chunk =~ s#\@12(?!\d)#<seg unit="table" type="cell"/>#g;
+    $chunk =~ s#\@11(?!\d)#<seg type="table-cell"/>#g;
+    $chunk =~ s#\@12(?!\d)#<seg type="table-cell"/>#g;
     $chunk =~ s#\@2\d(?!\d)#<cb/>#g;
     $chunk =~ s#\@30(?!\d)#<seg type="new-para"/>#g;
     $chunk =~ s#\@30(?!\d)#<seg type="caesura" rend="space"/>#g;
@@ -1135,9 +1139,9 @@ sub ad_hoc_fixes {
         # <15[     $1]!W?N>15
         $$ref =~ s#(\$\d+[^\$]+)\>15#$1\$\>15#gs;
         # $11<10!LO#7>10<11N?GA>11
-        $$ref =~ s#\$11\<10([^&]+)\>10#\<10\$11$1\$\>10#gs;
+        $$ref =~ s#\$11\<10([^<>]+)\>10#\<10\$11$1\$\>10#gs;
         # <15$1THNAGXO?NH$6N$9$1>15 and <15$1]MELONTODEENEKE?![!!]!>15
-        $$ref =~ s#(\<15\$1)([^&]+)(\>15)#$1$2\$$3#gs;
+        $$ref =~ s#(\<15\$1)([^<>]+)(\>15)#$1$2\$$3#gs;
     }
     elsif ($auth_name eq 'Cassius Dio Hist. Dio Cassius') {
         # {1$10 ... }1 -> should extend to whole contents
@@ -1151,7 +1155,7 @@ sub ad_hoc_fixes {
     }
     elsif ($auth_name eq 'Heron Mech.') {
         # <70A B G ... KT$4A ... KD>70
-        $$ref =~ s#(\<70[^\$]*\$\d[^&]*)\>70#$1\$\>70#gs;
+        $$ref =~ s#(\<70[^\$]*\$\d[^<>]*)\>70#$1\$\>70#gs;
     }
     elsif ($auth_name eq 'Alexander Phil.') {
         # p. 47b15 ${1<20 ... }1
@@ -1213,7 +1217,7 @@ sub ad_hoc_fixes {
     }
     elsif ($auth_name eq 'Paulus Astrol.') {
         # <70{1 Heading stays inside Diagram (later changed to label)
-        $$ref =~ s#\lt;70\{1#\lt;70\`\{1#gs;
+        $$ref =~ s#\<70\{1#\<70\`\{1#gs;
     }
     elsif ($auth_name eq 'Socrates Scholasticus Hist.') {
         $$ref =~ s#(?<!\$)\}1#\$\}1#gs;
@@ -1671,6 +1675,7 @@ sub post_process_xml {
         }
     }
 
+    # Change 'space' elements to 'rend' attributes.
     fixup_spaces($xmldoc);
 
     unless ($libxml or $opt_e) {
