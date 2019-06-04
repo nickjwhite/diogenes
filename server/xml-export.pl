@@ -1428,7 +1428,7 @@ sub post_process_xml {
     # adjacent or separated only by whitespace.  This happens,
     # e.g. when there was switching between bold Greek and Latin text.
 
-    merge_nodes($xmldoc);
+    merge_nodes($xmldoc->documentElement);
 
     # BetaHtml.pm uses 'i', 'super' and 'small', so we need to change
     # those into TEI-compatible markup.
@@ -1496,16 +1496,75 @@ sub post_process_xml {
     return $xmldoc;
 }
 
-# Merge contents of two identical nodes (in terms of name and
-# attributes) when they are adjacent or separated only by whitespace.
+# Clean up a number of inelegant artefacts of the original markup
+# (particularly when text switch back and forth frequently between the
+# Greek and Latin alphabet).
+
+# 1. When an element has a component of a 'rend' attribute string that
+# is already present in a direct ancestor, that component can be
+# deleted; and when a <hi> element has an empty rend attribute, it is
+# deleted as redundant (promoting its descendants).
+
+# 2. Merge contents of two nodes which are identical in terms of name
+# and attributes, when they are adjacent or separated only by
+# whitespace.
+
 sub merge_nodes {
     my $node = shift;
+    my $rend = shift || '';
+    # print $node->nodeName;
     if ($libxml) {
+        return unless $node->nodeType == XML_ELEMENT_NODE();
+        my $attr = $node->getAttribute('rend') || '';
+        while ($attr =~ m/(\S+)/g) {
+            my $r = $1;
+            $rend .= "$r " unless $rend =~ m/\b$r\b/;
+        }
       CHILD: foreach my $child ($node->childNodes) {
-          merge_nodes($child);
+          # print $child->nodeName;
+          next CHILD unless $child->nodeType == XML_ELEMENT_NODE();
+          # Recurse
+          merge_nodes($child, $rend);
+
+          # Delete redundant rend components already present in an ancestor.
+          my $child_attr = $child->getAttribute('rend') || '';
+          my $orig_attr = $child_attr;
+          while ($rend =~ m/(\S+)/g) {
+              my $r = $1;
+              $child_attr =~ s/\b$r\b//g;
+          }
+          if ($child_attr ne $orig_attr) {
+              $child_attr =~ s/^\s+//g;
+              $child_attr =~ s/\s+$//g;
+              $child_attr =~ s/s+/ /g;
+              if ($child_attr =~ m/\S/) {
+                  $child->setAttribute('rend', $child_attr);
+                  print STDERR "Modifying rend: $orig_attr to $child_attr\n"
+              }
+              else {
+                  $child->removeAttribute('rend');
+                  if ($child->nodeName eq 'hi') {
+                      # <hi> serves no purpose without @rend
+                      $node->appendChild($_) foreach $child->childNodes;
+                      $child->unbindNode;
+                      print STDERR "Deleting superfluous <hi> after removing $orig_attr\n";
+                      next CHILD;
+                  }
+                  else {
+                      print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n";
+                  }
+              }
+          }
+
+          # Merge identical neighbours.
           my $ws = '';
           my $sib = $child->nextSibling;
         SIB: while ($sib) {
+            if ($sib->nodeName eq 'gap') {
+                # Successive 'gap's indicate individual missing lines.
+                $sib = $sib->nextSibling;
+                next SIB;
+            }
             if ($sib->nodeType == XML_TEXT_NODE() and $sib->data =~ m/^\s*$/s) {
                 $ws .= $sib->data;
                 $sib = $sib->nextSibling;
