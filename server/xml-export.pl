@@ -839,6 +839,8 @@ sub convert_chunk {
     $chunk =~ s#&lt;32(?!\d)(.*?)&gt;32(?!\d)#<hi rend="overline underline">$1</hi>#gs;
     $chunk =~ s/&lt;33(?!\d)(.*?)&gt;33(?!\d)/<hi rend="overline">&#x221A;$1<\/hi>/gs;
     $chunk =~ s/&lt;34(?!\d)(.*?)\%3(.*?)&gt;34(?!\d)/<hi rend="superscript">$1<\/hi>&#x2044;<hi rend="subscript">$2<\/hi>/gs;
+    # For when the %3 is missing
+    $chunk =~ s/&lt;34(?!\d)(.*?)&gt;34(?!\d)/<seg type="fraction">$1<\/seg>/gs;
     $chunk =~ s/&lt;5(\d)(?!\d)(.*?)&gt;5\g1(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
     $chunk =~ s/&lt;60(?!\d)(.*?)&gt;60(?!\d)/<seg type="Preferred-text">$1<\/seg>/gs;
     $chunk =~ s/&lt;61(?!\d)(.*?)&gt;61(?!\d)/<seg type="Post-erasure">$1<\/seg>/gs;
@@ -945,8 +947,8 @@ sub convert_chunk {
     $chunk =~ s#&lt;7(?!\d)([^<>]*?)#<hi rend="subscript">$1</hi>#gs;
     $chunk =~ s#([^<>]*?)&gt;7(?!\d)#<hi rend="subscript">$1</hi>#gs;
 
-    $chunk =~ s/&lt;34(?!\d)([^<>]*?)/<hi rend="superscript">$1<\/hi>&#x2044;<hi rend="subscript">$2<\/hi>/gs;
-    $chunk =~ s/([^<>]*?)&gt;34(?!\d)/<hi rend="superscript">$1<\/hi>&#x2044;<hi rend="subscript">$2<\/hi>/gs;
+    $chunk =~ s/&lt;34(?!\d)([^<>]*?)/<seg type="fraction">$1<\/seg>/gs;
+    $chunk =~ s/([^<>]*?)&gt;34(?!\d)/<seg type="fraction">$1<\/seg>/gs;
 
     $chunk =~ s/&lt;5\d(?!\d)([^<>]*?)/<seg type="Unknown">$1<\/seg>/gs;
     $chunk =~ s/([^<>]*?)&gt;5\d(?!\d)/<seg type="Unknown">$2<\/seg>/gs;
