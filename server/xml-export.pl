@@ -1649,9 +1649,12 @@ sub merge_nodes_lite {
         my $r = $1;
         $rend .= "$r " unless $rend =~ m/\b$r\b/;
     }
-  CHILD: foreach my $child (@{ $node->childNodes }) {
+    my @nodelist1 = @{ $node->childNodes };
+  CHILD: foreach my $child (@nodelist1) {
       # print $child->nodeName;
       next CHILD unless $child->nodeType == ELEMENT_NODE();
+      # Skip if this child has been merged away previously
+      next CHILD unless $child->parentNode->childNodes->nodeIndex($child);
       # Recurse
       merge_nodes_lite($child, $rend);
 
@@ -1705,10 +1708,10 @@ sub merge_nodes_lite {
             if (($child->nodeName eq $sib->nodeName)
                 and
                 (compare_attributes($child, $sib))) {
-                print STDERR "Merging away ".$sib->nodeName."\n";
+                print STDERR "      Merging away ".$sib->nodeName."\n";
                 $child->appendChild($node->ownerDocument->createTextNode($ws)) if $ws;
-                my @nodelist = @{ $sib->childNodes };
-                foreach (@nodelist) {
+                my @nodelist2 = @{ $sib->childNodes };
+                foreach (@nodelist2) {
                     $child->appendChild($_);
                 }
                 my $old = $sib;
