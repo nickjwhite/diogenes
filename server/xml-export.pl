@@ -33,6 +33,10 @@ use IO::Handle;
 use File::Which;
 use Encode;
 
+# use Carp qw( confess );
+# $SIG{__DIE__} =  \&confess;
+# $SIG{__WARN__} = \&confess;
+
 use FindBin qw($Bin);
 use File::Spec::Functions;
 # Use local CPAN
@@ -584,14 +588,50 @@ sub convert_chunk {
         $chunk =~ s#(in praesidiis agebant ad Capito)-.*\z#$1lium, #gms;
         $chunk =~ s#\A.*?lium, (partim agrum vicinum populabantur)#$1#gms;
     }
+    elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
+        $chunk =~ s#\&7lato ve\-\&.*\{43\&7nabvla ferro\&\}43#\&7lato\& \{43\&7venabvla ferro\&\}43#gms;
+    }
+    elsif ($auth_name eq 'Lucius Annaeus Seneca senior') {
+        $chunk =~ s#(\$\*\)OKT)\-\n\$(AOUI\/A)#$1$2\n\$#g;
+        $chunk =~ s#(POTE\/)\-\n\$(ROISI)#$1$2\n\$#g;
+        $chunk =~ s#(E\(KA\/)\-\n\$(STWN)#$1$2\n\$#g;
+        $chunk =~ s#(ZWGRAF)\-\n\$(OU\=NTAI\,)#$1$2\n\$#g;
+        $chunk =~ s#(E\)PITA\/T)\-\n\$(TONTES)#$1$2\n\$#g;
+    }
 
     # Remove all hyphenation
-    $chunk =~ s#(\S+)\-(\s*\@*\d*\s*)\n(\S+)#$1$3$2\n#g;
+    $chunk =~ s#(\S+)\-([\s\@\d\$\&]*)\n(\S+)#$1$3$2\n#g;
+
 
     # Fix missing Greek/Latin language switching indicators
-    if ($auth_name eq 'Iustinianus Justinian Digest') {
-        # chunking error
-        $chunk =~ s#(\*\(\/INA MHDE\\ PERI\\ TW\=N BEBAIWQH\=NAI DUNAME\/NWN)#\$$1#;
+    my $diacrits = '\*\(\)\/\\\=ÁÀÂÉÈÊÍÌÎÓÒÔÚÙÛ';
+    # These two have loads of Greek broken across divs/chunks.
+    if ($auth_name eq 'Aulus Gellius' or $auth_name eq 'Iustinianus Justinian Digest') {
+        if ($chunk =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
+            $chunk =~ s#^#\$#;
+        }
+        # Justinian
+        $chunk =~ s#(GRA\/FOUS3IN, FA\/S3KONTES3)#\$$1#g;
+    }
+    elsif ($auth_name eq 'Marcus Tullius Cicero Cicero Tully') {
+        $chunk =~ s#(EI\) PANTI\\ TRO\/PW\|)#\$$1#g;
+    }
+    elsif ($auth_name eq 'Scriptores Historiae Augustae') {
+        $chunk =~ s#(A\)NAI\/MATON)#\$$1#g;
+    }
+    elsif ($auth_name eq 'Marcus Fabius Quintilianus') {
+        $chunk =~ s#(\*MATAIOTEXNI\/A|\*SUNE\/XON|\*PARE\/KBASIS|\*\)APO\/DEICIS|\*PERI\/FRASIS|\*\)\=HQOS)#\$$1#g;
+    }
+    elsif ($auth_name eq 'Lucius Annaeus Seneca senior') {
+        # This text (which has lots of Greek) assumes reversion to Latin at start of line ...
+        $chunk =~ s#^(?!\s*\$)#\&#gm;
+        $chunk =~ s#\&(MH\/ MOI\&)#\$$1#;
+    }
+    elsif ($auth_name eq 'Pomponius Porphyrio') {
+        $chunk =~ s#(\*\)ENFATIKW\=S|\*PUQAGORIKO\\N)#\$$1#;
+    }
+    elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
+        $chunk =~ s#(TH\\N KEFALH\/N,\&)#\$$1#;
     }
     elsif ($auth_name eq 'Cyrillus Theol.') {
         $chunk =~ s#(\{1\&IN DANIELEM PROPHETAM\.)\>9\}1#$1\$\}1#gs;
@@ -609,22 +649,21 @@ sub convert_chunk {
         $query->latin_with_greek(\$chunk);
     }
 
+    # Convert utf8 bytes to utf8 characters, so that we match chars correctly.
+    utf8::decode($chunk);
+
     # Check for unconverted Greek, because of missing $
-    my $num_diacrits = () = $chunk =~ /[\/\\\=]/g;
-    my $ratio = 0;
-    $ratio = $num_diacrits/length $chunk if length $chunk;
-    if ($ratio > 0.05) {
-        print STDERR "This looks like unconverted Greek: $chunk\n\n";
+    if ($chunk =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
+        print STDERR "This looks like it might be unconverted Greek: $chunk\n\n";
     }
 
-    # Latin accents
+
+
+    # Latin accents, just in case
     $chunk =~ s#([aeiouAEIOU])\/#$acute{$1}#g;
     $chunk =~ s#([aeiouAEIOU])\\#$grave{$1};#g;
     $chunk =~ s#([aeiouAEIOU])\=#$circum{$1}#g;
     $chunk =~ s#([aeiouAEIOU])\+#$diaer{$1}#g;
-
-    # Convert utf8 bytes to utf8 characters, so that we match chars correctly.
-    utf8::decode($chunk);
 
     # Make ad-hoc changes to text in particular files that would lead to
     # malformed XML if not fixed.
@@ -1547,7 +1586,7 @@ sub merge_nodes_libxml {
           $child_attr =~ s/s+/ /g;
           if ($child_attr =~ m/\S/) {
               $child->setAttribute('rend', $child_attr);
-              print STDERR "Modifying rend: $orig_attr to $child_attr\n" if $debug;
+              print STDERR "      Modifying rend: $orig_attr to $child_attr\n" if $debug;
           }
           else {
               $child->removeAttribute('rend');
@@ -1555,11 +1594,11 @@ sub merge_nodes_libxml {
                   # <hi> serves no purpose without @rend
                   $node->appendChild($_) foreach $child->childNodes;
                   $child->unbindNode;
-                  print STDERR "Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
+                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
                   next CHILD;
               }
               else {
-                  print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
+                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
               }
           }
       }
@@ -1582,7 +1621,7 @@ sub merge_nodes_libxml {
             if (($child->nodeName eq $sib->nodeName)
                 and
                 (compare_attributes($child, $sib))) {
-                print STDERR "Merging away ".$sib->nodeName."\n";
+                print STDERR "      Merging away ".$sib->nodeName."\n" if $debug;
                 $child->appendText($ws) if $ws;
                 $child->appendChild($_) foreach $sib->childNodes;
                 my $old = $sib;
@@ -1629,7 +1668,7 @@ sub merge_nodes_lite {
           $child_attr =~ s/s+/ /g;
           if ($child_attr =~ m/\S/) {
               $child->setAttribute('rend', $child_attr);
-              print STDERR "Modifying rend: $orig_attr to $child_attr\n"
+              print STDERR "      Modifying rend: $orig_attr to $child_attr\n"
           }
           else {
               $child->removeAttribute('rend');
@@ -1637,11 +1676,12 @@ sub merge_nodes_lite {
                   # <hi> serves no purpose without @rend
                   $node->appendChild($_) foreach @{ $child->childNodes };
                   $child->unbindNode;
-                  print STDERR "Deleting superfluous <hi> after removing $orig_attr\n";
+                  #$nodelist1->removeNode($child);
+                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n";
                   next CHILD;
               }
               else {
-                  print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n";
+                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n";
               }
           }
       }
