@@ -1547,7 +1547,7 @@ sub merge_nodes_libxml {
           $child_attr =~ s/s+/ /g;
           if ($child_attr =~ m/\S/) {
               $child->setAttribute('rend', $child_attr);
-              print STDERR "Modifying rend: $orig_attr to $child_attr\n"
+              print STDERR "Modifying rend: $orig_attr to $child_attr\n" if $debug;
           }
           else {
               $child->removeAttribute('rend');
@@ -1555,11 +1555,11 @@ sub merge_nodes_libxml {
                   # <hi> serves no purpose without @rend
                   $node->appendChild($_) foreach $child->childNodes;
                   $child->unbindNode;
-                  print STDERR "Deleting superfluous <hi> after removing $orig_attr\n";
+                  print STDERR "Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
                   next CHILD;
               }
               else {
-                  print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n";
+                  print STDERR "Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
               }
           }
       }
@@ -1661,13 +1661,16 @@ sub merge_nodes_lite {
             next SIB;
         }
         elsif ($sib->nodeType == ELEMENT_NODE()) {
-            #print $child->nodeName .'::'. $sib->nodeName ."\n";
+            # print STDERR $child->nodeName .'::'. $sib->nodeName ."\n";
             if (($child->nodeName eq $sib->nodeName)
                 and
                 (compare_attributes($child, $sib))) {
                 print STDERR "Merging away ".$sib->nodeName."\n";
-                $child->appendChild($node->ownerDocument->createTextNode($ws)) if $ws;;
-                $child->appendChild($_) foreach @{ $sib->childNodes };
+                $child->appendChild($node->ownerDocument->createTextNode($ws)) if $ws;
+                my @nodelist = @{ $sib->childNodes };
+                foreach (@nodelist) {
+                    $child->appendChild($_);
+                }
                 my $old = $sib;
                 $sib = $sib->nextSibling;
                 $old->unbindNode;
