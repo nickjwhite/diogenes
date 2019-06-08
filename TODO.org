@@ -1,24 +1,15 @@
 * Current
 
-** don't move <head>s to start of div
-And other pending changes to post-processing
+* Make sure all output validates
+* Make sure no diff between libxml and lite
 
-** Post-processing: Merge elements
-*** Merge identical elements with identical attribs when adjacent or only whitespace nodes intervene. 
-*** When an element has only one non-blank child, and the child is a <hi> element, move the rend attrib to the parent (check for duplicates) and delete the child (promoting its children).
-*** If a <hi> element has a parent which includes the same rend attrib, delete the element (and promote its children).
-
-** check how export words with ddp, etc.
 ** Add coptic xml output
+
+* Improve unconverted Greek detection and fix runs of Greek in Aulus Gellius.
+
 
 ** Integrate XML output in application
 In cgi script, flatten custom corpus to export any author mentioned.
-
-* Write up notes on XML output
-** Markup is for layout rather than semantic (with a couple of exceptions)
-** Structure is line-based, for both poetry and prose
-*** We have to guess.  Sometimes wrongly.  Explain heuristic
-
 
 
 
@@ -43,6 +34,8 @@ Try switching to POST.
 * Test on Windows USB stick
 And test install on MDS/NCPS
 
+
+* Catch browser seeking beyond end of work, signalled by f0fe.
 
 * Long-term to-do items
 ** Try to restart diogenes-server if it is killed

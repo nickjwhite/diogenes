@@ -132,7 +132,9 @@ if ($debug) {
 
 die "Error: specify corpus.\n" unless $opt_c;
 my $corpus = $opt_c;
-die "Unknown corpus.\n" unless exists $database{$corpus};
+die "Error: Unknown corpus.\n" unless exists $database{$corpus};
+die "Error: Documentary corpora (ddp, chr, ins) are not supported yet.\n" if $corpus =~ m/^chr|ddp|ins$/;
+
 die "Error: specify output directory.\n" unless $opt_o;
 if ($opt_d) {
     $opt_r = 1;
@@ -597,7 +599,10 @@ sub convert_chunk {
     }
 
     # Beta Greek to Unicode
-    if ($lang eq 'g') {
+    if ($corpus eq 'cop') {
+        $query->coptic_with_latin(\$chunk);
+    }
+    elsif ($lang eq 'g') {
         $query->greek_with_latin(\$chunk);
     }
     else {
@@ -1874,7 +1879,9 @@ sub write_xml_file {
         # ascii with everything as entities).  When using
         # XML::DOM::Lite, the -e flag can be used to suppress the
         # flattening of hex entities to utf8.
-        $text = $xmldoc->documentElement->toString;
+        $text = qq{<?xml version="1.0" encoding="UTF-8"?>\n};
+        $text .= $xmldoc->documentElement->toString;
+        $text .= "\n";
     }
     else {
         my $serializer = XML::DOM::Lite::Serializer->new(indent=>'none');
@@ -1915,9 +1922,6 @@ sub write_xml_file {
 
 sub is_work_verse {
     my ($auth_num, $work_num) = @_;
-
-    # All documentary corpora (papyri and inscriptions) are "verse", because line breaks and line numbers are significant.
-    return 1 if $corpus =~ m/^chr|ddp|ins$/;
 
     # Two lists of hard-coded exceptions to the heuristic (prose is 0,
     # verse is 1).  verse_auths applies to all works.
@@ -2003,7 +2007,7 @@ sub is_work_verse {
     # lowest level of markup is "verse" rather than "line", if the
     # author has an "Lyr." etc. in their name or if the ratio of
     # hyphens is very low.  Prose authors often wrote epigrams.
-    my $bottom = $level_label{$corpus}{$auth_num}{$work_num}{0};
+    my $bottom = $level_label{$corpus}{$auth_num}{$work_num}{0} || '';
     return 1 if $bottom =~ m/verse/;
     return 1 if $auth_name =~ m/Lyr\.|Epic/;
     return 1 if $work_name =~ m/^Epigramma/;
