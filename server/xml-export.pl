@@ -348,10 +348,10 @@ AUTH: foreach my $auth_num (@all_auths) {
                 # first comma, or, failing that, at the first space in
                 # the line.
 
-                if ($chunk =~ m#($punct)[\s\$\&\"\d\@\}\]\>]*$#
+                if ($chunk =~ m#($punct)[\s\$\&\"\'\d\@\}\]\>]*$#
                     or $line =~ m/($punct)/) {
                     for my $p (@punct) {
-                        my $re1 = qr/$p[\s\$\&\"\d\@\}\]\>]*\z/ms;
+                        my $re1 = qr/$p[\s\$\&\"\'\d\@\}\]\>]*\z/ms;
                         my $re2 = qr/\A(.*?)($p[\s\$\&\"\d\@\}\]\>]*)(.*?)\z/ms;
                         if ($chunk =~ $re1) {
                             # print STDERR "$&\n";
