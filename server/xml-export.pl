@@ -33,9 +33,9 @@ use IO::Handle;
 use File::Which;
 use Encode;
 
-# use Carp qw( confess );
-# $SIG{__DIE__} =  \&confess;
-# $SIG{__WARN__} = \&confess;
+use Carp qw( confess );
+$SIG{__DIE__} =  \&confess;
+$SIG{__WARN__} = \&confess;
 
 use FindBin qw($Bin);
 use File::Spec::Functions;
@@ -1684,12 +1684,13 @@ sub merge_nodes_lite {
         my $r = $1;
         $rend .= "$r " unless $rend =~ m/\b$r\b/;
     }
-    my @nodelist1 = @{ $node->childNodes };
-  CHILD: foreach my $child (@nodelist1) {
+    my $child = $node->firstChild;
+  CHILD: while ($child) {
       # print $child->nodeName;
-      next CHILD unless $child->nodeType == ELEMENT_NODE();
-      # Skip if this child has been merged away previously
-      next CHILD unless $child->parentNode->childNodes->nodeIndex($child);
+      unless ($child->nodeType == ELEMENT_NODE()) {
+          $child = $child->nextSibling;
+          next CHILD;
+      }
       # Recurse
       merge_nodes_lite($child, $rend);
 
@@ -1712,10 +1713,12 @@ sub merge_nodes_lite {
               $child->removeAttribute('rend');
               if ($child->nodeName eq 'hi') {
                   # <hi> serves no purpose without @rend
-                  $node->appendChild($_) foreach @{ $child->childNodes };
+                  my @nodelist1 = @{ $child->childNodes };
+                  $node->appendChild($_) foreach @nodelist1;
+                  my $next = $child->nextSibling;
                   $child->unbindNode;
-                  #$nodelist1->removeNode($child);
                   print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n";
+                  $child = $next;
                   next CHILD;
               }
               else {
@@ -1752,15 +1755,19 @@ sub merge_nodes_lite {
                 my $old = $sib;
                 $sib = $sib->nextSibling;
                 $old->unbindNode;
+                next SIB;
             }
             else {
+                $child = $child->nextSibling;
                 next CHILD;
             }
         }
         else {
+            $child = $child->nextSibling;
             next CHILD;
         }
     }
+      $child = $child->nextSibling;
     }
 }
 
