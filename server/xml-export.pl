@@ -260,6 +260,7 @@ $args{perseus_links} = 0;
 
 my $query = new Diogenes::Browser(%args);
 my ($buf, $i, $auth_name, $real_num, $work_name, $body, $header, $is_verse, $hanging_div, $flag);
+my $diacrits = '\*\(\)\/\\\=ÁÀÂÉÈÊÍÌÎÓÒÔÚÙÛ';
 
 my @all_auths = sort keys %{ $Diogenes::Base::auths{$corpus} };
 if ($opt_n) {
@@ -602,41 +603,8 @@ sub convert_chunk {
     # Remove all hyphenation
     $chunk =~ s#(\S+)\-([\s\@\d\$\&]*)\n(\S+)#$1$3$2\n#g;
 
-
-    # Fix missing Greek/Latin language switching indicators
-    my $diacrits = '\*\(\)\/\\\=ÁÀÂÉÈÊÍÌÎÓÒÔÚÙÛ';
-    # These two have loads of Greek broken across divs/chunks.
-    if ($auth_name eq 'Aulus Gellius' or $auth_name eq 'Iustinianus Justinian Digest') {
-        if ($chunk =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
-            $chunk =~ s#^#\$#;
-        }
-        # Justinian
-        $chunk =~ s#(GRA\/FOUS3IN, FA\/S3KONTES3)#\$$1#g;
-    }
-    elsif ($auth_name eq 'Marcus Tullius Cicero Cicero Tully') {
-        $chunk =~ s#(EI\) PANTI\\ TRO\/PW\|)#\$$1#g;
-    }
-    elsif ($auth_name eq 'Scriptores Historiae Augustae') {
-        $chunk =~ s#(A\)NAI\/MATON)#\$$1#g;
-    }
-    elsif ($auth_name eq 'Marcus Fabius Quintilianus') {
-        $chunk =~ s#(\*MATAIOTEXNI\/A|\*SUNE\/XON|\*PARE\/KBASIS|\*\)APO\/DEICIS|\*PERI\/FRASIS|\*\)\=HQOS)#\$$1#g;
-    }
-    elsif ($auth_name eq 'Lucius Annaeus Seneca senior') {
-        # This text (which has lots of Greek) assumes reversion to Latin at start of line ...
-        $chunk =~ s#^(?!\s*\$)#\&#gm;
-        $chunk =~ s#\&(MH\/ MOI\&)#\$$1#;
-    }
-    elsif ($auth_name eq 'Pomponius Porphyrio') {
-        $chunk =~ s#(\*\)ENFATIKW\=S|\*PUQAGORIKO\\N)#\$$1#;
-    }
-    elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
-        $chunk =~ s#(TH\\N KEFALH\/N,\&)#\$$1#;
-    }
-    elsif ($auth_name eq 'Cyrillus Theol.') {
-        $chunk =~ s#(\{1\&IN DANIELEM PROPHETAM\.)\>9\}1#$1\$\}1#gs;
-        $chunk =~ s#\[\&cod\. A\.\>9\s*A\)KAKI\/AS\]#\[\&cod. A. \$A\)KAKI\/AS\]#gsm;
-    }
+    # Make ad hoc changes where there are missing language indicators
+    font_fixes(\$chunk);
 
     # Beta Greek to Unicode
     if ($corpus eq 'cop') {
@@ -656,8 +624,6 @@ sub convert_chunk {
     if ($chunk =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
         print STDERR "This looks like it might be unconverted Greek: $chunk\n\n";
     }
-
-
 
     # Latin accents, just in case
     $chunk =~ s#([aeiouAEIOU])\/#$acute{$1}#g;
@@ -1147,6 +1113,75 @@ sub convert_chunk {
     $chunk =~ s#\`##g;
 
     return $chunk;
+}
+
+sub font_fixes {
+
+    my $ref = shift;
+
+    # Fix missing Greek/Latin language switching indicators.  Some
+    # texts assume that newlines begin with reversion to base
+    # language.
+
+    # These two have loads of Greek broken across divs/chunks.
+    if ($auth_name eq 'Aulus Gellius' or $auth_name eq 'Iustinianus Justinian Digest') {
+        if ($$ref =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
+            $$ref =~ s#^#\$#;
+        }
+        # Justinian
+        $$ref =~ s#(GRA\/FOUS3IN, FA\/S3KONTES3)#\$$1#;
+    }
+    elsif ($auth_name eq 'Marcus Tullius Cicero Cicero Tully') {
+        $$ref =~ s#(EI\) PANTI\\ TRO\/PW\|)#\$$1#;
+    }
+    elsif ($auth_name eq 'Scriptores Historiae Augustae') {
+        $$ref =~ s#(A\)NAI\/MATON)#\$$1#;
+    }
+    elsif ($auth_name eq 'Marcus Fabius Quintilianus') {
+        $$ref =~ s#(\*MATAIOTEXNI\/A|\*SUNE\/XON|\*PARE\/KBASIS|\*\)APO\/DEICIS|\*PERI\/FRASIS|\*\)\=HQOS)#\$$1#;
+    }
+    elsif ($auth_name eq 'Lucius Annaeus Seneca senior') {
+        # This text (which has lots of Greek) assumes reversion to Latin at start of line ...
+        $$ref =~ s#^(?!\s*\$)#\&#gm;
+        $$ref =~ s#\&(MH\/ MOI\&)#\$$1#;
+    }
+    elsif ($auth_name eq 'Pomponius Porphyrio') {
+        $$ref =~ s#(\*\)ENFATIKW\=S|\*PUQAGORIKO\\N)#\$$1#;
+    }
+    elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
+        $$ref =~ s#(TH\\N KEFALH\/N,\&)#\$$1#;
+    }
+    elsif ($auth_name eq 'Cyrillus Theol.') {
+        $$ref =~ s#(\{1\&IN DANIELEM PROPHETAM\.)\>9\}1#$1\$\}1#;
+        $$ref =~ s#\[\&cod\. A\.\>9\s*A\)KAKI\/AS\]#\[\&cod. A. \$A\)KAKI\/AS\]#;
+    }
+    elsif ($auth_name eq 'Theodosius Gramm.') {
+        $$ref =~ s#(\*PROSW\|DI\/A E\)STI\\ POIA\\)#\$$1#;
+        $$ref =~ s#(\*PA\=N O\)\/NOMA MONOSU\/LLABON)#\$$1#;
+    }
+    elsif ($auth_name eq 'Timaeus Hist.') {
+        $$ref =~ s#(POLLOI\\ DE\\ TW\=N A\)NTIPEPOLITEUME\/NWN\,)#\$$1#;
+    }
+    elsif ($auth_name eq 'Seniores Alexandrini Scr. Eccl.') {
+        $$ref =~ s#(\*YALMO\\S TW\=\| \*DAUI\\D EI\)S)#\$$1#;
+    }
+    elsif ($auth_name eq 'Ptolemaeus Hist.') {
+        $$ref =~ s#(\@\&Idem XIII\%10 )(\*PTOLEMAI\=OS D\' O\( TOU\=)#$1\$$2#;
+    }
+    elsif ($auth_name eq 'Apophthegmata') {
+        $$ref =~ s#(A\)SKH\/SEWS TW\=N MAKARI\/WN \*PATE\/RWN)#\$$1#;
+    }
+    elsif ($auth_name eq 'Flavius Justinianus Imperator Theol.') {
+        $$ref =~ s#(KAI\\ U\(POQH\/KAS E\)K TH=S AU\)QENTI\/AS)#\$$1#;
+        $$ref =~ s#(\*\)EN O\)NO\/MATI TOU\= DESPO\/TOU \*\)IHSOU\=)#\$$1#;
+    }
+    elsif ($auth_name eq 'Aristodemus Hist.') {
+        $$ref =~ s#(\[5LABW\\N DE\\ O\( \*MARDO\/NIOS PRW\=TON)#\$$1#;
+    }
+    elsif ($auth_name eq 'Philoxenus Gramm.') {
+        $$ref =~ s#(\<9A\)KO\/NH\>9\: PARA\\ TH\\N A\)KH\/N,)#\$$1#;
+    }
+
 }
 
 sub ad_hoc_fixes {
