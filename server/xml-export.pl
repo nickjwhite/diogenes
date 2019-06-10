@@ -1627,7 +1627,7 @@ sub merge_nodes_libxml {
               $child->removeAttribute('rend');
               if ($child->nodeName eq 'hi') {
                   # <hi> serves no purpose without @rend
-                  $node->appendChild($_) foreach $child->childNodes;
+                  $node->insertBefore($_, $child) foreach $child->childNodes;
                   $child->unbindNode;
                   print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
                   next CHILD;
@@ -1714,7 +1714,7 @@ sub merge_nodes_lite {
               if ($child->nodeName eq 'hi') {
                   # <hi> serves no purpose without @rend
                   my @nodelist1 = @{ $child->childNodes };
-                  $node->appendChild($_) foreach @nodelist1;
+                  $node->insertBefore($_, $child) foreach @nodelist1;
                   my $next = $child->nextSibling;
                   $child->unbindNode;
                   print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n";
