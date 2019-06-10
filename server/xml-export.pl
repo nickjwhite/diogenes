@@ -1508,10 +1508,12 @@ sub post_process_xml {
     # e.g. when there was switching between bold Greek and Latin text.
 
     if ($libxml) {
-        merge_nodes_libxml($xmldoc->documentElement);
+        merge_rend_libxml($xmldoc->documentElement);
+        merge_neighbors_libxml($xmldoc->documentElement);
     }
     else {
-        merge_nodes_lite($xmldoc->documentElement);
+        merge_rend_lite($xmldoc->documentElement);
+        merge_neighbors_lite($xmldoc->documentElement);
     }
 
     # BetaHtml.pm uses 'i', 'super' and 'small', so we need to change
@@ -1580,22 +1582,17 @@ sub post_process_xml {
     return $xmldoc;
 }
 
-# Clean up a number of inelegant artefacts of the original markup
+# Clean up a number of inelegant artefacts of the original markup.
 
-# 1. When an element has a component of a 'rend' attribute string that
+# When an element has a component of a 'rend' attribute string that
 # is already present in a direct ancestor, that component can be
 # deleted; and when a <hi> element has an empty rend attribute, it is
 # deleted as redundant (promoting its descendants).
 
-# 2. Merge contents of two nodes which are identical in terms of name
-# and attributes, when they are adjacent or separated only by
-# whitespace. (Very common when a text switches back and forth
-# frequently between the Greek and Latin alphabets.)
-
-sub merge_nodes_libxml {
+sub merge_rend_libxml {
     my $node = shift;
     my $rend = shift || '';
-    # print $node->nodeName;
+     # print ' >'.$node->nodeName;
     return unless $node->nodeType == XML_ELEMENT_NODE();
     my $attr = $node->getAttribute('rend') || '';
     while ($attr =~ m/(\S+)/g) {
@@ -1603,10 +1600,10 @@ sub merge_nodes_libxml {
         $rend .= "$r " unless $rend =~ m/\b$r\b/;
     }
   CHILD: foreach my $child ($node->childNodes) {
-      # print $child->nodeName;
+       # print ' ]'.$child->nodeName;
       next CHILD unless $child->nodeType == XML_ELEMENT_NODE();
       # Recurse
-      merge_nodes_libxml($child, $rend);
+      merge_rend_libxml($child, $rend);
 
       # Delete redundant rend components already present in an ancestor.
       my $child_attr = $child->getAttribute('rend') || '';
@@ -1637,6 +1634,80 @@ sub merge_nodes_libxml {
               }
           }
       }
+    }
+}
+
+sub merge_rend_lite {
+    my $node = shift;
+    my $rend = shift || '';
+    # print ' >'.$node->nodeName;
+    return unless $node->nodeType == ELEMENT_NODE();
+    my $attr = $node->getAttribute('rend') || '';
+    while ($attr =~ m/(\S+)/g) {
+        my $r = $1;
+        $rend .= "$r " unless $rend =~ m/\b$r\b/;
+    }
+    my $child = $node->firstChild;
+  CHILD: while ($child) {
+      # print $child->nodeName;
+      # print ' ]'.$child->nodeName;
+      unless ($child->nodeType == ELEMENT_NODE()) {
+          $child = $child->nextSibling;
+          next CHILD;
+      }
+      # Recurse
+      merge_rend_lite($child, $rend);
+
+      # print ' <'.$child->nodeName;
+
+      # Delete redundant rend components already present in an ancestor.
+      my $child_attr = $child->getAttribute('rend') || '';
+      my $orig_attr = $child_attr;
+      while ($rend =~ m/(\S+)/g) {
+          my $r = $1;
+          $child_attr =~ s/\b$r\b//g;
+      }
+      if ($child_attr ne $orig_attr) {
+          $child_attr =~ s/^\s+//g;
+          $child_attr =~ s/\s+$//g;
+          $child_attr =~ s/s+/ /g;
+          if ($child_attr =~ m/\S/) {
+              $child->setAttribute('rend', $child_attr);
+              print STDERR "      Modifying rend: $orig_attr to $child_attr\n"
+          }
+          else {
+              $child->removeAttribute('rend');
+              if ($child->nodeName eq 'hi') {
+                  # <hi> serves no purpose without @rend
+                  my @nodelist1 = @{ $child->childNodes };
+                  $node->insertBefore($_, $child) foreach @nodelist1;
+                  my $next = $child->nextSibling;
+                  $child->unbindNode;
+                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n";
+                  $child = $next;
+                  next CHILD;
+              }
+              else {
+                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n";
+              }
+          }
+      }
+      $child = $child->nextSibling;
+  }
+}
+
+# Merge contents of two nodes which are identical in terms of name
+# and attributes, when they are adjacent or separated only by
+# whitespace. (Very common when a text switches back and forth
+# frequently between the Greek and Latin alphabets.)
+
+sub merge_neighbors_libxml {
+    my $node = shift;
+    return unless $node->nodeType == XML_ELEMENT_NODE();
+  CHILD: foreach my $child ($node->childNodes) {
+      next CHILD unless $child->nodeType == XML_ELEMENT_NODE();
+      # Recurse
+      merge_neighbors_libxml($child);
 
       # Merge identical neighbours.
       my $ws = '';
@@ -1674,58 +1745,17 @@ sub merge_nodes_libxml {
     }
 }
 
-sub merge_nodes_lite {
+sub merge_neighbors_lite {
     my $node = shift;
-    my $rend = shift || '';
-    # print $node->nodeName;
     return unless $node->nodeType == ELEMENT_NODE();
-    my $attr = $node->getAttribute('rend') || '';
-    while ($attr =~ m/(\S+)/g) {
-        my $r = $1;
-        $rend .= "$r " unless $rend =~ m/\b$r\b/;
-    }
     my $child = $node->firstChild;
   CHILD: while ($child) {
-      # print $child->nodeName;
       unless ($child->nodeType == ELEMENT_NODE()) {
           $child = $child->nextSibling;
           next CHILD;
       }
       # Recurse
-      merge_nodes_lite($child, $rend);
-
-      # Delete redundant rend components already present in an ancestor.
-      my $child_attr = $child->getAttribute('rend') || '';
-      my $orig_attr = $child_attr;
-      while ($rend =~ m/(\S+)/g) {
-          my $r = $1;
-          $child_attr =~ s/\b$r\b//g;
-      }
-      if ($child_attr ne $orig_attr) {
-          $child_attr =~ s/^\s+//g;
-          $child_attr =~ s/\s+$//g;
-          $child_attr =~ s/s+/ /g;
-          if ($child_attr =~ m/\S/) {
-              $child->setAttribute('rend', $child_attr);
-              print STDERR "      Modifying rend: $orig_attr to $child_attr\n"
-          }
-          else {
-              $child->removeAttribute('rend');
-              if ($child->nodeName eq 'hi') {
-                  # <hi> serves no purpose without @rend
-                  my @nodelist1 = @{ $child->childNodes };
-                  $node->insertBefore($_, $child) foreach @nodelist1;
-                  my $next = $child->nextSibling;
-                  $child->unbindNode;
-                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n";
-                  $child = $next;
-                  next CHILD;
-              }
-              else {
-                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n";
-              }
-          }
-      }
+      merge_neighbors_lite($child);
 
       # Merge identical neighbours.
       my $ws = '';
