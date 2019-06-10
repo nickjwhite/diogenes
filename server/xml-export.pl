@@ -601,7 +601,7 @@ sub convert_chunk {
     }
 
     # Remove all hyphenation
-    $chunk =~ s#(\S+)\-([\s\@\d\$\&]*)\n(\S+)#$1$3$2\n#g;
+    $chunk =~ s#(\S+)\-([\s\@\d\$\&]*)\n([\s\@\d\$\&]*)(\S+)#$1$4$2$3\n#g;
 
     # Make ad hoc changes where there are missing language indicators
     font_fixes(\$chunk);

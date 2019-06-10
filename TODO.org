@@ -1,11 +1,10 @@
 * Current
 
-* Make sure all output validates
-* Make sure no diff between libxml and lite
+** Fix hyphenation when there is junk at the start of the new line
+Now test
 
-** Add coptic xml output
+** Finish fixing runs of unconverted Greek in TLG.
 
-* Improve unconverted Greek detection and fix runs of Greek in Aulus Gellius.
 
 * Search for mojibake:
 /Users/dkl0pjh/testing1/Diogenes-Resources/xml/tlg/tlg1052001.xml
