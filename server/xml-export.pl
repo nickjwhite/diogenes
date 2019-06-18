@@ -29,6 +29,7 @@ use Getopt::Std;
 use File::Path;
 use File::Spec;
 use File::Basename;
+use File::Copy;
 use IO::Handle;
 use File::Which;
 use Encode;
@@ -180,10 +181,15 @@ $path = File::Spec->catpath($volume, File::Spec->catdir(@newdirs), '');
 unless (-e $path and -d $path) {
     File::Path->make_path($path) or die "Could not make output directory: $path.\n";
 }
+unless (-e File::Spec->catfile($path, '../tei_all.rnc')) {
+    copy(File::Spec->catfile($Bin, 'tei_all.rnc'),
+         File::Spec->catfile($path, '../tei_all.rnc')) or die "Copy failed: $!";
+}
 
 my $xmlns = 'http://www.tei-c.org/ns/1.0';
 
 my $xml_header=qq{<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../tei_all.rnc" type="application/relax-ng-compact-syntax"?>
 <TEI xmlns="$xmlns">
   <teiHeader>
     <fileDesc>
@@ -1997,7 +2003,9 @@ sub write_xml_file {
         # ascii with everything as entities).  When using
         # XML::DOM::Lite, the -e flag can be used to suppress the
         # flattening of hex entities to utf8.
-        $text = qq{<?xml version="1.0" encoding="UTF-8"?>\n};
+        $text = qq{<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../tei_all.rnc" type="application/relax-ng-compact-syntax"?>
+};
         $text .= $xmldoc->documentElement->toString;
         $text .= "\n";
     }
