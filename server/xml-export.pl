@@ -52,8 +52,8 @@ my $resources = 'Diogenes-Resources';
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 sub VERSION_MESSAGE {print "xml-export.pl, Diogenes version $Diogenes::Base::Version\n"}
-getopts ('alprho:c:sn:N:vdetx');
-our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_d, $opt_n, $opt_e, $opt_t, $opt_x, $opt_N);
+getopts ('alprho:c:sn:N:vdetxP');
+our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_d, $opt_n, $opt_e, $opt_t, $opt_x, $opt_N, $opt_P);
 
 sub HELP_MESSAGE {
     my $corpora = join ', ', sort values %Diogenes::Base::choices;
@@ -91,6 +91,7 @@ Further optional switches are supported:
 -d      DigiLibLT compatibility; equal to -rpat (requires libxml)
 -r      Convert book numbers to Roman numerals
 -p      Mark paragraphs as milestones rather than divs (requires libxml)
+-P      Attempt to separate paragraphs by indentation
 -a      Suppress translating indentation into <space> tags
 -l      Pretty-print XML using xmllint (requires libxml)
 -s      Validate output against Relax NG Schema (via Jing;
@@ -1921,6 +1922,83 @@ sub fixup_spaces {
     }
 }
 
+my $new_parent;
+
+sub split_paras_libxml {
+    my $node = shift;
+    return unless $node->nodeType == XML_ELEMENT_NODE();
+    foreach my $child ($node->childNodes) {
+        if ($child->nodeName eq 'p') {
+            split_p_libxml($child);
+            $child->unbindNode;
+            $new_parent = undef;
+        }
+        else {
+            split_paras_libxml($child);
+        }
+    }
+}
+
+
+sub split_p_libxml {
+    my $node = shift;
+    print STDERR '> '.$node->nodeName.' ';
+    my $old_p = shift || $node;
+    unless ($new_parent) {
+        $new_parent = XML::LibXML::Element->new( 'p' );
+        if ($old_p->getAttribute('rend')) {
+            $new_parent->setAttribute('rend', $old_p->getAttribute('rend'));
+        }
+        $old_p->parentNode->insertAfter($new_parent, $old_p);
+    }
+    my $newline = 0;
+    my @children = $node->childNodes;
+    while (my $child = shift @children) {
+    # print STDERR '>> '.$child->nodeName.' ';
+        if ($child->nodeType == XML_TEXT_NODE()) {
+            if ($child->data =~ m/\n\Z/) {
+                $newline = 1;
+                # print STDERR "Newline!\n";
+            }
+            else {
+                $newline = 0;
+            }
+            $new_parent->appendChild($child);
+        }
+        elsif ($child->nodeType == XML_ELEMENT_NODE()) {
+            if ($child->nodeName eq 'space' and
+                not $child->hasAttribute('quantity') and $newline) {
+                print STDERR "Splitting para\n" if $debug;
+                $new_parent = XML::LibXML::Element->new( 'p' );
+                $new_parent->setAttribute('rend', 'indent(1)');
+                $old_p->parentNode->insertAfter($new_parent, $old_p);
+                my $n = $child->parentNode;
+                my @stack;
+                while (not $n->isSameNode($old_p)) {
+                    push @stack, $n->cloneNode(0);
+                    $n = $n->parentNode;
+                }
+                while ($n = pop @stack) {
+                    $new_parent->appendChild($n);
+                    $new_parent = $n;
+                }
+
+            }
+            else {
+                my $new_child = $child->cloneNode(0);
+                $new_parent->appendChild($new_child);
+                $new_parent = $new_child if $child->hasChildNodes;
+                split_p_libxml($child, $old_p)
+            }
+            $newline = 0;
+        }
+        else {
+            $new_parent->appendChild($child);
+            $newline = 0;
+        }
+    }
+}
+
 sub milestones {
     die "Milestones not implemented yet with XML::DOM::Lite\n." unless $libxml;
     my $xmldoc = shift;
@@ -1994,6 +2072,12 @@ sub write_xml_file {
     }
 
     my $xmldoc = post_process_xml($text, $file);
+
+    if ($opt_P and not $is_verse) {
+        if ($libxml) {
+            split_paras_libxml($xmldoc->documentElement);
+        }
+    }
 
     if ($opt_p) {
         $xmldoc = milestones($xmldoc);
