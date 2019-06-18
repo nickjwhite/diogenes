@@ -527,11 +527,13 @@ AUTH: foreach my $auth_num (@all_auths) {
                     $temp .= q{<p>};
                 }
                 # We have a prose section which either starts at the
-                # end of this line, or in the coming line; we have to
+                # end of this line, or in the coming line; we may have to
                 # wait to decide.
                 if (((not $is_verse)
                      and $auth_name !~ m/scholia|maurus servius/i
-                   #  and $chunk !~ m#($punct)[\s\$\&\"\d\@\}\]\>]*$#
+                     # Indications that the end of this line is the end of the div
+                     and $chunk !~ m#($punct)[\s\$\&\"\'\d\@\}\]\>]*$#
+                     and $chunk !~ m#[\$\&\"\'\d\@\}\]\>]+\s*$#
                      and $chunk =~ m/\S/)
                     # Fragments are problematic should not hang from one to the next.
                     and (not ($div_labels{1} =~ m/frag/i and $query->{level}{0} eq '1'))
