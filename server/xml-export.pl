@@ -1724,8 +1724,10 @@ sub merge_neighbors_libxml {
       my $ws = '';
       my $sib = $child->nextSibling;
     SIB: while ($sib) {
-        if ($sib->nodeName eq 'gap') {
-            # Successive 'gap's indicate individual missing lines.
+        if ($sib->nodeName eq 'gap' or $sib->nodeName eq 'space') {
+            # Successive 'gap's indicate individual missing lines; we
+            # do not want to join space elements, as they must remain
+            # empty.
             $sib = $sib->nextSibling;
             next SIB;
         }
@@ -2012,6 +2014,7 @@ sub split_paras_libxml {
           $parent1 = $next_parent1;
           $parent2 = $next_parent2;
       }
+      print "Splitting para\n" if $debug;
       $old_p->parentNode->insertBefore($p1, $old_p);
       $old_p->parentNode->insertBefore($p2, $old_p);
       $old_p->unbindNode;
