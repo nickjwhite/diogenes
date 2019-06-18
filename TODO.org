@@ -1,20 +1,11 @@
 * Current
 
-** Fix hyphenation when there is junk at the start of the new line
-Now test
-
 ** Finish fixing runs of unconverted Greek in TLG.
-
 
 * Search for mojibake:
 /Users/dkl0pjh/testing1/Diogenes-Resources/xml/tlg/tlg1052001.xml
 ÎÎ½ÏÏÎ¹Î¼Î¿Î½ Î´á½² á½ÏÎ¹ ÎºÎ±á½¶ ÏÎ¿á¿Ï á¼ÏÏÏÎ¿Î¹Ï ÎºÎ¿Î¹Î½ÏÎ½Îµá¿ (á½ á¼Î½Î¸ÏÏÏÎ¿Ï) ÎºÎ±á½¶ Ïá¿Ï Ïá¿¶Î½ 
 á¼Î»ÏÎ³ÏÎ½ Î¶á¿´ÏÎ½ Î¼ÎµÏÎ­ÏÎµÎ¹ Î¶Ïá¿Ï ÎºÎ±á½¶ Ïá¿Ï Ïá¿¶Î½ Î»Î¿Î³Î¹Îºá¿¶Î½ Î¼ÎµÏÎµÎ¯Î»Î·ÏÎµ Î½Î¿Î®ÏÎµÏÏ. 
-
-
-** Integrate XML output in application
-In cgi script, flatten custom corpus to export any author mentioned.
-
 
 * Generate patch for XML::DOM::Lite
 
