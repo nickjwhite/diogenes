@@ -1050,15 +1050,17 @@ sub convert_chunk {
 
     print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([\]\[]\d+)/;
 
-    # Some extra markup related to brackets.
-    $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
-    $chunk =~ s#\[([^\]\n])\]#<del>$1</del>#g;
+    # Some extra markup related to brackets.  Given the fact that
+    # other EpiDoc features are represented typographically
+    # (e.g. underdot), there is probably no point in going part-way
+    # down this route.
 
-    $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;
-    $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;
-    $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
-
-    $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
+    # $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
+    # $chunk =~ s#\[([^\]\n])\]#<del>$1</del>#g;
+    # $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;
+    # $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;
+    # $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
+    # $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
 
     # % special characters
 
@@ -1079,7 +1081,7 @@ sub convert_chunk {
     $chunk =~ s/(?<!&)#/&#x0374;/g;
 
     # Some further punctuation
-    $chunk =~ s/_/\ -\ /g;
+    $chunk =~ s/_/&#x2014;/g;
     $chunk =~ s/!/./g;
 
     # Whitespace, etc.
