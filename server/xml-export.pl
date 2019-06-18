@@ -2205,8 +2205,7 @@ sub write_xml_file {
         # XML::DOM::Lite, the -e flag can be used to suppress the
         # flattening of hex entities to utf8.
         $text = qq{<?xml version="1.0" encoding="UTF-8"?>
-<?xml-model href="../tei_all.rnc" type="application/relax-ng-compact-syntax"?>
-};
+<?xml-model href="../tei_all.rnc" type="application/relax-ng-compact-syntax"?>\n};
         $text .= $xmldoc->documentElement->toString;
         $text .= "\n";
     }
