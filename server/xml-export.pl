@@ -1922,81 +1922,188 @@ sub fixup_spaces {
     }
 }
 
-my $new_parent;
+# Split p nodes at indentation.  In prose texts, p elements are just
+# children of the lowest level div.  Sometimes this is a paragraph,
+# but often it is not.  For example, in texts that use page numbers as
+# the canonical citation system, the p tag almost never corresponds to
+# a paragraph.  So we try to identify them by single indentation at
+# the start of a line.
+
+# We start by locating \n<space> nodes and for each we trace its
+# ancestry back to a p. We create two new p nodes that will replace
+# it: p1 and p2. Then we go down p's descendants from top to bottom,
+# taking the children at each level from left to right.  Children
+# before the line of ancestry go to p1; those after go to p2; those on
+# the line are copied to both.
 
 sub split_paras_libxml {
-    my $node = shift;
-    return unless $node->nodeType == XML_ELEMENT_NODE();
-    foreach my $child ($node->childNodes) {
-        if ($child->nodeName eq 'p') {
-            split_p_libxml($child);
-            $child->unbindNode;
-            $new_parent = undef;
+    my $xmldoc = shift;
+  SPACE: foreach my $node ($xmldoc->getElementsByTagName('space')) {
+      next SPACE if $node->hasAttribute('quantity');
+      my $prev = $node->previousSibling;
+      next SPACE unless $prev and $prev->nodeType == XML_TEXT_NODE()
+          and $prev->data =~ m/\n\Z/;
+      my $parent = $node->parentNode;
+      my @stack;
+      push @stack, $node;
+      my $has_p;
+    PARENT: while ($parent) {
+        push @stack, $parent;
+        if ($parent->nodeName eq 'p') {
+            $has_p = 1;
+            last PARENT;
         }
-        else {
-            split_paras_libxml($child);
-        }
+        $parent = $parent->parentNode;
     }
+      next SPACE unless $has_p;
+
+      # We now have a \n<space> within a <p>. Create two new <p> nodes.
+      # First copies rend attr; second adds indent(1).
+      my $old_p = $stack[-1];
+      die unless $old_p->nodeName eq 'p';
+      my $p1 = XML::LibXML::Element->new( 'p' );
+      my $p2 = XML::LibXML::Element->new( 'p' );
+      my $rend = $old_p->getAttribute('rend');
+      if (defined $rend) {
+          $p1->setAttribute('rend', $rend);
+      }
+      else {
+          $rend ='';
+      }
+      $rend =~ s/indent\(\d+\)//;
+      $rend .= ' indent(1)';
+      $rend =~ s/\s\s+/ /g;
+      $p2->setAttribute('rend', $rend);
+
+      my $parent1 = $p1;
+      my $parent2 = $p2;
+      my ($next_parent1, $next_parent2);
+
+      while (my $ancestor = pop @stack) {
+          my $state = 'before';
+          my @children = $ancestor->childNodes;
+        CHILD: while (my $child = shift @children) {
+            my $next_ancestor = $stack[-1];
+            # print '!!'.$ancestor->nodeName.' '.$child->nodeName.' '.$next_ancestor->nodeName."\n";
+
+            if ($child->isSameNode($node)) {
+                # Skip <space> node itself
+                $state = 'after';
+            }
+            elsif ($child->isSameNode($next_ancestor)) {
+                # Ancestor of <space>
+                $next_parent1 = $child->cloneNode(0);
+                $next_parent2 = $child->cloneNode(0);
+                $parent1->appendChild($next_parent1);
+                $parent2->appendChild($next_parent2);
+
+                $state = 'after';
+            }
+            elsif ($state eq 'before') {
+                $parent1->appendChild($child);
+            }
+            elsif ($state eq 'after') {
+                $parent2->appendChild($child);
+            }
+            else {
+                die;
+            }
+        }
+          $parent1 = $next_parent1;
+          $parent2 = $next_parent2;
+      }
+      $old_p->parentNode->insertBefore($p1, $old_p);
+      $old_p->parentNode->insertBefore($p2, $old_p);
+      $old_p->unbindNode;
+  }
 }
 
-
-sub split_p_libxml {
-    my $node = shift;
-    print STDERR '> '.$node->nodeName.' ';
-    my $old_p = shift || $node;
-    unless ($new_parent) {
-        $new_parent = XML::LibXML::Element->new( 'p' );
-        if ($old_p->getAttribute('rend')) {
-            $new_parent->setAttribute('rend', $old_p->getAttribute('rend'));
+sub split_paras_lite {
+    my $xmldoc = shift;
+  SPACE: foreach my $node (@{ $xmldoc->getElementsByTagName('space') }) {
+      next SPACE if $node->getAttribute('quantity');
+      my $prev = $node->previousSibling;
+      next SPACE unless $prev and $prev->nodeType == TEXT_NODE()
+          and $prev->nodeValue =~ m/\n\Z/;
+      my $parent = $node->parentNode;
+      my @stack;
+      push @stack, $node;
+      my $has_p;
+    PARENT: while ($parent) {
+        push @stack, $parent;
+        if ($parent->nodeName eq 'p') {
+            $has_p = 1;
+            last PARENT;
         }
-        $old_p->parentNode->insertAfter($new_parent, $old_p);
+        $parent = $parent->parentNode;
     }
-    my $newline = 0;
-    my @children = $node->childNodes;
-    while (my $child = shift @children) {
-    # print STDERR '>> '.$child->nodeName.' ';
-        if ($child->nodeType == XML_TEXT_NODE()) {
-            if ($child->data =~ m/\n\Z/) {
-                $newline = 1;
-                # print STDERR "Newline!\n";
+      next SPACE unless $has_p;
+
+      # We now have a \n<space> within a <p>. Create two new <p> nodes.
+      # First copies rend attr; second adds indent(1).
+      my $old_p = $stack[-1];
+      die unless $old_p->nodeName eq 'p';
+      my $p1 = XML::DOM::Lite::Node->new();
+      $p1->nodeType(ELEMENT_NODE());
+      $p1->nodeName('p');
+      my $p2 = XML::DOM::Lite::Node->new();
+      $p2->nodeType(ELEMENT_NODE());
+      $p2->nodeName('p');
+      my $rend = $old_p->getAttribute('rend');
+      if (defined $rend) {
+          $p1->setAttribute('rend', $rend);
+      }
+      else {
+          $rend ='';
+      }
+      $rend =~ s/indent\(\d+\)//;
+      $rend .= ' indent(1)';
+      $rend =~ s/\s\s+/ /g;
+      $p2->setAttribute('rend', $rend);
+
+      my $parent1 = $p1;
+      my $parent2 = $p2;
+      my ($next_parent1, $next_parent2);
+
+      while (my $ancestor = pop @stack) {
+          my $state = 'before';
+          my @children = @{ $ancestor->childNodes };
+        CHILD: while (my $child = shift @children) {
+            my $next_ancestor = $stack[-1];
+            # print '!!'.$ancestor->nodeName.' '.$child->nodeName.' '.$next_ancestor->nodeName."\n";
+
+            if ($child eq $node) {
+                # Skip <space> node itself
+                $state = 'after';
+            }
+            elsif ($child eq $next_ancestor) {
+                # Ancestor of <space>
+                $next_parent1 = $child->cloneNode(0);
+                $next_parent1->parentNode(undef);
+                $next_parent2 = $child->cloneNode(0);
+                $next_parent2->parentNode(undef);
+                $parent1->appendChild($next_parent1);
+                $parent2->appendChild($next_parent2);
+
+                $state = 'after';
+            }
+            elsif ($state eq 'before') {
+                $parent1->appendChild($child);
+            }
+            elsif ($state eq 'after') {
+                $parent2->appendChild($child);
             }
             else {
-                $newline = 0;
+                die;
             }
-            $new_parent->appendChild($child);
         }
-        elsif ($child->nodeType == XML_ELEMENT_NODE()) {
-            if ($child->nodeName eq 'space' and
-                not $child->hasAttribute('quantity') and $newline) {
-                print STDERR "Splitting para\n" if $debug;
-                $new_parent = XML::LibXML::Element->new( 'p' );
-                $new_parent->setAttribute('rend', 'indent(1)');
-                $old_p->parentNode->insertAfter($new_parent, $old_p);
-                my $n = $child->parentNode;
-                my @stack;
-                while (not $n->isSameNode($old_p)) {
-                    push @stack, $n->cloneNode(0);
-                    $n = $n->parentNode;
-                }
-                while ($n = pop @stack) {
-                    $new_parent->appendChild($n);
-                    $new_parent = $n;
-                }
-
-            }
-            else {
-                my $new_child = $child->cloneNode(0);
-                $new_parent->appendChild($new_child);
-                $new_parent = $new_child if $child->hasChildNodes;
-                split_p_libxml($child, $old_p)
-            }
-            $newline = 0;
-        }
-        else {
-            $new_parent->appendChild($child);
-            $newline = 0;
-        }
-    }
+          $parent1 = $next_parent1;
+          $parent2 = $next_parent2;
+      }
+      $old_p->parentNode->insertBefore($p1, $old_p);
+      $old_p->parentNode->insertBefore($p2, $old_p);
+      $old_p->unbindNode;
+  }
 }
 
 sub milestones {
@@ -2075,7 +2182,10 @@ sub write_xml_file {
 
     if ($opt_P and not $is_verse) {
         if ($libxml) {
-            split_paras_libxml($xmldoc->documentElement);
+            split_paras_libxml($xmldoc);
+        }
+        else {
+            split_paras_lite($xmldoc);
         }
     }
 
