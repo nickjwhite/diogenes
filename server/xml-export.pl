@@ -1192,6 +1192,67 @@ sub font_fixes {
     elsif ($auth_name eq 'Philoxenus Gramm.') {
         $$ref =~ s#(\<9A\)KO\/NH\>9\: PARA\\ TH\\N A\)KH\/N,)#\$$1#;
     }
+    elsif ($auth_name eq 'Scholia In Xenophontem') {
+        $$ref =~ s#(KAI\\ TO\\ SU\/NQHMA|ARA]1 DOU\=NAI|\*CENOFW\=N DE\\ \*ME\/NWNI)#\$$1#;
+    }
+    elsif ($auth_name eq 'Scholia In Thucydidem') {
+        $$ref =~ s#(PANOIKHSI\/A\|\, OU\) PANOIKI\/A\|)#\$$1#;
+    }
+    elsif ($auth_name eq 'Scholia In Pindarum') {
+        $$ref =~ s#([\.\d]\]1\s*\n)#$1\$#s;
+        $$ref =~ s#(\]1\$\:\&\s*\n)#$1\$#s;
+        $$ref =~ s#(\@\@\*TO\\N ME\\N \*\)EXI\/ONA)#\$$1#s;
+    }
+    elsif ($auth_name eq 'Scholia In Oppianum') {
+        $$ref =~ s#(\$\&\s*\n)#$1\$#;
+    }
+    elsif ($auth_name eq 'Scholia In Lycophronem') {
+        $$ref =~ s#(\&\[1fr\. 59 K\.\]1\.\s*)#$1\$#g;
+        $$ref =~ s#(\[1L \&\`262\]1\.\s*)#$1\$#g;
+    }
+    elsif ($auth_name eq 'Scholia In Homerum') {
+        $$ref =~ s#(\d+\]1[\.,]?\$\:?\&\s*\n)#$1\$#;
+        $$ref =~ s#(\&\[1cf\.\$ \*B\& 582\]1|\&1A\&4a\&\ |Gen\. ajoute\:\$\&\s*\n)#$1\$#sg;
+    }
+    elsif ($auth_name eq 'Scholia In Hesiodum') {
+        $$ref =~ s#((?:Bernard\.|DielsKranz\&4\`6|Michaelis)\$\]1[\.,]?\&)#$1\$#s;
+        $$ref =~ s#(\&\[1suprascriptum\$\&|v\. Arnim\]1\$10\&10)#$1\$#s;
+    }
+    elsif ($auth_name eq 'Scholia In Euclidem') {
+        $$ref =~ s#(\*Z, \*H \&p\. 296, 5\])#$1\$#;
+    }
+    elsif ($auth_name eq 'Scholia In Aristophanem') {
+        $$ref =~ s#(\$\&\s*\n)#$1\$#sg;
+        $$ref =~ s#(\<20TAU\=T\' A\)\/RA\>20|E\)NE\/XURA A\)PAITOU\=MAI)#\$$1#sg;
+        $$ref =~ s#(PALAIO\\N \&RV\$\*G\&Lh)#$1\$#sg;
+    }
+    elsif ($auth_name eq 'Scholia In Aratum') {
+        $$ref =~ s#(\&\[1fr\. 291 MerkelbachWest\]1\$\:&)#$1\$#;
+    }
+    elsif ($auth_name eq 'Scholia In Apollonium Rhodium') {
+        $$ref =~ s#(DielsKranz\$\]1\&\s*\n)#$1\$#sg;
+    }
+    elsif ($auth_name eq 'Scholia In Aeschylum') {
+        $$ref =~ s#(\$\&\s*\n)#$1\$#sg;
+        $$ref =~ s#(\&add\. Heimsoeth\.\$\]2\&)#$1\$#sg;
+    }
+    elsif ($auth_name eq 'Epimerismi') {
+        $$ref =~ s#(\&1Ps Psd\s*\n)#$1\$#;
+    }
+    elsif ($auth_name eq 'Concilia Oecumenica (ACO)') {
+        $$ref =~ s#(\{1\*\(ERMHNEI\/A\}1)#\$$1#;
+        $$ref =~ s#(\*\)APOLOGI\/A TOU\= A\(GI\/OU)#\$$1#;
+        $$ref =~ s#(\@\*META\\ TH\\N U\(PATEI\/AN)#\$$1#;
+    }
+    elsif ($auth_name eq '') {
+        $$ref =~ s#()#\$$1#;
+    }
+    elsif ($auth_name eq '') {
+        $$ref =~ s#()#\$$1#;
+    }
+    elsif ($auth_name eq '') {
+        $$ref =~ s#()#\$$1#;
+    }
 
 }
 
@@ -2283,7 +2344,7 @@ sub is_work_verse {
         'tlg:4085' => 0,
         'tlg:4090' => 0,
         'tlg:4102' => 0,
-        'tlg:4110' => 0,
+        # 'tlg:4110' => 0,
         'tlg:4117' => 0,
         'tlg:4292' => 0,
         'tlg:4333' => 0,
