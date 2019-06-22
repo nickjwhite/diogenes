@@ -1141,7 +1141,13 @@ sub font_fixes {
 
     # Fix missing Greek/Latin language switching indicators.  Some
     # texts assume that newlines begin with reversion to base
-    # language.
+    # language.  Sometimes, it's just stray markup.  But mostly it's a
+    # case of a line ending with a spurious switch to Latin at the end
+    # of a line before a line of Greek.  One way of dealing with that
+    # would be always to switch back to the base language at the start
+    # of a line, but that seemed a dangerous assumption to make in all
+    # cases, because it would be harder to detect missing markup, so
+    # we fix these cases on an ad-hoc basis instead.
 
     # These two have loads of Greek broken across divs/chunks.
     if ($auth_name eq 'Aulus Gellius' or $auth_name eq 'Iustinianus Justinian Digest') {
@@ -1171,9 +1177,78 @@ sub font_fixes {
     elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
         $$ref =~ s#(TH\\N KEFALH\/N,\&)#\$$1#;
     }
+
+    elsif ($auth_name eq 'Plutarchus Biogr. et Phil.') {
+        $$ref =~ s#(ORF 148 Malcov\.\&14\`3\$9\]1)&#$1#;
+    }
+    elsif ($auth_name eq 'Dionysius Thrax Gramm.') {
+        $$ref =~ s#(\&Pap\. Ox\. 221, col\. XIV 16\_25\%10)#$1\$#;
+    }
+    elsif ($auth_name eq 'Apollonius Dyscolus Gramm.') {
+        $$ref =~ s#(\[1\&fr\. 65 Ahrens\$\]1\.)\&#$1#;
+    }
+    elsif ($auth_name eq 'Aristonicus Gramm.') {
+        $$ref =~ s#(ed\. Paris\. _V ad\$ \*W\& 658\%10)#$1\$#;
+    }
+    elsif ($auth_name eq 'Demades Orat. et Rhet.') {
+        $$ref =~ s#(\&PLUT\. \&3v\. Galb\. 1)#$1\$#;
+        $$ref =~ s#(rei publ\. ger\. \&`6, 803 A)#$1\$#;
+    }
+    elsif ($auth_name eq 'Julius Pollux Gramm.') {
+        $$ref =~ s#(\[1\&I p 140\. 32 Ko\]1)#$1\$#;
+        $$ref =~ s#(^\*KO\$\]1)#Ko\$\]1#m; # I think this is right
+    }
+    elsif ($auth_name eq 'Claudius Aelianus Soph.') {
+        $$ref =~ s#(tradito ab iis interficiuntur\.\$\}1)\&#$1#;
+    }
+    elsif ($auth_name eq 'Apollodorus Gramm.') {
+        $$ref =~ s#(\[1\&Il\.\$ A, \&\`143\]1)#$1\$#;
+    }
+    elsif ($auth_name eq 'Zeno Phil.') {
+        $$ref =~ s#(\[1\&Eur\. Bacch\. 1129\&\]1)#$1\$#;
+    }
+    elsif ($auth_name eq 'Diogenes Phil.') {
+        $$ref =~ s#(\&etc\. ____)#$1\$#;
+    }
+    elsif ($auth_name eq 'Eudoxus Astron.') {
+        # This one is amusing
+        $$ref =~ s#\*F\*R\*A\*G\*M\*E\*N\*T\*A#FRAGMENTA#;
+    }
+    elsif ($auth_name eq 'Herodorus Hist.') {
+        $$ref =~ s#(\@\&Idem II, (?:684|1211|901)\%10)#$1\$#;
+    }
+    elsif ($auth_name eq 'Hippys Hist.') {
+        $$ref =~ s#(\@\&Aelian\. N\. A\. IX, 33\%10)#$1\$#;
+    }
+    elsif ($auth_name eq 'Lesbonax Gramm.') {
+        $$ref =~ s#("2, \[1\*B \&`135\&\]1)#$1\$#;
+    }
+    elsif ($auth_name eq 'Orion Gramm.') {
+        $$ref =~ s#( \&ex emendatione\$\.\])\&#$1#;
+    }
+    elsif ($auth_name eq 'Flavius Justinianus Imperator Theol.') {
+        $$ref =~ s#\&(adition\$OS|inventari\$ON,|correctori\$AI\:\}1|spectabili\$WN|intercession\$OS|praefectori\$AS|laxament\$ON|dediti\$KI\/WN|peregrin\$WN|sportul\$OIS|adguat\$OUS|fideicommissari\$OS\]|exberedation\$OS|delegator\$AS|extraordinari\$AS|largition\$WN|discussion\$AS\:?|largitionalic\$AI\=S)\&#\&$1#g;
+        $$ref =~ s#(\&MANDATA PRINCIPIS\.\s*|\&in rem\s*)$#$1\$#m;
+        $$ref =~ s#(KAI\\ U\(POQH\/KAS E\)K TH=S AU\)QENTI\/AS)#\$$1#;
+        $$ref =~ s#(\*\)EN O\)NO\/MATI TOU\= DESPO\/TOU \*\)IHSOU\=)#\$$1#;
+    }
+    elsif ($auth_name eq 'Georgius Monachus Chronogr.') {
+        $$ref =~ s#(\`683\$SI\/A\|,)\&#$1#;
+    }
+    elsif ($auth_name eq 'Georgius Acropolites Hist.') {
+        $$ref =~ s#(\{1\&Epistula ad Joannem Tornicam\.\}1|\{1\&In Gregorii Nazianzeni sententias\.\}1)#$1\$#;
+    }
+    elsif ($auth_name eq 'Etymologicum Genuinum') {
+        $$ref =~ s#(\[2\<9\*\)\/AGON\>9)#\$$1#;
+    }
+    elsif ($auth_name eq '') {
+        $$ref =~ s#()#$1\$#;
+    }
     elsif ($auth_name eq 'Cyrillus Theol.') {
         $$ref =~ s#(\{1\&IN DANIELEM PROPHETAM\.)\>9\}1#$1\$\}1#;
         $$ref =~ s#\[\&cod\. A\.\>9\s*A\)KAKI\/AS\]#\[\&cod. A. \$A\)KAKI\/AS\]#;
+        $$ref =~ s#(\&FRAGMENTA QUAE REPERIRI POTUERUNT\.\}1)#$1\$#;
+        $$ref =~ s#( \[?1?\&(?:[Cc]odd?|alins cod|al|al\. codd|ita cod)\.\>9)#$1\$#;
     }
     elsif ($auth_name eq 'Theodosius Gramm.') {
         $$ref =~ s#(\*PROSW\|DI\/A E\)STI\\ POIA\\)#\$$1#;
@@ -1190,10 +1265,6 @@ sub font_fixes {
     }
     elsif ($auth_name eq 'Apophthegmata') {
         $$ref =~ s#(A\)SKH\/SEWS TW\=N MAKARI\/WN \*PATE\/RWN)#\$$1#;
-    }
-    elsif ($auth_name eq 'Flavius Justinianus Imperator Theol.') {
-        $$ref =~ s#(KAI\\ U\(POQH\/KAS E\)K TH=S AU\)QENTI\/AS)#\$$1#;
-        $$ref =~ s#(\*\)EN O\)NO\/MATI TOU\= DESPO\/TOU \*\)IHSOU\=)#\$$1#;
     }
     elsif ($auth_name eq 'Aristodemus Hist.') {
         $$ref =~ s#(\[5LABW\\N DE\\ O\( \*MARDO\/NIOS PRW\=TON)#\$$1#;
@@ -1253,16 +1324,35 @@ sub font_fixes {
         $$ref =~ s#(\*\)APOLOGI\/A TOU\= A\(GI\/OU)#\$$1#;
         $$ref =~ s#(\@\*META\\ TH\\N U\(PATEI\/AN)#\$$1#;
     }
-    elsif ($auth_name eq '') {
-        $$ref =~ s#()#\$$1#;
+    elsif ($auth_name eq 'Etymologicum Symeonis') {
+        $$ref =~ s#(\&\. St\. Byz\. |Et\. gen\. 265\. )(?!\$)#$1\$#;
+        $$ref =~ s#(\[1\&Or\. 35, 47\`48\$\]1\:)&#$1#;
     }
-    elsif ($auth_name eq '') {
-        $$ref =~ s#()#\$$1#;
+    elsif ($auth_name eq 'Anonymi In Aristotelis Sophisticos Elenchos Phil.') {
+        $$ref =~ s#(\[18\&3\`11 fere linn\.\]18)#$1\$#;
     }
-    elsif ($auth_name eq '') {
-        $$ref =~ s#()#\$$1#;
+    elsif ($auth_name eq 'Leo Magentinus Phil.') {
+        $$ref =~ s#(\&PROLEGOMENA)#$1\$#;
     }
-
+    elsif ($auth_name eq 'Commentaria In Dionysii Thracis Artem Grammaticam') {
+        $$ref =~ s#(\&3\[2Heliodori\.\]2\$\&3)#$1\$#;
+    }
+    elsif ($auth_name eq 'Vitae Arati Et Varia De Arato') {
+        $$ref =~ s#(\[W\(\/STE EI\)\=NAI TOU\\S TE\/MNONTAS)#\$$1#;
+    }
+    elsif ($auth_name eq 'Catenae (Novum Testamentum)') {
+        $$ref =~ s#(\&Sch\. Cod\. L\.|script\. 12 saec\.|p\. 42\. c\. v\. ver\. 12\.|\&E CODICE MONACENSI\.\}1|\&In marg\.|KALW\=S LEG\. \&D\.)#$1\$#;
+        # $$ref =~ s#(\{\*OI\)KOUMENI\/OU\.\})#\$$1#;
+    }
+    elsif ($auth_name eq 'Cassius Dio Hist. Dio Cassius') {
+        $$ref =~ s#(\[1\&3urbem a Gallis devastatam\$]1\.)\&3#$1#;
+    }
+    elsif ($auth_name eq 'Lysimachus Hist.') {
+        $$ref =~ s#(\@\&Hesychii\$\%10)\&#$1#;
+    }
+    elsif ($auth_name eq 'Hippocrates Med. et Corpus Hippocraticum') {
+        $$ref =~ s#(\[2MERISK\.\$\]2ME\/NHS)\&#$1#;
+    }
 }
 
 sub ad_hoc_fixes {
