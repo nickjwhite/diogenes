@@ -612,6 +612,12 @@ sub convert_chunk {
     # Remove all hyphenation
     $chunk =~ s#(\S+)\-([\s\@\d\$\&]*)\n([\s\@\d\$\&]*)(\S+)#$1$4$2$3\n#g;
 
+    # Fix broken language indicators
+    if ($lang eq 'g') {
+        # There are hundreds of places with a meaningless $& at end of line, especially after a citation in Latin.
+        $chunk =~ s#(\$\d*\]?\d*[,\.:]?[\s@]*\d*(?:\%10)?)\&\d*([\s@]*)$#$1$2#mg;
+    }
+
     # Make ad hoc changes where there are missing language indicators
     font_fixes(\$chunk);
 
