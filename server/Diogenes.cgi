@@ -24,6 +24,7 @@ use Diogenes::Browser;
 
 use strict;
 use File::Spec::Functions qw(:ALL);
+use FindBin qw($Bin);
 use Encode;
 
 $Diogenes::Base::cgi_flag = 1;
@@ -258,7 +259,7 @@ my $print_header = sub
     print q{<div class="header_back"><a onclick="window.history.back()" class="back_button">
     <svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve">
     <polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="
-	45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
+        45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
 
     # Provide facility to restore an earlier Perseus query, but make invisible to start.
     print qq{<div class="invisible" id="header_restore"><a onclick="jumpFrom()"><span class="restore_text">Restore</span><img id="splitscreen" src="${picture_dir}view-restore.png" srcset="${picture_dir}view-restore.hidpi.png 2x" alt="Split Screen" /></a></div>};
@@ -348,24 +349,24 @@ my $print_navbar = sub {
   <div class="navbar-area">
     <nav role="navigation">
       <ul class="menu">
-	<li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
-	<li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
+        <li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
+        <li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
           <ul id="submenu1">
-	    <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
+            <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
             <li><a href="#" onclick="info('author')" accesskey="a">Within an Author</a></li>
             <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple Terms</a></li>
             <li><a href="#" onclick="info('lemma')" accesskey="f">Inflected Forms</a></li>
             <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
           </ul>
         </li>
-	<li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
+        <li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
           <ul id="submenu2">
-	    <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
+            <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
             <li><a href="#" onclick="info('parse')" accesskey="i">Inflexion</a></li>
           </ul>
         </li>
-	<li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
-	<li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
+        <li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
+        <li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
         <li><a href="#" onclick="info('help')">Help</a></li>
       </ul>
     </nav>
@@ -642,34 +643,45 @@ $output{export_xml} = sub {
     my $q = new Diogenes::Search(%args);
     $database_error->($q) if not $q->check_db;
 
-    my @auths
+    my @auths;
     if ($st{author} and $st{author} =~ m/\S/) {
-        @auths = $q->select_authors(author_regex => $st{author});
+        @auths = sort keys %{ $q->match_authtab($st{author}) };
         unless (scalar @auths)
         {
             $print_error->(qq(There were no texts matching the author $st{author_pattern}));
             return;
         }
     }
-    elseif ($current_filter) {
+    elsif ($current_filter) {
         if (ref $current_filter->{authors} eq 'ARRAY') {
-            @auths = @{ $current_filter->{authors} };
+            @auths = sort @{ $current_filter->{authors} };
         }
         elsif (ref $current_filter->{authors} eq 'HASH') {
-            @auths = keys %{ $current_filter->{authors} };
+            @auths = sort keys %{ $current_filter->{authors} };
         }
         else {
             $print_error->("ERROR in filter definition.")
         }
     }
 
-    
+    my $export_path = $st{'export-path'};
+    print $f->h2('Exporting texts as XML'),
+        $f->p("This can take a while. Return to main page to interrupt conversion. Export folder: $export_path"),
+        $f->hr;
+
+    my $path = File::Spec->catfile($Bin, 'xml-export.pl');
+    my $c = $st{short_type};
+    my $command = "$path -c $c -o $export_path ";
     if (@auths) {
-        print qq{./xml-export.pl -c $args{type} -o ~/testing2}
+        my $n = join ',', @auths;
+        $command .= '-n ' . $n;
     }
-    else {
-        print qq{}
-    }
+    open (my $fh, '-|', $command) or die "Cannot exec $command: $!";
+    $fh->autoflush(1);
+    print '<pre>';
+    print $_ while (<$fh>);
+    print $f->h3('Finished XML conversion.');
+    print '</pre>';
 };
 
 $output{author_search} = sub

@@ -107,6 +107,8 @@ my $debug = $opt_v ? 1 : 0;
 use utf8;
 binmode(STDERR, ":encoding(UTF-8)");
 binmode(STDOUT, ":encoding(UTF-8)");
+select(STDOUT);
+$| = 1;
 
 # Default to use libxml if installed.
 my $libxml = 1;
@@ -600,7 +602,7 @@ sub convert_chunk {
     }
     elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
         $chunk =~ s#\&7lato ve\-\&.*\{43\&7nabvla ferro\&\}43#\&7lato\& \{43\&7venabvla ferro\&\}43\n#gms;
-        $chunk =~ s#\&7accin\-\&\ \@1\ \n\&7gvnt\&#\&7accingvnt\& @1\n#ms;
+        $chunk =~ s#\&7accin\-\&\ \@1\ \n\&7gvnt\&#\&7accingvnt\& \@1\n#ms;
         # For the rest of the cases of &7foo-\n&7bar&
         $chunk =~ s#(\&7[a-zA-z\s:]+)\-\n\&7([a-zA-Z\s]+\]?\&)#$1$2\n#gms;
     }
@@ -640,10 +642,10 @@ sub convert_chunk {
 
     # Check for unconverted Greek, because of missing $
     if ($chunk =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
-        print STDERR "This looks like it might be unconverted Greek: $chunk\n\n";
+        print STDERR "This looks like it might be unconverted Greek: $chunk\n\n" if $debug;
     }
     if ($chunk =~ /[\x00-\x09\x0b-\x1f\x80-\x9f]/) {
-        print STDERR "This looks like mojibake: $chunk\n\n"
+        print STDERR "This looks like mojibake: $chunk\n\n" if $debug;
     }
 
     # Latin accents, just in case
@@ -2388,6 +2390,8 @@ sub write_xml_file {
         print OUT $text;
         close(OUT) or die "Could not close $file\n";
     }
+    print "    File written: $file_path\n";
+
     print AUTHTAB "  </work>\n";
 
     if ($opt_s) {
