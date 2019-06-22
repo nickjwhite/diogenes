@@ -639,6 +639,9 @@ sub convert_chunk {
     if ($chunk =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
         print STDERR "This looks like it might be unconverted Greek: $chunk\n\n";
     }
+    if ($chunk =~ /[\x00-\x09\x0b-\x1f\x80-\x9f]/) {
+        print STDERR "This looks like mojibake: $chunk\n\n"
+    }
 
     # Latin accents, just in case
     $chunk =~ s#([aeiouAEIOU])\/#$acute{$1}#g;
