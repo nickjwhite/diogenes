@@ -288,6 +288,19 @@ my $print_error_page = sub
     exit;
 };
 
+my $print_error = sub
+{
+    my $msg = shift;
+    $msg ||= 'Sorry. You seem to have made a request that I do not understand.';
+
+    print $f->center(
+        $f->h1('ERROR'),
+        $f->p($msg));
+
+    print $f->end_html;
+    exit;
+};
+
 my $strip_html = sub
 {
     my $ref = shift;
@@ -478,6 +491,10 @@ $handler{splash} = sub
     {
         $output{author_search}->();
     }
+    elsif ($action eq 'export')
+    {
+        $output{export_xml}->();
+    }
     else
     {
         $print_title->('Error');
@@ -614,6 +631,46 @@ my $get_args = sub
     return %args;
 };
 
+$output{export_xml} = sub {
+
+    $print_title->('Diogenes XML Export Page');
+    $print_header->();
+    $st{current_page} = 'export';
+    my %args = $get_args->();
+    $args{type} = $st{short_type};
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;
+
+    my @auths
+    if ($st{author} and $st{author} =~ m/\S/) {
+        @auths = $q->select_authors(author_regex => $st{author});
+        unless (scalar @auths)
+        {
+            $print_error->(qq(There were no texts matching the author $st{author_pattern}));
+            return;
+        }
+    }
+    elseif ($current_filter) {
+        if (ref $current_filter->{authors} eq 'ARRAY') {
+            @auths = @{ $current_filter->{authors} };
+        }
+        elsif (ref $current_filter->{authors} eq 'HASH') {
+            @auths = keys %{ $current_filter->{authors} };
+        }
+        else {
+            $print_error->("ERROR in filter definition.")
+        }
+    }
+
+    
+    if (@auths) {
+        print qq{./xml-export.pl -c $args{type} -o ~/testing2}
+    }
+    else {
+        print qq{}
+    }
+};
+
 $output{author_search} = sub
 {
     # A quick and dirty author search
@@ -628,7 +685,7 @@ $output{author_search} = sub
     my @auths = $q->select_authors(author_regex => $st{author});
     unless (scalar @auths)
     {
-        $print_error_page->(qq(There were no texts matching the author $st{author_pattern}));
+        $print_error->(qq(There were no texts matching the author $st{author_pattern}));
         return;
     }
 
@@ -1131,7 +1188,7 @@ $output{browser_output} = sub
              print STDERR "$jumpTo; $corpus, $st{author}, $st{work}, @target\n" if $q->{debug};
         }
         else {
-            $print_error_page->("Bad location description: $jumpTo");
+            $print_error->("Bad location description: $jumpTo");
         }
         # Try to fix cases where we are not given the number of levels we expect
         $q->parse_idt($st{author});
@@ -1266,7 +1323,7 @@ $output{filter_splash} = sub
         corpus, choose "List contents" and you can do that on the next
         page.  To add authors to an existing corpus, find the new
         authors using either the simple corpus or complex subset
-        options above, and then use the name of the existing corpus
+        options below, and then use the name of the existing corpus
         you want to add them to.  The new authors will be merged into
         the old, and for any duplicated author the new set of works will
         replace the old.  If you want to preserve the existing corpus

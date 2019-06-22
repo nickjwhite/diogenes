@@ -221,9 +221,11 @@ function splash_setup () {
         '<p align="center"><input class="info-button" type="submit" name="go" value="Create and Manage Subsets"></p>';
 
     exportText1 = '<h2 class="info-h2">Export texts as XML</h2>' +
-        '<p class="info-field">Corpus: ' + corporaAll + '</p>';
+        '<p class="info-field">Corpus: ' + corporaAll + '</p>'+
+        '<p class="info-field">Or author: <input type="text" name="author" size="20" id="author_text" class="info-field"></p>'
+    ;
     exportText2 = '<p class="info-text">' +
-        'Export texts as TEI-compliant XML for use with other applications.  If you do not want to export a full database, you should first go to <b>Filter</b> and create a subset of the authors you want to convert.</p>';
+        'Export texts as TEI-compliant XML for use with other applications.  Choose your author(s) or the (sub)corpus to convert. This is a slow process, so you may wish to go first to <b>Filter</b> and define a subset of the authors you want to convert.</p>';
 
     infoText['help'] = '<h2 class="info-h2">Help and Support</h2>' +
         '<p class="info-text">For information about using Diogenes, see the <a target="_blank" href="https://d.iogen.es/d/faqs.html">website</a>.</p>' +
