@@ -599,7 +599,10 @@ sub convert_chunk {
         $chunk =~ s#\A.*?lium, (partim agrum vicinum populabantur)#$1#gms;
     }
     elsif ($auth_name eq 'Maurus Servius Honoratus Servius') {
-        $chunk =~ s#\&7lato ve\-\&.*\{43\&7nabvla ferro\&\}43#\&7lato\& \{43\&7venabvla ferro\&\}43#gms;
+        $chunk =~ s#\&7lato ve\-\&.*\{43\&7nabvla ferro\&\}43#\&7lato\& \{43\&7venabvla ferro\&\}43\n#gms;
+        $chunk =~ s#\&7accin\-\&\ \@1\ \n\&7gvnt\&#\&7accingvnt\& @1\n#ms;
+        # For the rest of the cases of &7foo-\n&7bar&
+        $chunk =~ s#(\&7[a-zA-z\s:]+)\-\n\&7([a-zA-Z\s]+\]?\&)#$1$2\n#gms;
     }
     elsif ($auth_name eq 'Lucius Annaeus Seneca senior') {
         $chunk =~ s#(\$\*\)OKT)\-\n\$(AOUI\/A)#$1$2\n\$#g;
