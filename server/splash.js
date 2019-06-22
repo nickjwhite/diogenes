@@ -104,6 +104,7 @@ function XMLPathSet (e) {
     var path = e.detail;
     exportPath = path;
     localStorage.setItem("exportPath", path);
+    document.getElementById("export-path").value = exportPath;
     info('export');
 }
 
@@ -167,6 +168,9 @@ function splash_setup () {
         query = localStorage.getItem("query");
         author = localStorage.getItem("author");
         exportPath = localStorage.getItem("exportPath");
+    }
+    if (exportPath) {
+        document.getElementById("export-path").value = exportPath;
     }
     var corpora1 = document.getElementById("corpora-list1").innerHTML;
     var corpora2 = document.getElementById("corpora-list2").innerHTML;

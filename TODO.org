@@ -2,6 +2,7 @@
 
 * Generate patch for XML::DOM::Lite
 
+* Upgrade to Electron 5.0.5
 
 * Save file
 https://stackoverflow.com/questions/40501424/save-loaded-html-file-from-electron-app

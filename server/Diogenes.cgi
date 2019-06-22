@@ -385,6 +385,7 @@ $output{splash} = sub
 
     print '<input type="hidden" name="action" id="action" value=""/>';
     print '<input type="hidden" name="splash" id="splash" value="true"/>';
+    print '<input type="hidden" name="export-path" id="export-path" value=""/>';
     print "\n";
     print '<div id="corpora-list1">';
     foreach (@choices) {
