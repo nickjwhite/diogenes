@@ -91,7 +91,7 @@ Further optional switches are supported:
 -d      DigiLibLT compatibility; equal to -rpat (requires libxml)
 -r      Convert book numbers to Roman numerals
 -p      Mark paragraphs as milestones rather than divs (requires libxml)
--P      Attempt to separate paragraphs by indentation
+-P      Suppress separating paragraphs by indentation
 -a      Suppress translating indentation into <space> tags
 -l      Pretty-print XML using xmllint (requires libxml)
 -s      Validate output against Relax NG Schema (via Jing;
@@ -2346,7 +2346,7 @@ sub write_xml_file {
 
     my $xmldoc = post_process_xml($text, $file);
 
-    if ($opt_P and not $is_verse) {
+    unless ($opt_P or $is_verse) {
         if ($libxml) {
             split_paras_libxml($xmldoc);
         }
