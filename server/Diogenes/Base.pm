@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.0.0pr2";
+$Diogenes::Base::Version =  "4.0.0pr7";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -1934,30 +1934,40 @@ sub print_output
     {
         my $aux = $$ref;
         $aux =~ s#\x02##g;
-        print { $self->{aux_out} } ($aux);
+        my $success = print { $self->{aux_out} } ($aux);
+        print STDERR "Aux print failed! $!\n" unless $success;
     }
 
     return if $self->{output_format} eq 'none';
+    print STDERR "Formatting...\n" if $self->{debug};
     $self->format_output($ref);
 
+    print STDERR "Printing...\n" if $self->{debug};
     if (not defined $self->{interleave_printing})
     {
         $$ref =~ s#\x02##g;
-        print $$ref;
+        my $success = print $$ref;
+        print STDERR "Print failed! $!\n" unless $success;
     }
     else
-    {
+      {
+        my $success;
         my $first_cit = shift @{ $self->{interleave_printing} };
-        print $first_cit if $first_cit;
+        $success = print $first_cit if $first_cit;
+        print STDERR "Print failed (first_cit)! $!\n" unless $success;
         while ($$ref =~ m#(.*?)(?:\x02|$)#gs)
         {
-            print $1;
+            $success = print $1;
+            print STDERR "Print failed ($1)! $!\n" unless $success;
             my $citation = shift @{ $self->{interleave_printing} };
-            print $citation if $citation;
+            $success = print $citation if $citation;
+            print STDERR "Print failed (citation)! $!\n" unless $success;
         }
         my $citation = shift @{ $self->{interleave_printing} };
-        print $citation if $citation;
+        $success = print $citation if $citation;
+        print STDERR "Print failed (last_cit)! $!\n" unless $success;
     }
+    print STDERR "Printed.\n" if $self->{debug};
 }
 
 sub format_output
@@ -2013,6 +2023,7 @@ sub format_output
         }
     }
     $$ref =~ s/\x01//g;
+    print STDERR "Formatted.\n" if $self->{debug};
 }
 
 sub greek_with_latin

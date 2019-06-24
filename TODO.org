@@ -1,35 +1,49 @@
-* Add menu item to go back to firstrun.html
+Use github lfs for pre-built data.
 
-* Test on Windows:
-  cause tibullus crash and see if server respawns.
+* Finish XML output functionality
+
+Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
+
+Check availability of XML::LibXML
+Do we need to substitute it?
+Substitute libxml with XML::DOM:Lite for portability and test it against phi corpus.
+Make XML::LibXML a prereq for Linux packages.
+
+* Patch for XML::DOM::Lite
+Only remove \n in parser when whitespace=>strip
+Add pretty and indent options to serializer
+Fix stripping of declaration.
+
+* Improve for document-oriented xml
+** Bugs
+*** Strips newlines regardless of whitespace option (same as existing report)
+*** Serializer inserts significant whitespace
+    New option indent => safe or none.  None adds no whitespace at all.  Safe adds no newlines.  It adds indentation only after and relative to existing newlines in the document; hence the whitespace it adds (or removes) is safe under normalization.  Do not use the safe option with the whitespace=>normalize parser option, as that removes all newlines, replacing them with spaces.
+*** Parser does not preserve the name of the processing instruction, only its value
+*** Serializer does not output processing instructions.
+*** Change parser normalizer to reduce to \n when space includes \n when whitespace=>normalize_newlines.
+*** Unsuported methods do not cause an error.
+
+
+Copy current version and add to github.
+Make new test
+
+new sub to make indent.  only when $out ends in \n([ \n\t\r]*).  Get rid of trailing stuff and add indent then.
+
+Test for round-trip from preserve to none.
 
 
 
-* Add XML output functionality
-** Phase 1
-   Substitute libxml with XML::DOM:Lite for portability and test it.
-   Import code into a module.
-   Integrate into splash page, with folder select native pop-up.
-   Include schema.
-** Phase 2
-   Adapt latex output code to do further markup.
-   Revise schema and test.
+* Test on Windows USB stick
+And test install on MDS/NCPS
 
-* Redesign home page
-  add diogenes-help.html as FAQs
-  Add contributions / thanks prominently to diogenes
-
-  Register domain
-  set up payment via dept card
-  
+* Post-release
+** Fix all XML validation errors
+** Adapt latex output code to enhance XML; extend schema
 
 * Long-term, aspirational to-do items
 ** Clean-up various Perl warnings.
-** Replace Perseus LSJ with Helma's from Logeion
 ** Try to restart diogenes-server if it is killed
-** Replace XML::Tiny with XML::DOM::Lite
 ** Implement print menu item
-** Make new icon for Windows with a light background
-   The foreground colour of the current icon, which has a transparent background, matches one of the common colours of the background of the Windows 10 start menus, so it disappears in these cases.
 ** Make settings page shorter and clearer
    roughly a variant of firstrun page, but ensure that it still works outside of electron

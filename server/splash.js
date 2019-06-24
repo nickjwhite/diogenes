@@ -1,5 +1,5 @@
 // Dynamic splash-page with sticky choices.  Requires html5
-var corpus, query, author;
+var corpus, query, author, exportPath;
 
 // Is localStorage available?
 var lsTest = function(){
@@ -95,8 +95,29 @@ function splashPerseus (action) {
     }
 }
 
-const infoText ={};
+function XMLPathSelect () {
+    var event = new Event('XMLPathRequest');
+    document.dispatchEvent(event)
+}
+
+function XMLPathSet (e) {
+    var path = e.detail;
+    exportPath = path;
+    localStorage.setItem("exportPath", path);
+    info('export');
+}
+
+document.addEventListener('XMLPathResponse', XMLPathSet, false)
+
+
+var infoText ={};
+var exportText1;
+var exportText2;
+
 function info (choice) {
+    // Hide all submenus
+    dropup('submenu1');
+    dropup('submenu2');
 
     if (document.getElementById("corpus_menu")) {
         corpus = document.getElementById("corpus_menu").value;
@@ -107,10 +128,18 @@ function info (choice) {
     if (document.getElementById("author_text")) {
         author = document.getElementById("author_text").value;
     }
-
-    // Hide all submenus
-    dropup('submenu1');
-    dropup('submenu2');
+    if (choice == 'export') {
+        if (exportPath && exportPath != "null") {
+            infoText['export'] = exportText1 +
+                '<p class="info-field">Output Folder: <a href="#" onclick="XMLPathSelect()">' + exportPath + '</a></p>' +
+                exportText2 + '<p align="center"><input class="info-button" type="submit" name="go" value="Export Texts"></p>';
+        }
+        else {
+            infoText['export'] = exportText1 +
+                '<p class="info-field">Output Folder: <a href="#" onclick="XMLPathSelect()"><span style = "color:red">Undefined</span></a></p>' +
+                exportText2 + '<p class="info-text">You must <a href="#" onclick="XMLPathSelect()">select the folder</a> into which the directory with the XML files will be placed.</p>';
+        }
+    }
 
     document.getElementById("info").innerHTML = infoText[choice];
 
@@ -137,6 +166,7 @@ function splash_setup () {
         corpus = localStorage.getItem("corpus");
         query = localStorage.getItem("query");
         author = localStorage.getItem("author");
+        exportPath = localStorage.getItem("exportPath");
     }
     var corpora1 = document.getElementById("corpora-list1").innerHTML;
     var corpora2 = document.getElementById("corpora-list2").innerHTML;
@@ -190,10 +220,13 @@ function splash_setup () {
         '<p class="info-text">In order to perform delimited, targeted searches, you can create lists of particular authors and/or texts and save them for later reuse.  These personalized subsets of texts can be created for any database.  Furthermore, the <i>TLG</i> database categorizes texts by genre, date and so on, and these can be used as the basis for user-defined subsets.</p>' +
         '<p align="center"><input class="info-button" type="submit" name="go" value="Create and Manage Subsets"></p>';
 
-    infoText['export'] = '<h2 class="info-h2">Export texts as XML</h2>' + '<p class="info-field">Corpus: ' + corporaAll + '</p>' + '<p class="info-text">Export texts as TEI-compliant XML for use with other applications.  If you do not want to export a full database, go to <b>Filter</b> and create a subset of the texts you want to convert.</p>' + '<p align="center"><input class="info-button" type="submit" name="go" value="Export XML"></p><h1>Not implemented yet!</h1>';
+    exportText1 = '<h2 class="info-h2">Export texts as XML</h2>' +
+        '<p class="info-field">Corpus: ' + corporaAll + '</p>';
+    exportText2 = '<p class="info-text">' +
+        'Export texts as TEI-compliant XML for use with other applications.  If you do not want to export a full database, you should first go to <b>Filter</b> and create a subset of the authors you want to convert.</p>';
 
     infoText['help'] = '<h2 class="info-h2">Help and Support</h2>' +
-        '<p class="info-text">For information about using Diogenes, see the <a target="_blank" href="http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/diogenes-help.html">website</a>.</p>' +
-        '<p class="info-text">If are a student, a schoolteacher or a member of the general public who uses Diogenes, or if you are a university teacher who uses it in your undergraduate teaching, you can help to support its continuing development by sending a quick message describing the benefits it has brought to you to this address:  <a href="mailto:p.j.heslin@durham.ac.uk?subject=Diogenes Impact">p.j.heslin@durham.ac.uk</a>.</p>';
+        '<p class="info-text">For information about using Diogenes, see the <a target="_blank" href="https://d.iogen.es/d/faqs.html">website</a>.</p>' +
+        '<p class="info-text">If are a student, a schoolteacher or a member of the general public who uses Diogenes, or if you are a university teacher who uses it in your undergraduate teaching, you can help to support its continuing development by sending a quick message describing the benefits it has brought to you to this address:  <a href="mailto:classics.impact@durham.ac.uk?subject=Diogenes Impact">classics.impact@durham.ac.uk</a>.</p>';
 
 }

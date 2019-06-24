@@ -1,5 +1,5 @@
 const {app, BrowserWindow, Menu, MenuItem, ipcMain, session} = require('electron')
-const {execFile} = require('child_process')
+const {spawn} = require('child_process')
 const path = require('path')
 const process = require('process')
 const fs = require('fs')
@@ -54,32 +54,41 @@ linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
     if(currentLinkURL) {
-	let newwin = createWindow(20, 20)
+	let newwin = createWindow(win, 20, 20)
 	newwin.loadURL(currentLinkURL)
 	currentLinkURL = null
     }
 }}))
 
 // Create a new window (either the first or an additional one)
-function createWindow (offset_x, offset_y) {
+function createWindow (oldWin, offset_x, offset_y) {
+    var winstate;
 
-    // Use saved window state if available
-    let winstate = getWindowState(winStatePath)
-    if(winstate && winstate.bounds) {
-	x = winstate.bounds.x
-	y = winstate.bounds.y
-	w = winstate.bounds.width
-	h = winstate.bounds.height
-    } else {
-	x = undefined
-	y = undefined
+    if (oldWin == null) {
+        // Use saved window state if available
+        let winstate = getWindowState(winStatePath)
+        if(winstate && winstate.bounds) {
+	    x = winstate.bounds.x
+	    y = winstate.bounds.y
+	    w = winstate.bounds.width
+	    h = winstate.bounds.height
+        } else {
+	    x = undefined
+	    y = undefined
+	    w = 800
+	    h = 600
+        }
+    }
+    else {
+        const pos = oldWin.getPosition()
+        x = pos[0]
+        y = pos[1]
+        // Add desired offset from existing window.
+        x = x + offset_x
+        y = y + offset_y
 	w = 800
 	h = 600
     }
-
-    // Add any desired offset from previously saved window location (useful for showing additional windows)
-    x = x + offset_x
-    y = y + offset_y
 
     let win = new BrowserWindow({x: x, y: y, width: w, height: h,
 	                         show: false, webPreferences: webprefs, winopts})
@@ -118,7 +127,7 @@ function createFirstWindow () {
 	}, details.responseHeaders)})
     })
 
-    win = createWindow(0, 0);
+    win = createWindow(null, 0, 0);
 
     // Remove any stale lockfile
     if (fs.existsSync(lockFile)) {
@@ -151,7 +160,7 @@ app.on('browser-window-created', (event, win) => {
     // do so may result in unexpected behavior" but I haven't seen any yet.
     win.webContents.on('new-window', (event, url) => {
 	event.preventDefault()
-	const win = createWindow(20, 20)
+	const win = createWindow(win, 20, 20)
 	win.once('ready-to-show', () => win.show())
 	win.loadURL(url)
 	//event.newGuest = win
@@ -226,9 +235,14 @@ function startServer () {
 		perlName = path.join(app.getAppPath(), '..', '..', 'strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
-	const serverPath = path.join(app.getAppPath(), '..', '..', 'server', 'diogenes-server.pl')
+	// server/ can be either at ../server or ../../server depending on whether
+	// we're running a packaged or development version, so try both
+	let serverPath = path.join(app.getAppPath(), '..', 'server', 'diogenes-server.pl')
+	if (!fs.existsSync(serverPath)) {
+		serverPath = path.join(app.getAppPath(), '..', '..', 'server', 'diogenes-server.pl')
+	}
 
-	let server = execFile(perlName, [serverPath], {'windowsHide': true})
+        let server = spawn(perlName, [serverPath], {'windowsHide': true})
 	server.stdout.on('data', (data) => {
 		console.log('server stdout: ' + data)
 	})
@@ -236,7 +250,7 @@ function startServer () {
 		console.log('server stderr: ' + data)
 	})
 	server.on('close', (code) => {
-		console.log('Diogenes server exited')
+		console.log('Diogenes server exited (or failed to start)')
 	})
 	return server
 }
@@ -320,13 +334,19 @@ function saveWindowState(win, path) {
 
 // Load window dimensions and state from a file
 function getWindowState(path) {
-	let s
-	try {
-		s = fs.readFileSync(path, {'encoding': 'utf8'})
-	} catch(e) {
-		return false
-	}
-	return JSON.parse(s)
+    let s
+    let ret
+    try {
+	s = fs.readFileSync(path, {'encoding': 'utf8'})
+    } catch(e) {
+	return false
+    }
+    try {
+	ret = JSON.parse(s)
+    } catch(e) {
+	return false
+    }
+    return ret
 }
 
 // Load either the Diogenes homepage or the firstrun page
@@ -351,10 +371,10 @@ function initializeMenuTemplate () {
                         let newWin
                         if (typeof win === 'undefined') {
                             // No existing application window (for Mac only)
-                            newWin = createWindow(0, 0)
+                            newWin = createWindow(null, 0, 0)
                         } else {
                             // Additional window
-                            newWin = createWindow(20, 20)
+                            newWin = createWindow(win, 20, 20)
                         }
                         newWin.loadURL('http://localhost:' + dioSettings.port)
                     }
@@ -363,7 +383,7 @@ function initializeMenuTemplate () {
                     label: 'Database Setup',
                     accelerator: 'CmdOrCtrl+B',
                     click: (menu, win) => {
-                        let newWin = createWindow(20, 20)
+                        let newWin = createWindow(win, 20, 20)
                         newWin.loadFile("pages/firstrun.html")
                     }
                 },
@@ -371,7 +391,7 @@ function initializeMenuTemplate () {
                     label: 'Diogenes Settings',
                     accelerator: 'CmdOrCtrl+S',
                     click: (menu, win) => {
-                        let newWin = createWindow(20, 20)
+                        let newWin = createWindow(win, 20, 20)
 		        newWin.loadURL('http://localhost:' + dioSettings.port + '/Settings.cgi')
                     }
                 }

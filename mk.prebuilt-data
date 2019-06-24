@@ -4,7 +4,7 @@ include mk.common
 
 all: 
 	mkdir -p $(BUILD)
-	curl -Lo prebuilt-data.tar.xz https://github.com/pjheslin/diogenes-prebuilt-data/raw/e6393d8a18e37b59b333e120ce612e458211d363/prebuilt-data.tar.xz
+	curl -Lo prebuilt-data.tar.xz https://github.com/pjheslin/diogenes-prebuilt-data/raw/master/prebuilt-data.tar.xz 
 	unxz prebuilt-data.tar.xz
 	tar -xvf prebuilt-data.tar
 	rm prebuilt-data.tar

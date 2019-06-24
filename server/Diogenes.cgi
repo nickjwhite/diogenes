@@ -198,7 +198,7 @@ my $my_footer = sub
     print $f->end_form,
         '<div class="push"></div></div>'; # sticky footer
     print
-        $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2017 Peter Heslin.});
+        $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2019 Peter Heslin.});
 
     print $f->end_html;
 };
@@ -1322,9 +1322,8 @@ $output{filter_splash} = sub
         forth.  You can use these classifications to define a subset
         of works in the TLG to narrow down your search. '),
 
-    $f->submit( -name => 'complex',
-                -value => 'Define a complex TLG corpus');
-
+        $f->p($f->submit( -name => 'complex',
+                -value => 'Define a complex TLG corpus'));
 
 
     $my_footer->();

@@ -1,105 +1,115 @@
 #!/usr/bin/perl -w
 
-# NB.  This is obsolete legacy code; the current version is
-# xml-export.pl in the server directory.
+# This script is part of Diogenes.  It is normally run from the
+# integrated client/server application, but it can also be run from
+# the command line.
 
-# phi2tei converts databases of classical texts in the CD-ROM format
-# develped by the Packard Humanities Institute (PHI) to XML files
-# conforming to the P5 specification of the Text Encoding Initiative
-# (TEI).  It depends upon the Diogenes libraries.  It needs to be run
-# on a computer with Diogenes installed and where the user has
-# told Diogenes where to find the database to be converted.
-
-# NB. We attempt to guess where the Diogenes Perl libraries are
-# located, but if you installed the application in a non-default
-# place, this will not work, and you will need to put a line at the
-# top of this script like this:
-# use lib '/path/to/diogenes/perl';
-
-# These are the default locations for various platforms:
-use if (-e  '/Applicazioni/Diogenes.app/Contents/Resources/perl'), lib =>  '/Applicazioni/Diogenes.app/Contents/Resources/perl';
-use if (-e  '/Applications/Diogenes.app/Contents/Resources/perl'), lib =>  '/Applications/Diogenes.app/Contents/Resources/perl';
-use if (-e 'C:\Program Files (x86)\Diogenes\perl'), lib => 'C:\Program Files (x86)\Diogenes\perl';
-use if (-e 'C:\Program Files\Diogenes\perl'), lib => 'C:\Program Files\Diogenes\perl';
-use if (-e '/usr/local/diogenes/perl'), lib => '/usr/local/diogenes/perl';
-
-# This script was developed by Peter Heslin at the request of and with
-# the financial support of the DigiLibLT project.  The XML output has
-# been designed to harmonize with the subset of TEI markup used by
-# that project.
-
-# http://www.digiliblt.unipmn.it
-# http://www.dur.ac.uk/p.j.heslin/Software/Diogenes/
-
-# There is a single mandatory command-line switch -c to specify which
-# corpus to convert.  The output is put in the "output" sub-directory.
-
-# This software is distributed by its author under the GNU General
-# Public License (GPL) v.3.
-
-# Version History
-# phi2tei -- version 1.0 -- date: 1 June 2013
-# initial release to DigiLibLT for testing
-
-# phi2tei -- version 2.0 -- date: 22 Aug 2013
-# Fixes for bugs found by DigiLibLT.  XML now validates against the
-# DigiLibLT schema
-
-# phi2tei -- version 3.0 -- date: 26 Oct 2014 Added -p option for
-# DigiLibLT; fixed a major bug in hanging divs introduced in version
-# 2.0.
-
-# phi2tei -- version 3.1 -- date: 3 June 2015
-# Fixed a small bug in hanging divs.
-
-sub VERSION_MESSAGE {print "phi2tei version 3.1\n"}
+# The XML export functionality in this script was developed at the
+# request of and with the financial support of the DigiLibLT project.
+# The XML output has been designed to harmonize with the subset of TEI
+# markup used by that project.  In the default setting, the output
+# diverges in a few respects from the norms of DigiLibLT, but a higher
+# level of alignment is an option.
 
 use strict;
 use warnings;
 use Getopt::Std;
-$Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts ('alproc:s:n:d');
-our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_o, $opt_s, $opt_d, $opt_n);
-sub HELP_MESSAGE {
-    my $corpora = join ', ', sort values %Diogenes::Base::choices;
-    print qq{
-
-phi2tei converts databases of classical texts in the CD-ROM format
-develped by the Packard Humanities Institute (PHI) to XML files
-conforming to the P5 specification of the Text Encoding Initiative
-(TEI).  It creates an 'output' subdirectory of the current directory
-into which to put those XML files; it will fail if that subdirectory
-already exists unless you specify the -o switch to overwrite it.
-
-There is one mandatory switch:
-
--c abbr   The abberviation of the corpus to be converted.  Valid values
-          are: $corpora
-
-The following optional switches are supported:
-
--d        Debug info: report progress of conversion 
--n        Convert a specific author number only
--r        Convert book numbers to Roman numerals, as in DigiLibLT
--o        Overwrite any exisiting "output" subdirectory
--p        Mark paragraphs as milestones rather than divs
--l        Pretty-print XML using xmllint
--a        Suppress translating indentation into <space> tags 
--s path   Validate output against an Relax NG Schema located at (full) path  
-};
-}
-
 use Data::Dumper;
+use File::Spec::Functions;
+use File::Path;
+use File::Spec;
+use File::Basename;
+use IO::Handle;
+use XML::LibXML;
+use File::Which;
+
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;
 use Diogenes::BetaHtml;
-# package Diogenes::Converter;
-# @Diogenes::Converter::ISA = qw( Diogenes::Base );
-use XML::LibXML;
 
-my $debug = $opt_d ? 1 : 0;
-use IO::Handle;
+my $dirname = 'diogenes-xml';
+
+sub VERSION_MESSAGE {print "xml-export.pl, Diogenes version $Diogenes::Base::Version\n"}
+
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+getopts ('alprho:c:sn:vd');
+our ($opt_a, $opt_l, $opt_p, $opt_c, $opt_r, $opt_h, $opt_o, $opt_s, $opt_v, $opt_n);
+sub HELP_MESSAGE {
+    my $corpora = join ', ', sort values %Diogenes::Base::choices;
+    print qq{
+xml-export.pl is part of Diogenes; it converts classical texts in the
+format develped by the Packard Humanities Institute (PHI) to XML files
+conforming to the P5 specification of the Text Encoding Initiative
+(TEI).
+
+There are two mandatory switches:
+
+-c abbr   The abberviation of the corpus to be converted; without the -n
+          option all authors will be converted.  Valid values are:
+          $corpora
+
+-o        Full path to the output directory. If the supplied path contains a
+          directory called $dirname, only the path up to that
+          directory will be used; if it does not, $dirname will be
+          appended to the supplied path. $dirname is created if it
+          does not exist, and within it a subdirectory with the name
+          of the corpus is created, after deleting any existing
+          subdirectory by that name.
+
+The following optional switches are supported:
+
+-v        Verbose info on progress of conversion
+-n        Comma-separated list of author numbers to convert
+-d        DigiLibLT compatibility; equal to -rpa
+-r        Convert book numbers to Roman numerals
+-p        Mark paragraphs as milestones rather than divs
+-a        Suppress translating indentation into <space> tags
+-l        Pretty-print XML using xmllint
+-s        Validate output against Relax NG Schema (via Jing;
+          requires Java runtime)
+
+};
+}
+
+die "Error: specify corpus" unless $opt_c;
+my $corpus = $opt_c;
+die "Unknown corpus" unless exists $database{$corpus};
+
+die "Error: specify output directory" unless $opt_o;
+
+my ($volume, $directories, $file) = File::Spec->splitpath( $opt_o );
+my $path;
+
+if (-e $opt_o and not -d $opt_o) {
+    # An existing file in a directory has been specified, so we assume that
+    # the directory itself is meant.
+    $path = $directories;
+}
+elsif ($file) {
+    $path = File::Spec->catpath('', $directories, $file);
+}
+else {
+    $path = $directories;
+}
+# If a directory called $dirname is part of the path, use it; if not, append
+# $dirname to the given path.
+my @dirs = File::Spec->splitdir( $path );
+my @newdirs;
+for my $dir (@dirs) {
+    last if $dir eq $dirname;
+    push @newdirs, $dir;
+}
+push @newdirs, $dirname;
+push @newdirs, $corpus;
+$path = File::Spec->catpath($volume, File::Spec->catdir(@newdirs), '');
+
+if (-e $path) {
+    File::Path->remove_tree($path);
+}
+File::Path->make_path($path) or die "Could not make dir $path";
+
+my $debug = $opt_v ? 1 : 0;
 my $xmlns = 'http://www.tei-c.org/ns/1.0';
 
 my $xml_header=qq{<?xml version="1.0" encoding="UTF-8"?>
@@ -169,25 +179,8 @@ my %div_translations = (
 use charnames qw(:full :short latin greek);
 binmode(STDOUT, ":utf8");
 
-use File::Spec::Functions;
-use File::Path qw(remove_tree);
-
-if (-e 'output') {
-    if ($opt_o) {
-        remove_tree('output');
-    }
-    else {
-        die "Error: output directory already exists" ;
-    }
-}
-mkdir 'output';
-chdir 'output';
-
-die "Error: specify corpus" unless $opt_c;
-my $corpus = $opt_c;
-die "Unknown corpus" unless exists $database{$corpus};
-
-open( AUTHTAB, ">authtab.xml" ) or die "Could not create authtab.xml\n";
+my $authtab = File::Spec->catfile( $path, 'authtab.xml' );
+open( AUTHTAB, ">$authtab" ) or die "Could not create $authtab\n";
 AUTHTAB->autoflush(1);
 print AUTHTAB qq{<authtab corpus="$corpus">\n};
 
@@ -202,10 +195,15 @@ my ($buf, $i, $auth_name, $real_num, $work_name, $body, $header, $is_verse, $han
 
 my @all_auths = sort keys %{ $Diogenes::Base::auths{$corpus} };
 if ($opt_n) {
-    @all_auths = split /,\s*/, $opt_n;
+    if ($opt_n =~ m/,/) {
+        @all_auths = split /,\s*/, $opt_n;
+    }
+    else {
+        $opt_n =~ s/(\d+)/$1/;
+        @all_auths = $opt_n;
+    }
 }
 AUTH: foreach my $auth_num (@all_auths) {
-    $auth_num = $opt_n if $opt_n and $opt_n =~ m/^\d+$/;
     $real_num = $query->parse_idt ($auth_num);
     $query->{auth_num} = $auth_num;
     $auth_name = $Diogenes::Base::auths{$corpus}{$auth_num};
@@ -346,7 +344,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 pop @divs, 1;
                 @relevant_levels = @divs;
                 push @relevant_levels, 0 if $is_verse;
-                
+
                 for (keys %div_labels) {
                     if (exists $div_translations{$div_labels{$_}}) {
                         $div_labels{$_} =
@@ -355,7 +353,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                 }
                 foreach (@divs) {
                     if ($opt_r and $div_labels{$_} eq 'lib') {
-                        $body .= q{<div type="lib" n="}.roman($query->{level}{$_}).qq{">\n}; 
+                        $body .= q{<div type="lib" n="}.roman($query->{level}{$_}).qq{">\n};
                     }
                     else {
                         my $n = $query->{level}{$_} || 1; # bug in phi2331025.xml
@@ -374,7 +372,7 @@ AUTH: foreach my $auth_num (@all_auths) {
             }
             elsif ($new_div >= 0) {
                 # We have a new div or line of verse
-                my $temp = $is_verse ? "</l>\n" : "</p>\n"; 
+                my $temp = $is_verse ? "</l>\n" : "</p>\n";
                 $temp .= ("</div>\n" x $new_div);
 
                 foreach (reverse 1 .. $new_div) {
@@ -386,10 +384,10 @@ AUTH: foreach my $auth_num (@all_auths) {
                     }
                 }
                 if ($is_verse) {
-                    $temp .= qq{<l n="$query->{level}{0}">}; 
+                    $temp .= qq{<l n="$query->{level}{0}">};
                 }
                 else {
-                    $temp .= q{<p>}; 
+                    $temp .= q{<p>};
                 }
                 # We seem to have a prose section which starts in the coming line
                 if (((not $is_verse)
@@ -399,9 +397,9 @@ AUTH: foreach my $auth_num (@all_auths) {
                     # we exclude "t" and where the section is back to 1
                     and (not ($query->{level}{1} and ($query->{level}{1} eq "1"
                                                       or $query->{level}{1} =~ m/t/)))
-                    and (not ($query->{level}{2} and 
+                    and (not ($query->{level}{2} and
                               ($query->{level}{2} =~ m/t/)))) {
-                    
+
                     $hanging_div = $temp;
                     $chunk .= "\n";
                 }
@@ -410,7 +408,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                     $chunk = '';
                     $body .= $temp;
                 }
-            }    
+            }
             else {
                 # We have a line that can be added to the current chunk
                 $chunk .= "\n";
@@ -439,18 +437,18 @@ close(AUTHTAB) or die "Could not close authtab.xml\n";
 
 sub convert_chunk {
     my ($chunk, $lang) = @_;
-    
+
     # Misplaced full-stop in Hyginus 254.2.  Causes chaos.
 #     $chunk =~ s#\[2QVI PIISSIMI FVERVNT\.\]2#\[2QVI PIISSIMI FVERVNT\]2\.#;
 
-    my %acute = (a => "\N{a with acute}", e => "\N{e with acute}", i => "\N{i with acute}", o => "\N{o with acute}", u => "\N{u with acute}", 
-             A => "\N{A with acute}", E => "\N{E with acute}", I => "\N{I with acute}", O => "\N{O with acute}", U => "\N{U with acute}"); 
-    my %grave = (a => "\N{a with grave}", e => "\N{e with grave}", i => "\N{i with grave}", o => "\N{o with grave}", u => "\N{u with grave}", 
-             A => "\N{A with grave}", E => "\N{E with grave}", I => "\N{I with grave}", O => "\N{O with grave}", U => "\N{U with grave}"); 
-    my %diaer = (a => "\N{a with diaeresis}", e => "\N{e with diaeresis}", i => "\N{i with diaeresis}", o => "\N{o with diaeresis}", u => "\N{u with diaeresis}", 
-             A => "\N{A with diaeresis}", E => "\N{E with diaeresis}", I => "\N{I with diaeresis}", O => "\N{O with diaeresis}", U => "\N{U with diaeresis}"); 
-    my %circum = (a => "\N{a with circumflex}", e => "\N{e with circumflex}", i => "\N{i with circumflex}", o => "\N{o with circumflex}", u => "\N{u with circumflex}", 
-             A => "\N{A with circumflex}", E => "\N{E with circumflex}", I => "\N{I with circumflex}", O => "\N{O with circumflex}", U => "\N{U with circumflex}"); 
+    my %acute = (a => "\N{a with acute}", e => "\N{e with acute}", i => "\N{i with acute}", o => "\N{o with acute}", u => "\N{u with acute}",
+             A => "\N{A with acute}", E => "\N{E with acute}", I => "\N{I with acute}", O => "\N{O with acute}", U => "\N{U with acute}");
+    my %grave = (a => "\N{a with grave}", e => "\N{e with grave}", i => "\N{i with grave}", o => "\N{o with grave}", u => "\N{u with grave}",
+             A => "\N{A with grave}", E => "\N{E with grave}", I => "\N{I with grave}", O => "\N{O with grave}", U => "\N{U with grave}");
+    my %diaer = (a => "\N{a with diaeresis}", e => "\N{e with diaeresis}", i => "\N{i with diaeresis}", o => "\N{o with diaeresis}", u => "\N{u with diaeresis}",
+             A => "\N{A with diaeresis}", E => "\N{E with diaeresis}", I => "\N{I with diaeresis}", O => "\N{O with diaeresis}", U => "\N{U with diaeresis}");
+    my %circum = (a => "\N{a with circumflex}", e => "\N{e with circumflex}", i => "\N{i with circumflex}", o => "\N{o with circumflex}", u => "\N{u with circumflex}",
+             A => "\N{A with circumflex}", E => "\N{E with circumflex}", I => "\N{I with circumflex}", O => "\N{O with circumflex}", U => "\N{U with circumflex}");
     my %ampersand_dollar = (1 => "bold", 2 => "bold italic", 3 => "italic", 4 => "superscript", 5 => "subscript", 7 => "small capitals", 10 => "small", 11 => "small bold", 13 => "small italic", 20 => "large ", 21 => "large bold", 23 => "large italic");
 
     # remove hyphenation
@@ -524,18 +522,18 @@ sub convert_chunk {
 
 
 
-    
+
     # # and *#
     $chunk =~ s/\*#(\d+)/$Diogenes::BetaHtml::starhash{$1}/g;
     $chunk =~ s/(?<!&)#(\d+)/$Diogenes::BetaHtml::hash{$1}||'??'/ge;
     $chunk =~ s/(?<!&)#/&#x0374;/g;
-    
+
     # some punctuation
     $chunk =~ s/_/\ -\ /g;
     $chunk =~ s/!/./g;
 
     # "inverted dagger", used in Augustus imp., not in Unicode so use
-    # normal dagger 
+    # normal dagger
     $chunk =~ s/%157/&#134;/g;
 
     $chunk =~ s#%(\d+)#$Diogenes::BetaHtml::percent{$1}#g;
@@ -543,7 +541,7 @@ sub convert_chunk {
     $chunk =~ s/%/&#134;/g;
     $chunk =~ s/&#2020;/&#134;/g;
     $chunk =~ s/&#2021;/&#135;/g;
- 
+
     # @ (whitespace)
     ## Sometimes these appear at the end of a line, to no apparent purpose.
     $chunk =~ s#@+\s*$##g;
@@ -573,29 +571,29 @@ sub convert_chunk {
     # [] (brackets of all sorts)
     if (0) {
         # This would be to keep typographical markup
-        $chunk =~ s#\[(\d+)#$Diogenes::BetaHtml::bra{$1}#g; 
+        $chunk =~ s#\[(\d+)#$Diogenes::BetaHtml::bra{$1}#g;
         $chunk =~ s#\](\d+)#$Diogenes::BetaHtml::ket{$1}#g;
     }
     else {
         # We try to convert editorial symbols to TEI markup.  This may
-        # not always work! 
+        # not always work!
 
-        $chunk =~ s#\[1#(#g; 
-        $chunk =~ s#\]1#)#g; 
-        $chunk =~ s#\[2#&lt;#g; 
-        $chunk =~ s#\]2#&gt;#g; 
-        $chunk =~ s#\[3#{#g; 
-        $chunk =~ s#\]3#}#g; 
+        $chunk =~ s#\[1#(#g;
+        $chunk =~ s#\]1#)#g;
+        $chunk =~ s#\[2#&lt;#g;
+        $chunk =~ s#\]2#&gt;#g;
+        $chunk =~ s#\[3#{#g;
+        $chunk =~ s#\]3#}#g;
         $chunk =~ s#\[(\d+)#[#g;
         $chunk =~ s#\](\d+)#]#g;
 
         $chunk =~ s#\[?\.\.\.+\]?#<gap/>#g;
         $chunk =~ s#\[([^\]\n])\]#<del>$1</del>#g;
-        
-        $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;    
-        $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;    
-        $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;    
-        
+
+        $chunk =~ s#&lt;\.\.\.+&gt;#<supplied><gap/></supplied>#g;
+        $chunk =~ s#&lt;([^.&><]*)\.\.\.+&gt;#<supplied>$1<gap/></supplied>#g;
+        $chunk =~ s#&lt;\.\.\.+([^.&><]*)&gt;#<supplied><gap/>$1</supplied>#g;
+
         $chunk =~ s#&lt;([^&<>]*)&gt;#<supplied>$1</supplied>#g;
         $chunk =~ s!&#13[45];([^\n])&#13[45];!<unclear>$1</unclear>!g;
         $chunk =~ s!&#13[45];!<unclear/>!g;
@@ -609,34 +607,41 @@ sub convert_chunk {
 sub write_xml_file {
     my ($file, $text) = @_;
     if ($debug) {
-        open( OUT, ">tmp.xml" ) or die $!;
+        my $tmpfile = File::Spec->catfile( $path, 'tmp.xml' );
+        open( OUT, ">$tmpfile" ) or die $!;
         print OUT $text;
         close(OUT) or die $!;
     }
 
     $text = post_process_xml($text, $file);
 
+    my $file_path = File::Spec->catfile( $path, $file );
     if ($opt_l) {
-        open(LINT, "|xmllint --format - >$file") or die "Can't open xmllint: $!";
+        open(LINT, "|xmllint --format - >$file_path") or die "Can't open xmllint: $!";
         print LINT $text;
         close(LINT) or die "Could not close xmllint!\n";
     }
     else {
-        open( OUT, ">$file" ) or die "Could not create $file\n";
+        open( OUT, ">$file_path" ) or die "Could not create $file\n";
         print OUT $text;
         close(OUT) or die "Could not close $file\n";
     }
     print AUTHTAB "  </work>\n";
 
     if ($opt_s) {
-        unless (-e '../jing.jar') {
-            die "Error: jing.jar not found.  For validation, put it in
-        the same directory as this script and make sure Java is
-        installed";
+        print "Validating $file ... ";
+        die "Error: Java is required for validation, but java not found"
+            unless which 'java';
+        # xmllint validation errors can be misleading; jing is better
+        # my $ret = `xmllint --noout --relaxng digiliblt.rng $file_path`;
+        my $ret = `java -jar jing.jar -c digiliblt.rnc $file_path`;
+        if ($ret) {
+            print "Invalid.\n";
+            print $ret;
         }
-#         my $ret = `xmllint --noout --relaxng $opt_s $file`;
-        my $ret = `java -jar ../jing.jar -c $opt_s $file`;
-        print $ret;
+        else {
+            print "Valid.\n";
+        }
     }
 }
 
@@ -644,12 +649,12 @@ sub write_xml_file {
 sub post_process_xml {
     my $in = shift;
     my $file = shift;
-    
+
     my $parser = XML::LibXML->new({huge=>1});
     my $xmldoc = $parser->parse_string($in);
     # Remove all div and l elements with n="t", remove all tags and
     # put the text in <head>s instead (unless element has only whitespace)
-    foreach my $node ($xmldoc->getElementsByTagName('l'), 
+    foreach my $node ($xmldoc->getElementsByTagName('l'),
                       $xmldoc->getElementsByTagName('div'),) {
         my $n = $node->getAttribute('n');
         if ($n and $n =~ m/^t\d?$/ or $n =~ m/^\d*t$/ or $n =~ m/^\d+t\d+$/) {
@@ -664,7 +669,7 @@ sub post_process_xml {
     # When there are two <head>s in immediate succession, it's usually
     # just a line break, so we unify them
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
-        my $sib = $node->nextNonBlankSibling; 
+        my $sib = $node->nextNonBlankSibling;
         if ($sib and $sib->nodeName eq 'head') {
             $node->appendText($sib->textContent);
             $sib->unbindNode;
@@ -685,7 +690,7 @@ sub post_process_xml {
     # <div> or <body>, such as when these represent the titles of
     # works to which a list of fragments have been assigned.  When
     # this happens, we change the <head>s to <label>s, of which we are
-    # allowed to have more than one.  
+    # allowed to have more than one.
     foreach my $node ($xmldoc->getElementsByTagName('head')) {
         my $parent = $node->parentNode;
         foreach my $sibling ($parent->childNodes) {
@@ -709,7 +714,7 @@ sub post_process_xml {
              # Find nodes with a child of at least one <div type="par">
              $xpc->findnodes('//*[x:div/@type="par"]',$xmldoc)) {
              my $new_p = $xmldoc->createElementNS( $xmlns, 'p');
-             
+
              $new_p->appendText("\n");
              foreach my $child ($node->nonBlankChildNodes) {
                  $new_p->appendChild($child);
@@ -717,7 +722,7 @@ sub post_process_xml {
              $new_p->appendText("\n");
              $node->appendChild($new_p);
          }
-         
+
          # Remove all <p>s inside <div type="par">
          foreach my $node (
              $xpc->findnodes('//x:div[@type="par"]/x:p',$xmldoc)) {
@@ -755,7 +760,7 @@ sub post_process_xml {
     # in the PHI markup
     my $out = $xmldoc->toString;;
 
-    # Irritating bug in the PHI markup of the title of Bk 1 of Varro, de re rust. 
+    # Irritating bug in the PHI markup of the title of Bk 1 of Varro, de re rust.
     if ($file eq 'phi0684002.xml') {
         $out =~ s#\<head\>\s*RERVM RVSTICARVM DE AGRI CVLTVRA\s*\n\s*LIBER PRIMVS\s*\<\/head\>##s;
         $out =~ s#<div type="cap" n="ca">\s*<head>\s*CAPITVLA LIBRI PRIMI\s*</head>#
@@ -786,7 +791,7 @@ sub post_process_xml {
         # and the one for poem 3 is in the middle of the scholia to
         # poem 2.
         $out =~ s#<head>\s*EGLOGA III\s*([^<]*)</head>\s*(<div[^>]*>\s*<p>)#$2$1#;
-        
+
     }
     if ($file eq 'phi2150001.xml') {
         # Random headings and explicits in Zeno of Verona
@@ -795,7 +800,7 @@ sub post_process_xml {
     }
 
 
-    
+
     return $out;
 }
 
@@ -810,7 +815,7 @@ sub is_work_verse {
     my $bottom = $level_label{$corpus}{$auth_num}{$work_num}{0};
     return 1 if $bottom =~ /verse/;
     return 1 if $auth_name =~ /Lyr\./;
-    
+
     my $start_block = $work_start_block{$corpus}{$query->{auth_num}}{$work_num};
     my $next = $work_num;
     $next++;
@@ -872,4 +877,3 @@ sub roman {
     }
     return $roman ? lc $roman : $arg;
 }
-

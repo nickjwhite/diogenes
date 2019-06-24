@@ -5,6 +5,10 @@
 
 include mk.common
 
+GITHUBTOKEN=replace-this-token
+CLOUDFRONTID=replace-this-id
+PRERELEASE=false
+
 DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 
 ELECTRONVERSION = 4.0.2
@@ -52,15 +56,15 @@ electron/electron-v$(ELECTRONVERSION)-linux-x64:
 	rm electron/electron-v$(ELECTRONVERSION)-linux-x64.zip
 
 linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
-	rm -rf linux64
-	mkdir linux64
-	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64/* linux64
-	cp -r server linux64
-	cp -r dependencies linux64
-	cp -r dist linux64
-	cp -r client linux64/resources/app
-	mv linux64/electron linux64/diogenes
-	cp COPYING README.md linux64
+	rm -rf app/linux64
+	mkdir -p app/linux64
+	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64/* app/linux64
+	cp -r server app/linux64
+	cp -r dependencies app/linux64
+	cp -r dist app/linux64
+	cp -r client app/linux64/resources/app
+	mv app/linux64/electron app/linux64/diogenes
+	cp COPYING README.md app/linux64
 
 electron/electron-v$(ELECTRONVERSION)-win32-ia32:
 	mkdir -p electron
@@ -74,78 +78,79 @@ electron/electron-v$(ELECTRONVERSION)-win32-x64:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-win32-x64 electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 
-w32perl:
-	mkdir -p w32perl/strawberry
-	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
-	unzip -d w32perl/strawberry w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
-	rm w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+build/w32perl:
+	mkdir -p build/w32perl/strawberry
+	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	unzip -d build/w32perl/strawberry build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	rm build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 
-w64perl:
-	mkdir -p w64perl/strawberry
-	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip > w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
-	unzip -d w64perl/strawberry w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
-	rm w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+build/w64perl:
+	mkdir -p build/w64perl/strawberry
+	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip > build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+	unzip -d build/w64perl/strawberry build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+	rm build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 
-rcedit.exe:
-	curl -Lo $@ https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
+build/rcedit.exe:
+	mkdir -p build
+	curl -Lo build/rcedit.exe https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
-icons: dist/icon.svg
+build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png: dist/icon.svg
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
-	mkdir -p icons
-	rsvg-convert -w 256 -h 256 dist/icon.svg > icons/256.png
-	rsvg-convert -w 128 -h 128 dist/icon.svg > icons/128.png
-	rsvg-convert -w 64 -h 64 dist/icon.svg > icons/64.png
-	rsvg-convert -w 48 -h 48 dist/icon.svg > icons/48.png
-	rsvg-convert -w 32 -h 32 dist/icon.svg > icons/32.png
-	rsvg-convert -w 16 -h 16 dist/icon.svg > icons/16.png
+	mkdir -p build/icons
+	rsvg-convert -w 256 -h 256 dist/icon.svg > build/icons/256.png
+	rsvg-convert -w 128 -h 128 dist/icon.svg > build/icons/128.png
+	rsvg-convert -w 64 -h 64 dist/icon.svg > build/icons/64.png
+	rsvg-convert -w 48 -h 48 dist/icon.svg > build/icons/48.png
+	rsvg-convert -w 32 -h 32 dist/icon.svg > build/icons/32.png
+	rsvg-convert -w 16 -h 16 dist/icon.svg > build/icons/16.png
 
-icons/diogenes.ico: icons
-	icotool -c icons/256.png icons/128.png icons/64.png icons/48.png icons/32.png icons/16.png > $@
+build/icons/diogenes.ico: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
+	icotool -c build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png > $@
 
-dist/diogenes.icns: icons
-	png2icns $@ icons/256.png icons/128.png icons/48.png icons/32.png icons/16.png
+build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
+	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
 
-w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 w32perl icons/diogenes.ico rcedit.exe
+w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
-	rm -rf w32
-	mkdir -p w32
-	cp -r electron/electron-v$(ELECTRONVERSION)-win32-ia32/* w32
-	cp -r client w32/resources/app
-	mv w32/electron.exe w32/diogenes.exe
-	cp -r server w32
-	cp -r dependencies w32
-	cp -r w32perl/strawberry w32
-	cp icons/diogenes.ico w32
-	sed 's/$$/\r/g' < COPYING > w32/COPYING.txt
-	sed 's/$$/\r/g' < README.md > w32/README.md
-	wine rcedit.exe w32/diogenes.exe \
-	    --set-icon icons/diogenes.ico \
+	rm -rf app/w32
+	mkdir -p app/w32
+	cp -r electron/electron-v$(ELECTRONVERSION)-win32-ia32/* app/w32
+	cp -r client app/w32/resources/app
+	mv app/w32/electron.exe app/w32/diogenes.exe
+	cp -r server app/w32
+	cp -r dependencies app/w32
+	cp -r build/w32perl/strawberry app/w32
+	cp build/icons/diogenes.ico app/w32
+	sed 's/$$/\r/g' < COPYING > app/w32/COPYING.txt
+	sed 's/$$/\r/g' < README.md > app/w32/README.md
+	wine build/rcedit.exe app/w32/diogenes.exe \
+	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
-	    --set-version-string CompanyName "The Diogenes Team" \
+	    --set-version-string CompanyName "Classics Dept. Durham Univ." \
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
-w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 w64perl icons/diogenes.ico rcedit.exe
+w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 build/w64perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"
 	@echo "installed, to edit the .exe resources."
-	rm -rf w64
-	mkdir -p w64
-	cp -r electron/electron-v$(ELECTRONVERSION)-win32-x64/* w64
-	cp -r client w64/resources/app
-	mv w64/electron.exe w64/diogenes.exe
-	cp -r server w64
-	cp -r dependencies w64
-	cp -r w64perl/strawberry w64
-	cp icons/diogenes.ico w64
-	sed 's/$$/\r/g' < COPYING > w64/COPYING.txt
-	sed 's/$$/\r/g' < README.md > w64/README.md
-	wine rcedit.exe w64/diogenes.exe \
-	    --set-icon icons/diogenes.ico \
+	rm -rf app/w64
+	mkdir -p app/w64
+	cp -r electron/electron-v$(ELECTRONVERSION)-win32-x64/* app/w64
+	cp -r client app/w64/resources/app
+	mv app/w64/electron.exe app/w64/diogenes.exe
+	cp -r server app/w64
+	cp -r dependencies app/w64
+	cp -r build/w64perl/strawberry app/w64
+	cp build/icons/diogenes.ico app/w64
+	sed 's/$$/\r/g' < COPYING > app/w64/COPYING.txt
+	sed 's/$$/\r/g' < README.md > app/w64/README.md
+	wine build/rcedit.exe app/w64/diogenes.exe \
+	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
 	    --set-file-version $(DIOGENESVERSION) \
-	    --set-version-string CompanyName "The Diogenes Team" \
+	    --set-version-string CompanyName "Classics Dept. Durham Univ." \
 	    --set-version-string ProductName Diogenes \
 	    --set-version-string FileDescription Diogenes
 
@@ -155,108 +160,134 @@ electron/electron-v$(ELECTRONVERSION)-darwin-x64:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-darwin-x64 electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 
-mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 dist/diogenes.icns
-	rm -rf mac
-	mkdir -p mac
-	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* mac
-	cp -r client mac/Electron.app/Contents/Resources/app
-	cp -r server mac/Electron.app/Contents
-	cp -r dependencies mac/Electron.app/Contents
-	cp dist/diogenes.icns mac/Electron.app/Contents/Resources/
-	perl -pi -e 's/electron.icns/diogenes.icns/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/Electron/Diogenes/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' mac/Electron.app/Contents/Info.plist
-	mv mac/Electron.app mac/Diogenes.app
-	mv mac/Diogenes.app/Contents/MacOS/Electron mac/Diogenes.app/Contents/MacOS/Diogenes
-	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
-	mv "mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
-	sed 's/$$/\r/g' < COPYING > mac/COPYING.txt
-	sed 's/$$/\r/g' < README.md > mac/README.md
+mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
+	rm -rf app/mac
+	mkdir -p app/mac
+	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac
+	cp -r client app/mac/Electron.app/Contents/Resources/app
+	cp -r server app/mac/Electron.app/Contents
+	cp -r dependencies app/mac/Electron.app/Contents
+	cp build/diogenes.icns app/mac/Electron.app/Contents/Resources/
+	perl -pi -e 's/electron.icns/diogenes.icns/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/Electron/Diogenes/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' app/mac/Electron.app/Contents/Info.plist
+	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac/Electron.app/Contents/Info.plist
+	mv app/mac/Electron.app app/mac/Diogenes.app
+	mv app/mac/Diogenes.app/Contents/MacOS/Electron app/mac/Diogenes.app/Contents/MacOS/Diogenes
+	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
+	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
+	sed 's/$$/\r/g' < COPYING > app/mac/COPYING.txt
+	sed 's/$$/\r/g' < README.md > app/mac/README.md
 
-zip-linux64: linux64
-	rm -rf diogenes-linux-$(DIOGENESVERSION)
-	mv linux64 diogenes-linux-$(DIOGENESVERSION)
-	tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
-	rm -rf diogenes-linux-$(DIOGENESVERSION)
+zip-linux64: app/linux64
+	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
+	mv app/linux64 app/diogenes-linux-$(DIOGENESVERSION)
+	cd app;tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
+	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
 
-zip-mac: mac
+apps: mac w32 linux64
+
+zip-mac: app/mac
+	rm -rf app/diogenes-mac-$(DIOGENESVERSION)
+	mv app/mac app/diogenes-mac-$(DIOGENESVERSION)
+	cd app;zip -r diogenes-mac-$(DIOGENESVERSION).zip diogenes-mac-$(DIOGENESVERSION)
 	rm -rf diogenes-mac-$(DIOGENESVERSION)
-	mv mac diogenes-mac-$(DIOGENESVERSION)
-	zip -r diogenes-mac-$(DIOGENESVERSION).zip diogenes-mac-$(DIOGENESVERSION)
-	rm -rf diogenes-mac-$(DIOGENESVERSION)
 
-zip-w32: w32
-	rm -rf diogenes-win32-$(DIOGENESVERSION)
-	mv w32 diogenes-win32-$(DIOGENESVERSION)
-	zip -r diogenes-win32-$(DIOGENESVERSION).zip diogenes-win32-$(DIOGENESVERSION)
-	rm -rf diogenes-win32-$(DIOGENESVERSION)
+zip-w32: app/w32
+	rm -rf app/diogenes-win32-$(DIOGENESVERSION)
+	mv app/w32 app/diogenes-win32-$(DIOGENESVERSION)
+	cd app;zip -r diogenes-win32-$(DIOGENESVERSION).zip diogenes-win32-$(DIOGENESVERSION)
+	rm -rf app/diogenes-win32-$(DIOGENESVERSION)
 
-zip-w64: w64
-	rm -rf diogenes-win64-$(DIOGENESVERSION)
-	mv w64 diogenes-win64-$(DIOGENESVERSION)
-	zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
-	rm -rf diogenes-win64-$(DIOGENESVERSION)
+zip-w64: app/w64
+	rm -rf app/diogenes-win64-$(DIOGENESVERSION)
+	mv app/w64 app/diogenes-win64-$(DIOGENESVERSION)
+	cd app;zip -r diogenes-win64-$(DIOGENESVERSION).zip diogenes-win64-$(DIOGENESVERSION)
+	rm -rf app/diogenes-win64-$(DIOGENESVERSION)
 
 zip-all: zip-linux64 zip-mac zip-w32 zip-w64
 
-inno-setup: 
-	mkdir inno-setup
-	curl -Lo inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
-	cd inno-setup; innoextract is.exe
+build/inno-setup/app/ISCC.exe:
+	mkdir -p build/inno-setup
+	curl -Lo build/inno-setup/is.exe http://www.jrsoftware.org/download.php/is.exe
+	cd build/inno-setup; innoextract is.exe
 
-installer-w32: inno-setup w32
-	wine inno-setup/app/ISCC.exe dist/diogenes-win32.iss
-	mv -f dist/Output/mysetup.exe diogenes-setup-win32-$(DIOGENESVERSION).exe
+installer-w32: install/diogenes-setup-win32-$(DIOGENESVERSION).exe
+install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
+	mkdir -p install
+	rm -f install/diogenes-setup-win32-$(DIOGENESVERSION).exe
+	wine build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
+	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
-installer-w64: inno-setup w64
-	wine inno-setup/app/ISCC.exe dist/diogenes-win64.iss
-	mv -f Output/mysetup.exe diogenes-setup-win64-$(DIOGENESVERSION).exe
-	rmdir Output
+installer-w64: install/diogenes-setup-win64-$(DIOGENESVERSION).exe
+install/diogenes-setup-win64-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w64
+	mkdir -p install
+	rm -f install/diogenes-setup-win64-$(DIOGENESVERSION).exe
+	wine build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
+	mv -f dist/Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
+	rmdir dist/Output
 
-# NB. Installing this Mac package will report success but silently fail if there exists another copy of Diogenes.app with the same version number anywhere whatsoever on the same disk volume, such as in the mac directory here or another random copy on the devel machine.  
-installer-macpkg: mac
-	rm -f Diogenes-$(DIOGENESVERSION).pkg
-	fpm --prefix=/Applications -C mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
+# NB. Installing this Mac package will report success but silently
+# fail if there exists another copy of Diogenes.app with the same
+# version number anywhere whatsoever on the same disk volume, such as
+# in the mac directory here or another random copy on the devel
+# machine.  In other words, this installer usually will fail silently
+# when run on the machine that created the installer.
+installer-macpkg: install/diogenes-mac-$(DIOGENESVERSION).pkg
+install/diogenes-mac-$(DIOGENESVERSION).pkg: app/mac
+	mkdir -p install
+	rm -f install/diogenes-mac-$(DIOGENESVERSION).pkg
+	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
+	mv Diogenes-$(DIOGENESVERSION).pkg install/diogenes-mac-$(DIOGENESVERSION).pkg
 
-installer-deb64: linux64
-	rm -f diogenes-$(DIOGENESVERSION)_amd64.deb
+installer-deb64: install/diogenes-$(DIOGENESVERSION)_amd64.deb
+install/diogenes-$(DIOGENESVERSION)_amd64.deb: app/linux64
+	mkdir -p install
+	rm -f install/diogenes-$(DIOGENESVERSION)_amd64.deb
 	fpm -s dir -t deb -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION)_amd64.deb -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
+		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-deb.sh \
-		linux64/=/usr/local/diogenes/ \
+		app/linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
+	mv diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION)_amd64.deb
 
-# Completely untested functionality.  I don't know how many of these fpm options are applicable when generating rpms.
-installer-rpm64: linux64
-	rm -f diogenes-$(DIOGENESVERSION).x86_64.rpm
+# Completely untested functionality.  I don't know how many of these
+# fpm options are applicable when generating rpms.
+installer-rpm64: install/diogenes-$(DIOGENESVERSION).x86_64.rpm
+install/diogenes-$(DIOGENESVERSION).x86_64.rpm: app/linux64
+	mkdir -p install
+	rm -f install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 	fpm -s dir -t rpm -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION).x86_64.rpm -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
+		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
-		linux64/=/usr/local/diogenes/ \
+		app/linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
+	mv diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 
-installer-arch64: linux64
-	rm -f diogenes-$(DIOGENESVERSION).pkg.tar.xz
+installer-arch64: install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
+	mkdir -p install
+	rm -f install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 	fpm -s dir -t pacman -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION).pkg.tar.xz -d perl \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
-		--url http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/ \
+		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
 		--license GPL3 --post-install dist/post-install-rpm.sh \
-		linux64/=/usr/local/diogenes/ \
+		app/linux64/=/usr/local/diogenes/ \
 		dist/diogenes.desktop=/usr/share/applications/ \
 		dist/icon.svg=/usr/share/icons/diogenes.svg
+	mv diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64 installer-arch64
 
@@ -266,19 +297,25 @@ clean:
 	rm -f $(DEPDIR)/PersXML.ent
 	rm -f server/Diogenes/EntityTable.pm
 	rm -rf server/fonts
-	rm -rf icons dist/diogenes.icns
-	rm -f rcedit.exe
 	rm -rf build
 	rm -rf electron
-	rm -rf mac diogenes-mac-$(DIOGENESVERSION)
-	rm -rf linux64 diogenes-linux64-$(DIOGENESVERSION)
-	rm -rf w32 w32perl diogenes-w32-$(DIOGENESVERSION)
-	rm -rf w64 w64perl diogenes-w64-$(DIOGENESVERSION)
-	rm -rf inno-setup
-	rm -f diogenes-setup-win32-$(DIOGENESVERSION).exe
-	rm -f diogenes-setup-win64-$(DIOGENESVERSION).exe
-	rm -f Diogenes-$(DIOGENESVERSION).pkg
-	rm -f diogenes-$(DIOGENESVERSION)_amd64.deb
-	rm -f diogenes-$(DIOGENESVERSION).x86_64.rpm
-	rm -f diogenes-$(DIOGENESVERSION).pkg.tar.xz
+	rm -rf app
+	rm -rf install
+
+installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+
+# These targets will not be of interest to anyone else
+
+# make release PRERELEASE=true/false GITHUBTOKEN=github-access-token
+release: $(installers)
+	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
+	git push origin master
+	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=$(PRERELEASE)
+	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
+
+# make update-website CLOUDFRONTID=id
+update-website:
+	echo 'var DiogenesVersion = "'$(DIOGENESVERSION)'";' > ../../website/d/version.js
+	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/d/
+	aws cloudfront create-invalidation --distribution-id $(CLOUDFRONTID) --paths '/*'
 
