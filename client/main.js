@@ -22,7 +22,8 @@ let currentLinkURL = null
 let findTargetWin;
 let mySearchText;
 
-const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
+//const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
+const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.resolve(__dirname, 'preload.js')}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
 const settingsPath = app.getPath('userData')
@@ -356,6 +357,14 @@ function initializeMenuTemplate () {
                             newWin = createWindow(20, 20)
                         }
                         newWin.loadURL('http://localhost:' + dioSettings.port)
+                    }
+                },
+                {
+                    label: 'Database Setup',
+                    accelerator: 'CmdOrCtrl+B',
+                    click: (menu, win) => {
+                        let newWin = createWindow(20, 20)
+                        newWin.loadFile("pages/firstrun.html")
                     }
                 },
                 {

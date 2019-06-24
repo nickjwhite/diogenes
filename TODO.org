@@ -1,4 +1,3 @@
-* Bugs
 * Add menu item to go back to firstrun.html
 
 * Test on Windows:
