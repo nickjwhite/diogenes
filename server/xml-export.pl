@@ -25,9 +25,14 @@
 
 use strict;
 use warnings;
+
+# Use local CPAN
+use File::Spec;
+use FindBin qw($Bin);
+use lib ($Bin, File::Spec->catdir($Bin, '..', 'dependencies', 'CPAN') );
+
 use Getopt::Std;
 use File::Path;
-use File::Spec;
 use File::Basename;
 use File::Copy;
 use IO::Handle;
@@ -38,10 +43,7 @@ use Carp qw( confess );
 $SIG{__DIE__} =  \&confess;
 $SIG{__WARN__} = \&confess;
 
-use FindBin qw($Bin);
 use File::Spec::Functions;
-# Use local CPAN
-use lib ($Bin, File::Spec->catdir($Bin, '..', 'dependencies', 'CPAN') );
 
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
