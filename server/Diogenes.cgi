@@ -676,6 +676,7 @@ $output{export_xml} = sub {
         my $n = join ',', @auths;
         $command .= '-n ' . $n;
     }
+    print $f->p("Command: $command \n");
     open (my $fh, '-|', $command) or die "Cannot exec $command: $!";
     $fh->autoflush(1);
     print '<pre>';

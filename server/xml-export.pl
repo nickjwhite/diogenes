@@ -107,6 +107,8 @@ my $debug = $opt_v ? 1 : 0;
 use utf8;
 binmode(STDERR, ":encoding(UTF-8)");
 binmode(STDOUT, ":encoding(UTF-8)");
+select(STDERR);
+$| = 1;
 select(STDOUT);
 $| = 1;
 

@@ -4,6 +4,8 @@
 
 * Upgrade to Electron 5.0.5
 
+* Proofread XML webpage
+
 * Save file
 https://stackoverflow.com/questions/40501424/save-loaded-html-file-from-electron-app
 let file = new File([document.documentElement.outerHTML]
