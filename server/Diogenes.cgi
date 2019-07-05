@@ -671,16 +671,19 @@ $output{export_xml} = sub {
 
     my $path = File::Spec->catfile($Bin, 'xml-export.pl');
     my $c = $st{short_type};
-    my $command = "$path -c $c -o $export_path ";
+    my $command = "$path -c '$c' -o '$export_path' ";
     if (@auths) {
         my $n = join ',', @auths;
         $command .= '-n ' . $n;
     }
-    print $f->p("Command: $command \n");
+    # print $f->p("Command: $command \n");
     open (my $fh, '-|', $command) or die "Cannot exec $command: $!";
     $fh->autoflush(1);
     print '<pre>';
-    print $_ while (<$fh>);
+    {
+        local $/ = "\n";
+        print $_ while (<$fh>);
+    }
     print $f->h3('Finished XML conversion.');
     print '</pre>';
 };
