@@ -226,7 +226,7 @@ sub validate
 };
 
 
-# nw.js sets the environment variable.
+# The electron client sets the environment variable.
 sub get_user_config_dir
 {
     if ($ENV{'Diogenes_Config_Dir'})
@@ -304,7 +304,7 @@ sub read_config_files
         next unless $rc_file;
         print STDERR "Trying config file: $rc_file ... " if $RC_DEBUG;
         next unless -e $rc_file;
-        open RC, "<$rc_file" or die ("Can't open (apparently extant) file $rc_file: $!");
+        open RC, '<:encoding(UTF-8)', "$rc_file" or die ("Can't open (apparently extant) file $rc_file: $!");
         print STDERR "Opened.\n" if $RC_DEBUG;
         local $/ = "\n";
         while (<RC>) 
