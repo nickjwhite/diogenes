@@ -17,12 +17,11 @@ var fs = require('fs');
 try { fs.writeFileSync('myfile.txt', content, 'utf-8'); }
 catch(e) { alert('Failed to save the file !'); }
 
-* Fix HTTP Header overflow
-With large number of inflected forms, REQUEST_URI_TOO_LARGE.
-Try switching to POST.
+* Test with utf8 paths to databases and in names of subcorpora
 
 * Test on Windows USB stick
 And test install on MDS/NCPS
+
 
 
 * Catch browser seeking beyond end of work, signalled by f0fe.
