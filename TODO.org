@@ -1,49 +1,36 @@
-Use github lfs for pre-built data.
+* Current
 
-* Finish XML output functionality
+* Generate patch for XML::DOM::Lite
 
-Implement sub-corpora by allowing a list of author numbers.  In cgi script, flatten this to export any author mentioned.
+* Upgrade to Electron 5.0.5
 
-Check availability of XML::LibXML
-Do we need to substitute it?
-Substitute libxml with XML::DOM:Lite for portability and test it against phi corpus.
-Make XML::LibXML a prereq for Linux packages.
+* Proofread XML webpage
 
-* Patch for XML::DOM::Lite
-Only remove \n in parser when whitespace=>strip
-Add pretty and indent options to serializer
-Fix stripping of declaration.
+* Save file
+https://stackoverflow.com/questions/40501424/save-loaded-html-file-from-electron-app
+let file = new File([document.documentElement.outerHTML]
+           , "file-" + new Date().getTime() + ".html"
+           , {type:"text/html", lastModified:new Date().getTime()});
 
-* Improve for document-oriented xml
-** Bugs
-*** Strips newlines regardless of whitespace option (same as existing report)
-*** Serializer inserts significant whitespace
-    New option indent => safe or none.  None adds no whitespace at all.  Safe adds no newlines.  It adds indentation only after and relative to existing newlines in the document; hence the whitespace it adds (or removes) is safe under normalization.  Do not use the safe option with the whitespace=>normalize parser option, as that removes all newlines, replacing them with spaces.
-*** Parser does not preserve the name of the processing instruction, only its value
-*** Serializer does not output processing instructions.
-*** Change parser normalizer to reduce to \n when space includes \n when whitespace=>normalize_newlines.
-*** Unsuported methods do not cause an error.
+// your content is into a variable named 'content'
+var fs = require('fs');
+try { fs.writeFileSync('myfile.txt', content, 'utf-8'); }
+catch(e) { alert('Failed to save the file !'); }
 
-
-Copy current version and add to github.
-Make new test
-
-new sub to make indent.  only when $out ends in \n([ \n\t\r]*).  Get rid of trailing stuff and add indent then.
-
-Test for round-trip from preserve to none.
-
-
+* Test with utf8 paths to databases and in names of subcorpora
 
 * Test on Windows USB stick
 And test install on MDS/NCPS
 
-* Post-release
-** Fix all XML validation errors
-** Adapt latex output code to enhance XML; extend schema
 
-* Long-term, aspirational to-do items
-** Clean-up various Perl warnings.
+
+* Catch browser seeking beyond end of work, signalled by f0fe.
+
+* Long-term to-do items
 ** Try to restart diogenes-server if it is killed
 ** Implement print menu item
 ** Make settings page shorter and clearer
-   roughly a variant of firstrun page, but ensure that it still works outside of electron
+   roughly a variant of firstrun page, but ensure that it still works outside of elect
+** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page
+https://github.com/pjheslin/diogenes/issues/20
+(and shift move back/forward buttons to the far left where they won't get covered by Perseus window.

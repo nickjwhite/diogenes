@@ -2983,6 +2983,7 @@ sub beta_encoding_to_external
                                 {       # Caps and trailing diacrits
                                         if        ($b eq 'S' and $c eq '2') { $c = ''; } # Oops. final sigma
                                         elsif ($c eq '|' ) { $a .= '|'; } # Iota "subscript" after a cap
+                                        elsif ($a =~ m/^\*/) {$a .= $c} # In all caps titles, sometimes accents are put after the letter
                                         else  { warn "Unknown BETA code: $a$b$c"; }
                                 }
                                 my $code = $alphabet{$b} || '';
@@ -3003,7 +3004,7 @@ sub beta_encoding_to_external
                                                 ($a =~ /\=/ and push @codes, 'peri');
                                                 my $loner = join '_', @codes; 
                                                 $pre = $encoding{$encoding}{$loner} || '';
-                                                warn 'No mapping exists for BETA code '.
+                                                warn 'No mapping exists for BETA code (pre) '.
                                                         ($a||'').($b||'').($c||'')." in encoding $encoding.\n" 
                                                         if (not $pre) and (length $a > 1);
                                         }
@@ -3045,7 +3046,7 @@ sub beta_encoding_to_external
                                 $code = $other{$b} if $b and $other{$b}; 
 
                                 $post = $encoding{$encoding}{$code} unless $post;
-                                warn 'No mapping exists for BETA code '.
+                                warn 'No mapping exists for BETA code (post) '.
                                         ($a||'').($b||'').($c||'')." in encoding $encoding.\n" unless $post;
                                 $post ? $pre.$post : $a.$b.$c;
                                 !gex;

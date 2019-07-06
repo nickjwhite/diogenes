@@ -270,7 +270,8 @@ sub handle_request
     my $request = $client->get_request;
     unless (defined $request)
     {
-        warn "Bad request\n" ;
+        warn "Bad request\n";
+        warn $client->reason."\n";
         return;
     }
 REQUEST:

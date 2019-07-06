@@ -24,6 +24,7 @@ use Diogenes::Browser;
 
 use strict;
 use File::Spec::Functions qw(:ALL);
+use FindBin qw($Bin);
 use Encode;
 
 $Diogenes::Base::cgi_flag = 1;
@@ -229,7 +230,7 @@ my $print_title = sub
                        -meta=>{'content' => 'text/html;charset=utf-8'},
                        -class=>'waiting'),
     '<div class="wrapper">', # for sticky footer and side padding
-    $f->start_form(-name=>'form', -id=>'form', -method=> 'get');
+    $f->start_form(-name=>'form', -id=>'form', -method=> 'post');
     # We put this here (other hidden fields are at the end), so that
     # Javascript can use it for jumpTo even before the page has
     # completely loaded.  JumpFrom is a place to hold Perseus query
@@ -258,7 +259,7 @@ my $print_header = sub
     print q{<div class="header_back"><a onclick="window.history.back()" class="back_button">
     <svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve">
     <polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="
-	45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
+        45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
 
     # Provide facility to restore an earlier Perseus query, but make invisible to start.
     print qq{<div class="invisible" id="header_restore"><a onclick="jumpFrom()"><span class="restore_text">Restore</span><img id="splitscreen" src="${picture_dir}view-restore.png" srcset="${picture_dir}view-restore.hidpi.png 2x" alt="Split Screen" /></a></div>};
@@ -279,6 +280,19 @@ my $print_error_page = sub
 
     $print_title->('Diogenes Error Page');
     $print_header->();
+
+    print $f->center(
+        $f->h1('ERROR'),
+        $f->p($msg));
+
+    print $f->end_html;
+    exit;
+};
+
+my $print_error = sub
+{
+    my $msg = shift;
+    $msg ||= 'Sorry. You seem to have made a request that I do not understand.';
 
     print $f->center(
         $f->h1('ERROR'),
@@ -335,24 +349,24 @@ my $print_navbar = sub {
   <div class="navbar-area">
     <nav role="navigation">
       <ul class="menu">
-	<li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
-	<li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
+        <li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
+        <li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
           <ul id="submenu1">
-	    <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
+            <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
             <li><a href="#" onclick="info('author')" accesskey="a">Within an Author</a></li>
             <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple Terms</a></li>
             <li><a href="#" onclick="info('lemma')" accesskey="f">Inflected Forms</a></li>
             <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
           </ul>
         </li>
-	<li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
+        <li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
           <ul id="submenu2">
-	    <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
+            <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
             <li><a href="#" onclick="info('parse')" accesskey="i">Inflexion</a></li>
           </ul>
         </li>
-	<li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
-	<li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
+        <li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
+        <li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
         <li><a href="#" onclick="info('help')">Help</a></li>
       </ul>
     </nav>
@@ -372,6 +386,7 @@ $output{splash} = sub
 
     print '<input type="hidden" name="action" id="action" value=""/>';
     print '<input type="hidden" name="splash" id="splash" value="true"/>';
+    print '<input type="hidden" name="export-path" id="export-path" value=""/>';
     print "\n";
     print '<div id="corpora-list1">';
     foreach (@choices) {
@@ -477,6 +492,10 @@ $handler{splash} = sub
     elsif ($action eq 'author')
     {
         $output{author_search}->();
+    }
+    elsif ($action eq 'export')
+    {
+        $output{export_xml}->();
     }
     else
     {
@@ -614,6 +633,61 @@ my $get_args = sub
     return %args;
 };
 
+$output{export_xml} = sub {
+
+    $print_title->('Diogenes XML Export Page');
+    $print_header->();
+    $st{current_page} = 'export';
+    my %args = $get_args->();
+    $args{type} = $st{short_type};
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;
+
+    my @auths;
+    if ($st{author} and $st{author} =~ m/\S/) {
+        @auths = sort keys %{ $q->match_authtab($st{author}) };
+        unless (scalar @auths)
+        {
+            $print_error->(qq(There were no texts matching the author $st{author_pattern}));
+            return;
+        }
+    }
+    elsif ($current_filter) {
+        if (ref $current_filter->{authors} eq 'ARRAY') {
+            @auths = sort @{ $current_filter->{authors} };
+        }
+        elsif (ref $current_filter->{authors} eq 'HASH') {
+            @auths = sort keys %{ $current_filter->{authors} };
+        }
+        else {
+            $print_error->("ERROR in filter definition.")
+        }
+    }
+
+    my $export_path = $st{'export-path'};
+    print $f->h2('Exporting texts as XML'),
+        $f->p("This can take a while. Return to main page to interrupt conversion. Export folder: $export_path"),
+        $f->hr;
+
+    my $path = File::Spec->catfile($Bin, 'xml-export.pl');
+    my $c = $st{short_type};
+    my $command = "$path -c '$c' -o '$export_path' ";
+    if (@auths) {
+        my $n = join ',', @auths;
+        $command .= '-n ' . $n;
+    }
+    # print $f->p("Command: $command \n");
+    open (my $fh, '-|', $command) or die "Cannot exec $command: $!";
+    $fh->autoflush(1);
+    print '<pre>';
+    {
+        local $/ = "\n";
+        print $_ while (<$fh>);
+    }
+    print $f->h3('Finished XML conversion.');
+    print '</pre>';
+};
+
 $output{author_search} = sub
 {
     # A quick and dirty author search
@@ -628,7 +702,7 @@ $output{author_search} = sub
     my @auths = $q->select_authors(author_regex => $st{author});
     unless (scalar @auths)
     {
-        $print_error_page->(qq(There were no texts matching the author $st{author_pattern}));
+        $print_error->(qq(There were no texts matching the author $st{author_pattern}));
         return;
     }
 
@@ -939,6 +1013,7 @@ $output{browser} = sub
         my $auth = (keys %auths)[0];
         $st{author} = [keys %auths]->[0];
         $output{browser_works}->();
+        return;
     }
 
     $print_title->('Diogenes Author Browser');
@@ -1130,7 +1205,7 @@ $output{browser_output} = sub
              print STDERR "$jumpTo; $corpus, $st{author}, $st{work}, @target\n" if $q->{debug};
         }
         else {
-            $print_error_page->("Bad location description: $jumpTo");
+            $print_error->("Bad location description: $jumpTo");
         }
         # Try to fix cases where we are not given the number of levels we expect
         $q->parse_idt($st{author});
@@ -1265,7 +1340,7 @@ $output{filter_splash} = sub
         corpus, choose "List contents" and you can do that on the next
         page.  To add authors to an existing corpus, find the new
         authors using either the simple corpus or complex subset
-        options above, and then use the name of the existing corpus
+        options below, and then use the name of the existing corpus
         you want to add them to.  The new authors will be merged into
         the old, and for any duplicated author the new set of works will
         replace the old.  If you want to preserve the existing corpus
