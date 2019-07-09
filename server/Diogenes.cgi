@@ -31,7 +31,10 @@ $Diogenes::Base::cgi_flag = 1;
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
-binmode (STDOUT, ':utf8');
+# This doesn't actually work, as it is connects to another filehandle
+# in the server.
+binmode(STDOUT, ':encoding(UTF-8)');
+binmode(STDERR, ':encoding(UTF-8)');
 
 # Force read of config files
 my %args_init = (-type => 'none');
@@ -180,7 +183,8 @@ my $read_filters = sub {
         close $filter_fh or die "Can't close filter file ($filter_file): $!";
 
 #         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
-
+        # Unicode chars are encoded like \x{e3}, so we don't need to
+        # read the file as utf8 or convert the strings to utf8.
     }
 };
 
@@ -421,10 +425,10 @@ my $current_filter;
 my $get_filter = sub
 {
     my $name = shift;
+#    utf8::encode($name);
     for (@filters) {
         return $_ if $_->{name} eq $name;
     }
-    die ("Filter for $name not found!");
     return undef;
 };
 
@@ -1326,13 +1330,13 @@ $output{filter_splash} = sub
                                $dis)),
         $f->p(
             $f->submit (-name=>'list',
-                        -value=>'List contents'),
+                        -value=>'List contents of subset'),
             $f->br,
             $f->submit (-name=>'delete',
-                        -value=>'Delete entire corpus'),
+                        -value=>'Delete subset'),
             $f->br,
             $f->submit (-name=>'duplicate',
-                        -value=>'Duplicate corpus under new name: '),
+                        -value=>'Duplicate subset under new name: '),
             $f->textfield( -name => 'duplicate_name',
                            -size => 60, -default => '')),
 
@@ -1907,6 +1911,9 @@ $output{list_filter} = sub
 {
     my $filter = $get_filter->($st{filter_choice});
     my $type = $filter->{type};
+    my $name = $filter->{name};
+    # Not sure why this conversion is necessary here and not elsewhere.
+    utf8::encode($name);
     $st{short_type} = $type;
     $st{type} = $database{$type};
 
@@ -1926,7 +1933,7 @@ $output{list_filter} = sub
 
     print
         $f->h2('User-defined corpus listing'),
-        $f->p(qq(Here is the subset of the $type database named $st{filter_choice}:));
+        $f->p(qq(Here is the subset of the $type database named $name:));
 #               (join '<br />', @texts);
     print $f->checkbox_group( -name => "filter_list",
                               -Values => [0 .. $#texts],
