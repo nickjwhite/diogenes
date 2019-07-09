@@ -182,6 +182,7 @@ my $read_filters = sub {
 
         close $filter_fh or die "Can't close filter file ($filter_file): $!";
 
+        # utf8::encode($_->{name}) for @filters;
 #         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
         # Unicode chars are encoded like \x{e3}, so we don't need to
         # read the file as utf8 or convert the strings to utf8.
@@ -425,7 +426,7 @@ my $current_filter;
 my $get_filter = sub
 {
     my $name = shift;
-#    utf8::encode($name);
+    # utf8::encode($name);
     for (@filters) {
         return $_ if $_->{name} eq $name;
     }
@@ -1520,6 +1521,9 @@ the selected authors' );
 };
 
 my $save_filters = sub {
+    # for (@filters) {
+    #     utf8::decode($_->{name}) if Encode::is_utf8($_->{name});
+    # }
     open my $filter_fh, ">$filter_file"
         or die "Can't write to filter file ($filter_file): $!";
     print $filter_fh Data::Dumper->Dump([\@filters], ['*filters']);
@@ -1913,7 +1917,7 @@ $output{list_filter} = sub
     my $type = $filter->{type};
     my $name = $filter->{name};
     # Not sure why this conversion is necessary here and not elsewhere.
-    utf8::encode($name);
+    # utf8::encode($name);
     $st{short_type} = $type;
     $st{type} = $database{$type};
 
