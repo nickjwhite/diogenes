@@ -380,6 +380,19 @@ function initializeMenuTemplate () {
                     }
                 },
                 {
+                    label: 'Save File',
+                    accelerator: 'CmdOrCtrl+S',
+                    click: (menu, win) => {
+                        win.webContents.send('saveFileRequest', win);
+                        ipcMain.on('saveFileResponse', (event, path) => {
+                            win.webContents.savePage(path, 'HTMLOnly', function(error) {
+                                if (!error)
+                                    console.log("Saved page successfully");
+                            });
+                        })
+                    }
+                },
+                {
                     label: 'Database Setup',
                     accelerator: 'CmdOrCtrl+B',
                     click: (menu, win) => {
@@ -389,7 +402,7 @@ function initializeMenuTemplate () {
                 },
                 {
                     label: 'Diogenes Settings',
-                    accelerator: 'CmdOrCtrl+S',
+                    accelerator: 'CmdOrCtrl+T',
                     click: (menu, win) => {
                         let newWin = createWindow(win, 20, 20)
 		        newWin.loadURL('http://localhost:' + dioSettings.port + '/Settings.cgi')

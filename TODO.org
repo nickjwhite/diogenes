@@ -2,22 +2,9 @@
 
 * Generate patch for XML::DOM::Lite
 
-* Upgrade to Electron 5.0.5
-
 * Proofread XML webpage
 
-* Save file
-https://stackoverflow.com/questions/40501424/save-loaded-html-file-from-electron-app
-let file = new File([document.documentElement.outerHTML]
-           , "file-" + new Date().getTime() + ".html"
-           , {type:"text/html", lastModified:new Date().getTime()});
-
-// your content is into a variable named 'content'
-var fs = require('fs');
-try { fs.writeFileSync('myfile.txt', content, 'utf-8'); }
-catch(e) { alert('Failed to save the file !'); }
-
-* Test with utf8 paths to databases and in names of subcorpora
+* Test with utf8 paths to databases and in names of subcorpora on windows
 
 * Test on Windows USB stick
 And test install on MDS/NCPS

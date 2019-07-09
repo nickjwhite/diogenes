@@ -137,4 +137,18 @@ function exportPathPick () {
 
 document.addEventListener('XMLPathRequest', exportPathPick, false)
 
+// Select folder for File Save
+
+function saveFile (win) {
+    var path = dialog.showSaveDialog({title: 'Save File Location', defaultPath: 'diogenes-output.html'});
+    if (path) {
+        ipcRenderer.send('saveFileResponse', path)
+    }
+}
+
+ipcRenderer.on('saveFileRequest', (event, message) => {
+    console.log('Saving file ...');
+    saveFile();
+});
+
 //console.log('preload done');
