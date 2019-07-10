@@ -393,6 +393,22 @@ function initializeMenuTemplate () {
                     }
                 },
                 {
+                    label: 'Print to PDF',
+                    accelerator: 'CmdOrCtrl+P',
+                    click: (menu, win) => {
+                        win.webContents.send('printPDFRequest', win);
+                        ipcMain.on('printPDFResponse', (event, path) => {
+                            win.webContents.printToPDF({}, (error, data) => {
+                                if (error) throw error
+                                fs.writeFile(path, data, (error) => {
+                                    if (error) throw error
+                                    console.log('Wrote PDF successfully.')
+                                })
+                            })
+                        })
+                    }
+                },
+                {
                     label: 'Database Setup',
                     accelerator: 'CmdOrCtrl+B',
                     click: (menu, win) => {

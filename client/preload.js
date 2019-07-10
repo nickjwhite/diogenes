@@ -137,9 +137,9 @@ function exportPathPick () {
 
 document.addEventListener('XMLPathRequest', exportPathPick, false)
 
-// Select folder for File Save
+// Select file for File Save
 
-function saveFile (win) {
+function saveFile () {
     var path = dialog.showSaveDialog({title: 'Save File Location', defaultPath: 'diogenes-output.html'});
     if (path) {
         ipcRenderer.send('saveFileResponse', path)
@@ -150,5 +150,21 @@ ipcRenderer.on('saveFileRequest', (event, message) => {
     console.log('Saving file ...');
     saveFile();
 });
+
+// Select file for Print to PDF
+
+function printPDF (win) {
+    var path = dialog.showSaveDialog({title: 'PDF File Location', defaultPath: 'diogenes-print.pdf'});
+    if (path) {
+        ipcRenderer.send('printPDFResponse', path)
+    }
+}
+
+ipcRenderer.on('printPDFRequest', (event, message) => {
+    console.log('Printing to PDF ...');
+    printPDF();
+});
+
+
 
 //console.log('preload done');

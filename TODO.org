@@ -1,7 +1,4 @@
-* Current
-
 * Generate patch for XML::DOM::Lite
-
 * Proofread XML webpage
 
 * Test with utf8 paths to databases and in names of subcorpora on windows
@@ -21,3 +18,4 @@ And test install on MDS/NCPS
 ** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page
 https://github.com/pjheslin/diogenes/issues/20
 (and shift move back/forward buttons to the far left where they won't get covered by Perseus window.
+** Fix Wide character warnings when a filter name is in utf8
