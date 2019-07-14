@@ -300,6 +300,17 @@ sub seek_passage
         next SCAN unless ($code >> 7);
         $self->parse_non_ascii (\$buf, \$i);
         redo SCAN unless defined $self->{level}{$lev};
+
+        if (0 + $self->{work_num} != 0 + $self->{browse_work} ) {
+            if (ref $self eq 'Diogenes::Browser::Stateless') {
+                print qq{<h1 style="text-align:center">Error: End of work reached without finding target citation!</h1>};
+            }
+            else {
+                print "End of work reached without finding target citation!\n"
+            }
+            # TODO: Return from failure more elegantly than this.
+            die "Bad browser request.\n";
+        }
         
         # String equivalence
         print STDERR "=> $self->{level}{$lev} :: $target{$lev} \n" if $self->{debug};
@@ -891,9 +902,14 @@ sub browse_backward
     else
     {
         my @beginning = (0) x $self->{target_levels};
-        $self->seek_passage ($self->{browse_auth}, $self->{browse_work},
-                             @beginning);
-        $self->browse_forward;
+        my $ret = $self->seek_passage ($self->{browse_auth}, $self->{browse_work}, @beginning);
+        if ($ret eq 'fail') {
+            print "Passage not found!\n";
+            return(0,0);
+        }
+        else {
+            $self->browse_forward;
+        }
     }
     # Store and pass back the start and end points of the whole session
     return ($self->{browse_begin}, $self->{browse_end});  # $abs_begin and $abs_end
