@@ -15,6 +15,12 @@ https://d.iogen.es/d
 Building
 --------
 
+I would prefer users who are not building the application themselves
+to download the installer from the Diogenes website rather than for it
+to be provided to them as part of a larger distribution.  This is just
+because I use the download statistics to help justify spending part of
+my publicly funded time on this project.
+
 Diogenes can either be built and run as a HTTP server application, or
 as a standalone application that seamlessly combines both server and
 browser by using the Electron application framework
