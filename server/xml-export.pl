@@ -32,7 +32,7 @@ use FindBin qw($Bin);
 use lib ($Bin, File::Spec->catdir($Bin, '..', 'dependencies', 'CPAN') );
 
 use Getopt::Std;
-use File::Path;
+use File::Path qw( make_path );
 use File::Basename;
 use File::Copy;
 use IO::Handle;
@@ -186,7 +186,7 @@ push @newdirs, 'xml';
 push @newdirs, $corpus;
 $path = File::Spec->catpath($volume, File::Spec->catdir(@newdirs), '');
 unless (-e $path and -d $path) {
-    File::Path->make_path($path) or die "Could not make output directory: $path.\n";
+    make_path($path) or die "Could not make output directory: $path.\n";
 }
 unless (-e File::Spec->catfile($path, '../tei_all.rnc')) {
     copy(File::Spec->catfile($Bin, 'tei_all.rnc'),
