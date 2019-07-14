@@ -1853,7 +1853,7 @@ sub merge_rend_lite {
           $child_attr =~ s/s+/ /g;
           if ($child_attr =~ m/\S/) {
               $child->setAttribute('rend', $child_attr);
-              print STDERR "      Modifying rend: $orig_attr to $child_attr\n"
+              print STDERR "      Modifying rend: $orig_attr to $child_attr\n" if $debug;
           }
           else {
               $child->removeAttribute('rend');
@@ -1863,12 +1863,12 @@ sub merge_rend_lite {
                   $node->insertBefore($_, $child) foreach @nodelist1;
                   my $next = $child->nextSibling;
                   $child->unbindNode;
-                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n";
+                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
                   $child = $next;
                   next CHILD;
               }
               else {
-                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n";
+                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
               }
           }
       }
@@ -1958,7 +1958,7 @@ sub merge_neighbors_lite {
             if (($child->nodeName eq $sib->nodeName)
                 and
                 (compare_attributes($child, $sib))) {
-                print STDERR "      Merging away ".$sib->nodeName."\n";
+                print STDERR "      Merging away ".$sib->nodeName."\n" if $debug;
                 $child->appendChild($node->ownerDocument->createTextNode($ws)) if $ws;
                 my @nodelist2 = @{ $sib->childNodes };
                 foreach (@nodelist2) {
