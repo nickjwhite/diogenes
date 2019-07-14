@@ -36,6 +36,14 @@ my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 binmode(STDOUT, ':encoding(UTF-8)');
 binmode(STDERR, ':encoding(UTF-8)');
 
+use constant is_win32  => 0 <= index $^O, "Win32";
+
+BEGIN {
+   if ( is_win32 ) {
+      eval "use Win32::ShellQuote qw(quote_native); 1" or die $@;
+   }
+}
+
 # Force read of config files
 my %args_init = (-type => 'none');
 my $init = new Diogenes::Base(%args_init);
@@ -674,15 +682,38 @@ $output{export_xml} = sub {
         $f->p("This can take a while. Return to main page to interrupt conversion. Export folder: $export_path"),
         $f->hr;
 
-    my $path = File::Spec->catfile($Bin, 'xml-export.pl');
-    my $c = $st{short_type};
-    my $command = "$path -c '$c' -o '$export_path' ";
+    my $perl_name;
+    if (is_win32) {
+        $perl_name = File::Spec->catfile($Bin, '..', 'strawberry', 'perl', 'bin', 'perl.exe');
+    }
+    else {
+        # For Mac and Unix, we assume perl is in the path
+        $perl_name = 'perl';
+    }
+    my @cmd;
+    push @cmd, $perl_name;
+    push @cmd, File::Spec->catfile($Bin, 'xml-export.pl');
+    # LibXML does not work under Strawberry Perl
+    push @cmd, '-x' if is_win32;
+    push @cmd, '-c';
+    push @cmd, $st{short_type};
+    push @cmd, '-o';
+    push @cmd, $export_path;
     if (@auths) {
         my $n = join ',', @auths;
-        $command .= '-n ' . $n;
+        push @cmd, '-n';
+        push @cmd, $n;
+    }
+    my ($command, $fh);
+    if (is_win32) {
+        $command = quote_native(@cmd);
+        open ($fh, '-|', $command) or die "Cannot exec $command: $!";
+    }
+    else {
+        open ($fh, '-|', @cmd) or die "Cannot exec: "
+            . (join ' ', @cmd) . ": $!";
     }
     # print $f->p("Command: $command \n");
-    open (my $fh, '-|', $command) or die "Cannot exec $command: $!";
     $fh->autoflush(1);
     print '<pre>';
     {
