@@ -121,10 +121,10 @@ if ($libxml) {
     $libxml = require XML::LibXML;
     if ($libxml) {
         XML::LibXML->import( qw(:libxml) );
-        print STDERR "LibXML installed.\n" if $debug;
+        print STDOUT "LibXML installed.\n" if $debug;
     }
     else {
-        print STDERR "LibXML not installed.\n" if $debug;
+        print STDOUT "LibXML not installed.\n" if $debug;
     }
 }
 if (not $libxml) {
@@ -139,7 +139,7 @@ if (not $libxml) {
     }
 }
 if ($debug) {
-    print STDERR $libxml ? "Using XML::LibXML.\n" : "Using XML::DOM::Lite.\n";
+    print STDOUT $libxml ? "Using XML::LibXML.\n" : "Using XML::DOM::Lite.\n";
 }
 
 die "Error: specify corpus.\n" unless $opt_c;
@@ -368,13 +368,13 @@ AUTH: foreach my $auth_num (@all_auths) {
                         my $re1 = qr/$p[\s\$\&\"\'\d\@\}\]\>]*\z/ms;
                         my $re2 = qr/\A(.*?)($p[\s\$\&\"\d\@\}\]\>]*)(.*?)\z/ms;
                         if ($chunk =~ $re1) {
-                            # print STDERR "$&\n";
+                            # print STDOUT "$&\n";
                             last;
                         }
                         elsif ($line =~ $re2) {
                             $chunk .= $1.$2;
                             $line = $3;
-                            # print STDERR "$re2::$1::$2::$line\n";
+                            # print STDOUT "$re2::$1::$2::$line\n";
                             last;
                         }
                     }
@@ -646,10 +646,10 @@ sub convert_chunk {
 
     # Check for unconverted Greek, because of missing $
     if ($chunk =~ /([A-Z$diacrits]*[$diacrits]+[A-Z$diacrits]*)/ and length $1 > 2) {
-        print STDERR "This looks like it might be unconverted Greek: $chunk\n\n" if $debug;
+        print STDOUT "This looks like it might be unconverted Greek: $chunk\n\n" if $debug;
     }
     if ($chunk =~ /[\x00-\x09\x0b-\x1f\x80-\x9f]/) {
-        print STDERR "This looks like mojibake: $chunk\n\n" if $debug;
+        print STDOUT "This looks like mojibake: $chunk\n\n" if $debug;
     }
 
     # Latin accents, just in case
@@ -711,7 +711,7 @@ sub convert_chunk {
     # have to remove these at the end.
 
     if ($debug) {
-        print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:\$|&amp;)\d+)/;
+        print STDOUT "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:\$|&amp;)\d+)/;
         $chunk =~ s#\&amp;(?!\d)##g;
         $chunk =~ s#\$(?!\d)##g;
     }
@@ -837,7 +837,7 @@ sub convert_chunk {
                       $braces{$2} ? qq{<seg type="$braces{$2}">$1</seg>} : qq{<seg type="Non-text-characters">$1</seg>}#ges;
 
     if ($debug) {
-        print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([{}]\d*)/;
+        print STDOUT "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([{}]\d*)/;
     }
     else {
         # Clean up any unmatched braces
@@ -1028,7 +1028,7 @@ sub convert_chunk {
 
 
     if ($debug) {
-        print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
+        print STDOUT "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/((?:&lt;|&gt;)\d*)/;
     }
     else {
         # Tidy up unbalanced <> markup
@@ -1062,12 +1062,12 @@ sub convert_chunk {
 
     $chunk =~ s#\[(\d+)#if(exists $Diogenes::BetaHtml::bra{$1})
               {$Diogenes::BetaHtml::bra{$1}} else
-              {print STDERR "Missing [: $1\n";"[$1??"}#ge;
+              {print STDOUT "Missing [: $1\n";"[$1??"}#ge;
     $chunk =~ s#\](\d+)#if(exists $Diogenes::BetaHtml::ket{$1})
               {$Diogenes::BetaHtml::ket{$1}} else
-              {print STDERR "Missing ]: $1\n";"]$1??"}#ge;
+              {print STDOUT "Missing ]: $1\n";"]$1??"}#ge;
 
-    print STDERR "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([\]\[]\d+)/;
+    print STDOUT "Unmatched markup: $1\n$chunk\n\n" if $chunk =~ m/([\]\[]\d+)/;
 
     # Some extra markup related to brackets.  Given the fact that
     # other EpiDoc features are represented typographically
@@ -1085,7 +1085,7 @@ sub convert_chunk {
 
     $chunk =~ s#%(\d+)#if(exists $Diogenes::BetaHtml::percent{$1})
                        {$Diogenes::BetaHtml::percent{$1}} else
-                       {print STDERR "Missing %: $1\n";"%$1??"}#ge;
+                       {print STDOUT "Missing %: $1\n";"%$1??"}#ge;
     $chunk =~ s/%/&#x2020;/g;
 
 
@@ -1093,10 +1093,10 @@ sub convert_chunk {
 
     $chunk =~ s/\*#(\d+)/if(exists $Diogenes::BetaHtml::starhash{$1})
                              {$Diogenes::BetaHtml::starhash{$1}} else
-                             {print STDERR "Missing *#: $1\n";"*#$1??"}/ge;
+                             {print STDOUT "Missing *#: $1\n";"*#$1??"}/ge;
     $chunk =~ s/(?<!&)#(\d+)/if(exists $Diogenes::BetaHtml::hash{$1})
                              {$Diogenes::BetaHtml::hash{$1}} else
-                             {print STDERR "Missing #: $1\n";"#$1??"}/ge;
+                             {print STDOUT "Missing #: $1\n";"#$1??"}/ge;
     $chunk =~ s/(?<!&)#/&#x0374;/g;
 
     # Some further punctuation
@@ -1798,7 +1798,7 @@ sub merge_rend_libxml {
           $child_attr =~ s/s+/ /g;
           if ($child_attr =~ m/\S/) {
               $child->setAttribute('rend', $child_attr);
-              print STDERR "      Modifying rend: $orig_attr to $child_attr\n" if $debug;
+              print STDOUT "      Modifying rend: $orig_attr to $child_attr\n" if $debug;
           }
           else {
               $child->removeAttribute('rend');
@@ -1806,11 +1806,11 @@ sub merge_rend_libxml {
                   # <hi> serves no purpose without @rend
                   $node->insertBefore($_, $child) foreach $child->childNodes;
                   $child->unbindNode;
-                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
+                  print STDOUT "      Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
                   next CHILD;
               }
               else {
-                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
+                  print STDOUT "      Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
               }
           }
       }
@@ -1853,7 +1853,7 @@ sub merge_rend_lite {
           $child_attr =~ s/s+/ /g;
           if ($child_attr =~ m/\S/) {
               $child->setAttribute('rend', $child_attr);
-              print STDERR "      Modifying rend: $orig_attr to $child_attr\n" if $debug;
+              print STDOUT "      Modifying rend: $orig_attr to $child_attr\n" if $debug;
           }
           else {
               $child->removeAttribute('rend');
@@ -1863,12 +1863,12 @@ sub merge_rend_lite {
                   $node->insertBefore($_, $child) foreach @nodelist1;
                   my $next = $child->nextSibling;
                   $child->unbindNode;
-                  print STDERR "      Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
+                  print STDOUT "      Deleting superfluous <hi> after removing $orig_attr\n" if $debug;
                   $child = $next;
                   next CHILD;
               }
               else {
-                  print STDERR "      Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
+                  print STDOUT "      Removing rend from ".$child->nodeName."; was $orig_attr\n" if $debug;
               }
           }
       }
@@ -1909,7 +1909,7 @@ sub merge_neighbors_libxml {
             if (($child->nodeName eq $sib->nodeName)
                 and
                 (compare_attributes($child, $sib))) {
-                print STDERR "      Merging away ".$sib->nodeName."\n" if $debug;
+                print STDOUT "      Merging away ".$sib->nodeName."\n" if $debug;
                 $child->appendText($ws) if $ws;
                 $child->appendChild($_) foreach $sib->childNodes;
                 my $old = $sib;
@@ -1954,11 +1954,11 @@ sub merge_neighbors_lite {
             next SIB;
         }
         elsif ($sib->nodeType == ELEMENT_NODE()) {
-            # print STDERR $child->nodeName .'::'. $sib->nodeName ."\n";
+            # print STDOUT $child->nodeName .'::'. $sib->nodeName ."\n";
             if (($child->nodeName eq $sib->nodeName)
                 and
                 (compare_attributes($child, $sib))) {
-                print STDERR "      Merging away ".$sib->nodeName."\n" if $debug;
+                print STDOUT "      Merging away ".$sib->nodeName."\n" if $debug;
                 $child->appendChild($node->ownerDocument->createTextNode($ws)) if $ws;
                 my @nodelist2 = @{ $sib->childNodes };
                 foreach (@nodelist2) {
