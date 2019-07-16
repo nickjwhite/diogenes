@@ -908,13 +908,15 @@ sub do_word_search
                       $self->{debug};
                   # clear the last search
                   undef $self->{seen}{$author};
-                  
+                  undef $self->{match_start}{$author};
+
                   return if $Diogenes_Daemon::flag and not print ("\0");
                                         
                   # this does the search, storing the locations in %seen
                   while ($buf =~ m#$word#g)
                   {
                       push @{ $self->{seen}{$author} }, (pos $buf);
+                      push @{ $self->{match_start}{$author} }, $-[0];
                   }
                   
                   print STDERR "Seen: " . @{ $self->{seen}{$author} }. "\n" if 
