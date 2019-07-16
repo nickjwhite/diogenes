@@ -1,5 +1,3 @@
-* Proofread XML webpage
-
 * No Exit keyboad shortcut on Windows
 
 * Test with utf8 paths to databases and in names of subcorpora on windows and Coptic
@@ -23,3 +21,6 @@ https://github.com/pjheslin/diogenes/issues/20
 This is tricky, as some names seem to be latin-1, not utf8.
 ** Try XML::YAX
 Possibly faster and better supported, by same author as XML::DOM::Lite.
+** Fix Strawberry Perl to use included libxml.
+I think this just requires adding strawberry\c\bin to the PATH, so that it can find libxml2-2__.dll
+** Fix bug where utf8 pathnames to databases don't work in Windows.

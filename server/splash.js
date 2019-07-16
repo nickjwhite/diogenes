@@ -132,7 +132,7 @@ function info (choice) {
     if (choice == 'export') {
         if (exportPath && exportPath != "null") {
             infoText['export'] = exportText1 +
-                '<p class="info-field">Output Folder: <a href="#" onclick="XMLPathSelect()">' + exportPath + '</a></p>' +
+                '<p class="info-field"><a href="#" onclick="XMLPathSelect()">Output Folder: ' + exportPath + '</a></p>' +
                 exportText2 + '<p align="center"><input class="info-button" type="submit" name="go" value="Export Texts"></p>';
         }
         else {
