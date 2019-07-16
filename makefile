@@ -302,7 +302,7 @@ clean:
 	rm -rf app
 	rm -rf install
 
-installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 # These targets will not be of interest to anyone else
 
