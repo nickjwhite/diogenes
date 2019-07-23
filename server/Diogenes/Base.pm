@@ -52,8 +52,31 @@ use Exporter;
 our($RC_DEBUG, $OS, $config_dir);
 $RC_DEBUG = 0;
 
+use constant is_win32  => 0 <= index $^O, "Win32";
+use Encode;
+BEGIN {
+    if ( is_win32 ) {
+        eval "use Win32; 1" or die $@;
+    }
+}
+
 $OS = ($^O=~/MSWin/i or $^O =~/dos/) ? 'windows' :
     ($^O=~/darwin/i) ? 'mac' : 'unix';
+
+# For Windows pathnames
+my $code_page;
+if ($OS eq 'windows') {
+    $code_page = Win32::GetACP() || q{};
+    if ($code_page) {
+        $code_page = 'cp'.$code_page;
+        $code_page = Encode::resolve_alias($code_page) || q{};
+        print STDERR "Code page: $code_page\n";
+    }
+}
+sub windows_filename {
+    my ($filename) = @_;
+    return $code_page ? encode($code_page, $filename) : $filename;
+}
 
 eval "require 'Diogenes.map';";
 $Diogenes::Base::map_error = $@;
@@ -338,7 +361,7 @@ sub new
     $args{ validate($_) } = $passed{$_} foreach keys %passed;
 
     my $user_config_dir = get_user_config_dir;
-    # For prefs saved by nw.js and Settings.cgi
+    # For prefs saved by Electron.js and Settings.cgi
     $self->{auto_config} = File::Spec->catfile($user_config_dir, 'diogenes.prefs');
     # For manual editing by the user
     $self->{user_config} = File::Spec->catfile($user_config_dir, 'diogenes.config');
@@ -358,8 +381,12 @@ sub new
     # values).
     for my $dir (@dirs) 
     {
-#         print STDERR "--$dir: $self->{$dir}\n";
-        $self->{$dir} .= '/' unless $self->{$dir} eq '' or $self->{$dir} =~ m#[/\\]$#;
+        # print STDERR "--$dir: $self->{$dir}\n";
+        $self->{$dir} .= '/' unless $self->{$dir} eq '' or
+            $self->{$dir} =~ m#[/\\]$#;
+        if ($OS eq 'windows') {
+            $self->{$dir} = windows_filename($self->{$dir});
+        }
     }
     
     # Clone values that are references, so we don't clobber what was passed.
