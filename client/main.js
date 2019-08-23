@@ -530,7 +530,7 @@ function initializeMenuTemplate () {
 
     if (process.platform !== 'darwin') {
         template[0].submenu.push(
-                {role: 'quit'}
+            {role: 'quit', accelerator: 'CmdOrCtrl+Q'}
         )
     }
 

@@ -1,7 +1,8 @@
+* Finish implementing TLL links
+* Create DMG installer for Mac.
+Using bash script
 * No Exit keyboad shortcut on Windows
 * Remove Google analytics
-
-* Test with utf8 paths to databases and in names of subcorpora on windows and Coptic
 
 * Test on Windows USB stick
 And test install on MDS/NCPS
