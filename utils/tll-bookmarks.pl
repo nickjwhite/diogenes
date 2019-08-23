@@ -37,59 +37,50 @@ foreach my $file (@sorted) {
     my @dump = `pdftk tmp.pdf dump_data output - `;
     unlink 'tmp.pdf';
 
-    while (@dump) {
-        my $line = shift @dump;
-        next unless $line =~ m/^Bookmark/;
-        if ($line =~ m/BookmarkBegin/) {
-            my $title = shift @dump;
-            my $level = shift @dump;
-            my $page = shift @dump;
-            die "Parse error: $line; $title; $level; $page\n" unless
-                $title =~ s/^BookmarkTitle:\s+(.*)\s*$/$1/;
-            die "Parse error: $line; $title; $level; $page\n" unless
-                $level =~ s/^BookmarkLevel:\s+(\d+)\s*/$1/;
-            die "Parse error: $line; $title; $level; $page\n" unless
-                $page  =~ s/^BookmarkPageNumber:\s+(\d+)\s*/$1/;
+  LINE: while (@dump) {
+      my $line = shift @dump;
+      next LINE unless $line =~ m/^Bookmark/;
+      if ($line =~ m/BookmarkBegin/) {
+          my $title = shift @dump;
+          my $level = shift @dump;
+          my $page = shift @dump;
+          die "Parse error: $line; $title; $level; $page\n" unless
+              $title =~ s/^BookmarkTitle:\s+(.*)\s*$/$1/;
+          die "Parse error: $line; $title; $level; $page\n" unless
+              $level =~ s/^BookmarkLevel:\s+(\d+)\s*/$1/;
+          die "Parse error: $line; $title; $level; $page\n" unless
+              $page  =~ s/^BookmarkPageNumber:\s+(\d+)\s*/$1/;
 
-            # We only record first entry
-            next if $title =~ m/^[23456789]\.\ /;
-            # Odd fragments
-            next if $title =~ m/^[ ,\-]/;
-            # Leading 1.
-            $title =~ s/^1\.\s+//;
-            # Addenda
-            $title =~ s/\s*\[ADD\]//;
-            $title =~ s/\&lt;//g;
-            $title =~ s/\&gt;//g;
-            $title =~ s/\.\.\.//g;
-            $title =~ s/^([^(]*)\)/$1/g; # foo)bar
-            $title =~ s/([^)]*)\($/$1/g; # foo(bar
-            while ($title =~ m/(\w+?)(?:,\s+|\s*$)/g) {
-                mark($1, $index, $page);
-            }
+          # We only record first entry when a lemma has several
+          next LINE if $title =~ m/^[23456789]\.\ /;
+          # Leading 1.
+          $title =~ s/^1\.\s+//;
+          # Addenda
+          $title =~ s/\s*\[ADD\]//;
+          # Embedded punctuation
+          $title =~ s/\&lt;//g;
+          $title =~ s/\&gt;//g;
+          $title =~ s/\.\.\.//g;
+          $title =~ s/[()!?.]//g;
+          # Odd fragments
+          next LINE if $title =~ m/^[ ,\-]/;
+
+          # Iterate over comma-separated forms
+        WORD: while ($title =~ m/(\w+?)(?:,\s+|\s*$)/g) {
+            my $word = $1;
+            next WORD if $word =~ m/-/;
+            next WORD if $word =~ m/^(us|onis)$/;
+
+            $bookmarks{$word} = "$index\t$page";
         }
-        else {
-            die "Parse error (2): $line\n";
-        }
-    }
-}
 
-sub mark {
-    my ($word, $index, $page) = @_;
-    $word =~ s/^\s+//;
-    $word =~ s/\s+$//;
-    
-    if ($word =~ m/^(.*?)\((\w+)\)(.*?)$/) {
-        # Add word both with and without letters in parens
-        $bookmarks{$1.$2.$3} = "$index\t$page";
-        $bookmarks{$1.$3} = "$index\t$page";
-    }
-    else {
-        $bookmarks{$word} = "$index\t$page";
-    }
-}
 
-#print join "; ", %bookmarks;
+      }
+      else {
+          die "Parse error (2): $line\n";
+      }
+  }
+}
 
 foreach my $k (sort keys %bookmarks) {
     print $k."\t".$bookmarks{$k}."\n";
