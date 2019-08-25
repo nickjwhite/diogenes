@@ -11,14 +11,16 @@ DATAFILES = \
 
 all: $(DATAFILES)
 
-
 .SUFFIXES: .txt .idt
 
 .txt.idt:
 	./utils/make_index.pl < $< > $@
 
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+mkfile_dir := $(dir $(mkfile_path))
+
 $(DATA)/tll-bookmarks.txt: utils/make_tll_bookmarks.pl
-	utils/make_tll_bookmarks.pl $(TLLDIR) $(DATA)/tll-pdf-list.txt > $(DATA)/tll-bookmarks.txt
+	utils/make_tll_bookmarks.pl $(TLLDIR) $(mkfile_dir)/$(DATA) > $(DATA)/tll-bookmarks.txt
 
 $(DATA)/tll-pdf-list.txt: $(DATA)/tll-bookmarks.txt
 
