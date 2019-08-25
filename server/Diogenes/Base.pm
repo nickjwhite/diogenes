@@ -165,6 +165,7 @@ my %defaults = (
     tlg_dir => '',
     phi_dir => '',
     ddp_dir => '',
+    tll_pdf_dir => '/Users/dkl0pjh/diogenes/tll-pdfs/',
     authtab => 'authtab.dir',
     tlg_file_prefix => 'tlg',
     phi_file_prefix => 'lat',

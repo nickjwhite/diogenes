@@ -7,6 +7,7 @@ use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %datab
 use Diogenes::EntityTable;
 use FileHandle;
 use Encode;
+use URI::Escape;
 
 # The lexica are now utf8, but we need to read the files in as bytes, as we want to jump into the middle and read backwards.  We then convert entries to utf8 by hand.
 use open IN  => ":bytes", OUT => ":utf8";
@@ -238,12 +239,19 @@ my $latin_parse_setup = sub {
     $key_fn = $tab_key_fn;
 };
 
+my $tll_parse_setup = sub {
+    $idt_file = File::Spec->catfile($perseus_dir, 'tll-bookmarks.idt');
+    $txt_file = File::Spec->catfile($perseus_dir, 'tll-bookmarks.txt');
+    $comp_fn = $ascii_comp_fn;
+    $key_fn = $tab_key_fn;
+};
+
 my $parse_prelims = sub {
     open $idt_fh, "<$idt_file" or die $!;
     local $/ = undef;
     my $code = <$idt_fh>;
     eval $code;
-    warn "Error reading in saved corpora: $@" if $@;
+    warn "Error eval'ing $idt_file: $@" if $@;
     open $search_fh, "<$txt_file" or die $!;
 };
 
@@ -373,7 +381,7 @@ my $munge_xml = sub {
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
     local $xml_ital = 0  ;
-#    print STDERR ">>$text\n";
+    # print STDERR ">>$text\n";
     my $tree = XML::Tiny::parsefile($text,
                                     'no_entity_parsing' => 1,
                                     'input_is_string' => 1,
@@ -471,6 +479,48 @@ my $swap_element = sub {
     }
 
 };
+my %tll_list;
+my $tll_list_read = sub {
+    my $index = File::Spec->catfile($perseus_dir, 'tll-pdf-list.txt');
+    open my $index_fh, "<$index" or die "Could not open $index: $!";
+    while (<$index_fh>) {
+        m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
+        $tll_list{$1} = $2;
+    }
+};
+
+my $tll_pdf_link = sub {
+    return '<br/>' unless $lang eq 'lat';
+    my $word = shift;
+    # Remove numbered entries, since there is no reason to believe
+    # that the numbers used by L-S and TLL will correspond.
+    $word =~ s/\s*\d+$//;
+    my %args_init = (-type => 'none');
+    my $init = new Diogenes::Base(%args_init);
+    my $tll_path = $init->{tll_pdf_dir};
+    return '<br/>' unless $tll_path and -e $tll_path;
+    $tll_parse_setup->();
+    $parse_prelims->();
+    my $bookmark = $try_parse->($word);
+    return '<br/>' unless $bookmark;
+
+    $tll_list_read->() unless %tll_list;
+    $bookmark =~ m/^(\d+)\t(\d+)$/ or die "No match for $bookmark\n";
+    my $tll_file = $tll_list{$1};
+    my $page = $2;
+    $tll_file = uri_escape($tll_file);
+    $tll_file = File::Spec->catfile($tll_path, $tll_file);
+    print STDERR "!!$word->$bookmark->$tll_file->$page\n";
+    my $href = "file://$tll_file#page=$page";
+    my $foo = 'file:///Users/dkl0pjh';
+    return qq{<span style="display:block;text-align:right;"><a class="open-external" onClick="openPDF('$href')" href="#"><i>TLL</i> pdf</a></span>};
+    # return qq{<span style="display:block;text-align:right;"><a class="open-external" href="$href"><i>TLL</i> pdf</a></span>};
+
+
+    # return qq{<span style="display:block;text-align:right;"><a class="open-external" href="$href"><i>TLL</i> pdf</a></span>};
+
+};
+
 
 local $munge_element = sub {
     my $e = shift;
@@ -479,7 +529,11 @@ local $munge_element = sub {
         my $key = $e->{attrib}->{key};
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';
-        $out .= '<h2>' . $key . '</h2>';
+        $out .= '<h2><span style="display:block;float:left">' . $key . '</span>';
+        $out .= $tll_pdf_link->($key);
+        $out .= '</h2>';
+        # $out .= '<h2>' . $key . '</h2>';
+        #print STDERR '$$'.$tll_link->($key)."\n";
     }
     if ($e->{attrib}->{lang} ) {
         local $xml_lang = $e->{attrib}->{lang};
@@ -493,10 +547,11 @@ local $munge_element = sub {
 $format_fn{xml} = sub {
     my $text = shift;
 #      print STDERR "\n\n$text\n\n";
-    print "<div>";
+    print qq{<hr /><div>};
     print qq{<a onClick="prevEntry$lang($dict_offset)"><img class="prev" src="${picture_dir}go-previous.png" srcset="${picture_dir}go-previous.hidpi.png 2x" alt="Previous Entry" /></a> };
+    # print "TLL Link";
     print qq{<a onClick="nextEntry$lang($dict_offset)"><img class="next" src="${picture_dir}go-next.png" srcset="${picture_dir}go-next.hidpi.png 2x" alt="Next Entry" /></a>};
-    print "</div><hr />";
+    print "</div><br/>";
     print $munge_xml->($text);
 };
 
