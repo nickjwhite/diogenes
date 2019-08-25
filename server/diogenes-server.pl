@@ -396,7 +396,7 @@ REQUEST:
             my $tll_path = $init->{tll_pdf_dir};
             unless ($tll_path) {
                 warn "Error: tll_path not set\n";
-                $client->send_error(RC_NOT_FOUND, "Location of the directory containing the TLL pdf files not set.");
+                $client->send_error(RC_NOT_FOUND, "Location of the directory containing the TLL pdf files has not been set.");
                 close $client;
                 return;
             }
@@ -409,8 +409,8 @@ REQUEST:
             $tll_file = File::Spec->catfile($tll_path, $tll_file);
             warn "Serving PDF file $file_number as $tll_file\n" if $DEBUG;
             unless (-e $tll_file) {
-                warn "Error: tll_path ($tll_path) does not exist\n";
-                $client->send_error(RC_NOT_FOUND, "Requested TLL pdf file ($tll_path) was not found.");
+                warn "Error: tll_file ($tll_file) does not exist\n";
+                $client->send_error(RC_NOT_FOUND, "Requested TLL pdf file ($tll_file) was not found.");
                 close $client;
                 return;
             }
@@ -459,7 +459,8 @@ sub tll_list_read {
     my $data_dir = File::Spec->catdir($Bin, '..', 'dependencies', 'data');
     my $list = File::Spec->catfile($data_dir, 'tll-pdf-list.txt');
 
-    open my $list_fh, "<$list" or die "Could not open $list: $!";
+    open my $list_fh, '<:encoding(UTF-8)', $list or
+        die "Could not open $list: $!";
     while (<$list_fh>) {
         m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
         $tll_list{$1} = $2;
