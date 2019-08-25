@@ -96,6 +96,7 @@ END
 }
 
 my %cgi_subroutine;
+my %tll_list;
 my $DEBUG = 0;
 $DEBUG = 1 if $opt_d;
 $ENV{Diogenes_Debug} = 1 if $DEBUG;
@@ -378,6 +379,45 @@ REQUEST:
             eval {$cgi_subroutine{$requested_file}->()};
             warn "Diogenes Error: $@" if $@; 
         }
+        elsif ($requested_file =~ m#^tll-pdf/#) {
+            # Serve TLL pdfs, but first translate filename
+            $requested_file =~ m#^tll-pdf/(\d+).pdf#;
+            my $file_number = $1;
+            warn "Bad PDF file URI" unless $file_number;
+
+            tll_list_read() unless %tll_list;
+            my $tll_file = $tll_list{$file_number};
+            warn "Bad PDF file number" unless $tll_file;
+            
+            # $tll_file = uri_escape($tll_file);
+
+            my %args_init = (-type => 'none');
+            my $init = new Diogenes::Base(%args_init);
+            my $tll_path = $init->{tll_pdf_dir};
+            unless ($tll_path) {
+                warn "Error: tll_path not set\n";
+                $client->send_error(RC_NOT_FOUND, "Location of the directory containing the TLL pdf files not set.");
+                close $client;
+                return;
+            }
+            unless (-e $tll_path) {
+                warn "Error: tll_path ($tll_path) does not exist.\n";
+                $client->send_error(RC_NOT_FOUND, "Location of the directory containing the TLL pdf files ($tll_path) does not exist");
+                close $client;
+                return;
+            }
+            $tll_file = File::Spec->catfile($tll_path, $tll_file);
+            warn "Serving PDF file $file_number as $tll_file\n" if $DEBUG;
+            unless (-e $tll_file) {
+                warn "Error: tll_path ($tll_path) does not exist\n";
+                $client->send_error(RC_NOT_FOUND, "Requested TLL pdf file ($tll_path) was not found.");
+                close $client;
+                return;
+            }
+            
+            my $ret = $client->send_file_response($tll_file);
+            warn "File $requested_file failed to send!\n" unless $ret eq RC_OK;
+        }
         else
         {
             # Merrily serve up all non .cgi files (but only files in the
@@ -413,6 +453,17 @@ sub write_lock
     # This ought to address the race condition whereby the browser process can read the file after it has been created but before it has been written to.  The linking action within the rename ought to be atomic.
     rename $lock_file_temp, $lock_file;
 
+}
+
+sub tll_list_read {
+    my $data_dir = File::Spec->catdir($Bin, '..', 'dependencies', 'data');
+    my $list = File::Spec->catfile($data_dir, 'tll-pdf-list.txt');
+    
+    open my $list_fh, "<$list" or die "Could not open $list: $!";
+    while (<$list_fh>) {
+        m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
+        $tll_list{$1} = $2;
+    }
 }
     
 sub compile_cgi_subroutine

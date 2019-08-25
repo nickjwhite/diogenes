@@ -479,15 +479,6 @@ my $swap_element = sub {
     }
 
 };
-my %tll_list;
-my $tll_list_read = sub {
-    my $index = File::Spec->catfile($perseus_dir, 'tll-pdf-list.txt');
-    open my $index_fh, "<$index" or die "Could not open $index: $!";
-    while (<$index_fh>) {
-        m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
-        $tll_list{$1} = $2;
-    }
-};
 
 my $tll_pdf_link = sub {
     return '<br/>' unless $lang eq 'lat';
@@ -495,29 +486,17 @@ my $tll_pdf_link = sub {
     # Remove numbered entries, since there is no reason to believe
     # that the numbers used by L-S and TLL will correspond.
     $word =~ s/\s*\d+$//;
-    my %args_init = (-type => 'none');
-    my $init = new Diogenes::Base(%args_init);
-    my $tll_path = $init->{tll_pdf_dir};
-    return '<br/>' unless $tll_path and -e $tll_path;
     $tll_parse_setup->();
     $parse_prelims->();
     my $bookmark = $try_parse->($word);
     return '<br/>' unless $bookmark;
 
-    $tll_list_read->() unless %tll_list;
     $bookmark =~ m/^(\d+)\t(\d+)$/ or die "No match for $bookmark\n";
-    my $tll_file = $tll_list{$1};
+    my $tll_file = $1;
     my $page = $2;
-    $tll_file = uri_escape($tll_file);
-    $tll_file = File::Spec->catfile($tll_path, $tll_file);
     print STDERR "!!$word->$bookmark->$tll_file->$page\n";
-    my $href = "file://$tll_file#page=$page";
-    my $foo = 'file:///Users/dkl0pjh';
-    return qq{<span style="display:block;text-align:right;"><a class="open-external" onClick="openPDF('$href')" href="#"><i>TLL</i> pdf</a></span>};
-    # return qq{<span style="display:block;text-align:right;"><a class="open-external" href="$href"><i>TLL</i> pdf</a></span>};
-
-
-    # return qq{<span style="display:block;text-align:right;"><a class="open-external" href="$href"><i>TLL</i> pdf</a></span>};
+    my $href = "tll-pdf/$tll_file.pdf#page=$page";
+    return qq{<span style="display:block;text-align:right;"><a onClick="openPDF('$href')" href="#"><i>TLL</i> pdf</a></span>};
 
 };
 

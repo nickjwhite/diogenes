@@ -171,8 +171,15 @@ const shell = require('electron').shell;
 document.addEventListener('openWithExternal', openWithExternal, false)
 
 function openWithExternal (e) {
-    var link = e.detail;
+    var link = window.location.protocol + '//' + window.location.hostname + ':' + window.location.port + '/' + e.detail;
+
     console.log('Opening ' + link);
+
+    // Electron can't open PDFs (yet).
+    // const { BrowserWindow } = require('electron').remote
+    // let win = new BrowserWindow()
+    // win.loadURL(link)
+
     shell.openExternal(link);
 }
 
