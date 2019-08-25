@@ -1,0 +1,26 @@
+# Rules to extract bookmarks from the PDFs distributed by the
+# Thesaurus Linguae Latinae.  Pass the directory containing the PDFs
+# on the command-line as TLLDIR.  Requires qpdf and pdftk.
+
+include mk.common
+
+DATAFILES = \
+	$(DATA)/tll-bookmarks.txt \
+	$(DATA)/tll-bookmarks.idt \
+	$(DATA)/tll-pdf-list.txt
+
+all: $(DATAFILES)
+
+
+.SUFFIXES: .txt .idt
+
+.txt.idt:
+	./utils/make_index.pl < $< > $@
+
+$(DATA)/tll-bookmarks.txt: utils/make_tll_bookmarks.pl
+	utils/make_tll_bookmarks.pl $(TLLDIR) $(DATA)/tll-pdf-list.txt > $(DATA)/tll-bookmarks.txt
+
+$(DATA)/tll-pdf-list.txt: $(DATA)/tll-bookmarks.txt
+
+clean:
+	rm -f $(DATAFILES)
