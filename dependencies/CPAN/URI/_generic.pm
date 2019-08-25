@@ -22,7 +22,8 @@ sub authority
 	$$self = $1;
 	my $rest = $3;
 	if (defined $auth) {
-	    $auth =~ s/([^$ACHAR])/$URI::Escape::escapes{$1}/go;
+	    $auth =~ s/([^$ACHAR])/ URI::Escape::escape_char($1)/ego;
+	    utf8::downgrade($auth);
 	    $$self .= "//$auth";
 	}
 	_check_path($rest, $$self);
@@ -41,7 +42,8 @@ sub path
 	my $rest = $3;
 	my $new_path = shift;
 	$new_path = "" unless defined $new_path;
-	$new_path =~ s/([^$PCHAR])/$URI::Escape::escapes{$1}/go;
+	$new_path =~ s/([^$PCHAR])/ URI::Escape::escape_char($1)/ego;
+	utf8::downgrade($new_path);
 	_check_path($new_path, $$self);
 	$$self .= $new_path . $rest;
     }
@@ -58,7 +60,8 @@ sub path_query
 	my $rest = $3;
 	my $new_path = shift;
 	$new_path = "" unless defined $new_path;
-	$new_path =~ s/([^$URI::uric])/$URI::Escape::escapes{$1}/go;
+	$new_path =~ s/([^$URI::uric])/ URI::Escape::escape_char($1)/ego;
+	utf8::downgrade($new_path);
 	_check_path($new_path, $$self);
 	$$self .= $new_path . $rest;
     }
@@ -180,7 +183,7 @@ sub abs
     $abs;
 }
 
-# The oposite of $url->abs.  Return a URI which is as relative as possible
+# The opposite of $url->abs.  Return a URI which is as relative as possible
 sub rel {
     my $self = shift;
     my $base = shift || Carp::croak("Missing base argument");

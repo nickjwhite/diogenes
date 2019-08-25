@@ -15,7 +15,7 @@ use strict;
 use vars qw(@ISA $VERSION);
 use URI::Escape qw(uri_unescape);
 
-$VERSION = "0.10";
+$VERSION = "0.11";
 
 sub default_port { 5060 }
 
@@ -30,7 +30,7 @@ sub authority
         $$self = defined($1) ? $1 : "";
         my $rest = $3;
         if (defined $auth) {
-            $auth =~ s/([^$URI::uric])/$URI::Escape::escapes{$1}/go;
+            $auth =~ s/([^$URI::uric])/ URI::Escape::escape_char($1)/ego;
             $$self .= "$auth";
         }
         $$self .= $rest;
