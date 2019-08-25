@@ -18,9 +18,12 @@ DATAFILES = \
 
 .SUFFIXES: .txt .idt
 
-all: $(GCIDE)/gcide.dict.dz $(DATAFILES)
+all: server/Diogenes/unicode-equivs.pl $(GCIDE)/gcide.dict.dz $(DATAFILES)
 
 data: $(DATAFILES)
+
+server/Diogenes/unicode-equivs.pl:
+	make -f makefile server/Diogenes/unicode-equivs.pl
 
 $(GCIDE)/gcide.dict.dz:
 	rm -rf $(GCIDE)
