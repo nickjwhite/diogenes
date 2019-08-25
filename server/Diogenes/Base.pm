@@ -165,7 +165,7 @@ my %defaults = (
     tlg_dir => '',
     phi_dir => '',
     ddp_dir => '',
-    tll_pdf_dir => '/Users/dkl0pjh/diogenes/tll-pdfs/',
+    tll_pdf_dir => '',
     authtab => 'authtab.dir',
     tlg_file_prefix => 'tlg',
     phi_file_prefix => 'lat',
@@ -376,7 +376,7 @@ sub new
 
     %{ $self } = ( %{ $self }, %defaults, $self->read_config_files, %args );
     
-    my @dirs = qw/tlg_dir phi_dir ddp_dir/;
+    my @dirs = qw/tlg_dir phi_dir ddp_dir tll_pdf_dir/;
 
     # Make sure all the directories end in a '/' (except for empty
     # values).

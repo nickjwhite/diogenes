@@ -8,7 +8,7 @@ const fs = require('fs');
 dioSettingsDir = ipcRenderer.sendSync('getsettingsdir')
 dioSettingsFile = path.join(dioSettingsDir, 'diogenes.prefs')
 
-let dbs = ['PHI', 'TLG', 'DDP']
+let dbs = ['PHI', 'TLG', 'DDP', 'TLL_PDF']
 
 function setPath(dbName, folderPath) {
     if(typeof folderPath === "undefined") {
@@ -39,7 +39,7 @@ function showPath(dbName, folderPath) {
     document.getElementById(`${dbName}path`).innerHTML = folderPath
 
     checkmark = document.getElementById(`${dbName}ok`)
-    if(fs.existsSync(`${folderPath}/authtab.dir`) || fs.existsSync(`${folderPath}/AUTHTAB.DIR`)) {
+    if(fs.existsSync(`${folderPath}/authtab.dir`) || fs.existsSync(`${folderPath}/AUTHTAB.DIR`) || dbName == 'TLL_PDF') {
         checkmark.innerHTML = '✓'
         checkmark.classList.remove('warn')
         checkmark.classList.add('valid')
