@@ -356,3 +356,6 @@ a.perseus:visited {
 img.next {
          float: right;
 }
+img.prev {
+         float: left;
+}
