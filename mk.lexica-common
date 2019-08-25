@@ -16,7 +16,7 @@ $(PERSEUSLEXICA)/.git/HEAD:
 
 $(DATA)/lat.ls.perseus-eng1.xml: $(PERSEUSLEXICA)/.git/HEAD
 	mkdir -p $(DATA)
-	cp $(LEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
+	cp $(PERSEUSLEXICA)/CTS_XML_TEI/perseus/pdllex/lat/ls/lat.ls.perseus-eng1.xml $@
 # Remove spurious newlines in the middle of entries
 	perl -pi -e 's#(?<!</entryFree>)\s*\n# #' $@
 
