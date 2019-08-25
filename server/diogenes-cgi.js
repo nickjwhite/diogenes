@@ -19,6 +19,26 @@ window.addEventListener("load", function() {
     }
 });
 
+function isElectron () {
+    if (typeof navigator === 'object' && typeof navigator.userAgent === 'string' && navigator.userAgent.indexOf('Electron') >= 0) {
+        return true;
+    }
+}
+
+function openPDF (path) {
+    if (path) {
+        console.log("Foo" + path);
+        if (isElectron()) {
+            var event = new CustomEvent('openWithExternal', { detail: path });
+            document.dispatchEvent(event)
+        }
+        else {
+            window.open(path)
+        }
+    }
+}
+
+
 // Select All for the checkboxes
 function setAll() {
     with (document.form) {

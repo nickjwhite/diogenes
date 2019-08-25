@@ -165,6 +165,15 @@ ipcRenderer.on('printPDFRequest', (event, message) => {
     printPDF();
 });
 
+// Open selected links using system default app (e.g. PDFs).
 
+const shell = require('electron').shell;
+document.addEventListener('openWithExternal', openWithExternal, false)
+
+function openWithExternal (e) {
+    var link = e.detail;
+    console.log('Opening ' + link);
+    shell.openExternal(link);
+}
 
 //console.log('preload done');
