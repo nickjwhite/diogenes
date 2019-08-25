@@ -2,10 +2,17 @@
 use strict;
 use 5.012;
 use autodie;
+use File::Spec::Functions qw(:ALL);
 
 my $path = $ARGV[0];
-die "Error: must pass path to directory with TLL pdfs" unless $path;
+die "Error: first arg is path to directory with TLL pdfs" unless $path;
 chdir $path;
+
+my $list = $ARGV[1];
+die "Error: second arg is path to directory to output file-list " unless $list;
+$list = File::Spec->catfile($list, 'tll-pdf-list.txt');
+open my $list_fh, ">$list" or die "Could not open $list for writing: $!";
+print STDERR "Writing file list to $list\n";
 
 my @files;
 opendir(my $dh, $path);
@@ -23,13 +30,12 @@ sub compare {
         || $a cmp $b;
 }
 
-my $file_list = '';
 my $index = 0;
 my %bookmarks;
 foreach my $file (@sorted) {
     print STDERR "Processing $file\n";
     $index ++;
-    $file_list .= "$index\t$file\n";
+    print $list_fh "$index\t$file\n";
 
     # TLL PDF files are encrypted with a blank password, which has to be removed in order for pdftk to work.
     system qq{qpdf '$file' tmp.pdf --decrypt --password=''};
@@ -81,6 +87,8 @@ foreach my $file (@sorted) {
       }
   }
 }
+
+close $list_fh;
 
 foreach my $k (sort keys %bookmarks) {
     print $k."\t".$bookmarks{$k}."\n";
