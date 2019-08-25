@@ -1,8 +1,8 @@
 #!/usr/bin/perl -w
 
-# Starts a daemon running in the background and listening at a 
-# specified port, whose only purpose is to invoke the Diogenes.cgi 
-# script for a web browser on the same machine. 
+# Starts a daemon running in the background and listening at a
+# specified port, whose only purpose is to invoke the Diogenes.cgi
+# script for a web browser on the same machine.
 # It caches the CGI script for speed, so restart the daemon if you edit
 # the CGI script.
 #
@@ -13,7 +13,7 @@
 # Handle decoding of multipart forms (which might then need to be
 # re-encoded as URL-escaped query strings).
 
-BEGIN 
+BEGIN
 {
     print "\nStarting Diogenes...\n";
 }
@@ -39,7 +39,7 @@ use File::Spec::Functions qw(:ALL);
 # Use local CPAN
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 
-use HTTP::Daemon;  
+use HTTP::Daemon;
 # use CGI qw(-nodebug -compile :standard);
 use CGI qw(-nodebug :standard);
 use CGI::Carp 'fatalsToBrowser';
@@ -84,11 +84,11 @@ USAGE: diogenes-server.pl [-dhlb] [-p port] [-H host] [-m netmask]
 
     -l  Check to make sure that all queries are from localhost.
 
-    -m  Specify the netmask (eg. 255.255.0.0); external queries will be 
-        refused.  
+    -m  Specify the netmask (eg. 255.255.0.0); external queries will be
+        refused.
 
     -P  Specify the path to the Perseus data directory
-    
+
     -d  Turn on debugging output.
 
 END
@@ -105,7 +105,7 @@ $| = 1;
 print "\@INC: ", join "\n", @INC, "\n" if $DEBUG;
 
 # To let the CGI program know it is us that invoked it.
-$flag = 1; 
+$flag = 1;
 
 $ENV{Diogenes_Perseus_Dir} = $opt_P if $opt_P;
 # binmode STDOUT, ':utf8';
@@ -164,7 +164,7 @@ unless ($server)
 }
 
 
-print "\nStartup complete. ", 
+print "\nStartup complete. ",
     "You may now point your browser at ",
     "this address:\n",
     "http://$HOST:$PORT\n";
@@ -227,11 +227,11 @@ while (1)
             }
         }
     }
-    else 
+    else
     {
         # A "normal" forking server
         write_lock();
-        while ($client = $server->accept) 
+        while ($client = $server->accept)
         {
             handle_connection();
         }
@@ -267,7 +267,7 @@ sub handle_request
 {
     my $remote_host = $client->peerhost;
     warn "Request from: ".$remote_host."\n" if $DEBUG;
-    
+
     my $request = $client->get_request;
     unless (defined $request)
     {
@@ -279,10 +279,10 @@ REQUEST:
     {
         warn "Requested URL: ".$request->url->as_string."\n" if $DEBUG;
 #         warn "Full request from browser: ". $request->as_string if $DEBUG;
-        
-        if (not defined $remote_host 
+
+        if (not defined $remote_host
             or ($opt_l and $remote_host ne $HOST_dot )
-            or ($netmask and (unpack ('N', inet_aton($remote_host)) & $netmask) != 
+            or ($netmask and (unpack ('N', inet_aton($remote_host)) & $netmask) !=
                 ($HOST_long & $netmask) ))
         {
             warn  "WARNING! WARNING! ... \n" .
@@ -292,11 +292,11 @@ REQUEST:
             last REQUEST
         }
 
-        
+
         # We only deal with GET and POST methods
         unless ($request->method eq 'GET' or $request->method eq 'POST')
         {
-            warn "Illegal method: only GET and POST are supported: ".$request->method."\n";  
+            warn "Illegal method: only GET and POST are supported: ".$request->method."\n";
             $client->send_error(RC_NOT_IMPLEMENTED);
             last REQUEST
         }
@@ -311,7 +311,7 @@ REQUEST:
         }
         $requested_file = $CGI_SCRIPT if $requested_file eq '/';
         # Internet exploder stupidity
-        $requested_file =~ s#^\Q$root_dir\E##;  
+        $requested_file =~ s#^\Q$root_dir\E##;
         $requested_file =~ s#^[/\\]##;
         $requested_file = $CGI_SCRIPT if $requested_file =~ m/diogenes-server/i;
         $requested_file = $CGI_SCRIPT if $requested_file =~ m/Diogenes\.cgi/i;
@@ -319,7 +319,7 @@ REQUEST:
 
         my $cookie = $request->header('Cookie');
         $ENV{HTTP_COOKIE} = $cookie if $cookie;
-        
+
         # Deal with the various ways our CGI script might be
         # requested by a browser.
 
@@ -333,7 +333,7 @@ REQUEST:
         {
             if ($request -> method eq 'GET')
             {
-                $params = $request->url->query;        
+                $params = $request->url->query;
                 $params ||= '';
                 warn "GET request.".($params ? " Query:$params\n" : "\n") if $DEBUG;
                 $ENV{REQUEST_METHOD} = 'GET';
@@ -364,7 +364,7 @@ REQUEST:
             # Workaround for annoying CGI.pm bug/warning
             $ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
 
-            
+
             # Here we compile if necessary and execute any CGI scripts
             $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
             # This tells CGI.pm the name of the host and script, which goes into
@@ -374,10 +374,10 @@ REQUEST:
             $ENV{SCRIPT_NAME} = ($leading_slash ? '/' : '') . "$requested_file";
 
             compile_cgi_subroutine($requested_file)
-                unless exists $cgi_subroutine{$requested_file}; 
+                unless exists $cgi_subroutine{$requested_file};
             # Trap any exceptions
             eval {$cgi_subroutine{$requested_file}->()};
-            warn "Diogenes Error: $@" if $@; 
+            warn "Diogenes Error: $@" if $@;
         }
         elsif ($requested_file =~ m#^tll-pdf/#) {
             # Serve TLL pdfs, but first translate filename
@@ -388,7 +388,7 @@ REQUEST:
             tll_list_read() unless %tll_list;
             my $tll_file = $tll_list{$file_number};
             warn "Bad PDF file number" unless $tll_file;
-            
+
             # $tll_file = uri_escape($tll_file);
 
             my %args_init = (-type => 'none');
@@ -414,7 +414,7 @@ REQUEST:
                 close $client;
                 return;
             }
-            
+
             my $ret = $client->send_file_response($tll_file);
             warn "File $requested_file failed to send!\n" unless $ret eq RC_OK;
         }
@@ -458,19 +458,19 @@ sub write_lock
 sub tll_list_read {
     my $data_dir = File::Spec->catdir($Bin, '..', 'dependencies', 'data');
     my $list = File::Spec->catfile($data_dir, 'tll-pdf-list.txt');
-    
+
     open my $list_fh, "<$list" or die "Could not open $list: $!";
     while (<$list_fh>) {
         m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
         $tll_list{$1} = $2;
     }
 }
-    
+
 sub compile_cgi_subroutine
 {
     my $script_file = shift;
     my $cgi_script;
-    open SCRIPT, "<$root_dir$script_file" or warn "Unable to find the file $script_file.\n", 
+    open SCRIPT, "<$root_dir$script_file" or warn "Unable to find the file $script_file.\n",
     "The current configuration says it should be located in $root_dir.\n";
     binmode SCRIPT;
     {
@@ -485,11 +485,11 @@ sub compile_cgi_subroutine
     open *Diogenes_Daemon::client;
     select $Diogenes_Daemon::client;
     $| = 1;
-    
+
 CODE_END
 
         $code .= $cgi_script . '}';
-    
+
     # $code now has the code of the CGI script wrapped in a
     # subroutine declaration, which we can call later.
     eval $code;
@@ -499,4 +499,3 @@ CODE_END
         exit;
     }
 }
-
