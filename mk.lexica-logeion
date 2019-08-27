@@ -1,5 +1,7 @@
 # Get LSJ lexicon from Logeion and and L-S from Perseus
 
+.DEFAULT_GOAL := all
+
 include mk.lexica-common
 
 LOGEIONLEXICONCOMMIT = da095805622d6637a46808570ce6937a1d61c1a3

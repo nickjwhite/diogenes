@@ -1,5 +1,7 @@
 # Get LSJ and L-S lexica from Perseus
 
+.DEFAULT_GOAL := all
+
 include mk.lexica-common
 
 all: $(PERSEUSLEXICA)/.git/HEAD $(DATA)/lat.ls.perseus-eng1.xml $(DATA)/grc.lsj.xml
