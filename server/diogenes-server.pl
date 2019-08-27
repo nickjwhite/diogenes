@@ -379,43 +379,52 @@ REQUEST:
             eval {$cgi_subroutine{$requested_file}->()};
             warn "Diogenes Error: $@" if $@;
         }
-        elsif ($requested_file =~ m#^tll-pdf/#) {
-            # Serve TLL pdfs, but first translate filename
-            $requested_file =~ m#^tll-pdf/(\d+).pdf#;
-            my $file_number = $1;
-            warn "Bad PDF file URI" unless $file_number;
-
-            tll_list_read() unless %tll_list;
-            my $tll_file = $tll_list{$file_number};
-            warn "Bad PDF file number" unless $tll_file;
-
-            # $tll_file = uri_escape($tll_file);
-
+        elsif ($requested_file =~ m#^tll-pdf|ox-lat-dict\.pdf#) {
+            # Serve TLL/OLD pdfs, but first translate filename
             my %args_init = (-type => 'none');
             my $init = new Diogenes::Base(%args_init);
-            my $tll_path = $init->{tll_pdf_dir};
-            unless ($tll_path) {
-                warn "Error: tll_path not set\n";
-                $client->send_error(RC_NOT_FOUND, "Location of the directory containing the TLL pdf files has not been set.");
+            my ($pdf_path, $pdf_file);
+
+            if ($requested_file =~ m#^tll-pdf#) {
+                $requested_file =~ m#^tll-pdf/(\d+).pdf#;
+                my $file_number = $1;
+                warn "Bad PDF file URI" unless $file_number;
+
+                tll_list_read() unless %tll_list;
+                $pdf_file = $tll_list{$file_number};
+                warn "Bad PDF file number" unless $pdf_file;
+                warn "Translating PDF file $file_number as $pdf_file\n" if $DEBUG;
+
+                # $pdf_file = uri_escape($pdf_file);
+                $pdf_path = $init->{tll_pdf_dir};
+                $pdf_file = File::Spec->catfile($pdf_path, $pdf_file);
+            }
+            else {
+                $pdf_path = $init->{old_pdf_dir};
+                $pdf_file = $init->{old_pdf_dir};
+            }
+
+            unless ($pdf_path) {
+                warn "Error: pdf_path not set\n";
+                $client->send_error(RC_NOT_FOUND, "Location of the requested pdf file has not been set.");
                 close $client;
                 return;
             }
-            unless (-e $tll_path) {
-                warn "Error: tll_path ($tll_path) does not exist.\n";
-                $client->send_error(RC_NOT_FOUND, "Location of the directory containing the TLL pdf files ($tll_path) does not exist");
+            unless (-e $pdf_path) {
+                warn "Error: pdf_path ($pdf_path) does not exist.\n";
+                $client->send_error(RC_NOT_FOUND, "The requested pdf file ($pdf_path) was not found.");
                 close $client;
                 return;
             }
-            $tll_file = File::Spec->catfile($tll_path, $tll_file);
-            warn "Serving PDF file $file_number as $tll_file\n" if $DEBUG;
-            unless (-e $tll_file) {
-                warn "Error: tll_file ($tll_file) does not exist\n";
-                $client->send_error(RC_NOT_FOUND, "Requested TLL pdf file ($tll_file) was not found.");
+            warn "Serving PDF file $pdf_file\n" if $DEBUG;
+            unless (-e $pdf_file) {
+                warn "Error: pdf_file ($pdf_file) does not exist\n";
+                $client->send_error(RC_NOT_FOUND, "Requested pdf file ($pdf_file) was not found.");
                 close $client;
                 return;
             }
 
-            my $ret = $client->send_file_response($tll_file);
+            my $ret = $client->send_file_response($pdf_file);
             warn "File $requested_file failed to send!\n" unless $ret eq RC_OK;
         }
         else

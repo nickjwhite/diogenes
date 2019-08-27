@@ -1,33 +1,71 @@
 #!/usr/bin/perl -w
 use strict;
+use warnings;
 use 5.012;
 use autodie;
 use File::Spec::Functions qw(:ALL);
+use Getopt::Std;
+getopts ('t:l:o:');
+our ($opt_t, $opt_l, $opt_o);
 
-my $path = $ARGV[0];
-die "Error: first arg is path to directory with TLL pdfs" unless $path;
-chdir $path;
+sub HELP_MESSAGE { print qq{
 
-my $list = $ARGV[1];
-die "Error: second arg is path to directory to output file-list " unless $list;
-$list = File::Spec->catfile($list, 'tll-pdf-list.txt');
-open my $list_fh, ">$list" or die "Could not open $list for writing: $!";
-print STDERR "Writing file list to $list\n";
+This script parses the bookmarks of a PDF of a lexicon, extracting the
+page numbers for use in jumping to the correct page when looking up a
+word in Diogenes.  It was designed for the TLL, but also works on
+others, such as the OLD.
 
-my @files;
-opendir(my $dh, $path);
-while(readdir $dh) {
-    next if m/^\./;
-    next unless m/\.pdf$/i;
-    next unless m/ThLL/;
-    push @files, $_;
+-t PATH The path to the directory containing the PDFs of the TLL,
+        which are expected to have their original names, as downloaded
+        from the TLL website.  Requires a value for the -l switch
+
+-l PATH Directory in which to put the file tll-pdf-list.txt, which
+        contains the PDF filenames, indexed for easier use.
+
+-o PATH Full path to the single PDF file containing the OLD.
+    }
 }
-closedir $dh;
 
-my @sorted = sort compare @files;
+my ($path, $list, $list_fh);
+if ($opt_t) {
+    die "Error. Option -t requires option -l.\n" unless $opt_l;
+    $path = $opt_t;
+    chdir $path;
+    $list = $opt_l;
+
+    $list = File::Spec->catfile($list, 'tll-pdf-list.txt');
+    open $list_fh, ">$list" or die "Could not open $list for writing: $!";
+    print STDERR "Writing file list to $list\n";
+
+}
+elsif ($opt_o) {
+    $path = $opt_o;
+}
+else {
+    die ("Error.  Supply a value for either -t or -o.\n");
+}
+
+
+my (@files, @sorted);
 sub compare {
     ($a =~ /ThLL vol\. (.*?) \(/)[0] cmp ($b =~ /ThLL vol\. (.*?) \(/)[0]
         || $a cmp $b;
+}
+
+if ($opt_t) {
+    opendir(my $dh, $path);
+    while(readdir $dh) {
+        next if m/^\./;
+        next unless m/\.pdf$/i;
+        next unless m/ThLL/;
+        push @files, $_;
+    }
+    closedir $dh;
+
+    @sorted = sort compare @files;
+}
+else {
+    push @sorted, $path;
 }
 
 my $index = 0;
@@ -35,7 +73,7 @@ my %bookmarks;
 foreach my $file (@sorted) {
     print STDERR "Processing $file\n";
     $index ++;
-    print $list_fh "$index\t$file\n";
+    print $list_fh "$index\t$file\n" if $opt_t;
 
     # TLL PDF files are encrypted with a blank password, which has to be removed in order for pdftk to work.
     system qq{qpdf '$file' tmp.pdf --decrypt --password=''};
@@ -56,6 +94,19 @@ foreach my $file (@sorted) {
               $level =~ s/^BookmarkLevel:\s+(\d+)\s*/$1/;
           die "Parse error: $line; $title; $level; $page\n" unless
               $page  =~ s/^BookmarkPageNumber:\s+(\d+)\s*/$1/;
+
+          if ($opt_o) {
+              next LINE if $page <= 20;
+              $title =~ s/tif$//;
+              $title =~ s/^\d*\s*//;
+              $title =~ s/\.$//;
+              $title =~ s/[()-]//g;
+              $title =~ tr /A-Z/a-z/;
+
+
+              print "$title\t$page\n";
+              next LINE;
+          }
 
           # We only record first entry when a lemma has several
           next LINE if $title =~ m/^[23456789]\.\ /;
@@ -88,8 +139,10 @@ foreach my $file (@sorted) {
   }
 }
 
-close $list_fh;
+if ($opt_t) {
+    close $list_fh;
 
-foreach my $k (sort keys %bookmarks) {
-    print $k."\t".$bookmarks{$k}."\n";
+    foreach my $k (sort keys %bookmarks) {
+        print $k."\t".$bookmarks{$k}."\n";
+    }
 }

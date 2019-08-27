@@ -299,6 +299,26 @@ my $try_parse = sub {
     return $binary_search->($word, $start, $stop);
 };
 
+my $normalize_latin_lemma = sub {
+    my $lemma = shift;
+    $lemma =~ s/[_^]//g;
+
+    if ($lemma =~ m/-/) {
+        $lemma =~ s/(.*)-(.*)/$1$2/;
+    }
+    $lemma =~ s/\d$//;
+    return $lemma;
+};
+
+my $normalize_greek_lemma = sub {
+    my $lemma = shift;
+    # We strip breathings, too, because that surprises less
+    $lemma =~ s/[_^,-\\\/=+\d)(]//g;
+    return $lemma;
+};
+
+
+
 my $beta_to_utf8 = sub {
     my $text = shift;
     if ($text !~ m/^[\x00-\x7f]*$/) {
@@ -481,25 +501,50 @@ my $swap_element = sub {
 };
 
 my $tll_pdf_link = sub {
-    return '<br/>' unless $lang eq 'lat';
+    return '' unless $lang eq 'lat';
     my $word = shift;
     # Remove numbered entries, since there is no reason to believe
     # that the numbers used by L-S and TLL will correspond.
     $word =~ s/\s*\d+$//;
+    $word = $normalize_latin_lemma->($word);
     $tll_parse_setup->();
     $parse_prelims->();
     my $bookmark = $try_parse->($word);
-    return '<br/>' unless $bookmark;
+    return '' unless $bookmark;
 
     $bookmark =~ m/^(\d+)\t(\d+)$/ or die "No match for $bookmark\n";
     my $tll_file = $1;
     my $page = $2;
     print STDERR "!!$word->$bookmark->$tll_file->$page\n";
     my $href = "tll-pdf/$tll_file.pdf#page=$page";
-    return qq{<span style="display:block;text-align:right;"><a onClick="openPDF('$href')" href="#"><i>TLL</i> pdf</a></span>};
-
+    return qq{<a onClick="openPDF('$href')" href="#"><i>TLL</i></a>};
 };
 
+my $old_pdf_link = sub {
+    return '' unless $lang eq 'lat';
+    # Short file with only running heads, linear search, stop when
+    # past target.
+    my $word = shift;
+    $word =~ s/\s*\d+$//;
+    $word = $normalize_latin_lemma->($word);
+    $word =~ tr/vj/ui/;
+    $word =~ tr /A-Z/a-z/;
+    my $old_file = File::Spec->catfile($perseus_dir, 'old-bookmarks.txt');
+    return '<br/>' unless -e $old_file;
+    open my $old_fh, "<$old_file" or warn "Could not open $old_file!\n";
+    print STDERR "File open\n";
+    my $page = 1;
+    local $/ = "\n";
+    while (my $line = <$old_fh>) {
+        $line =~ m/(\w+)\t(\d+)/;
+        my $headword = $1;
+        $page = $2;
+        print STDERR "$word, $headword, $page, ".($word cmp $headword)."\n";
+        last if (($word cmp $headword) <= 0);
+    }
+    my $href = "ox-lat-dict.pdf#page=$page";
+    return qq{ <a onClick="openPDF('$href')" href="#"><i>OLD</i></a>};
+};
 
 local $munge_element = sub {
     my $e = shift;
@@ -509,8 +554,10 @@ local $munge_element = sub {
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';
         $out .= '<h2><span style="display:block;float:left">' . $key . '</span>';
+        $out .= '<span style="display:block;text-align:right;">&nbsp;';
         $out .= $tll_pdf_link->($key);
-        $out .= '</h2>';
+        $out .= $old_pdf_link->($key);
+        $out .= '</span></h2>';
         # $out .= '<h2>' . $key . '</h2>';
         #print STDERR '$$'.$tll_link->($key)."\n";
     }
@@ -717,25 +764,6 @@ my $do_inflects = sub {
         $do_inflect->($_);
     }
 };
-
-my $normalize_latin_lemma = sub {
-    my $lemma = shift;
-    $lemma =~ s/[_^]//g;
-
-    if ($lemma =~ m/-/) {
-        $lemma =~ s/(.*)-(.*)/$1$2/;
-    }
-    $lemma =~ s/\d$//;
-    return $lemma;
-};
-
-my $normalize_greek_lemma = sub {
-    my $lemma = shift;
-    # We strip breathings, too, because that surprises less
-    $lemma =~ s/[_^,-\\\/=+\d)(]//g;
-    return $lemma;
-};
-
 
 my $find_lemma = sub {
     my $filename = ($lang eq 'grk' ? 'greek' : 'latin') . '-lemmata.txt';

@@ -166,6 +166,8 @@ my %defaults = (
     phi_dir => '',
     ddp_dir => '',
     tll_pdf_dir => '',
+    # Not a dir but a file path, but this makes the Electron code easier
+    old_pdf_dir => '',
     authtab => 'authtab.dir',
     tlg_file_prefix => 'tlg',
     phi_file_prefix => 'lat',
