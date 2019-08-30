@@ -16,6 +16,7 @@ my $dirname = 'tll-pdfs';
 
 # URLs at bottom of file
 my @urls = tll_files();
+my $website = 'http://publikationen.badw.de/de/';
 
 my $path;
 if ($ARGV[0]) {
@@ -32,7 +33,7 @@ die "Error: The name for the destination folder for the TLL files is already in 
     if -e $path and not -d $path;
 
 unless (-e $path and -d $path) {
-    mkdir $dirname or die "Error: Could not create folder $path! $!\n";
+    mkdir $path or die "Error: Could not create folder $path! $!\n";
 }
 
 chdir $path or die "Error: could not chdir to $path: $!\n";
@@ -51,24 +52,35 @@ my $size = 0;  # number of bytes received
 my $start_t;   # start time of download
 my $last_dur;  # time of last callback
 
-$SIG{INT} = sub { die "Interrupted\n"; };
+my $interrupted;
+$SIG{INT} =
+    sub { print "Interrupted\n";
+          $interrupted = 1;
+};
 
 $| = 1;  # autoflush
 
+print "Downloading TLL PDF files from $website\n";
+
 foreach my $url (@urls) {
     my $filename = uri_unescape($url);
+    $filename =~ s/^$website//;
     print "Warning: overwriting already existing file: $filename!\n" if (-e $filename);
-    open my $fh, ">$filename" or die "Could not open $filename for writing: $!\n";
+    open my $fh, ">", $filename or die "Could not open $filename for writing: $!\n";
     print "\nDownloading $filename ...\n";
     download($url, $fh, $filename);
+    die "Shutting down.\n" if $interrupted;
     close $fh or die "Could not close $filename: $!\n";
 }
+
+print "Finished: all files downloaded.  You can now close this window."
 
 sub download {
     my ($url, $fh, $filename) = @_;
     $start_t = time;
     $last_dur = 0;
     my $callback = sub {
+        return if $interrupted;
         my $data =  $_[0];
         my $resp = $_[1];
         unless (defined $length) {
@@ -110,14 +122,14 @@ sub download {
     print "\n";
 
     if (my $mtime = $res->last_modified) {
-	utime time, $mtime, $file;
+	utime time, $mtime, $filename;
     }
 
     if ($res->header("X-Died") || !$res->is_success) {
 	if (my $died = $res->header("X-Died")) {
 	    print "$died\n";
 	}
-        print "Transfer aborted, $file kept\n";
+        print "Transfer aborted, $filename kept\n";
     }
 }
 
