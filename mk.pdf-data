@@ -3,6 +3,8 @@
 # on the command-line as TLLDIR for TLL and as OLDFILE for OLD.
 # Requires qpdf and pdftk.
 
+.DEFAULT_GOAL := all
+
 include mk.common
 
 DATAFILES = \

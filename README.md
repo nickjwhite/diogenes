@@ -179,3 +179,22 @@ The intermediate files generated in the course of all of the steps
 above are put the build/ directory, and the final lexical data which
 is used used by Diogenes at runtime is put in the dependencies/data
 directory, whence it is read by diogenes-server.pl.
+
+### Step 5
+
+There is one more, optional, step, which is to integrate information
+on where words can be found in the print versions of the _Thesaurus
+Linguae Latinae_ and the _Oxford Latin Dictionary_.  The PDFs of the
+_TLL_ can be downloaded from the website of the Bayerische Akademie
+der Wissenschaften by hand, via the Diogenes Electron interface, or by
+running on the command line:
+
+    server/tll-pdf-download.pl path/to/destination/folder
+
+If you also have a PDF of the _OLD_ that has the running heads as
+bookmarks, you can extract the necessary information from that as
+well.  To do so, run:
+
+    make -f mk.pdf-data TLLDIR=/path/to/tll/directory OLDFILE=/path/to/old/file
+
+
