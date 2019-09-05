@@ -409,7 +409,7 @@ function initializeMenuTemplate () {
                     }
                 },
                 {
-                    label: 'Database Setup',
+                    label: 'Database Locations',
                     accelerator: 'CmdOrCtrl+B',
                     click: (menu, win) => {
                         let newWin = createWindow(win, 20, 20)
@@ -417,7 +417,17 @@ function initializeMenuTemplate () {
                     }
                 },
                 {
-                    label: 'Diogenes Settings',
+                    label: 'Download TLL PDFs',
+                    click: (menu, win) => {
+                        win.webContents.send('TLLPathRequest', win);
+                        ipcMain.on('TLLPathResponse', (event, path) => {
+                            let newWin = createWindow(win, 20, 20)
+                            newWin.loadURL('http://localhost:' + dioSettings.port + '/tll-pdf-download.cgi')
+                        })
+                    }
+                },
+                {
+                    label: 'Other Settings',
                     accelerator: 'CmdOrCtrl+T',
                     click: (menu, win) => {
                         let newWin = createWindow(win, 20, 20)

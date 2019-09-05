@@ -14,7 +14,12 @@ function setPath(dbName, folderPath) {
     if(typeof folderPath === "undefined") {
         return
     }
+    writeToSettings(dbName, folderPath)
+    showPath(dbName, folderPath)
+    readyDoneButton()
+}
 
+function writeToSettings (dbName, folderPath) {
     // check if folderPath is defined.
     try {
         data = fs.readFileSync(dioSettingsFile, 'utf8')
@@ -31,8 +36,6 @@ function setPath(dbName, folderPath) {
         newData = `${data}\n${newLine}`
     }
     fs.writeFileSync(dioSettingsFile, newData)
-    showPath(dbName, folderPath)
-    readyDoneButton()
 }
 
 function showPath(dbName, folderPath) {
@@ -190,5 +193,38 @@ function openWithExternal (e) {
 
     shell.openExternal(link);
 }
+
+// Select location to save TLL PDFs prior to download
+
+function TLLPath () {
+    // This needs to agree with value in tll-pdf-download.pl
+    var dirname = 'tll-pdfs'
+
+    var ok = dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Cancel', 'OK'],
+        defaultId: 0,
+        title: 'Continue?',
+        message: 'Do you want to go ahead and download the PDFs of the Thesaurus Linguae Latinae?',
+        detail: 'Retrieving these large files from the website of the Bayerische Akademie der Wissenschaften may take quite a long time. Click OK to select a location for the new folder.'
+    })
+    if (ok == 1) {
+        var folder = dialog.showOpenDialog({
+            title: 'Location for TLL PDF download',
+            properties: ['openDirectory']
+        })
+        if (folder) {
+            folder = path.join(folder[0], dirname)
+            writeToSettings('TLL_PDF', folder)
+            ipcRenderer.send('TLLPathResponse', folder)
+            console.log('TLL download path set to ' + folder);
+        }
+    }
+}
+
+ipcRenderer.on('TLLPathRequest', (event, message) => {
+    TLLPath();
+});
+
 
 //console.log('preload done');
