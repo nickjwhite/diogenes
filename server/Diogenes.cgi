@@ -682,6 +682,7 @@ $output{export_xml} = sub {
         $f->p("This can take a while. Return to main page to interrupt conversion. Export folder: $export_path"),
         $f->hr;
 
+    # TODO: Should have just used $^X
     my $perl_name;
     if (is_win32) {
         $perl_name = File::Spec->catfile($Bin, '..', 'strawberry', 'perl', 'bin', 'perl.exe');

@@ -1,9 +1,9 @@
-* Finish implementing TLL links
 * Create DMG installer for Mac.
 Using bash script
 * No Exit keyboad shortcut on Windows
 * Remove Google analytics
 
+* Add info about TLL to website
 * Test on Windows USB stick
 And test install on MDS/NCPS
 
@@ -17,10 +17,10 @@ Even if that bug is fixed, it is hard to be confident that the current code is r
 
 I tried saving and reading the path with no encoding, as raw bytes, but that did not work.
 
-
+** Compare output to Hipparchia
+Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
 * Long-term to-do items
 ** Try to restart diogenes-server if it is killed
-** Implement print menu item
 ** Make settings page shorter and clearer
    roughly a variant of firstrun page, but ensure that it still works outside of elect
 ** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page
@@ -32,4 +32,3 @@ This is tricky, as some names seem to be latin-1, not utf8.
 Possibly faster and better supported, by same author as XML::DOM::Lite.
 ** Fix Strawberry Perl to use included libxml.
 I think this just requires adding strawberry\c\bin to the PATH, so that it can find libxml2-2__.dll
-** Fix bug where utf8 pathnames to databases don't work in Windows.

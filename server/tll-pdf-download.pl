@@ -25,12 +25,12 @@ if ($ARGV[0]) {
 else {
     die "Error: No destination folder for the TLL files has been specified!\n";
 }
-die "Error: The destination folder for the TLL files does not exist!\n" unless (-e $path);
-die "Error: The destination folder for the TLL files is not a folder!\n" unless (-d $path);
 
-$path = catdir($path, $dirname);
-die "Error: The name for the destination folder for the TLL files is already in use!\n"
-    if -e $path and not -d $path;
+$path =~ s#[\\/]$##;
+
+unless ($path =~ m/$dirname$/) {
+    $path = catdir($path, $dirname);
+}
 
 unless (-e $path and -d $path) {
     mkdir $path or die "Error: Could not create folder $path! $!\n";
@@ -73,7 +73,7 @@ foreach my $url (@urls) {
     close $fh or die "Could not close $filename: $!\n";
 }
 
-print "Finished: all files downloaded.  You can now close this window."
+print "Finished: all files downloaded.  You can now close this window.";
 
 sub download {
     my ($url, $fh, $filename) = @_;
