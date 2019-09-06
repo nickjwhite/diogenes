@@ -122,8 +122,8 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/ic
 	cp -r dependencies app/w32
 	cp -r build/w32perl/strawberry app/w32
 	cp build/icons/diogenes.ico app/w32
-	sed 's/$$/\r/g' < COPYING > app/w32/COPYING.txt
-	sed 's/$$/\r/g' < README.md > app/w32/README.md
+	cp COPYING app/w32/COPYING.txt
+	cp README.md app/w32/README.md
 	wine build/rcedit.exe app/w32/diogenes.exe \
 	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
@@ -144,8 +144,8 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 build/w64perl build/ico
 	cp -r dependencies app/w64
 	cp -r build/w64perl/strawberry app/w64
 	cp build/icons/diogenes.ico app/w64
-	sed 's/$$/\r/g' < COPYING > app/w64/COPYING.txt
-	sed 's/$$/\r/g' < README.md > app/w64/README.md
+	cp COPYING app/w64/COPYING.txt
+	cp README.md app/w64/README.md
 	wine build/rcedit.exe app/w64/diogenes.exe \
 	    --set-icon build/icons/diogenes.ico \
 	    --set-product-version $(DIOGENESVERSION) \
@@ -163,6 +163,7 @@ electron/electron-v$(ELECTRONVERSION)-darwin-x64:
 mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
 	rm -rf app/mac
 	mkdir -p app/mac
+	mkdir -p app/mac/about
 	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac
 	cp -r client app/mac/Electron.app/Contents/Resources/app
 	cp -r server app/mac/Electron.app/Contents
@@ -177,8 +178,11 @@ mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
 	mv app/mac/Diogenes.app/Contents/MacOS/Electron app/mac/Diogenes.app/Contents/MacOS/Diogenes
 	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
 	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
-	sed 's/$$/\r/g' < COPYING > app/mac/COPYING.txt
-	sed 's/$$/\r/g' < README.md > app/mac/README.md
+	cp COPYING app/mac/about/COPYING.txt
+	cp README.md app/mac/about/README.md
+	mv app/mac/LICENSE app/mac/about/
+	mv app/mac/LICENSES.chromium.html app/mac/about/
+	mv app/mac/version app/mac/about/
 
 zip-linux64: app/linux64
 	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
@@ -228,6 +232,16 @@ install/diogenes-setup-win64-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.e
 	wine build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	rmdir dist/Output
+
+# Experience shows that the pkg installer is fragile, so we have
+# reverted to distributing the app as a simple zip file, which is less
+# potentially confusing than a DMG installer.
+installer-mac: install/diogenes-mac-$(DIOGENESVERSION).zip
+install/diogenes-mac-$(DIOGENESVERSION).zip: app/mac
+	mkdir -p install
+	rm -f install/diogenes-mac-$(DIOGENESVERSION).zip
+	cd app/mac; zip -r diogenes-mac-$(DIOGENESVERSION).zip Diogenes.app about
+	mv app/mac/diogenes-mac-$(DIOGENESVERSION).zip install/
 
 # NB. Installing this Mac package will report success but silently
 # fail if there exists another copy of Diogenes.app with the same
@@ -289,7 +303,7 @@ install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
-installer-all: installer-w32 installer-w64 installer-macpkg installer-deb64 installer-rpm64 installer-arch64
+installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
@@ -302,7 +316,7 @@ clean:
 	rm -rf app
 	rm -rf install
 
-installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).pkg install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 # These targets will not be of interest to anyone else
 
