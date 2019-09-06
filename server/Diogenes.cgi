@@ -243,7 +243,7 @@ my $print_title = sub
                        -meta=>{'content' => 'text/html;charset=utf-8'},
                        -class=>'waiting'),
     '<div class="wrapper">', # for sticky footer and side padding
-    $f->start_form(-name=>'form', -id=>'form', -method=> 'post');
+    $f->start_form(-name=>'form', -id=>'form', -method=> 'get');
     # We put this here (other hidden fields are at the end), so that
     # Javascript can use it for jumpTo even before the page has
     # completely loaded.  JumpFrom is a place to hold Perseus query

@@ -118,7 +118,7 @@ sub get_request
 		if ($buf =~ /\015?\012\015?\012/) {
 		    last READ_HEADER;  # we have it
 		}
-		elsif (length($buf) > 16*1024) {
+		elsif (length($buf) > 256*1024*1024) { # pjh: limit increased
 		    $self->send_error(413); # REQUEST_ENTITY_TOO_LARGE
 		    $self->reason("Very long header");
 		    return;
@@ -128,7 +128,7 @@ sub get_request
 		last READ_HEADER;  # HTTP/0.9 client
 	    }
 	}
-	elsif (length($buf) > 16*1024) {
+	elsif (length($buf) > 256*1024*1024) { # pjh: limit increased
 	    $self->send_error(414); # REQUEST_URI_TOO_LARGE
 	    $self->reason("Very long first line");
 	    return;
