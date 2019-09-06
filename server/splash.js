@@ -210,7 +210,7 @@ function splash_setup () {
 
     infoText['word_list'] = '<h2 class="info-h2">TLG Word List Search</h2>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">The <i>TLG</i> has a word-list that serves as an index, indicating which texts each word appears in.  In some cases, searching via the word list can be faster.  Enter a word to see matches from the word-list.  Put a space in front to match only at the beginning of words.</p>';
+        '<p class="info-text">The <i>TLG</i> has a word-list that serves as an index.  For narrow searches, using the word list can be faster; for big searches, it may be much slower.  Enter a word to see matches from the word-list.  Put a space in front to match only at the beginning of words.</p>';
 
     infoText['lookup'] = '<h2 class="info-h2">Dictionary Lookup</h2>' +
         '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +

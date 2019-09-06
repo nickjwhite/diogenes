@@ -1,12 +1,9 @@
-* Create DMG installer for Mac.
-Using bash script
 * No Exit keyboad shortcut on Windows
 * Remove Google analytics
-
 * Add info about TLL to website
+* Add warning about unsigned apps
 * Test on Windows USB stick
 And test install on MDS/NCPS
-
 
 
 * Post-release to-do items.
