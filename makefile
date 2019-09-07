@@ -106,6 +106,7 @@ build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png bu
 
 build/icons/diogenes.ico: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
 	icotool -c build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png > $@
+	cp build/icons/diogenes.ico server/favicon.ico
 
 build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
 	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
