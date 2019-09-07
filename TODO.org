@@ -1,10 +1,8 @@
-* No Exit keyboad shortcut on Windows
-* Remove Google analytics
-* Add info about TLL to website
-* Add warning about unsigned apps
+* Test PDFs on Windows
+* Test Exit keyboad shortcut on Windows
 * Test on Windows USB stick
 And test install on MDS/NCPS
-
+* Try to reproduce Windows word search bug.
 
 * Post-release to-do items.
 ** Fix bug with non-ascii paths to databases on Windows

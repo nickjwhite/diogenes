@@ -27,7 +27,6 @@ function isElectron () {
 
 function openPDF (path) {
     if (path) {
-        console.log("Foo" + path);
         if (isElectron()) {
             var event = new CustomEvent('openWithExternal', { detail: path });
             document.dispatchEvent(event)

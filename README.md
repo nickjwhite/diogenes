@@ -184,10 +184,11 @@ directory, whence it is read by diogenes-server.pl.
 
 There is one more, optional, step, which is to integrate information
 on where words can be found in the print versions of the _Thesaurus
-Linguae Latinae_ and the _Oxford Latin Dictionary_.  The PDFs of the
-_TLL_ can be downloaded from the website of the Bayerische Akademie
-der Wissenschaften by hand, via the Diogenes Electron interface, or by
-running on the command line:
+Linguae Latinae_ and the first edition of the _Oxford Latin
+Dictionary_.  The PDFs of the _TLL_ can be downloaded from the website
+of the Bayerische Akademie der Wissenschaften by hand, via a menus
+item in the Diogenes Electron application, or by running on the
+command line:
 
     server/tll-pdf-download.pl path/to/destination/folder
 
@@ -196,5 +197,4 @@ bookmarks, you can extract the necessary information from that as
 well.  To do so, run:
 
     make -f mk.pdf-data TLLDIR=/path/to/tll/directory OLDFILE=/path/to/old/file
-
 

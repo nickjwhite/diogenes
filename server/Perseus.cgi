@@ -515,7 +515,7 @@ my $tll_pdf_link = sub {
     $bookmark =~ m/^(\d+)\t(\d+)$/ or die "No match for $bookmark\n";
     my $tll_file = $1;
     my $page = $2;
-    print STDERR "!!$word->$bookmark->$tll_file->$page\n";
+    # print STDERR "!!$word->$bookmark->$tll_file->$page\n";
     my $href = "tll-pdf/$tll_file.pdf#page=$page";
     return qq{<a onClick="openPDF('$href')" href="#"><i>TLL</i></a>};
 };
@@ -539,7 +539,7 @@ my $old_pdf_link = sub {
         $line =~ m/(\w+)\t(\d+)/;
         my $headword = $1;
         $page = $2;
-        print STDERR "$word, $headword, $page, ".($word cmp $headword)."\n";
+        # print STDERR "$word, $headword, $page, ".($word cmp $headword)."\n";
         last if (($word cmp $headword) <= 0);
     }
     my $href = "ox-lat-dict.pdf#page=$page";
