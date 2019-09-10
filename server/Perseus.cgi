@@ -34,7 +34,7 @@ print STDERR "$Diogenes_Daemon::params\n" if $debug;
 my $picture_dir = 'images/';
 
 unless ($f->param('noheader')) {
-#    print $f->header(-charset=>'utf-8');
+    print $f->header(-charset=>'utf-8');
 }
 if ($f->param('popup')) {
     print $f->start_html(-title=>'Perseus Data',

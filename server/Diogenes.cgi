@@ -221,7 +221,7 @@ my $my_footer = sub
 
 my $print_title = sub
 {
-#    print $f->header(-type=>"text/html; charset=$charset");
+    print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
     my $extra_script = shift;
     my $script;
