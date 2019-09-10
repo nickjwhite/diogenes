@@ -13,6 +13,10 @@
 ##########################################################################
 
 package Diogenes::CGI;
+use strict;
+use File::Spec::Functions qw(:ALL);
+use FindBin qw($Bin);
+use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 
 use Data::Dumper;
 
@@ -22,9 +26,6 @@ use Diogenes::Search;
 use Diogenes::Indexed;
 use Diogenes::Browser;
 
-use strict;
-use File::Spec::Functions qw(:ALL);
-use FindBin qw($Bin);
 use Encode;
 
 $Diogenes::Base::cgi_flag = 1;
@@ -220,7 +221,7 @@ my $my_footer = sub
 
 my $print_title = sub
 {
-    print $f->header(-type=>"text/html; charset=$charset");
+#    print $f->header(-type=>"text/html; charset=$charset");
     my $title = shift;
     my $extra_script = shift;
     my $script;

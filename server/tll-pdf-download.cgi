@@ -1,10 +1,14 @@
 #!/usr/bin/perl -w
 use strict;
+use FindBin qw($Bin);
+use File::Spec::Functions qw(:ALL);
+# Use local CPAN
+use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
+
+
 use Diogenes::Base;
 use CGI qw(:standard);
 use CGI::Carp 'fatalsToBrowser';
-use FindBin qw($Bin);
-use File::Spec::Functions qw(:ALL);
 $| = 1;
 
 use constant is_win32  => 0 <= index $^O, "Win32";

@@ -3,6 +3,11 @@
 # Interface to Perseus morphological data and dictionaries.
 package Diogenes::Perseus;
 use strict;
+use FindBin qw($Bin);
+use File::Spec::Functions qw(:ALL);
+# Use local CPAN
+use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
+
 use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %database @databases @filters);
 use Diogenes::EntityTable;
 use FileHandle;
@@ -12,11 +17,6 @@ use URI::Escape;
 # The lexica are now utf8, but we need to read the files in as bytes, as we want to jump into the middle and read backwards.  We then convert entries to utf8 by hand.
 use open IN  => ":bytes", OUT => ":utf8";
 
-use FindBin qw($Bin);
-use File::Spec::Functions qw(:ALL);
-
-# Use local CPAN
-use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 
 use XML::Tiny;
 use CGI qw(:standard);
@@ -34,7 +34,7 @@ print STDERR "$Diogenes_Daemon::params\n" if $debug;
 my $picture_dir = 'images/';
 
 unless ($f->param('noheader')) {
-    print $f->header(-charset=>'utf-8');
+#    print $f->header(-charset=>'utf-8');
 }
 if ($f->param('popup')) {
     print $f->start_html(-title=>'Perseus Data',
@@ -119,8 +119,6 @@ my %format_fn;
 
 warn "I don't know about language $lang!\n" unless exists $dicts{$lang};
 
-use FindBin qw($Bin);
-use File::Spec::Functions qw(:ALL);
 my $perseus_dir = catdir($Bin, '..', 'dependencies', 'data');
 if (not -e $perseus_dir) {
     $perseus_dir = $ENV{Diogenes_Perseus_Dir} if $ENV{Diogenes_Perseus_Dir};
