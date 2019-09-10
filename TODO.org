@@ -1,5 +1,9 @@
 * Test PDFs on Windows
-* Test Exit keyboad shortcut on Windows
+Make client non-global
+Try with current pre-fork
+pre-fork multiple children
+
+
 * Test on Windows USB stick
 And test install on MDS/NCPS
 * Try to reproduce Windows word search bug.

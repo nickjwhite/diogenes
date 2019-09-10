@@ -24,6 +24,7 @@ use CGI qw(:standard);
 my $debug = 0;
 
 binmode ((select), ':utf8');
+$| = 1;
 
 my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 print STDERR "$Diogenes_Daemon::params\n" if $debug;
@@ -532,13 +533,13 @@ my $old_pdf_link = sub {
     my $old_file = File::Spec->catfile($perseus_dir, 'old-bookmarks.txt');
     return '<br/>' unless -e $old_file;
     open my $old_fh, "<$old_file" or warn "Could not open $old_file!\n";
-    print STDERR "File open\n";
     my $page = 1;
     local $/ = "\n";
     while (my $line = <$old_fh>) {
         $line =~ m/(\w+)\t(\d+)/;
         my $headword = $1;
         $page = $2;
+        next unless $headword and $page;
         # print STDERR "$word, $headword, $page, ".($word cmp $headword)."\n";
         last if (($word cmp $headword) <= 0);
     }
@@ -559,7 +560,6 @@ local $munge_element = sub {
         $out .= $old_pdf_link->($key);
         $out .= '</span></h2>';
         # $out .= '<h2>' . $key . '</h2>';
-        #print STDERR '$$'.$tll_link->($key)."\n";
     }
     if ($e->{attrib}->{lang} ) {
         local $xml_lang = $e->{attrib}->{lang};

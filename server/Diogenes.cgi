@@ -33,8 +33,8 @@ my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
 # This doesn't actually work, as it is connects to another filehandle
 # in the server.
-binmode(STDOUT, ':encoding(UTF-8)');
-binmode(STDERR, ':encoding(UTF-8)');
+# binmode(STDOUT, ':encoding(UTF-8)');
+# binmode(STDERR, ':encoding(UTF-8)');
 
 use constant is_win32  => 0 <= index $^O, "Win32";
 

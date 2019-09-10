@@ -3,21 +3,27 @@ Diogenes
 
 Diogenes is a tool for searching, browsing and reading the databases
 of ancient texts, primarily in Latin and Greek, that are published by
-the Thesaurus Linguae Graecae and the Packard Humanities Institute.
+the Packard Humanities Institute and the Thesaurus Linguae Graecae.
 
-The information here is only for people who want to delve into the
-technical details of Diogenes and build it for themselves.  If you
-just want to install and run the program, ignore all this and go to
-the Diogenes webpage instead:
+If you just want to install and run the program, go to the Diogenes
+webpage, and download a pre-packaged version for your operating system
+from there:
 
 https://d.iogen.es/d
+
+The detailed technical information contained here is only for people
+who want to look at the source code of Diogenes and build it for
+themselves.
 
 Building
 --------
 
-I would prefer users who are not building the application themselves
+I would prefer not to have Diogenes packaged as part of a larger
+(e.g. Linux) free software distribution.
+
+users who are not building the application themselves
 to download the installer from the Diogenes website rather than for it
-to be provided to them as part of a larger distribution.  This is just
+to be provided to them as .  This is
 because I use the download statistics to help justify spending part of
 my publicly funded time on this project.
 

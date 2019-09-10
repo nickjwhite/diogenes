@@ -170,7 +170,7 @@ sub seek_passage
                 # We've gone too far, so use previous chunk
                 print STDERR 
                     ">>>@{ $_ }[0] => $target{$top_level} (using block $old_block)\n" if 
-                    $self->{debug};
+                    $self->{debug} and $old_block;
                 $block = $old_block;
                 last SECTION;
             }

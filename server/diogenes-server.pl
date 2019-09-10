@@ -236,6 +236,7 @@ while (1)
             handle_connection();
         }
     }
+    print STDERR "Starting again ...\n";
 }
 print "An error has occurred in receiving your web browser's connection.\n";
 exit;
@@ -380,6 +381,7 @@ REQUEST:
             warn "Diogenes Error: $@" if $@;
         }
         elsif ($requested_file =~ m#^tll-pdf|ox-lat-dict\.pdf#) {
+            $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
             # Serve TLL/OLD pdfs, but first translate filename
             my %args_init = (-type => 'none');
             my $init = new Diogenes::Base(%args_init);
