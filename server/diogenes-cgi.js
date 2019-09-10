@@ -98,15 +98,16 @@ function sendRequest(action, lang, query, enc) {
             req = new ActiveXObject("Microsoft.XMLHTTP");  // Internet Explorer
         }
         req.onreadystatechange = stateHandler;
-        req.open("POST", "Perseus.cgi");
+        // For safety, we should really use encodeURIComponent() to
+        // encode these params and then decode them in Perseus.cgi.
+        var uri = "Perseus.cgi?" + "do=" + action + "&lang=" + lang + "&q="+ query
         if (enc) {
-            // Send utf8 from user input
-            req.send("do="+action+"&lang="+lang+"&q="+query+"&inp_enc="+enc);
+            // Send utf8 from user input (as opposed to text links, which use transliteration)
+            uri = uri + "&inp_enc=" + enc
         }
-        else {
-            // From text links (which use transliteration)
-            req.send("do="+action+"&lang="+lang+"&q="+query);
-        }
+        req.open("GET", uri);
+        req.send();
+
         return true;
     }
     return true;
