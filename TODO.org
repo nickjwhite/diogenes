@@ -1,12 +1,6 @@
-* Test PDFs on Windows
-Make client non-global
-Try with current pre-fork
-pre-fork multiple children
-
-
-* Test on Windows USB stick
-And test install on MDS/NCPS
-* Try to reproduce Windows word search bug.
+* Test Windows
+remove info in Readme about morpheus-broken and add link to new fork.
+Try to reproduce Windows word search bug.
 
 * Post-release to-do items.
 ** Fix bug with non-ascii paths to databases on Windows
@@ -31,3 +25,4 @@ This is tricky, as some names seem to be latin-1, not utf8.
 Possibly faster and better supported, by same author as XML::DOM::Lite.
 ** Fix Strawberry Perl to use included libxml.
 I think this just requires adding strawberry\c\bin to the PATH, so that it can find libxml2-2__.dll
+** Think about simplifying server by restricting it to localhost

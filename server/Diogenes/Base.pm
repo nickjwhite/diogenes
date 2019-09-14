@@ -283,12 +283,12 @@ sub get_user_config_dir
             if (-e "$ENV{USERPROFILE}\\AppData\\Roaming")
             {
                 # Vista
-                return "$ENV{USERPROFILE}\\AppData\\Roaming\\diogenes\\Diogenes-Browser\\";
+                return "$ENV{USERPROFILE}\\AppData\\Roaming\\Diogenes\\";
             }
             elsif (-e "$ENV{USERPROFILE}\\Application Data")
             {
                 # Windows 2000 and XP
-                return "$ENV{USERPROFILE}\\Application Data\\diogenes\\Diogenes-Browser\\";
+                return "$ENV{USERPROFILE}\\Application Data\\Diogenes\\";
             }
             else { warn "Could not find user profile dir!! \n" }
         }
