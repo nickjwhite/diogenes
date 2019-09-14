@@ -219,12 +219,12 @@ app.on('second-instance', () => {
 
 // Only allow loading content from localhost
 app.on('web-contents-created', (event, contents) => {
-	contents.on('will-navigate', (event, navigationUrl) => {
-		const url = new URL(navigationUrl)
-		if (url.hostname !== 'localhost') {
-			event.preventDefault()
-		}
-	})
+    contents.on('will-navigate', (event, navigationUrl) => {
+	const url = new URL(navigationUrl)
+	if (url.hostname !== 'localhost') {
+	    event.preventDefault()
+	}
+    })
 })
 
 // Start diogenes-server.pl
@@ -442,8 +442,15 @@ function initializeMenuTemplate () {
             role: 'editMenu'
         },
         {
-            label: 'Go',
+            label: 'Navigate',
             submenu: [
+                {label: 'Stop/Kill',
+                 accelerator: 'CmdOrCtrl+K',
+                 click: (menu, win) => {
+                     let contents = win.webContents
+                     contents.stop()
+                     win.webContents.executeJavaScript('stopSpinningCursor()')
+                 }},
                 {label: 'Back',
                  accelerator: 'CmdOrCtrl+[',
                  click: (menu, win) => {

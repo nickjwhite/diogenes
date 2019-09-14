@@ -69,9 +69,10 @@ sub pgrep
                 my $success = print ("\0");
                 if (not $success) {
                     print STDERR "Test print failed! $!\n";
-                    return if $Diogenes_Daemon::flag;
+                    # die does not exit server, but halts eval of cgi script
+                    die if $Diogenes_Daemon::flag;
                 } else {
-                    print STDERR "OK!\n" if $self->{debug};
+                    # print STDERR "OK!\n" if $self->{debug};
                 }
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
@@ -143,7 +144,7 @@ sub pgrep
                 my $success = print ("\0");
                 if (not $success) {
                     print STDERR "Test print failed! $!\n";
-                    return if $Diogenes_Daemon::flag;
+                    die if $Diogenes_Daemon::flag;
                 }
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
