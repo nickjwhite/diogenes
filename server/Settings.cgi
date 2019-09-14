@@ -210,3 +210,5 @@ else
     $display_splash->();
 }
 
+# So that we can eval this file using "require"
+1;

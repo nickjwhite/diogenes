@@ -125,7 +125,6 @@ if (not -e $perseus_dir) {
     if (not -e $perseus_dir) {
         print "<b>Sorry -- Perseus Data not installed!</b>";
         $footer->();
-        exit;
     }
 }
 

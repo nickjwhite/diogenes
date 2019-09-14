@@ -11,10 +11,8 @@ use CGI qw(:standard);
 use CGI::Carp 'fatalsToBrowser';
 $| = 1;
 
-use constant is_win32  => 0 <= index $^O, "Win32";
-
 BEGIN {
-   if ( is_win32 ) {
+   if ( Diogenes::Base::is_win32 ) {
       eval "use Win32::ShellQuote qw(quote_native); 1" or die $@;
    }
 }
@@ -62,4 +60,6 @@ print '</pre>';
 
 print $q->h3('Finished Downloading.');
 
+# So that we can eval this file using "require"
+1;
 

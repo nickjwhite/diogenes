@@ -37,10 +37,8 @@ my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 # binmode(STDOUT, ':encoding(UTF-8)');
 # binmode(STDERR, ':encoding(UTF-8)');
 
-use constant is_win32  => 0 <= index $^O, "Win32";
-
 BEGIN {
-   if ( is_win32 ) {
+   if ( Diogenes::Base::is_win32 ) {
       eval "use Win32::ShellQuote qw(quote_native); 1" or die $@;
    }
 }
@@ -101,6 +99,7 @@ use CGI qw(:standard);
 $ENV{PATH} = "/bin/:/usr/bin/";
 $| = 1;
 
+my $numerically = sub { $a <=> $b; };
 
 # We need to pre-set the encoding for the earlier pages, so that the right
 # header is sent out the first time Greek is displayed
@@ -300,7 +299,6 @@ my $print_error_page = sub
         $f->p($msg));
 
     print $f->end_html;
-    exit;
 };
 
 my $print_error = sub
@@ -313,7 +311,6 @@ my $print_error = sub
         $f->p($msg));
 
     print $f->end_html;
-    exit;
 };
 
 my $strip_html = sub
@@ -355,7 +352,6 @@ my $database_error = sub
 
     $st{current_page} = 'splash';
     $my_footer->();
-    exit;
 };
 
 my $print_navbar = sub {
@@ -685,7 +681,7 @@ $output{export_xml} = sub {
 
     # TODO: Should have just used $^X
     my $perl_name;
-    if (is_win32) {
+    if (Diogenes::Base::is_win32) {
         $perl_name = File::Spec->catfile($Bin, '..', 'strawberry', 'perl', 'bin', 'perl.exe');
     }
     else {
@@ -696,7 +692,7 @@ $output{export_xml} = sub {
     push @cmd, $perl_name;
     push @cmd, File::Spec->catfile($Bin, 'xml-export.pl');
     # LibXML does not work under Strawberry Perl
-    push @cmd, '-x' if is_win32;
+    push @cmd, '-x' if Diogenes::Base::is_win32;
     push @cmd, '-c';
     push @cmd, $st{short_type};
     push @cmd, '-o';
@@ -707,7 +703,7 @@ $output{export_xml} = sub {
         push @cmd, $n;
     }
     my ($command, $fh);
-    if (is_win32) {
+    if (Diogenes::Base::is_win32) {
         $command = quote_native(@cmd);
         open ($fh, '-|', $command) or die "Cannot exec $command: $!";
     }
@@ -1054,6 +1050,15 @@ $output{browser} = sub
         return;
     }
 
+    my $author_sort = sub
+    {
+        my ($a, $b) = @_;
+        $a =~ tr/a-zA-Z//cd;
+        $b =~ tr/a-zA-Z//cd;
+        return (uc $a cmp uc $b);
+    };
+
+
     $print_title->('Diogenes Author Browser');
     $print_header->();
     $st{current_page} = 'browser_authors';
@@ -1077,8 +1082,8 @@ $output{browser} = sub
                 $f->p( 'Please select one and click on the button below.'),
                 $f->p(
                     $f->scrolling_list( -name => 'author',
-                                        -Values => [sort {author_sort($auths{$a}, $auths{$b})} keys %auths],
-#                                         -Values => [sort numerically keys %auths],
+                                        -Values => [sort {$author_sort->($auths{$a}, $auths{$b})} keys %auths],
+#                                         -Values => [sort $numerically keys %auths],
                                         -labels => \%auths, -size=>$size,
                                         -autofocus => 'autofocus',
                                         -required => 'required'
@@ -1090,13 +1095,6 @@ $output{browser} = sub
 
     $my_footer->();
 
-    sub author_sort
-    {
-        my ($a, $b) = @_;
-        $a =~ tr/a-zA-Z//cd;
-        $b =~ tr/a-zA-Z//cd;
-        return (uc $a cmp uc $b);
-    }
 };
 
 $handler{browser_authors} = sub { $output{browser_works}->(); };
@@ -1137,7 +1135,7 @@ $output{browser_works} = sub
                 $f->p('Please select one.'),
                 $f->p(
                     $f->scrolling_list( -name => 'work',
-                                        -Values => [sort numerically keys %works],
+                                        -Values => [sort $numerically keys %works],
                                         -labels => \%works,
                                         -autofocus => 'autofocus',
                                         -required => 'required')),
@@ -1676,7 +1674,7 @@ $output{refine_works} = sub
         $q->format_output(\$author, 'l', 1);
 
         print $f->h2($author);
-        for my $work_num (sort numerically
+        for my $work_num (sort $numerically
                           keys %{ $work{$q->{type}}{$a} })
         {
             push @work_nums, $work_num;
@@ -2010,22 +2008,23 @@ $handler{list_filter} = sub
     }
 };
 
-sub deep_copy {
+my $deep_copy;
+$deep_copy = sub {
     my $this = shift;
     if (not ref $this) {
       $this;
     } elsif (ref $this eq "ARRAY") {
-        [map deep_copy($_), @$this];
+        [map $deep_copy->($_), @$this];
     } elsif (ref $this eq "HASH") {
-        +{map { $_ => deep_copy($this->{$_}) } keys %$this};
+        +{map { $_ => $deep_copy->($this->{$_}) } keys %$this};
     } else { die "what type is $_?" }
-}
+};
 
 
 $output{duplicate_filter} = sub {
     return if $get_filter->($st{duplicate_name});
     my $old_filter = $get_filter->($st{filter_choice});
-    my $new_filter = deep_copy($old_filter);
+    my $new_filter = $deep_copy->($old_filter);
     $new_filter->{name} = $st{duplicate_name};
     push @filters, $new_filter;
     $save_filters_and_go->();
@@ -2061,9 +2060,6 @@ $output{delete_filter_items} = sub {
     $save_filters_and_go->();
 
 };
-
-
-sub numerically { $a <=> $b; }
 
 
 my $mod_perl_error = sub
@@ -2117,3 +2113,6 @@ else
         $print_error_page->();
     }
 }
+
+# So that we can eval this file using "require"
+1;

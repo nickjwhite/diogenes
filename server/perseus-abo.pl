@@ -42,18 +42,19 @@ my %suet_map = (
     '021' => 'Tit',
     '022' => 'Dom',
     );
-sub unmodernise_urn
+
+my $unmodernise_urn = sub
 {
     my $work = shift;
     $work =~ s/\.perseus-lat\d|\.perseus-grc\d//;
     $work =~ s/^(phi|tlg),?/$1,/;
     $work =~ s/\.(phi|tlg)/,/g;
     return $work;
-}
+};
 
-$Diogenes::Perseus::translate_abo = sub{
+$Diogenes::Perseus::translate_abo = sub {
     my $abo = shift;
-    $abo = unmodernise_urn($abo);
+    $abo = $unmodernise_urn->($abo);
 
     if ($abo =~ m/^([^:]+)(:.+)$/) {
         my ($work, $loc) = ($1, $2);
