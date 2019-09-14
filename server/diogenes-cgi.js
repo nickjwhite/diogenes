@@ -1,10 +1,13 @@
 var picture_dir = 'images/';
 
-window.addEventListener("load", function() {
+function stopSpinningCursor() {
     // Turn off spinning cursor
     var body = document.getElementsByTagName("BODY")[0];
     body.classList.remove("waiting");
+}
 
+window.addEventListener("load", function() {
+    stopSpinningCursor();
     // If we have jumped to a passage from a lexicon, show that entry again after loading.
     var dio_form = document.getElementById("form");
     if (dio_form.JumpFromShowLexicon &&
