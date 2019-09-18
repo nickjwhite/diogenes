@@ -41,7 +41,7 @@ push @cmd, File::Spec->catfile($Bin, 'tll-pdf-download.pl');
 push @cmd, $tll_path;
 
 my ($command, $fh);
-if (is_win32) {
+if (Diogenes::Base::is_win32) {
     $command = quote_native(@cmd);
     open ($fh, '-|', $command) or die "Cannot exec $command: $!";
 }

@@ -48,7 +48,7 @@ my $ua = LWP::UserAgent->new(
 
 my $length;    # total number of bytes to download
 my $flength;   # formatted length
-my $size = 0;  # number of bytes received
+my $size;      # number of bytes received
 my $start_t;   # start time of download
 my $last_dur;  # time of last callback
 
@@ -77,9 +77,14 @@ print "Finished: all files downloaded.  You can now close this window.";
 
 sub download {
     my ($url, $fh, $filename) = @_;
-    $start_t = time;
+    $length = 0;
+    $flength = 0;
+    $size = 0;
     $last_dur = 0;
+    $start_t = time;
     my $callback = sub {
+        # Test if output window is still open
+        return unless print ("\0");
         return if $interrupted;
         my $data =  $_[0];
         my $resp = $_[1];
