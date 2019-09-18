@@ -21,6 +21,7 @@ $|=1;
 
 # Script to run when nothing else is specified.
 my $CGI_SCRIPT = 'Diogenes.cgi';
+my %cgi_script;
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
@@ -84,9 +85,8 @@ END
     exit;
 }
 
-my %cgi_subroutine;
 my %tll_list;
-my $debug = 1;
+my $debug = 0;
 $debug = 1 if $opt_d;
 $ENV{Diogenes_Debug} = 1 if $debug;
 $| = 1;
@@ -126,9 +126,6 @@ $netmask = unpack ('N', inet_aton($opt_m)) if defined $opt_m;
 # CGI dirs
 my $root_dir = $Bin;
 $root_dir .= '/' unless $root_dir =~ m#[/\\]$#;
-
-# Pre-compile the main cgi script
-compile_cgi_subroutine("Diogenes.cgi");
 
 print "Server Root: $root_dir\n" if $debug;
 
@@ -365,8 +362,22 @@ sub handle_request
         # so the select command passes the reference to the correct filehandle.
 
         select $client;
-        require $requested_file;
+
+
+        compile_cgi($requested_file) unless
+            exists $cgi_script{$requested_file};
+        $cgi_script{$requested_file}->();
         warn "Diogenes Error: $@" if $@;
+
+        
+        # On Windows, using "require", the CGI script fails after running successfully the first time.  No idea why 
+        # if ($Diogenes::Base:is_win32) {
+        #     do $requested_file;
+        # }
+        # else {
+        #     require $requested_file;
+        # }
+        # warn "Diogenes Error: $@" if $@;
     }
     elsif ($requested_file =~ m#^tll-pdf|ox-lat-dict\.pdf#) {
         $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
@@ -460,3 +471,19 @@ sub tll_list_read {
     }
 }
 
+sub compile_cgi {
+    my $script_file = shift;
+    open SCRIPT, "<$root_dir$script_file" or
+        warn "Unable to open CGI $script_file.\n";
+    binmode SCRIPT;
+    my $script;
+    {
+        local $/; undef $/;
+        ($script) = <SCRIPT>;
+    }
+    my $sub_script = sub {  $script  };
+    print STDERR "sub: ".$sub_script."\n";
+    my $eval_script = eval { $sub_script };
+    print STDERR "eval: ".$eval_script."\n";
+    $cgi_script{$script_file} = $eval_script;
+}
