@@ -102,6 +102,8 @@ my $set_state = sub
 
 my $get_state = sub
 {
+    # Make sure to clear state (esp. in non-forking server)
+    %st = ();
     my @params = $f->param();
     my %real_params;
     /XXstate$/ || $real_params{$_}++ for @params;
