@@ -178,7 +178,7 @@ print "\nStartup complete. ",
 my $pid;
 while (1)
 {
-    if ($Diogenes::Base::is_win32)
+    if ($Diogenes::Base::OS eq 'windows')
     {
         $pid = fork;
         if ($pid)

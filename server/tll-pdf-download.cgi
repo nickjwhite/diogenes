@@ -12,7 +12,7 @@ use CGI::Carp 'fatalsToBrowser';
 $| = 1;
 
 BEGIN {
-   if ( Diogenes::Base::is_win32 ) {
+   if ( $Diogenes::Base::OS eq 'windows' ) {
       eval "use Win32::ShellQuote qw(quote_native); 1" or die $@;
    }
 }
@@ -41,7 +41,7 @@ push @cmd, File::Spec->catfile($Bin, 'tll-pdf-download.pl');
 push @cmd, $tll_path;
 
 my ($command, $fh);
-if (Diogenes::Base::is_win32) {
+if ($Diogenes::Base::OS eq 'windows') {
     $command = quote_native(@cmd);
     open ($fh, '-|', $command) or die "Cannot exec $command: $!";
 }

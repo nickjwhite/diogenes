@@ -52,16 +52,16 @@ use Exporter;
 our($RC_DEBUG, $OS, $config_dir);
 $RC_DEBUG = 0;
 
-use constant is_win32  => 0 <= index $^O, "Win32";
 use Encode;
 BEGIN {
-    if ( is_win32 ) {
+    $OS = ($^O=~/MSWin/i or $^O=~/Win32/i or $^O =~/dos/) ? 'windows' :
+        ($^O=~/darwin/i) ? 'mac' : 'unix';
+
+    if ($OS eq 'windows' ) {
         eval "use Win32; 1" or die $@;
     }
 }
 
-$OS = ($^O=~/MSWin/i or $^O =~/dos/) ? 'windows' :
-    ($^O=~/darwin/i) ? 'mac' : 'unix';
 
 # For Windows pathnames
 my $code_page;

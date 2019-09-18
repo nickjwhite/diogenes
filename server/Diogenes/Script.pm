@@ -35,7 +35,7 @@ use CGI qw(:standard);
 # use CGI::Carp 'fatalsToBrowser';
 
 BEGIN {
-   if ( Diogenes::Base::is_win32 ) {
+   if ( $Diogenes::Base::OS eq 'windows' ) {
       eval "use Win32::ShellQuote qw(quote_native); 1" or die $@;
    }
 }
@@ -626,7 +626,7 @@ $output{export_xml} = sub {
 
     # TODO: Should have just used $^X
     my $perl_name;
-    if (Diogenes::Base::is_win32) {
+    if ($Diogenes::Base::OS eq 'windows') {
         $perl_name = File::Spec->catfile($Bin, '..', 'strawberry', 'perl', 'bin', 'perl.exe');
     }
     else {
@@ -637,7 +637,7 @@ $output{export_xml} = sub {
     push @cmd, $perl_name;
     push @cmd, File::Spec->catfile($Bin, 'xml-export.pl');
     # LibXML does not work under Strawberry Perl
-    push @cmd, '-x' if Diogenes::Base::is_win32;
+    push @cmd, '-x' if $Diogenes::Base::OS eq 'windows';
     push @cmd, '-c';
     push @cmd, $st{short_type};
     push @cmd, '-o';
@@ -648,7 +648,7 @@ $output{export_xml} = sub {
         push @cmd, $n;
     }
     my ($command, $fh);
-    if (Diogenes::Base::is_win32) {
+    if ($Diogenes::Base::OS eq 'windows') {
         $command = quote_native(@cmd);
         open ($fh, '-|', $command) or die "Cannot exec $command: $!";
     }
