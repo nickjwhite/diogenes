@@ -12,30 +12,27 @@
 #                                                                        #
 ##########################################################################
 
-package Diogenes::CGI;
+# This is a slightly odd module, in that it has been lightly converted
+# from a CGI script (which was once written to run under mod_perl,
+# hence the use of lexical vars everywhere to hold coderefs).  The
+# entry point is the single exception, go().
+
+# We start with compile-time declarations
+
+package Diogenes::Script;
 use strict;
 use File::Spec::Functions qw(:ALL);
 use FindBin qw($Bin);
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
-
 use Data::Dumper;
-
 use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %database @databases @filters);
-# use Diogenes::CGI_utils qw($f %st $get_state $set_state);
 use Diogenes::Search;
 use Diogenes::Indexed;
 use Diogenes::Browser;
-
 use Encode;
-
-$Diogenes::Base::cgi_flag = 1;
-
-my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
-
-# This doesn't actually work, as it is connects to another filehandle
-# in the server.
-# binmode(STDOUT, ':encoding(UTF-8)');
-# binmode(STDERR, ':encoding(UTF-8)');
+use CGI qw(:standard);
+#use CGI;
+# use CGI::Carp 'fatalsToBrowser';
 
 BEGIN {
    if ( Diogenes::Base::is_win32 ) {
@@ -43,12 +40,15 @@ BEGIN {
    }
 }
 
-# Force read of config files
-my %args_init = (-type => 'none');
-my $init = new Diogenes::Base(%args_init);
-my $filter_file = $init->{filter_file};
+# These are lexical vars shared between the subroutines below.  Many
+# are config-dependent.  They are initialised at run-time in
+# $setup->().
 
-# my @choices = reverse sort keys %choices;
+my ($f, $init, $filter_file, $default_encoding, $default_choice,
+    $default_criteria, $filter_flag, $charset);
+
+# These are lexical constants whose values are fixed.
+
 my @choices = (
     'TLG Texts',
     'PHI Latin Corpus',
@@ -59,7 +59,6 @@ my @choices = (
     'PHI Coptic Texts',
     'TLG Bibliography',
     );
-
 # Probable input language for morphological search
 my %prob_lang = ( 'phi' => 'lat',
                   'tlg' => 'grk',
@@ -67,67 +66,19 @@ my %prob_lang = ( 'phi' => 'lat',
                   'ins' => 'grk',
                   'chr' => 'grk',
                   'misc' => 'lat' );
-my $default_choice;
-my $choice_from_config = quotemeta $init->{cgi_default_corpus};
-for (@choices)
-{
-    if ($_ =~ m/$choice_from_config/i)
-    {
-        $default_choice = $_;
-        last;
-    }
-}
-warn "I don't understand default search type $init->{cgi_default_corpus}\n"
-    unless $default_choice;
-
-my $default_encoding = $init->{cgi_default_encoding} || 'UTF-8';
-
-my $default_criteria = $init->{default_criteria};
-
-# This is the directory whence the decorative images that come with
-# the script are served.
 my $picture_dir = 'images/';
-
-my $check_mod_perl = $init->{check_mod_perl};
-
 my $version = $Diogenes::Base::Version;
-my (%handler, %output, $filter_flag);
 
-use CGI qw(:standard);
-#use CGI;
-# use CGI::Carp 'fatalsToBrowser';
-$ENV{PATH} = "/bin/:/usr/bin/";
-$| = 1;
-
-my $numerically = sub { $a <=> $b; };
-
-# We need to pre-set the encoding for the earlier pages, so that the right
-# header is sent out the first time Greek is displayed
-$f->param('greek_output_format', $default_encoding) unless
-    $f->param('greek_output_format');
-
-# This works for WinGreek, etc, and any encoding/font that's designed
-# more for cutting and pasting than for proper viewing in a browser.
-my $charset = 'iso-8859-1';
-
-if ($f->param('greek_output_format') and
-    $f->param('greek_output_format') =~ m/UTF-?8|Unicode/i)
-{
-    $charset = 'UTF-8';
-    #$charset = 'iso-10646-1';
-}
-elsif ($f->param('greek_output_format') and
-       $f->param('greek_output_format') =~ m/8859.?7/i)
-{
-    $charset = 'ISO-8859-7';
-}
+# Containers for coderefs
+my (%handler, %output);
 
 # Preserving state: all previous parameters are embedded as hidden
-# fields in each subsequent page.
+# fields in each subsequent page.  Remember that this sets up a single
+# namespace for all cgi parameters on all pages of the script, so be
+# careful not to duplicate parameter names from page to page.
 my %st;
-# Remember that this sets up a single namespace for all cgi
-# parameters on all pages of the script, so be careful not to
-# duplicate parameter names from page to page.
+my $previous_page;
+my $current_filter;
 
 my $set_state = sub
 {
@@ -175,8 +126,6 @@ my $get_state = sub
     }
 };
 
-$get_state->();
-
 my $read_filters = sub {
     if (-e $filter_file)
     {
@@ -197,10 +146,6 @@ my $read_filters = sub {
     }
 };
 
-$read_filters->() unless @filters;
-
-
-my $previous_page = $st{current_page};
 
 my $my_footer = sub
 {
@@ -217,6 +162,7 @@ my $my_footer = sub
     print $f->end_html;
 };
 
+my $numerically = sub { $a <=> $b; };
 
 my $print_title = sub
 {
@@ -427,7 +373,6 @@ $output{splash} = sub
     $my_footer->();
 };
 
-my $current_filter;
 my $get_filter = sub
 {
     my $name = shift;
@@ -658,7 +603,7 @@ $output{export_xml} = sub {
         @auths = sort keys %{ $q->match_authtab($st{author}) };
         unless (scalar @auths)
         {
-            $print_error->(qq(There were no texts matching the author $st{author_pattern}));
+            $print_error->(qq(There were no texts matching the author $st{author}));
             return;
         }
     }
@@ -1285,15 +1230,13 @@ $output{browser_output} = sub
     }
     elsif ($st{browser_forward})
     {
-        ($st{begin_offset}, $st{end_offset}) = $q->browse_forward ($st{begin_offset},
-                                                                       $st{end_offset},
-                                                                       $st{author}, $st{work});
+        ($st{begin_offset}, $st{end_offset}) =
+            $q->browse_forward($st{begin_offset}, $st{end_offset}, $st{author}, $st{work});
     }
     elsif ($st{browser_back})
     {
-        ($st{begin_offset}, $st{end_offset}) = $q->browse_backward ($st{begin_offset},
-                                                                        $st{end_offset},
-                                                                        $st{author}, $st{work});
+        ($st{begin_offset}, $st{end_offset}) =
+            $q->browse_backward($st{begin_offset}, $st{end_offset}, $st{author}, $st{work});
     }
     else
     {
@@ -2078,41 +2021,101 @@ my $mod_perl_error = sub
     return;
 };
 
-# End of subroutine definitions -- here's where the dispatching gets done
+# Initialization of query
+my $setup = sub {
+    $Diogenes::Base::cgi_flag = 1;
+    $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
-# Flow control
-# warn $previous_page;
+    # Force read of config files
+    my %args_init = (-type => 'none');
+    $init = new Diogenes::Base(%args_init);
+    $filter_file = $init->{filter_file};
 
-if ($check_mod_perl and not $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl/)
-{
-    $mod_perl_error->();
-}
-elsif ($f->param('JumpTo'))
-{
-    # Jump straight to a passage in the browser
-    my $jump = $f->param('JumpTo');
-    $jump =~ m/^([^,]+)/;
-    $st{short_type} = $1;
-    $st{type} = $database{$1};
-    $output{browser_output}->($jump);
-}
-elsif (not $previous_page)
-{
-    # First time, print opening page
-    $output{splash}->();
-}
-else
-{
-    # Data present, pass control to the appropriate subroutine
-    if ($handler{$previous_page})
+    my $choice_from_config = quotemeta $init->{cgi_default_corpus};
+    for (@choices)
     {
-        $handler{$previous_page}->();
+        if ($_ =~ m/$choice_from_config/i)
+        {
+            $default_choice = $_;
+            last;
+        }
+    }
+    warn "I don't understand default search type $init->{cgi_default_corpus}\n"
+        unless $default_choice;
+
+    $default_encoding = $init->{cgi_default_encoding} || 'UTF-8';
+    $default_criteria = $init->{default_criteria};
+
+    $ENV{PATH} = "/bin/:/usr/bin/";
+    $| = 1;
+
+    # We need to pre-set the encoding for the earlier pages, so that
+    # the right header is sent out the first time Greek is displayed
+    $f->param('greek_output_format', $default_encoding) unless
+        $f->param('greek_output_format');
+
+    # This works for WinGreek, etc, and any encoding/font that's designed
+    # more for cutting and pasting than for proper viewing in a browser.
+    $charset = 'iso-8859-1';
+
+    if ($f->param('greek_output_format') and
+        $f->param('greek_output_format') =~ m/UTF-?8|Unicode/i)
+    {
+        $charset = 'UTF-8';
+        #$charset = 'iso-10646-1';
+    }
+    elsif ($f->param('greek_output_format') and
+           $f->param('greek_output_format') =~ m/8859.?7/i)
+    {
+        $charset = 'ISO-8859-7';
+    }
+
+    $get_state->();
+    $read_filters->() unless @filters;
+    $previous_page = $st{current_page};
+};
+
+# Dispatch query
+my $dispatch = sub {
+    
+    my $check_mod_perl = $init->{check_mod_perl};
+    if ($check_mod_perl and not $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl/)
+    {
+        $mod_perl_error->();
+    }
+    elsif ($f->param('JumpTo'))
+    {
+        # Jump straight to a passage in the browser
+        my $jump = $f->param('JumpTo');
+        $jump =~ m/^([^,]+)/;
+        $st{short_type} = $1;
+        $st{type} = $database{$1};
+        $output{browser_output}->($jump);
+    }
+    elsif (not $previous_page)
+    {
+        # First time, print opening page
+        $output{splash}->();
     }
     else
     {
-        $print_error_page->();
+        # Data present, pass control to the appropriate subroutine
+        if ($handler{$previous_page})
+        {
+            $handler{$previous_page}->();
+        }
+        else
+        {
+            $print_error_page->();
+        }
     }
-}
+};
 
-# So that we can eval this file using "require"
+$Diogenes::Script::go = sub {
+    $setup->();
+    $dispatch->()
+};
+
+
+# End of module
 1;

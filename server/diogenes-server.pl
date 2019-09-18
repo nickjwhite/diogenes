@@ -20,8 +20,7 @@ $|=1;
 
 
 # Script to run when nothing else is specified.
-my $CGI_SCRIPT = 'Diogenes.cgi';
-my %cgi_script;
+my $cgi_script = 'Diogenes.cgi';
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
@@ -42,6 +41,7 @@ use HTTP::Status;
 use HTTP::Headers;
 use Cwd;
 use Diogenes::Base;
+use Diogenes::Script;
 use Net::Domain qw(hostfqdn);
 use Socket;
 use Getopt::Std;
@@ -291,12 +291,12 @@ sub handle_request
         $client->send_error(RC_FORBIDDEN);
         return;
     }
-    $requested_file = $CGI_SCRIPT if $requested_file eq '/';
+    $requested_file = $cgi_script if $requested_file eq '/';
     # Internet exploder stupidity
     $requested_file =~ s#^\Q$root_dir\E##;
     $requested_file =~ s#^[/\\]##;
-    $requested_file = $CGI_SCRIPT if $requested_file =~ m/diogenes-server/i;
-    $requested_file = $CGI_SCRIPT if $requested_file =~ m/Diogenes\.cgi/i;
+    $requested_file = $cgi_script if $requested_file =~ m/diogenes-server/i;
+    $requested_file = $cgi_script if $requested_file =~ m/Diogenes\.cgi/i;
     warn "Relative file name: $requested_file\n" if $debug;
 
     my $cookie = $request->header('Cookie');
@@ -311,7 +311,7 @@ sub handle_request
     # variables, except that for POST methods, CGI.pm wants to
     # read the query data from STDIN.
     $params = '';
-    if ($requested_file =~ m/\.cgi/i or $requested_file eq $CGI_SCRIPT)
+    if ($requested_file =~ m/\.cgi/i or $requested_file eq $cgi_script)
     {
         if ($request -> method eq 'GET')
         {
@@ -363,21 +363,18 @@ sub handle_request
 
         select $client;
 
-
-        compile_cgi($requested_file) unless
-            exists $cgi_script{$requested_file};
-        $cgi_script{$requested_file}->();
+        if ($requested_file eq $cgi_script) {
+            # The module has been pre-compiled, and we use eval here
+            # to trap errors (especially important for the non-forking
+            # server).
+            eval { $Diogenes::Script::go->() }
+        }
+        else {
+            # Other scripts have to be re-parsed each time.
+            do $requested_file;
+        }
         warn "Diogenes Error: $@" if $@;
 
-        
-        # On Windows, using "require", the CGI script fails after running successfully the first time.  No idea why 
-        # if ($Diogenes::Base:is_win32) {
-        #     do $requested_file;
-        # }
-        # else {
-        #     require $requested_file;
-        # }
-        # warn "Diogenes Error: $@" if $@;
     }
     elsif ($requested_file =~ m#^tll-pdf|ox-lat-dict\.pdf#) {
         $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
@@ -471,19 +468,3 @@ sub tll_list_read {
     }
 }
 
-sub compile_cgi {
-    my $script_file = shift;
-    open SCRIPT, "<$root_dir$script_file" or
-        warn "Unable to open CGI $script_file.\n";
-    binmode SCRIPT;
-    my $script;
-    {
-        local $/; undef $/;
-        ($script) = <SCRIPT>;
-    }
-    my $sub_script = sub {  $script  };
-    print STDERR "sub: ".$sub_script."\n";
-    my $eval_script = eval { $sub_script };
-    print STDERR "eval: ".$eval_script."\n";
-    $cgi_script{$script_file} = $eval_script;
-}

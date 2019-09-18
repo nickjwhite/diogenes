@@ -60,6 +60,6 @@ print '</pre>';
 
 print $q->h3('Finished Downloading.');
 
-# So that we can eval this file using "require"
+# So that we can eval this file using "do"
 1;
 
