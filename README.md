@@ -19,13 +19,11 @@ Building
 --------
 
 I would prefer not to have Diogenes packaged as part of a larger
-(e.g. Linux) free software distribution.
-
-users who are not building the application themselves
-to download the installer from the Diogenes website rather than for it
-to be provided to them as .  This is
-because I use the download statistics to help justify spending part of
-my publicly funded time on this project.
+(e.g. Linux) free software distribution.  I would rather that users
+who are not building the application themselves download the installer
+from the Diogenes website.  This is because I use the download
+statistics to help justify spending part of my publicly funded time on
+this project.
 
 Diogenes can either be built and run as a HTTP server application, or
 as a standalone application that seamlessly combines both server and
