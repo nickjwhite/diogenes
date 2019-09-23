@@ -1,7 +1,3 @@
-* Final release
-Shut down old website
-Test TLL download on Windows
-
 * Post-release to-do items.
 ** Fix bug with non-ascii paths to databases on Windows
 The current code does seem to work when searching texts, and even when jumping to context from search results, but fails when browsing.  The .idt files are opened without a problem in the preliminary stages of browsing, and the seek_passage subroutine works when jumping from a search result, but not when browsing.  Browsing forward after jump to context is also broken.  A strange bug.
@@ -22,3 +18,5 @@ Possibly faster and better supported, by same author as XML::DOM::Lite.
 ** Fix Strawberry Perl to use included libxml.
 I think this just requires adding strawberry\c\bin to the PATH, so that it can find libxml2-2__.dll
 ** Think about simplifying server by restricting it to localhost
+** Possibly refactor application to only run via diogenes-server
+We could avoid re-parsing prefs file at each query.

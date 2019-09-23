@@ -46,7 +46,6 @@ my $ua = LWP::UserAgent->new(
    env_proxy => 1,
     );
 
-my $length;    # total number of bytes to download
 my $flength;   # formatted length
 my $size;      # number of bytes received
 my $start_t;   # start time of download
@@ -90,6 +89,7 @@ print "Finished: all files downloaded.  You can now close this window.";
 
 sub download {
     my ($url, $fh, $filename) = @_;
+    my $length;    # total number of bytes to download
     $flength = 0;
     $size = 0;
     $last_dur = 0;
