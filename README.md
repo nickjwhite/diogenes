@@ -66,18 +66,19 @@ You will need to install a number of auxiliary programs, including
 All of these can easily be installed on Linux via your distribution
 and on OS X using Homebrew (on OS X, Wine version 4.5 works, which can
 be installed via `brew cask install
-homebrew/cask-versions/wine-devel`).  To create the Mac and Linux
+homebrew/cask-versions/wine-devel`).  To create Linux
 installers you will also need to install `fpm`, which is done via the
 Ruby package manager (see https://fpm.readthedocs.io/en/latest/).
 
     make installer-w32        # Make a Windows installer
-    make installer-macpkg     # Make a Mac pkg installer
+    make installer-mac        # Make a Mac installer
     make installer-deb64      # Make a Debian package
     make installer-rpm64      # Make an RPM Linux package
     make installer-arch64     # Make a pacman package for Arch Linux
 
-OS X note: If another version of Diogenes with the same version number
-is already installed, the Mac package installer will leave it
+There is also a target to create an OS X pkg, but I have found this to
+be unreliable. If another version of Diogenes with the same version
+number is already installed, the Mac package installer will leave it
 untouched, will not install the new package, and will nonetheless
 report success.
 
@@ -101,9 +102,10 @@ Diogenes has a number of other features which predate the development
 of the standalone app and which are no longer fully supported but
 which may still work.  These include a command-line interface
 (`diogenes-cli.pl`), LaTeX output, and support for a wide variety of
-pre-Unicode encodings for Ancient Greek.  More options for XML export
-are available by running the xml-export.pl script from the command
-line.
+pre-Unicode encodings for Ancient Greek.
+
+Various options for XML export are available by running the
+`server/xml-export.pl` script from the command line.
 
 Building the morphology data & dictionaries
 -------------------------------------------
@@ -196,9 +198,9 @@ command line:
 
     server/tll-pdf-download.pl path/to/destination/folder
 
-If you also have a PDF of the _OLD_ that has the running heads as
-bookmarks, you can extract the necessary information from that as
-well.  To do so, run:
+If you also have a PDF of the first edition of the _OLD_ that has the
+running heads as bookmarks, you can extract the necessary information
+from that as well.  To do so, run:
 
     make -f mk.pdf-data TLLDIR=/path/to/tll/directory OLDFILE=/path/to/old/file
 
