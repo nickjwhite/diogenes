@@ -134,9 +134,8 @@ this command instead:
 ### Step 2
 
 The next step is to generate the morphological data by running
-Morpheus over the wordlists.  This is the only part of the build
-process that probably requires running it on a Linux machine, as
-Morpheus does not compile on OS X.  If you are on OS X and want to
+Morpheus over the wordlists.  This part of the build may need to run
+on a Linux machine, as Morpheus has had issues on OS X.  If want to
 skip this step, you can just download and use the morphological data
 from version 3 of Diogenes, which still works fine with version 4.
 Run the following command and then go down to Step 3 below:
@@ -144,20 +143,21 @@ Run the following command and then go down to Step 3 below:
     make -f mk.morpheus-v3
 
 If you prefer to run Morpheus over the wordlists yourself, you have to
-choose between compiling an old version which works well and compiling
-the current version, which is broken.
+choose between the old version which works well but only compiles on
+Linux and the current version, which may be broken but which compiles
+on Macs.
 
 To download, compile and run an older but known-good version of
-Morpheus, run this command:
+Morpheus, run this command on Linux:
 
     make -f mk.morpheus-old
 
-The current version of Morpheus in the Perseus github repo has some
-bugs in it that leads to incomplete and incorrect output, so it is
-recommended to use the older version.  But if you want to test the
-current version, do this instead:
+The current version of Morpheus in the Perseus github repo has been
+updated so that it compiles on Macs, but it is buggy and produces
+incomplete and incorrect output. There are newer forks which may have
+fixed those issues, but I haven't tested them.  See
+e.g. https://github.com/Alatius/morpheus
 
-    make -f mk.morpheus-broken
 
 ### Step 3
 
