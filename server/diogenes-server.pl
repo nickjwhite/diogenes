@@ -24,6 +24,7 @@ my $cgi_script = 'Diogenes.cgi';
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
+use Encode;
 
 # Use local CPAN
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
@@ -393,7 +394,10 @@ sub handle_request
             warn "Bad PDF file number" unless $pdf_file;
             warn "Translating PDF file $file_number as $pdf_file\n" if $debug;
 
-            # $pdf_file = uri_escape($pdf_file);
+            if ($Diogenes::Base::OS eq 'windows') {
+                # Data is proper utf-8, not octets.
+                $pdf_file = Encode::encode($Diogenes::Base::code_page, $pdf_file);
+            }
             $pdf_path = $init->{tll_pdf_dir};
             $pdf_file = File::Spec->catfile($pdf_path, $pdf_file);
         }

@@ -5,7 +5,7 @@ use warnings;
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
-
+use Encode;
 use URI::Escape;
 use Diogenes::Base;
 my $version = $Diogenes::Base::Version;
@@ -65,8 +65,21 @@ print "Downloading TLL PDF files from $website\n";
 foreach my $url (@urls) {
     my $filename = uri_unescape($url);
     $filename =~ s/^$website//;
+    # The filename is now a series of raw bytes, but the url is
+    # encoded as utf8 (i.e. with en-dashes).  For utf-8 systems, we
+    # can just use the octets as such without further ado, but on
+    # Windows we have to convert to the local 8-bit codepage (unless
+    # we want to install a special Win32 module to use the Windows
+    # Unicode file API). Hopefully the local codepage includes the
+    # en-dash (cp1252 is OK).  There will be problems if not.  The
+    # terminal output will be wrong on Windows, as the terminal uses a
+    # different codepage.
+    if ($Diogenes::Base::OS eq 'windows') {
+        Encode::from_to($filename, 'utf8', $Diogenes::Base::code_page);
+    }
     print "Warning: overwriting already existing file: $filename!\n" if (-e $filename);
     open my $fh, ">", $filename or die "Could not open $filename for writing: $!\n";
+    binmode($fh); # essential for Windows
     print "\nDownloading $filename ...\n";
     download($url, $fh, $filename);
     die "Shutting down.\n" if $interrupted;
@@ -77,14 +90,13 @@ print "Finished: all files downloaded.  You can now close this window.";
 
 sub download {
     my ($url, $fh, $filename) = @_;
-    $length = 0;
     $flength = 0;
     $size = 0;
     $last_dur = 0;
     $start_t = time;
     my $callback = sub {
         # Test if output window is still open
-        return unless print ("\0");
+        $interrupted = 1 unless print ("\0");
         return if $interrupted;
         my $data =  $_[0];
         my $resp = $_[1];
@@ -95,9 +107,9 @@ sub download {
         print $fh $data or die "Can't write to $filename: $!\n";
         $size += length($_[0]);
         
-        if (defined $length) {
+        if ($length) {
             my $dur  = time - $start_t;
-            if ($dur != $last_dur) {  # don't update too often
+            if ($dur > $last_dur + 3) {  # don't update too often
                 $last_dur = $dur;
                 my $perc = $size / $length;
                 my $speed;

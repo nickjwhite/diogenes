@@ -25,7 +25,8 @@ my $d = new Diogenes::Base(-type => 'none');
 my $tll_path = $d->{tll_pdf_dir};
 
 print $q->h2('Downloading PDFs of the <i>Thesaurus Linguae Latinae</i>.'),
-    $q->p("This can take a while. Close this window to interrupt download. Destination folder: $tll_path");
+    $q->p("This can take a while. In order to interrupt the download, first go to the menu and choose Navigate -> Stop/Kill.  Then close this window."),
+    $q->p("Destination folder: $tll_path");
 
 # {
 #     local @ARGV = [$tll_path];
