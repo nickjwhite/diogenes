@@ -573,6 +573,7 @@ function findText (win) {
         movable: true,
         frame: false,
         transparent: false,
+        webPreferences: webprefs
     })
     findWin.once('ready-to-show', () => {
         findWin.show()

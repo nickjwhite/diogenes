@@ -226,5 +226,15 @@ ipcRenderer.on('TLLPathRequest', (event, message) => {
     TLLPath();
 });
 
+// New security policy means sending find messages from preload
+
+document.addEventListener('findEvent', findEvent, false)
+
+function findEvent (e) {
+    var string = e.detail.findString
+    var direction = e.detail.findDirection
+    ipcRenderer.send('findText', string, direction)
+}
+
 
 //console.log('preload done');
