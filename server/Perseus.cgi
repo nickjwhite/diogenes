@@ -370,6 +370,9 @@ my $text_with_links = sub {
 
 my $qquery = ($lang eq "grk") ? $beta_to_utf8->($query) : $query;
 
+my $logeion_link = qq{<a href="https://logeion.uchicago.edu/$qquery" target="logeion">Logeion</a>};
+print $logeion_link.'<br/>';
+
 my $munge_ls_lemma = sub {
     my $text =shift;
     $text =~ s/\_/&#x304;/g;
