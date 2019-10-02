@@ -214,11 +214,11 @@ function splash_setup () {
 
     infoText['lookup'] = '<h2 class="info-h2">Dictionary Lookup</h2>' +
         '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">Look up a word in the Greek lexicon of Liddel, Scott and Jones or in the Latin lexicon of Lewis and Short.</p>';
+        '<p class="info-text">Look up a word in the Greek lexicon of Liddel, Scott and Jones or in the Latin lexicon of Lewis and Short.  Use Greek letters to look up a Greek word and use Latin for Latin.</p>';
 
     infoText['parse'] = '<h2 class="info-h2">Parse an Inflected Form</h2>' +
         '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">Parse the morphology of an inflected word in Latin or Greek.</p>';
+        '<p class="info-text">Parse the morphology of an inflected word in Latin or Greek (using Greek letters to enter a Greek word).</p>';
 
     infoText['filters'] = '<h2 class="info-h2">Select subsets of texts</h2>' +
         '<p class="info-text">In order to perform delimited, targeted searches, you can create lists of particular authors and/or texts and save them for later reuse.  These personalized subsets of texts can be created for any database.  Furthermore, the <i>TLG</i> database categorizes texts by genre, date and so on, and these can be used as the basis for user-defined subsets.</p>' +
