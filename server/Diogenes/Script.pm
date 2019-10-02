@@ -623,7 +623,7 @@ $output{export_xml} = sub {
 
     my $export_path = $st{'export-path'};
     print $f->h2('Exporting texts as XML'),
-        $f->p("This can take a while. Return to main page to interrupt conversion. Export folder: $export_path"),
+        $f->p("This can take a while. Go to menu item Navigate -> Stop/Kill to interrupt conversion. Export folder: $export_path"),
         $f->hr;
 
     # TODO: Should have just used $^X
