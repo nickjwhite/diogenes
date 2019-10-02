@@ -160,9 +160,9 @@ app.on('browser-window-created', (event, win) => {
     // do so may result in unexpected behavior" but I haven't seen any yet.
     win.webContents.on('new-window', (event, url) => {
 	event.preventDefault()
-	const win = createWindow(win, 20, 20)
-	win.once('ready-to-show', () => win.show())
-	win.loadURL(url)
+	let newWin = createWindow(win, 20, 20)
+	newWin.once('ready-to-show', () => newWin.show())
+	newWin.loadURL(url)
 	//event.newGuest = win
     })
 
