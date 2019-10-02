@@ -464,7 +464,15 @@ my $swap_element = sub {
         } else {
             my $level = $e->{attrib}->{level};
             my $padding = $level * 2;
-            $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em">};
+            my $heading = $e->{attrib}->{n};
+            if ($heading) {
+                # Some entries wrongly begin with a dot, which makes this look bad, unfortunately
+                $heading .= '. ';
+                $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em; text-indent: -1em"><b>$heading</b>};
+            }
+            else {
+                $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em">};
+            }
         }
     }
     # Try to emphasize English words in lexica
