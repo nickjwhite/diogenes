@@ -433,6 +433,13 @@ function initializeMenuTemplate () {
                         let newWin = createWindow(win, 20, 20)
 		        newWin.loadURL('http://localhost:' + dioSettings.port + '/Settings.cgi')
                     }
+                },
+                {
+                    label: 'Close Window',
+                    accelerator: 'CmdOrCtrl+W',
+                    click: (menu, win) => {
+                        win.close()
+                    }
                 }
             ]
         },
