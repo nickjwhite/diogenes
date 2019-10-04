@@ -304,9 +304,12 @@ install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
-# installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
 # For now, we stick with the 32-bit app for Windows
+
+# installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
 installer-all: installer-w32 installer-mac installer-deb64 installer-rpm64 installer-arch64
+# installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
@@ -319,7 +322,6 @@ clean:
 	rm -rf app
 	rm -rf install
 
-installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 # These targets will not be of interest to anyone else
 
