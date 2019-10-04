@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.0.0";
+$Diogenes::Base::Version =  "4.1";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
