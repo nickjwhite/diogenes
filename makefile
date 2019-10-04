@@ -304,7 +304,9 @@ install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
-installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
+# installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
+# For now, we stick with the 32-bit app for Windows
+installer-all: installer-w32 installer-mac installer-deb64 installer-rpm64 installer-arch64
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
