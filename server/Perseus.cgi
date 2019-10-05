@@ -853,7 +853,8 @@ my $do_parse = sub {
     $query =~ s#\\#/#g;
     # Remove ~hit~ and punctuation
     $query =~ s/~hit~//;
-    $query =~ s/[~,.;:?!"']//g;
+    # Do not remove apostrophes! (Morpheus knows about elided forms)
+    $query =~ s/[~,.;:?!"]//g;
     my $word = $query;
     # remove leading & trailing spaces
     $word =~ s/^\s+//g;
