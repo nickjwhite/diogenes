@@ -99,7 +99,7 @@ sub pgrep
     # were requested.
         
     my ($filename, $offset, $start_block, $end_block);
-    foreach my $author (keys %{ $self->{req_auth_wk} }) 
+    foreach my $author (sort (keys %{ $self->{req_auth_wk} }))
     {
         # pad with leading zeroes 
         $filename = sprintf '%04d', $author;
