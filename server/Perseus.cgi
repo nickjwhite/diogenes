@@ -345,6 +345,7 @@ my $beta_to_utf8 = sub {
 my $text_with_links = sub {
     my $text =  shift;
     my $text_lang = shift;
+    my $inhibit_conversion = shift;
     $text_lang = "lat" if $text_lang eq "la";
     $text_lang = "grk" if $text_lang eq "greek";
     my $out = '';
@@ -356,7 +357,8 @@ my $text_with_links = sub {
         my $form = $word;
         $form =~ s/\-//g;
         $form =~ s/[^A-Za-z]//g if $text_lang eq 'eng';
-        $word = $beta_to_utf8->($word) if $text_lang eq "grk";
+        $word = $beta_to_utf8->($word) if $text_lang eq "grk"
+            and not $inhibit_conversion;
         # We use a new page, since otherwise the back button won't get
         # us back where we came from. -- Changed to workaround FF bug.
         if ($form) {
@@ -442,6 +444,11 @@ my $munge_text = sub {
         elsif ($lang eq 'lat' and not $xml_ital) {
            # Hack to make all non-italicized L-S text Latin
            $text = $text_with_links->($text, 'lat');
+        }
+        elsif ($lang eq 'grk' and $text =~ m/\p{Greek}/) {
+           # Hack to catch any Unicode greek (as in Logeion LSJ);
+           # inhibit conversion again to Unicode.
+            $text = $text_with_links->($text, 'grk', 1);
         }
         else {
             $text = $text_with_links->($text, 'eng');
