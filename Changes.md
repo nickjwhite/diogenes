@@ -4,7 +4,8 @@
 * Fixed bug where the morphology of elided Greek forms was not parsed.
 * Fixed LSJ entry for γυναικεῖος.
 * Restored behaviour of simple full search to read texts in numerical order.
-* Fixed bug in simple searching through sub-corpora. 
+* Fixed bug in simple searching through sub-corpora.
+* Fixed bug when parsing capitalized Greek words with separate parses for upper- and lower-case.
 
 ## 4.1 
 * Bug that broke find-in-page feature fixed.
