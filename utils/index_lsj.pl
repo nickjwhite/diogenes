@@ -34,6 +34,7 @@ while (<>) {
             }
             # Error in both LSJs
             next if ($key eq 'fakos' and $var eq 'o( ');
+            next if ($key eq 'gunaikeios' and $var eq 'ko/lpos');
             print_variants($var);
         }
     }
