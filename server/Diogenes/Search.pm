@@ -149,7 +149,7 @@ sub pgrep
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
                 undef $self->{seen}{$author};
-                undef $self->{match_start}{$ARGV};
+                undef $self->{match_start}{$author};
                 while ($buf =~ m#$pattern#g) {
                     push @{ $self->{seen}{$author} }, (pos $buf);
                     push @{ $self->{match_start}{$author} }, $-[0];
