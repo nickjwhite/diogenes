@@ -86,7 +86,10 @@ sub unicode_greek_to_beta {
         my $initial_diacrits = $3 || '';
         my $end_space = $4 || '';
         my ($char, $diacrits) = $self->decompose($initial_char, $initial_diacrits);
-        $char = $upper_to_lower{$char} if exists $upper_to_lower{$char};
+        if (exists $upper_to_lower{$char}) {
+            $out .= '*';
+            $char = $upper_to_lower{$char}
+        }
         if (exists $unicode_to_beta{$char}) {
             $out .= $unicode_to_beta{$char};
         }

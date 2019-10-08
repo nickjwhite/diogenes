@@ -83,6 +83,8 @@ my $lang = $f->param('lang') or warn "Bad Perseus request (c)";
 my $xml_out = 1 if $f->param('xml');
 my $inp_enc = $f->param('inp_enc') || '';
 
+# print STDERR "Q1: $query\n";
+
 if ($lang ne 'grk') {
     # Latin -- do nothing.
 }
@@ -97,6 +99,7 @@ elsif ($inp_enc eq 'utf8' or
     $query = Encode::decode(utf8=>$query);
     my $c = new Diogenes::UnicodeInput;
     $query = $c->unicode_greek_to_beta($query);
+    # print STDERR "Q2: $query\n";
 }
 elsif ($inp_enc eq 'Perseus-style') {
     eval "require Diogenes::Search; 1;";
@@ -109,6 +112,8 @@ elsif ($inp_enc) {
     warn "I don't understand encoding $inp_enc!\n";
 }
 $query =~ tr/A-Z/a-z/;
+# print STDERR "Q3: $query\n";
+
 
 my %dicts = (
     grk => ['grc.lsj.xml', 'LSJ', 'xml'],
@@ -861,7 +866,7 @@ my $do_parse = sub {
     $word =~ s/\s+$//g;
     # remove diareses
     $word =~ s/\+//g;
-#     print "\n\n-$word-$query-\n";
+    # print STDERR "\n\n-$word-$query-\n";
     # Accent thrown back from enclitic?
     $word =~ s/^(.*[\\\/=].*)[\\\/=]/$1/;
     my $analysis = $try_parse->($word);
@@ -877,6 +882,7 @@ my $do_parse = sub {
             $analysis = $try_parse->($word);
             if (not defined $analysis) {
                 if ($word =~ s/^([aeiouhw])([\\\/=|)(]+)([aeiouhw])/$1$3$2/) {
+                    # print STDERR "Try-$word-$query-\n";
                     $analysis = $try_parse->($word);
                 }
             }
