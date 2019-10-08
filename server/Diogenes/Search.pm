@@ -38,7 +38,7 @@ sub pgrep
         # achitectures (ie. Mac) that don't like unix-shell style globbing.
         opendir (INP_DIR, "$self->{cdrom_dir}") or 
             $self->barf ("Cannot open $self->{cdrom_dir} ($!)");
-        @ARGV = grep {/$self->{file_prefix}.+$self->{txt_suffix}/i} readdir INP_DIR;
+        @ARGV = sort grep {/$self->{file_prefix}.+$self->{txt_suffix}/i} readdir INP_DIR;
         closedir INP_DIR;
     }
     
@@ -696,7 +696,7 @@ sub extract_hits
             my $matching_sets = values %matches;
             print STDERR "+ $result\n" if $self->{debug};
             print STDERR "+ $matching_sets: $auth, $offset\n" if $self->{debug};
-            die "ERROR: Disappearing Match!\n" unless $matching_sets;
+            warn "ERROR: Disappearing Match!\n" unless $matching_sets;
             next HIT unless $matching_sets >= $self->{min_matches_int};
             next HIT if $self->{reject_pattern} and $result =~ m/$self->{reject_pattern}/;
         }
@@ -716,7 +716,7 @@ sub extract_hits
 #            my $seens = join ':', @{ $self->{seen}{$auth} };
 #            print STDERR  "$seens\n";
 
-            die "ERROR: Disappearing Match!!\n" unless $matching_sets;
+            warn "ERROR: Disappearing Match!!\n" unless $matching_sets;
             next HIT unless $matching_sets >= $self->{min_matches_int};
             next HIT if $self->{reject_pattern} and $result =~ m/$self->{reject_pattern}/;
         }

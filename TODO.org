@@ -1,8 +1,6 @@
 * Current issues
 ** Fedora .rpm broken
-** Find in page broken
-** Try Helma's suggestion about LSJ headings
-** Try adding Logeion link
+** Diagnose broken searching in corpus Tibullanum
 
 * Post-release to-do items.
 ** Fix bug with non-ascii paths to databases on Windows
@@ -10,6 +8,7 @@ The current code does seem to work when searching texts, and even when jumping t
 ** Compare output to Hipparchia
 Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
 ** Maybe convert Perseus.pm into a module.
+** See about enabling user to configure the font.
 * Long-term to-do items
 ** Try to restart diogenes-server if it is killed
 ** Make settings page shorter and clearer
