@@ -272,14 +272,16 @@ install/diogenes-$(DIOGENESVERSION)_amd64.deb: app/linux64
 		dist/icon.svg=/usr/share/icons/diogenes.svg
 	mv diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION)_amd64.deb
 
-# Completely untested functionality.  I don't know how many of these
-# fpm options are applicable when generating rpms.
+# Dependency on libXScrnSaver in Fedora should be a transient bug; see:
+# https://github.com/atom/atom/issues/13176
 installer-rpm64: install/diogenes-$(DIOGENESVERSION).x86_64.rpm
 install/diogenes-$(DIOGENESVERSION).x86_64.rpm: app/linux64
 	mkdir -p install
 	rm -f install/diogenes-$(DIOGENESVERSION).x86_64.rpm
-	fpm -s dir -t rpm -n diogenes -v $(DIOGENESVERSION) -a x86_64 \
+	fpm -s dir -t rpm --rpm-os linux --architecture all -n diogenes \
+                -v $(DIOGENESVERSION) -a x86_64 \
 		-p diogenes-$(DIOGENESVERSION).x86_64.rpm -d perl \
+                -d libXScrnSaver \
 		-m p.j.heslin@durham.ac.uk --vendor p.j.heslin@durham.ac.uk \
 		--url https://d.iogen.es/d \
 		--description "Tool for legacy databases of Latin and Greek texts" \
