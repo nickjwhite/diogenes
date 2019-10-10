@@ -1,6 +1,4 @@
 * Current issues
-** Fedora .rpm broken
-** Diagnose broken searching in corpus Tibullanum
 
 * Post-release to-do items.
 ** Fix bug with non-ascii paths to databases on Windows

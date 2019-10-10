@@ -1,11 +1,12 @@
 # Changes in Version 4 of Diogenes
 
-## 4.2 (forthcoming)
+## 4.2
 * Fixed bug where the morphology of elided Greek forms was not parsed.
 * Fixed LSJ entry for γυναικεῖος.
 * Restored behaviour of simple full search to read texts in numerical order.
 * Fixed bug in simple searching through sub-corpora.
 * Fixed bug when parsing capitalized Greek words with separate parses for upper- and lower-case.
+* Attempt to fix broken .rpm installer for Linux
 
 ## 4.1 
 * Bug that broke find-in-page feature fixed.
