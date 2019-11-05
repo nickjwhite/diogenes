@@ -4,7 +4,7 @@
 
 include mk.lexica-common
 
-LOGEIONLEXICONCOMMIT = da095805622d6637a46808570ce6937a1d61c1a3
+#LOGEIONLEXICONCOMMIT = da095805622d6637a46808570ce6937a1d61c1a3
 
 all: $(PERSEUSLEXICA)/.git/HEAD $(LOGEIONLEXICON)/.git/HEAD $(DATA)/lat.ls.perseus-eng1.xml $(DATA)/grc.lsj.xml
 
@@ -12,7 +12,7 @@ $(LOGEIONLEXICON)/.git/HEAD:
 	rm -rf $(LOGEIONLEXICON)
 	mkdir -p $(BUILD)
 	cd $(BUILD) && git clone https://github.com/helmadik/LSJLogeion.git
-	cd $(LOGEIONLEXICON) && git checkout $(LOGEIONLEXICONCOMMIT)
+	cd $(LOGEIONLEXICON) && git checkout
 
 $(DATA)/grc.lsj.xml: $(LOGEIONLEXICON)/.git/HEAD
 	mkdir -p $(DATA)
