@@ -668,6 +668,8 @@ my $format_analysis = sub {
             my ($dict, $conf, $lemma, $trans, $info) = ($1, $2, $3, $4, $5);
             $lemma = $beta_to_utf8->($lemma) if $lang eq 'grk';
             $lemma = $munge_ls_lemma->($lemma) if $lang eq 'lat';
+            # The greek-analyses.txt file is subtly utf8, as the short defs include some Unicode punctuation.
+            $trans = Encode::decode('utf-8', $trans);
             $lemma .= " ($trans)" if $trans =~ m/\S/;
             $lemma .= ": $info";
             push @out, [$dict, $conf, $lemma];
