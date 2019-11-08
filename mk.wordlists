@@ -55,8 +55,6 @@ $(BUILD)/grc.words-tlg: utils/make_greek_wordlist.pl
 	find $(TLGDIR) -type f -exec sha256sum '{}' ';' | sed 's:  $(TLGDIR):  :g' > $(DATA)/tlgsums
 	./utils/make_greek_wordlist.pl $(TLGDIR) > $@
 
- # ensure reproducible sorting
-
 $(BUILD)/lat.words: $(BUILD)/lat.words-perseus $(BUILD)/lat.words-digilib $(BUILD)/lat.words-phi
 	export LC_ALL=C; cat $(BUILD)/lat.words-perseus $(BUILD)/lat.words-digilib $(BUILD)/lat.words-phi | sort | uniq > $@
 
