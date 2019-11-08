@@ -118,18 +118,11 @@ for Diogenes.
 
 ### Step 1
 
-The first step is to generate Greek and Latin wordlists.  The default
-is to use wordlists derived from the TLG and from the PHI Latin
-database. Run this command, specifying the location of the databases
+The first step is to generate Greek and Latin wordlists, which are derived from the TLG wordlist and the Perseus corpus for Greek and from the PHI, Perseus and DigiLibLT corpora for Latin.  The DigiLibLT corpus has to be downloaded first by hand after making an account on their website, but the Perseus corpora are downloaded automatically. Run this command, specifying the location of the non-Perseus databases
 on the command line:
 
-    make -f mk.tlg-phi-words PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e
+    make -f mk.tlg-phi-words PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e DIGILIBDIR=~/path/to/digilib
 
-If you prefer to generate the wordlists from the Perseus corpora
-(which have less extensive coverage but are freely available), run
-this command instead:
-
-    make -f mk.perseus-words
 
 ### Step 2
 
