@@ -33,6 +33,11 @@ print STDERR "$Diogenes_Daemon::params\n" if $debug;
 # the script are served.
 my $picture_dir = 'images/';
 
+# If we are spitting out a lot of parses at once
+if ($f->param('bulk')) {
+    $f->param('noheader') = 't';
+}
+
 unless ($f->param('noheader')) {
     print $f->header(-charset=>'utf-8');
 }
@@ -66,7 +71,9 @@ if ($f->param('popup')) {
     # Subsequent pages should use this same pop-up
     print qq{<div id="sidebar" class="sidebar-newpage"></div>}
 } else {
-    print qq{<div id="sidebar-control"></div>};
+    unless ($f->param('bulk')) {
+        print qq{<div id="sidebar-control"></div>};
+    }
 }
 
 my $footer = sub {
