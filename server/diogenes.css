@@ -66,7 +66,7 @@ nav ul:after {
     content: ""; clear: both; display: block;
 }
 nav ul li {
-	float: left;
+        float: left;
 }
 nav ul li:hover {
     background: #28709a;
@@ -358,4 +358,49 @@ img.next {
 }
 img.prev {
          float: left;
+}
+
+.tooltip-container {
+
+    text-align: center;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 500px;
+  background-color: grey;
+  color: #fff;
+  text-align: left;
+  padding: 10px;
+  border-radius: 6px;
+
+  position: absolute;
+  z-index: 1;
+
+  bottom: 100%;
+  left: 50%;
+  margin-left: -250px; /* Use half of the width (120/2 = 60), to center the tooltip */
+
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+/* Arrow */
+.tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: grey transparent transparent transparent;
 }

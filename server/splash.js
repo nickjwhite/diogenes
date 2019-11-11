@@ -161,6 +161,22 @@ function info (choice) {
     document.getElementById("action").value = choice;
 }
 
+var searchTooltip =
+    '<div class="tooltip-container">'+
+    '<div class="tooltip">Note on Greek input'+
+    '<span class="tooltiptext">'+
+    'Use your computer\'s Unicode Greek keyboard. '+
+    'There are two Greek input modes for searching: loose and strict. '+
+    'In loose mode, just enter Greek lowercase letters and (optionally) '+
+    'breathings.  This will search for both upper and lowercase letters '+
+    'and will permit accents to appear anywhere in the search term. '+
+    'If your Greek search term includes accents or uppercase letters, '+
+    'it will be interpreted in strict mode and Diogenes will only match words '+
+    'with your exact accentuation and capitalization. '+
+    'In other words, if you specify one accent or capital letter, '+
+    'you must specify them all. '+
+    '</span></div></div>';
+
 // Set up content for user choices on load.
 function splash_setup () {
     if(lsTest === true){
@@ -190,18 +206,18 @@ function splash_setup () {
     infoText['search'] = '<h2 class="info-h2">Simple Search</h2>' +
         '<p class="info-field">Corpus: ' + corporaAll + '</p>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">Choose the relevant corpus, and then enter a pattern (word or sequence of words) to search for.  Enter Greek without diacritics. <b>NB.</b> To restrict a search to the beginning or end of a word, enter a space before or after the letters in your pattern.</p>';
+        '<p class="info-text">Choose the relevant corpus, and then enter a pattern (word or sequence of words) to search for.  Enter Greek without diacritics. <b>NB.</b> To restrict a search to the beginning or end of a word, enter a space before or after the letters in your pattern.' + searchTooltip + '</p>';
 
     infoText['author'] = '<h2 class="info-h2">Search within Author(s)</h2>' +
         '<p class="info-field">Corpus: ' + corporaCore + '</p>' +
         '<p class="info-field">Author: <input type="text" name="author" size="20" id="author_text" class="info-field"></p>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">This is a simple search within the texts of selected author(s). Choose the relevant corpus, enter part of an author\'s name (all matching authors will be searched), and enter a pattern to search for.</p> <p>For finer-grained control over which authors and texts to search in and many more ways to select them, choose the <b>Filter</b> option above.</p>';
+        '<p class="info-text">This is a simple search within the texts of selected author(s). Choose the relevant corpus, enter part of an author\'s name (all matching authors will be searched), and enter a pattern to search for.</p> <p>For finer-grained control over which authors and texts to search in and many more ways to select them, choose the <b>Filter</b> option above.' + searchTooltip + '</p>';
 
     infoText['multiple'] = '<h2 class="info-h2">Multiple Pattern Search</h2>' +
         '<p class="info-field">Corpus: ' + corporaAll + '</p>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">Search for multiple terms in arbitrary order within a certain scope.  Enter the corpus to search in and the first of your search terms.  You will be able to add further terms in subsequent pages.</p>';
+        '<p class="info-text">Search for multiple terms in arbitrary order within a certain scope.  Enter the corpus to search in and the first of your search terms.  You will be able to add further terms in subsequent pages.' + searchTooltip + '</p>';
 
     infoText['lemma'] = '<h2 class="info-h2">Morphological Search</h2>' +
         '<p class="info-field">Corpus: ' + corporaAll + '</p>' +
@@ -210,7 +226,7 @@ function splash_setup () {
 
     infoText['word_list'] = '<h2 class="info-h2">TLG Word List Search</h2>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">The <i>TLG</i> has a word-list that serves as an index.  For narrow searches, using the word list can be faster; for big searches, it may be much slower.  Enter a word to see matches from the word-list.  Put a space in front to match only at the beginning of words.</p>';
+        '<p class="info-text">The <i>TLG</i> has a word-list that serves as an index.  For narrow searches, using the word list can be faster; for big searches, it may be much slower.  Enter a word (without diacritics) to see matches from the word-list.  Put a space in front to match only at the beginning of words.</p>';
 
     infoText['lookup'] = '<h2 class="info-h2">Dictionary Lookup</h2>' +
         '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +

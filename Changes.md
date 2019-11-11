@@ -1,7 +1,8 @@
 # Changes in Version 4 of Diogenes
 
 ## 4.3 (forthcoming)
-Fixed crash in Juvenal when encountering unknown markup.
+* Reinstated searching for Greek terms with accents and capital letters.
+* Fixed crash in Juvenal when encountering unknown markup.
 
 ## 4.2
 * Fixed bug where the morphology of elided Greek forms was not parsed.

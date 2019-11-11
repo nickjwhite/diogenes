@@ -1,5 +1,4 @@
 * Current issues
-** Add Logeion morphology and short defs
 ** Highlight word that has been clicked
 Likewise highlight jumpto passage in lexicon, if possible
 * Post-release to-do items.
