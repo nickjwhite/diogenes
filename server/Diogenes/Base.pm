@@ -1150,7 +1150,7 @@ sub parse_lists
                     }
                     elsif ( $ord == hex '20' ) 
                     {
-                        die "Ooops while parsing $file at $j" if $ord & hex '20';
+                        warn("Ooops while parsing $file at $j") if $ord & hex '20';
                     }
                     elsif ( $ord < hex '40' ) 
                     {
@@ -1159,7 +1159,7 @@ sub parse_lists
                     }
                     elsif ( $ord < hex '60' ) 
                     {
-                        die "Ooops while parsing $file at $j\n" if $ord & hex '20';
+                        warn("Ooops while parsing $file at $j\n") if $ord & hex '20';
                         $high = ($ord & hex '01') << 8; 
                         $j++;
                         $ord = ord (substr ($buf, $j, 1));
@@ -1174,7 +1174,7 @@ sub parse_lists
                     }
                     else 
                     {
-                        die "Oops while parsing $file at $j";
+                        warn("Oops while parsing $file at $j");
                     }
                     
                     $j++;
@@ -1460,7 +1460,7 @@ sub parse_idt
         {
             # Get the starting blocks of each top-level subsection    
             $block = (ord (substr $idt_buf, ++$i, 1) << 8) + ord (substr $idt_buf, ++$i, 1);
-            die "Error.  New section not followed by beginning ID" 
+            warn("Error.  New section not followed by beginning ID")
                 unless ord (substr $idt_buf, ++$i, 1) == 8;
             $i++;
             while ((my $sub_code = ord (substr ($idt_buf, $i, 1))) >> 7)
@@ -1845,14 +1845,15 @@ sub parse_bookmark
     
     if ($left == 7) 
     {       
-        # These bytes are found in some versions of the PHI disk (eg. Phaedrus)
-        # God knows what they mean.  phi2ltx says they mark the beginning and
-        # end of an "exception".
+        # These bytes are found in some versions of the PHI disk
+        # (eg. Phaedrus) God knows what they mean.  phi2ltx says they
+        # mark the beginning and end of an "exception".
         return if $code == hex('f8') or $code == hex('f9');
         
-        die ("I don't understand what to do with level ".
+        warn("I don't understand what to do with level ".
              "$left (right = $right, code = ". (sprintf "%lx", $code) . 
-             "; offset ". (sprintf "%lx", $$i) ); 
+             "; offset ". (sprintf "%lx", $$i) );
+        return;
     }
     
     if ($left == 6) 
@@ -1878,7 +1879,7 @@ sub parse_bookmark
         $$i += 3        if $right == 12;
         my $junk = get_ascii_string( $buf, $i ) if $right == 10 
             or $right == 13 or $right == 15;
-        die "I don't understand a right nybble value of 14" if $right == 14;
+        warn("I don't understand a right nybble value of 14") if $right == 14;
         return;
     }
     
@@ -1966,7 +1967,7 @@ sub parse_bookmark
     } 
     else 
     {   #no other possibilities 
-        die ("I've fallen and I can't get up!"); 
+        warn("I've fallen and I can't get up!");
     }
 }
 
@@ -2185,7 +2186,7 @@ sub perseus_handler
             }
             else
             {
-                die "What language is $lang?\n"
+                warn("What language is $lang?\n");
             }
             $self->html_escape(\$word);
             $self->html_escape(\$space);
