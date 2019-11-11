@@ -226,19 +226,24 @@ sub make_strict_greek_pattern
     $pat =~ s#\s+# #g;                      # normalize spacing
 
     my @pats;
-    my @parts = split /( )/, $pat;
-    for (my $i = 0; $i < (length scalar(@parts)); $i++ ) {
-        next if $parts[$i] eq ' ';
-        my $begin = ($i == 0 || $parts[$i-1] ne ' ') ? 0 : 1;
-        my $end   = ($i == ((length scalar(@parts)) - 1) || $parts[$i+1] ne ' ') ? 0 : 1;
-        my ($part_pat, undef) = 
-            Diogenes::Indexed::make_tlg_regexp($self, $parts[$i], (not $begin), (not $end));
-        push @pats, $part_pat;
+    my $pattern;
+    if ($pat =~ m/\s/) {
+        my @parts = split /\s+/, $pat;
+        foreach my $part (@parts) {
+            my ($part_pat, undef) =
+                Diogenes::Indexed::make_tlg_regexp($self, $part, (not $begin), (not $end));
+            push @pats, $part_pat;
+        }
+        $pattern = join '\s+[^A-Z]*', @pats;
     }
-    my $pattern = join ' ', @pats;
+    else {
+        ($pattern, undef) =
+            Diogenes::Indexed::make_tlg_regexp($self, $pat, (not $begin), (not $end));
+        print STDERR "foo";
+    }
 
-    s/\x073(?!\?)/(?:/g;                                # turn ( into (?: for speed
-    s/\x074/)/g;                
+    s/\x073(?!\?)/(?:/g; # turn ( into (?: for speed
+    s/\x074/)/g;
     return $pattern;
 }
 

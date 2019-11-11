@@ -23,6 +23,12 @@ sub IsMyGreekCopt {
 END
 }
 
+my %greek_punctuation = (
+    "\x{0387}" => ':',
+    "\x{037E}" => ';',
+    "\x{2014}" => '_'
+    );
+
 sub unicode_pattern {
     my $self = shift;
     my $pat = shift;
@@ -48,7 +54,7 @@ sub unicode_pattern {
         $pat =~ s#\)#\x074#g;
         $pat = $self->unicode_greek_to_beta($pat);
 
-        if ($pat =~ m/[\\\/=|]/) {
+        if ($pat =~ m/[\\\/=|\*]/) {
             # Accent(s) present, so significant
             $pat = $self->make_strict_greek_pattern($pat);
         }
@@ -80,18 +86,24 @@ sub unicode_greek_to_beta {
     }
 
     my $out = '';
-    while ($pat =~ m/(\s*)(\p{L})(\p{Mn}*)(\s*)/g) {
+    while ($pat =~ m/(\s*)(\p{L})(\p{Mn}*)(\p{P}*)(\s*)/g) {
         my $front_space = $1 || '';
         my $initial_char = $2;
         my $initial_diacrits = $3 || '';
-        my $end_space = $4 || '';
+        my $punct = $4 || '';
+        my $end_space = $5 || '';
         my ($char, $diacrits) = $self->decompose($initial_char, $initial_diacrits);
+        my $cap;
         if (exists $upper_to_lower{$char}) {
-            $out .= '*';
+            $cap = '*';
             $char = $upper_to_lower{$char}
         }
+        if (exists $greek_punctuation{$punct}) {
+            $punct = $greek_punctuation{$punct};
+        }
+
         if (exists $unicode_to_beta{$char}) {
-            $out .= $unicode_to_beta{$char};
+            $char = $unicode_to_beta{$char};
         }
         else {
             warn "I don't know what to do with character $char in $pat\n";
@@ -109,11 +121,17 @@ sub unicode_greek_to_beta {
             }
         }
         # Put the diacrits in the correct order
+        my $beta_diacrits = '';
         for my $d (qw{ ) ( / \ = | + }) {
             my $r = quotemeta $d;
-            $out .= $d if $temp =~ m/$r/;
+            $beta_diacrits .= $d if $temp =~ m/$r/;
         }
-        $out = $front_space.$out.$end_space;
+        if ($cap) {
+            $out .= $front_space.$cap.$beta_diacrits.$char.$punct.$end_space;
+        }
+        else {
+            $out .= $front_space.$char.$beta_diacrits.$punct.$end_space;
+        }
     }
     return $out;
 }
