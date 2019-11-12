@@ -43,6 +43,7 @@ use HTTP::Headers;
 use Cwd;
 use Diogenes::Base;
 use Diogenes::Script;
+use Diogenes::Perseus;
 use Net::Domain qw(hostfqdn);
 use Socket;
 use Getopt::Std;
@@ -369,6 +370,9 @@ sub handle_request
             # to trap errors (especially important for the non-forking
             # server).
             eval { $Diogenes::Script::go->() }
+        }
+        elsif ($requested_file eq 'Perseus.cgi') {
+            eval { $Diogenes::Perseus::go->() }
         }
         else {
             # Other scripts have to be re-parsed each time.

@@ -1,7 +1,8 @@
 # Changes in Version 4 of Diogenes
 
 ## 4.3 (forthcoming)
-* Reinstated searching for Greek terms with accents and capital letters.
+* Improved speed of Perseus look-ups.
+* Reinstated searching for Greek words with accents and capital letters.
 * Fixed crash in Juvenal when encountering unknown markup.
 
 ## 4.2
