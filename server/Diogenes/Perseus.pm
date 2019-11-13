@@ -111,17 +111,13 @@ my $setup = sub {
     $xml_out = 1 if $f->param('xml');
     $inp_enc = $f->param('inp_enc') || '';
     $qquery = ($lang eq "grk") ? $beta_to_utf8->($query) : $query;
+    print STDERR "Perseus: >$request, $lang, $query<\n" if $debug;
 
     $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
     $dict_name = $dicts{$lang}->[1];
     $dict_format = $dicts{$lang}->[2];
     $idt_fh = new FileHandle;
     $search_fh = new FileHandle;
-
-    # If we are spitting out a lot of parses at once
-    if ($f->param('bulk')) {
-        $f->param('noheader') = 't';
-    }
 
     unless ($f->param('noheader')) {
         print $f->header(-charset=>'utf-8');
@@ -155,10 +151,9 @@ my $setup = sub {
 
         # Subsequent pages should use this same pop-up
         print qq{<div id="sidebar" class="sidebar-newpage"></div>}
-    } else {
-        unless ($f->param('bulk')) {
-            print qq{<div id="sidebar-control"></div>};
-        }
+    }
+    else {
+        print qq{<div id="sidebar-control"></div>};
     }
 
     if ($lang ne 'grk') {
