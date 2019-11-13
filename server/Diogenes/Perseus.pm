@@ -187,7 +187,7 @@ my $setup = sub {
     elsif ($inp_enc) {
         warn "I don't understand encoding $inp_enc!\n";
     }
-    $query =~ tr/A-Z/a-z/;
+    #$query =~ tr/A-Z/a-z/;
     # print STDERR "Q3: $query\n";
 
     warn "I don't know about language $lang!\n" unless exists $dicts{$lang};
