@@ -1379,7 +1379,7 @@ sub header {
 
     # Maybe future compatibility.  Maybe not.
     my $protocol = $ENV{SERVER_PROTOCOL} || 'HTTP/1.0';
-    push(@header,$protocol . ' ' . ($status || '200 OK')) if $nph;
+    push(@header,$protocol . ' ' . ($status || '200 OK')); #pjh
     push(@header,"Server: " . &server_software()) if $nph;
 
     push(@header,"Status: $status") if $status;
