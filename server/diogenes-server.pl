@@ -355,13 +355,14 @@ sub handle_request
         $ENV{HTTP_HOST} = $host if $host;
         $ENV{SCRIPT_NAME} = ($leading_slash ? '/' : '') . "$requested_file";
 
-        # We 'require' the cgi script (which avoids re-parsing the
-        # file).  That file should end in a true statement and is
-        # lexically scoped but shares our namespace, which it should
-        # not pollute: i.e it should use lexical vars to hold
+        # We 'use' the cgi script (which avoids re-parsing the file
+        # for each request).  That file should end in a true statement
+        # and is lexically scoped but shares our namespace, which it
+        # should not pollute: i.e it should use lexical vars to hold
         # subroutine refs.  The script does not see $client, which is
         # lexically scoped to this file, but it shares STDOUT with us,
-        # so the select command passes the reference to the correct filehandle.
+        # so the select command passes the reference to the correct
+        # filehandle.
 
         select $client;
 
@@ -369,10 +370,10 @@ sub handle_request
             # The module has been pre-compiled, and we use eval here
             # to trap errors (especially important for the non-forking
             # server).
-            eval { $Diogenes::Script::go->() }
+            eval { $Diogenes::Script::go->($params) }
         }
         elsif ($requested_file eq 'Perseus.cgi') {
-            eval { $Diogenes::Perseus::go->() }
+            eval { $Diogenes::Perseus::go->($params) }
         }
         else {
             # Other scripts have to be re-parsed each time.

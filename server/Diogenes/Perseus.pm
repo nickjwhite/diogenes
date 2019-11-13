@@ -91,12 +91,19 @@ my ($lem_num, $logeion_link);
 
 my $setup = sub {
 
+    my $parameters = shift;
     binmode ((select), ':utf8');
     $| = 1;
 
-    $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
-    # print STDERR "$Diogenes_Daemon::params\n" if $debug;
-    print STDERR "Perseus: >$request, $lang, $query<\n" if $debug;
+    if ($parameters) {
+        $f = new CGI($parameters);
+    }
+    elsif ($Diogenes_Daemon::params) {
+        $f = new CGI($Diogenes_Daemon::params)
+    }
+    else {
+        $f = new CGI;
+    }
 
     $request = $f->param('do') or warn "Bad Perseus request (a)";
     $query = $f->param('q') or warn "Bad Perseus request (b)";
@@ -980,7 +987,8 @@ my $dispatch = sub {
 };
 
 $Diogenes::Perseus::go = sub {
-    $setup->();
+    my $parameters = shift;
+    $setup->($parameters);
     $dispatch->();
     $footer->();
 };

@@ -2027,8 +2027,19 @@ my $mod_perl_error = sub
 
 # Initialization of query
 my $setup = sub {
+
+    my $parameters = shift;
+    if ($parameters) {
+        $f = new CGI($parameters);
+    }
+    elsif ($Diogenes_Daemon::params) {
+        $f = new CGI($Diogenes_Daemon::params)
+    }
+    else {
+        $f = new CGI;
+    }
+
     $Diogenes::Base::cgi_flag = 1;
-    $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 
     # Force read of config files
     my %args_init = (-type => 'none');
@@ -2116,7 +2127,8 @@ my $dispatch = sub {
 };
 
 $Diogenes::Script::go = sub {
-    $setup->();
+    my $parameters = shift;
+    $setup->($parameters);
     $dispatch->()
 };
 
