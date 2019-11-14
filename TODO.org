@@ -2,11 +2,11 @@
 ** Highlight word that has been clicked
 Likewise highlight jumpto passage in lexicon, if possible
 * Post-release to-do items.
+** Maybe make Unix/Mac server prefork one child for speed.
 ** Fix bug with non-ascii paths to databases on Windows
 The current code does seem to work when searching texts, and even when jumping to context from search results, but fails when browsing.  The .idt files are opened without a problem in the preliminary stages of browsing, and the seek_passage subroutine works when jumping from a search result, but not when browsing.  Browsing forward after jump to context is also broken.  A strange bug.
 ** Compare output to Hipparchia
 Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
-** Maybe convert Perseus.pm into a module.
 ** See about enabling user to configure the font.
 * Long-term to-do items
 ** Try to restart diogenes-server if it is killed

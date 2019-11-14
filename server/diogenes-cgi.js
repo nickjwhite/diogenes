@@ -22,6 +22,12 @@ window.addEventListener("load", function() {
     }
 });
 
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' || event.keyCode === 27) {
+        sidebarDismiss();
+    }
+});
+
 function isElectron () {
     if (typeof navigator === 'object' && typeof navigator.userAgent === 'string' && navigator.userAgent.indexOf('Electron') >= 0) {
         return true;
