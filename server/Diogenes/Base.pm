@@ -1893,10 +1893,14 @@ sub parse_bookmark
     # The usual case: increment the counter specified by the left nybble.
     if ($right == 0) 
     {       
+        # print STDERR ">$left, $right, $self->{level}{$left}\n";
+        # When previous line num is "post 308" for a lacuna, delete
+        # post before incrementing
+        $self->{level}{$left} =~ s/^post\s+//;
         # Also incr. non-digits: 1e1 goes to 1e2, 1b goes to 1c, etc.
         $self->{level}{$left} = '' unless exists $self->{level}{$left};
         $self->{level}{$left} =~ s/([a-zA-Z]*[0-9]*)$/my $rep = $1 || 0;
-                                                                                                                $rep++; $rep/ex; 
+        $rep++; $rep/ex;
         ##print "))".$left.": ".$self->{level}{$left}."\n" if $self->{debug};
     }
     # Otherwise, set counter to value whose type is given in right nybble.
