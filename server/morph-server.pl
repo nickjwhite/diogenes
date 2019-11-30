@@ -13,10 +13,14 @@ use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 use HTTP::Daemon;
 use HTTP::Request;
 use HTTP::Status;
+use Net::Domain qw(hostfqdn);
+
 use Diogenes::Perseus;
 my $debug = 1;
-
-my $HOST = 'localhost';
+# my $HOST = 'localhost';
+#my $HOST = hostfqdn();
+# All addresses on the local machine (for Docker)
+my $HOST = '0.0.0.0';
 my $PORT = 8990;
 my $server = HTTP::Daemon->new
     (LocalAddr => $HOST,
@@ -55,6 +59,8 @@ for (1 .. $PREFORK) {
 # Install signal handlers.
 $SIG{CHLD} = \&REAPER;
 $SIG{INT} = \&HUNTSMAN;
+
+print STDERR "Morphology server started.\n";
 
 # And maintain the population.
 while (1) {
