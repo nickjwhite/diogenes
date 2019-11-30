@@ -24,7 +24,7 @@ use open IN  => ":bytes", OUT => ":utf8";
 use XML::Tiny;
 use CGI qw(:standard);
 
-my $debug = 0;
+my $debug = 1;
 
 # This is the directory whence the decorative images that come with
 # the script are served.
@@ -110,8 +110,8 @@ my $setup = sub {
     $lang = $f->param('lang') or warn "Bad Perseus request (c)";
     $xml_out = 1 if $f->param('xml');
     $inp_enc = $f->param('inp_enc') || '';
-    $qquery = ($lang eq "grk") ? $beta_to_utf8->($query) : $query;
-    print STDERR "Perseus: >$request, $lang, $query<\n" if $debug;
+    $qquery = ($lang eq "grk" and $inp_enc ne 'utf8') ? $beta_to_utf8->($query) : $query;
+    print STDERR "Perseus: >$request, $lang, $query, $qquery<\n" if $debug;
 
     $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
     $dict_name = $dicts{$lang}->[1];
@@ -120,7 +120,9 @@ my $setup = sub {
     $search_fh = new FileHandle;
 
     unless ($f->param('noheader')) {
-        print $f->header(-charset=>'utf-8');
+        print $f->header(
+            -charset=>'utf-8',
+            -'Access-Control-Allow-Origin' => '*');
     }
     if ($f->param('popup')) {
         print $f->start_html(-title=>'Perseus Data',
