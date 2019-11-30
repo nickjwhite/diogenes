@@ -313,7 +313,9 @@ AUTH: foreach my $auth_num (@all_auths) {
     open( IN, $filename_in ) or die "Could not open $filename_in\n";
     $buf = <IN>;
     close IN or die "Could not close $filename_in";
-    print AUTHTAB qq{<author name="$auth_name" n="$auth_num">\n};
+    my $auth_name_esc = $auth_name;
+    $auth_name_esc =~ s/"/\&quot;/g;
+    print AUTHTAB qq{<author name="$auth_name_esc" n="$auth_num">\n};
     $i = -1;
     my $body = '';
     my $line = '';
@@ -510,7 +512,9 @@ AUTH: foreach my $auth_num (@all_auths) {
                 else {
                     $body .= q{<p>};
                 }
-                print AUTHTAB qq{  <work name="$work_name" n="$work_num">\n};
+                my $work_name_esc = $work_name;
+                $work_name_esc =~ s/"/\&quot;/g;
+                print AUTHTAB qq{  <work name="$work_name_esc" n="$work_num">\n};
                 print AUTHTAB qq{    <div name="$div_labels{$_}"/>\n} for (@divs);
                 print AUTHTAB qq{    <verse/>\n} if $is_verse;
             }
