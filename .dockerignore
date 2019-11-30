@@ -1,0 +1,26 @@
+# Files not to include in Docker build context, otherwise it is very slow
+.git
+COPYING
+Changes.md
+Dockerfile
+README.md
+TODO.org
+app
+build
+client
+dist
+electron
+install
+makefile
+mk.common
+mk.data
+mk.lexica-common
+mk.lexica-logeion
+mk.lexica-perseus
+mk.morpheus-broken
+mk.morpheus-old
+mk.morpheus-v3
+mk.pdf-data
+mk.prebuilt-data
+mk.wordlists
+utils
