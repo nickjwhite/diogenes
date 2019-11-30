@@ -499,14 +499,14 @@ function initializeMenuTemplate () {
         {
             label: 'View',
             submenu: [
-                {role: 'resetzoom',
+                {role: 'resetZoom',
                  label: 'Original Zoom'},
-                {role: 'zoomin'},
-                {role: 'zoomout'},
+                {role: 'zoomIn'},
+                {role: 'zoomOut'},
                 {type: 'separator'},
                 {role: 'togglefullscreen'},
                 {type: 'separator'},
-                {role: 'toggledevtools'}
+                {role: 'toggleDevTools'}
             ]
         },
         {
