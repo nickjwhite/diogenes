@@ -177,6 +177,7 @@ my $setup = sub {
         $query = Encode::decode(utf8=>$query);
         my $c = new Diogenes::UnicodeInput;
         $query = $c->unicode_greek_to_beta($query);
+        $query = lc $query;
         # print STDERR "Q2: $query\n";
     }
     elsif ($inp_enc eq 'Perseus-style') {
