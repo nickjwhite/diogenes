@@ -27,7 +27,7 @@ use CGI qw(:standard);
 my $debug = 1;
 
 # This is the directory whence the decorative images that come with
-# the script are served.
+# the script are served.  Overridden later for DiogenesWeb
 my $picture_dir = 'images/';
 
 my %dicts = (
@@ -87,7 +87,7 @@ my ($dict_file, $dict_name, $dict_format, $idt_fh, $search_fh);
 my ($size, $idt_file, $txt_file, $dict_offset);
 my ($comp_fn, $key_fn, $format_sub);
 my ($lem_num, $logeion_link);
-
+my ($dweb);
 
 my $setup = sub {
 
@@ -112,6 +112,11 @@ my $setup = sub {
     $inp_enc = $f->param('inp_enc') || '';
     $qquery = ($lang eq "grk" and $inp_enc ne 'utf8') ? $beta_to_utf8->($query) : $query;
     print STDERR "Perseus: >$request, $lang, $query, $qquery<\n" if $debug;
+
+    $dweb = $f->param('dweb');
+    if ($dweb) {
+        $picture_dir = 'https://d.iogen.es/static/images/';
+    }
 
     $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
     $dict_name = $dicts{$lang}->[1];
