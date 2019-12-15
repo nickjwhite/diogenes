@@ -550,6 +550,7 @@ my $swap_element = sub {
 };
 
 my $tll_pdf_link = sub {
+    return '' if $dweb;
     return '' unless $lang eq 'lat';
     my $word = shift;
     # Remove numbered entries, since there is no reason to believe
@@ -570,6 +571,7 @@ my $tll_pdf_link = sub {
 };
 
 my $old_pdf_link = sub {
+    return '' if $dweb;
     return '' unless $lang eq 'lat';
     # Short file with only running heads, linear search, stop when
     # past target.
