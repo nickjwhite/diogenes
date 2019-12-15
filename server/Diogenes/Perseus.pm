@@ -111,6 +111,8 @@ my $setup = sub {
     $xml_out = 1 if $f->param('xml');
     $inp_enc = $f->param('inp_enc') || '';
     $qquery = ($lang eq "grk" and $inp_enc ne 'utf8') ? $beta_to_utf8->($query) : $query;
+    $qquery = Encode::decode(utf8=>$qquery);
+
     print STDERR "Perseus: >$request, $lang, $query, $qquery<\n" if $debug;
 
     $dweb = $f->param('dweb');
