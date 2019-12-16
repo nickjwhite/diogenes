@@ -105,8 +105,13 @@ sub make_new_child {
                 if ($requested_file eq '/parse') {
                     my $params = $request->url->query;
                     print STDERR "$params\n" if $debug;
-                    select $client;
-                    eval { $Diogenes::Perseus::go->($params) }
+                    if ($params !~ m/user=(acad|stud|other|none)/) {
+                        $client->send_error(RC_UNAUTHORIZED, "Error: Type of user was not specified.");
+                    }
+                    else {
+                        select $client;
+                        eval { $Diogenes::Perseus::go->($params) }
+                    }
                 }
                 else {
                     $client->send_error(RC_NOT_FOUND, "Bad request.");
