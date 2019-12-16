@@ -506,7 +506,8 @@ my $swap_element = sub {
             $out .= '</div>';
         } else {
             my $level = $e->{attrib}->{level};
-            my $padding = $level * 2;
+            my $factor = $dweb ? 1 : 2;
+            my $padding = $level * $factor;
             my $heading = $e->{attrib}->{n};
             if ($heading) {
                 # Some entries wrongly begin with a dot, which makes this look bad, unfortunately
