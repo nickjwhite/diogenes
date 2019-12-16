@@ -31,7 +31,7 @@ my $server = HTTP::Daemon->new
 
 # global variables
 use vars qw($PREFORK $MAX_CLIENTS_PER_CHILD %children $children);
-$PREFORK = 5; # number of children to maintain
+$PREFORK = 25; # number of children to maintain
 $MAX_CLIENTS_PER_CHILD = 10; # number of clients each child should process
 %children = (); # keys are current child process IDs
 $children = 0; # current number of children
