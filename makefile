@@ -340,3 +340,8 @@ update-website:
 	rclone -v copy ../../website/d/version.js diogenes-s3:d.iogen.es/d/
 	aws cloudfront create-invalidation --distribution-id $(CLOUDFRONTID) --paths '/*'
 
+# For DiogenesWeb
+morph-deploy:
+	docker build -t pjheslin/diogenesmorph .
+	docker push pjheslin/diogenesmorph
+	eb deploy
