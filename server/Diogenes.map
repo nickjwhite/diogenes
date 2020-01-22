@@ -888,20 +888,20 @@ Omega_asper_peri_isub => "ᾯ",
 #
 space      => ' ',
 prime      => "ʹ", # for numbers
-hyphen     => "-",
-dash       => " - ",
+hyphen     => "‐",
+dash       => "—",
 period     => '.',
 asterisk   => '*',
 comma	   => ',',
 underscore => '_',
 asteriskos => '*',
-raised_dot => "·",
-semicolon  => ";", # Greek mark of interrogation
+raised_dot => "·",
+semicolon  => ";", # Greek mark of interrogation
 question   => '?', # Latin question mark: `?'
 equals     => '=',
 vertical   => '|', # vertical bar: `|'
 tilde	   => '~',
-apostrophe => '\'',
+apostrophe => '’',
 
 quote_sngl_left  => "‘",    
 quote_sngl_right => "’",    
