@@ -2263,19 +2263,19 @@ sub beta_encoding_to_latin1
 {
     my $ref = shift;
     
-    my %acute = (a => "\xe1", e => "\xe9", i => "\xed", o => "\xf3", u => "\xfa", 
-                 A => "\xc1", E => "\xc9", I => "\xcd", O => "\xd3", U => "\xda"); 
+    my %acute = (a => "\xe1", e => "\xe9", i => "\xed", o => "\xf3", u => "\xfa", y => "\xfd",
+                 A => "\xc1", E => "\xc9", I => "\xcd", O => "\xd3", U => "\xda", Y => "\xdd");
     my %grave = (a => "\xe0", e => "\xe8", i => "\xec", o => "\xf2", u => "\xf9", 
                  A => "\xc0", E => "\xc8", I => "\xcc", O => "\xd2", U => "\xd9"); 
-    my %diaer = (a => "\xe4", e => "\xeb", i => "\xef", o => "\xf6", u => "\xfc", 
-                 A => "\xc4", E => "\xcb", I => "\xcf", O => "\xd6", U => "\xdc"); 
+    my %diaer = (a => "\xe4", e => "\xeb", i => "\xef", o => "\xf6", u => "\xfc", y => "\xfd",
+                 A => "\xc4", E => "\xcb", I => "\xcf", O => "\xd6", U => "\xdc", Y => "\x178");
     my %circm = (a => "\xe2", e => "\xea", i => "\xee", o => "\xf4", u => "\xfb", 
                  A => "\xc2", E => "\xca", I => "\xce", O => "\xd4", U => "\xdb"); 
 
 
-    $$ref =~ s/([aeiouAEIOU])\//$acute{$1}||'?'/ge;
+    $$ref =~ s/([aeiouyAEIOUY])\//$acute{$1}||'?'/ge;
     $$ref =~ s/([aeiouAEIOU])\\/$grave{$1}||'?'/ge;
-    $$ref =~ s/([aeiouAEIOU])\+/$diaer{$1}||'?'/ge;
+    $$ref =~ s/([aeiouyAEIOUY])\+/$diaer{$1}||'?'/ge;
     $$ref =~ s/([aeiouAEIOU])\=/$circm{$1}||'?'/ge;
 }
 
