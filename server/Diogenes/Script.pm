@@ -293,7 +293,7 @@ my $database_error = sub
                <div style="display: block; width: 50%;">
                  <h2 id="database-error">Error: Database not found</h2>
                  <p>The <b>$disk_type</b> database was not found.  Diogenes does not come with databases of texts; these must be acquired separately.</p>
-                 <p>To tell Diogenes where on your computer the text are located, go to Settings -> Databases.</p>
+                 <p>To tell Diogenes where on your computer the text are located, go to File -> Database Locations in the menu.</p>
                </div>
              </center>
                 );
