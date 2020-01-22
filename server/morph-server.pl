@@ -16,7 +16,7 @@ use HTTP::Status;
 use Net::Domain qw(hostfqdn);
 
 use Diogenes::Perseus;
-my $debug = 1;
+my $debug = 0;
 # my $HOST = 'localhost';
 #my $HOST = hostfqdn();
 # All addresses on the local machine (for Docker)
