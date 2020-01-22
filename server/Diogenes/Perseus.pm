@@ -896,8 +896,10 @@ my $do_parse = sub {
     $query =~ s#\\#/#g;
     # Remove ~hit~ and punctuation
     $query =~ s/~hit~//;
-    # Do not remove apostrophes! (Morpheus knows about elided forms)
+    # Do not remove apostrophes from Greek! (Morpheus knows about elided forms)
     $query =~ s/[~,.;:?!"]//g;
+    # In Latin, however, apostrophes are just single quotation marks and need to be removed.
+    $query =~ s/[']//g if $lang eq 'lat';
     my $word = $query;
     # remove leading & trailing spaces
     $word =~ s/^\s+//g;
