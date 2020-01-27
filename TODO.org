@@ -1,13 +1,11 @@
 * Current issues (before 4.3)
 ** Fix two windows bugs in searching
-** add current dir to INC
+** add current dir to INC everywhere
  push @INC, '.';
-** Highlight word that has been clicked
-Likewise highlight jumpto passage in lexicon, if possible
 ** Update Logeion LSJ
-** Change Unicode for semicolon and middle dot.
-* Post-release to-do items.
 ** Integrate Logeion L-S
+** Fix export bug with broken corpus
+* Post-release to-do items.
 ** Zoom in/out does not work on Linux and Windows
 ** Implement server for Unix/Mac that preforks multiple children.
 Preforking for speed; multiple children to permit keepalive connections.
@@ -16,6 +14,10 @@ The current code does seem to work when searching texts, and even when jumping t
 ** Compare output to Hipparchia
 Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
 ** See about enabling user to configure the font.
+** Highlight word that has been clicked
+Likewise highlight jumpto passage in lexicon, if possible
+Requires rewriting perseus_handler
+possibly not worth it, as it may break parsing of hyphenated words.
 * Long-term to-do items
 ** Try to restart diogenes-server if it is killed
 ** Make settings page shorter and clearer

@@ -1,8 +1,9 @@
 #!/usr/bin/perl -w
 # Interface to Perseus morphological data and dictionaries.
 
-# This is now a module, so that we can require it once and not reparse
-# the file for each query that comes to the server.
+# This cgi script has been recast as a module, so that we can require
+# it once and not reparse the file for each query that comes to the
+# server.
 package Diogenes::Perseus;
 
 use strict;
@@ -18,7 +19,9 @@ use FileHandle;
 use Encode;
 use URI::Escape;
 
-# The lexica are now utf8, but we need to read the files in as bytes, as we want to jump into the middle and read backwards.  We then convert entries to utf8 by hand.
+# The lexica are now utf8, but we need to read the files in as bytes,
+# as we want to jump into the middle and read backwards.  We then
+# convert entries to utf8 by hand.
 use open IN  => ":bytes", OUT => ":utf8";
 
 use XML::Tiny;
