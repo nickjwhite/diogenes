@@ -1,6 +1,10 @@
 # Changes in Version 4 of Diogenes
 
 ## 4.3 (forthcoming)
+* Highlight clicked word when parsing.
+* Fix export crash when dealing with corrupted input files.
+* Now using the Logeion version of Lewis and Short.
+* Update Greek punctuation to align with Unicode recommendations.
 * Reinstated searching for Greek words with accents and capital letters.
 * Also fixed parsing of capitalized Latin words.
 * Improved speed of Perseus look-ups.

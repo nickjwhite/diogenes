@@ -1,7 +1,8 @@
 * Current issues (before 4.3)
 ** Fix two windows bugs in searching
-** Fix export bug with broken corpus
 * Post-release to-do items.
+** Fix Wide character warnings when a filter name is in utf8
+This is tricky, as some names seem to be latin-1, not utf8.
 ** Zoom in/out does not work on Linux and Windows
 ** Implement server for Unix/Mac that preforks multiple children.
 Preforking for speed; multiple children to permit keepalive connections.
@@ -11,18 +12,14 @@ The current code does seem to work when searching texts, and even when jumping t
 Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
 ** See about enabling user to configure the font.
 * Long-term to-do items
-** Try to restart diogenes-server if it is killed
 ** Make settings page shorter and clearer
    roughly a variant of firstrun page, but ensure that it still works outside of elect
 ** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page
 https://github.com/pjheslin/diogenes/issues/20
 (and shift move back/forward buttons to the far left where they won't get covered by Perseus window.
-** Fix Wide character warnings when a filter name is in utf8
-This is tricky, as some names seem to be latin-1, not utf8.
 ** Try XML::YAX
 Possibly faster and better supported, by same author as XML::DOM::Lite.
 ** Fix Strawberry Perl to use included libxml.
 I think this just requires adding strawberry\c\bin to the PATH, so that it can find libxml2-2__.dll
-** Think about simplifying server by restricting it to localhost
-** Possibly refactor application to only run via diogenes-server
-We could avoid re-parsing prefs file at each query.
+** Possibly refactor application to only parse prefs file once
+We should avoid re-parsing prefs file at each query.

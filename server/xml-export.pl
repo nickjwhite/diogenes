@@ -328,7 +328,7 @@ AUTH: foreach my $auth_num (@all_auths) {
     my @divs;
     my $work_num = 'XXXX';
     my $filename_out = '';
-    while ($i++ <= length $buf) {
+    while ($i++ < length $buf) {
         my $char = substr ($buf, $i, 1);
         my $code = ord ($char);
         if ($code == hex 'f0' and ord (substr ($buf, ($i+1), 1)) == hex 'fe') {
@@ -585,7 +585,8 @@ AUTH: foreach my $auth_num (@all_auths) {
             $line .= $char;
         }
     }
-    # We never get here
+    # We should never get here; may indicate corrupted txt file
+    print "\nWarning: unexpected end of file when parsing $filename_in!\n\n";
 }
 
 print AUTHTAB "</authtab>\n";

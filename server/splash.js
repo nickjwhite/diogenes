@@ -242,7 +242,7 @@ function splash_setup () {
 
     exportText1 = '<h2 class="info-h2">Export texts as XML</h2>' +
         '<p class="info-field">Corpus: ' + corporaAll + '</p>'+
-        '<p class="info-field">Or author: <input type="text" name="author" size="20" id="author_text" class="info-field"></p>'
+        '<p class="info-field">Optionally, select author(s): <input type="text" name="author" size="20" id="author_text" class="info-field"></p>'
     ;
     exportText2 = '<p class="info-text">' +
         'Export texts as TEI-compliant XML for use with other applications.  Choose your author(s) or the (sub)corpus to convert. This is a slow process, so you may wish to go first to <b>Filter</b> and define a subset of the authors you want to convert.</p>';
