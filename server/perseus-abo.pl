@@ -60,9 +60,28 @@ $Diogenes::Perseus::translate_abo = sub {
         my ($work, $loc) = ($1, $2);
 
         if ($work =~ m/^phi,1348,(\d\d\d)$/) {
-            # Referencing of Suetonius has changed so that the lives of the Caesars are now independent, numbered works rather than named books of a single work.
-            my $life = $1;
-            $abo = 'phi,1348,001:' . $suet_map{$life} . $loc;
+            my $num = $1;
+            if ($num eq '001') {
+                # In the Logeion L-S, the Lives of Suetonius as a
+                # whole are work 001, and the name of the emperor is
+                # added as "life=" in the citation part
+                if ($loc =~ m/^:life=([^:]+)(:.*)/) {
+                    my $life = $1;
+                    my $chap = $2;
+                    $life =~ s/(.*)\.$/\u$1/; # Title case and remove period
+                    $abo = 'phi,1348,001:' . $life . $chap;
+                }
+            }
+            elsif ($num) {
+                # In the newer Perseus L-S, referencing of Suetonius
+                # has changed so that the lives of the Caesars are now
+                # independent, numbered works rather than named books
+                # of a single work.
+                $abo = 'phi,1348,001:' . $suet_map{$num} . $loc;
+            }
+            else {
+                print STDERR "Could not understand Suetonius abo: $abo\n"
+            }
         }
         elsif ($work =~ m/^phi,0060,(\d\d\d)$/) {
             # The 2019 version of the Perseus L-S lexicon erroneously gives Tibullus the number 0060 instead of 0660.
@@ -87,10 +106,10 @@ $Diogenes::Perseus::translate_abo = sub {
         elsif ($work =~ m/^phi,0474,(\d+)$/) {
             # For Cicero's speeches (n<36) we need to remove the first
             # term if there are two and the middle one if there are
-            # three. When we get chapter=n, we are out of luck.
-            # Likewise with the Orator and such works.
+            # three. When we get chapter=n, we just leave n, even
+            # though these citations are generally wrong.  Likewise
+            # with the Orator and such works.
             my $wk_num = $1;
-            $loc =~ s/:chapter=.*$//;
             if ($wk_num == 5) {
                 # For the Verrines, assume actio 2 (not always right)
                 $loc =~ s/:\d+:section=(.*)$/:$1/;
@@ -106,6 +125,11 @@ $Diogenes::Perseus::translate_abo = sub {
                 }
                 elsif (@locs == 2) {
                     $abo = $work.':'.$locs[1];
+                }
+                elsif (@locs == 1) {
+                    my $chap = $locs[0];
+                    $chap =~ s/chapter=(.*)$/$1/;
+                    $abo = $work.':'.$chap;
                 }
             }
         }

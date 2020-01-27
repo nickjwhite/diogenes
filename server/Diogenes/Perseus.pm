@@ -253,7 +253,7 @@ my $beta_comp_fn = sub {
 my $xml_key_fn = sub {
     my $line = shift;
     my $key;
-    if ($line =~ m/<(?:entryFree|div2)[^>]*key\s*=\s*\"([^"]*)\"/)
+    if ($line =~ m/<(?:entryFree|div2|div1)[^>]*key\s*=\s*\"([^"]*)\"/)
     {
         $key = $1;
         $key =~ s/[^a-zA-Z]//g;
@@ -430,11 +430,10 @@ use vars '$xml_lang', '$munge_tree', '$munge_content', '$munge_element', '$xml_i
 my ($out, $in_link);
 my $munge_xml = sub {
     my $text = shift;
-    # Tiny.pm will complain if not well-formed -- get rid of stray divs and milestones
-    $text =~ s/^.*?<entryFree /<entryFree /;
-    $text =~ s/^.*?<div2 /<div2 /;
-    $text =~ s/<\/entryFree>.*$/<\/entryFree>/;
-    $text =~ s/<\/div2>.*$/<\/div2>/;
+    # Tiny.pm will complain if not well-formed -- get rid of stray
+    # divs and milestones before and after entry
+    $text =~ s/^.*?(<(?:entryFree|div1|div2) )/$1/;
+    $text =~ s/(<\/(?:entryFree|div1|div2)>).*$/$1/;
     # Tiny needs a space before close of empty tag
     $text =~ s#<([^>]*\S)/>#<$1 />#g;
     return $text if $xml_out;
@@ -605,7 +604,7 @@ my $old_pdf_link = sub {
 our $munge_element = sub {
     my $e = shift;
     $swap_element->($e, 0); # open it
-    if ($e->{name} eq 'entryFree' or $e->{name} eq 'div2') {
+    if ($e->{name} eq 'entryFree' or $e->{name} eq 'div2' or $e->{name} eq 'div1') {
         my $key = $e->{attrib}->{key};
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';

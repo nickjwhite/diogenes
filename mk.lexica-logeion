@@ -2,22 +2,31 @@
 
 .DEFAULT_GOAL := all
 
-include mk.lexica-common
+include mk.common
 
-#LOGEIONLEXICONCOMMIT = da095805622d6637a46808570ce6937a1d61c1a3
+all: $(LOGEIONLEXICA)/LSJLogeion/.git/HEAD $(LOGEIONLEXICA)/LewisShortLogeion/.git/HEAD $(DATA)/grc.lsj.xml $(DATA)/lat.ls.perseus-eng1.xml
 
-all: $(PERSEUSLEXICA)/.git/HEAD $(LOGEIONLEXICON)/.git/HEAD $(DATA)/lat.ls.perseus-eng1.xml $(DATA)/grc.lsj.xml
+$(LOGEIONLEXICA)/LSJLogeion/.git/HEAD:
+	rm -rf $(LOGEIONLEXICA)/LSJLogeion
+	mkdir -p $(LOGEIONLEXICA)
+	cd $(LOGEIONLEXICA) && git clone https://github.com/helmadik/LSJLogeion.git
+	cd $(LOGEIONLEXICA)/LSJLogeion && git checkout
 
-$(LOGEIONLEXICON)/.git/HEAD:
-	rm -rf $(LOGEIONLEXICON)
-	mkdir -p $(BUILD)
-	cd $(BUILD) && git clone https://github.com/helmadik/LSJLogeion.git
-	cd $(LOGEIONLEXICON) && git checkout
-
-$(DATA)/grc.lsj.xml: $(LOGEIONLEXICON)/.git/HEAD
+$(DATA)/grc.lsj.xml: $(LOGEIONLEXICA)/LSJLogeion/.git/HEAD
 	mkdir -p $(DATA)
-	mv $(LOGEIONLEXICON)/greatscott01.xml $(LOGEIONLEXICON)/frontmatter.xml
+	mv $(LOGEIONLEXICA)/LSJLogeion/greatscott01.xml $(LOGEIONLEXICA)/LSJLogeion/frontmatter.xml
 # Collect entries and remove spurious newlines
-	perl utils/reformat_lsj_logeion.pl  $(LOGEIONLEXICON)/greatscott*.xml > $(DATA)/grc.lsj.xml
+	perl utils/reformat_lsj_logeion.pl  $(LOGEIONLEXICA)/LSJLogeion/greatscott*.xml > $(DATA)/grc.lsj.xml
 
-clean: $(PERSEUSLEXICA) $(LOGEIONLEXICON) $(LEXICONFILES)
+$(LOGEIONLEXICA)/LewisShortLogeion/.git/HEAD:
+	rm -rf $(LOGEIONLEXICA)/LewisShortLogeion
+	mkdir -p $(LOGEIONLEXICA)
+	cd $(LOGEIONLEXICA) && git clone https://github.com/helmadik/LewisShortLogeion.git
+	cd $(LOGEIONLEXICA)/LewisShortLogeion && git checkout
+
+$(DATA)/lat.ls.perseus-eng1.xml: $(LOGEIONLEXICA)/LewisShortLogeion/.git/HEAD
+	mkdir -p $(DATA)
+# Collect entries and remove spurious newlines
+	perl utils/reformat_lewis_logeion.pl  $(LOGEIONLEXICA)/LewisShortLogeion/latindico*.xml > $(DATA)/lat.ls.perseus-eng1.xml
+
+clean: $(PERSEUSLEXICA) $(LOGEIONLEXIA) $(LEXICONFILES)

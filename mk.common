@@ -4,5 +4,8 @@ DEPDIR = dependencies
 DATA = $(DEPDIR)/data
 BUILD = build
 GCIDE = $(BUILD)/gcide
-PERSEUSLEXICA = $(BUILD)/lexica
-LOGEIONLEXICON = $(BUILD)/LSJLogeion
+PERSEUSLEXICA = $(BUILD)/LexicaPerseus
+LOGEIONLEXICA = $(BUILD)/LexicaLogeion
+LEXICONFILES = \
+	$(DATA)/lat.ls.perseus-eng1.xml \
+	$(DATA)/grc.lsj.xml

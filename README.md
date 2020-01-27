@@ -162,16 +162,17 @@ e.g. https://github.com/Alatius/morpheus
 ### Step 3
 
 The next step is to download the LSJ Greek lexicon and the L-S Latin
-lexica, which were digitized by the Perseus project.  To get the
-lexica from Perseus, run:
+lexica, which were originally digitized by the Perseus project and
+have subsequently been corrected by the Logeion project.  To get the
+lexica from Logeion, run:
+
+    make -f mk.lexica-logeion
+
+Alternatively, you can get the Perseus version of the lexica by
+running:
 
     make -f mk.lexica-perseus
 
-The Perseus version of the LSJ has some errors in it which have been
-corrected by the Logeion project, so to download that version instead
-(L-S will still come from Perseus), run:
-
-    make -f mk.lexica-logeion
 
 ### Step 4
 

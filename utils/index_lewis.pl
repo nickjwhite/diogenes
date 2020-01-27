@@ -5,7 +5,7 @@ my $i = 0;
 my %seen;
 
 while (<>) {
-    if (m/<entryFree[^>]*key\s*=\s*\"([^"]*)\"/)
+    if (m/<(?:entryFree|div1)[^>]*key\s*=\s*\"([^"]*)\"/)
     {
         my ($key, $no_num, $no_diacrits, $no_num_or_diacrits, $basic_key);
 

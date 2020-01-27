@@ -1,7 +1,5 @@
 * Current issues (before 4.3)
 ** Fix two windows bugs in searching
-** Update Logeion LSJ
-** Integrate Logeion L-S
 ** Fix export bug with broken corpus
 * Post-release to-do items.
 ** Zoom in/out does not work on Linux and Windows

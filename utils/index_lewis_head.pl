@@ -4,7 +4,7 @@ use strict;
 my $i = 0;
 
 while (<>) {
-    if (m/<entryFree[^>]*key\s*=\s*\"([^"]*)\"/)
+    if (m/<(?:entryFree|div1)[^>]*key\s*=\s*\"([^"]*)\"/)
     {
         my $head = $1;
 
