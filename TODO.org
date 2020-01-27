@@ -1,7 +1,5 @@
 * Current issues (before 4.3)
 ** Fix two windows bugs in searching
-** add current dir to INC everywhere
- push @INC, '.';
 ** Update Logeion LSJ
 ** Integrate Logeion L-S
 ** Fix export bug with broken corpus

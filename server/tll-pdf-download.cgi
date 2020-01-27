@@ -6,6 +6,7 @@ use File::Spec::Functions qw(:ALL);
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 
 
+push @INC, '.';
 use Diogenes::Base;
 use CGI qw(:standard);
 use CGI::Carp 'fatalsToBrowser';

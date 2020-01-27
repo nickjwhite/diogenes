@@ -23,6 +23,7 @@ use IO::Handle;
 use XML::LibXML qw(:libxml);
 use File::Which;
 
+push @INC, '.';
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;

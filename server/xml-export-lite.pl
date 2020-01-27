@@ -13,6 +13,7 @@
 
 use FindBin qw($Bin);
 use File::Spec::Functions;
+push @INC, '.';
 # Use local CPAN
 use lib ($Bin, File::Spec->catdir($Bin, '..', 'dependencies', 'CPAN') );
 

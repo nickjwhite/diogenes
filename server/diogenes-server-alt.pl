@@ -13,6 +13,7 @@ use strict;
 use warnings;
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
+push @INC, '.';
 # Use local CPAN
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 

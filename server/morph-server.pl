@@ -15,6 +15,7 @@ use HTTP::Request;
 use HTTP::Status;
 use Net::Domain qw(hostfqdn);
 
+push @INC, '.';
 use Diogenes::Perseus;
 my $debug = 0;
 # my $HOST = 'localhost';

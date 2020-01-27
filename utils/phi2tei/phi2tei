@@ -90,6 +90,7 @@ The following optional switches are supported:
 }
 
 use Data::Dumper;
+push @INC, '.';
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;

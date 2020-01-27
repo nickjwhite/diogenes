@@ -26,6 +26,7 @@ use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
 use Encode;
 
+push @INC, '.';
 # Use local CPAN
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 

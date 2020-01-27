@@ -7,6 +7,7 @@ use File::Spec::Functions qw(:ALL);
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 use Encode;
 use URI::Escape;
+push @INC, '.';
 use Diogenes::Base;
 my $version = $Diogenes::Base::Version;
 use LWP::UserAgent ();

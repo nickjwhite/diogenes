@@ -26,6 +26,7 @@
 use strict;
 use warnings;
 
+push @INC, '.';
 # Use local CPAN
 use File::Spec;
 use FindBin qw($Bin);
