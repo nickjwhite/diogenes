@@ -2197,7 +2197,7 @@ sub perseus_handler
             # \x03\x02 gets changed to %, \x03\x01 to " and \x03\x03 to _
             # URL escape (from CGI.pm)
             $link =~ s/([^a-zA-Z0-9_.%;&?\/\\:=-])/"\x03\x02".sprintf("%02X",ord($1))/eg;
-            my $html = qq(<a onClick=\x03\x01parse\x03\x03$lang('$link')\x03\x01>$word</a>); 
+            my $html = qq(<a onClick=\x03\x01parse\x03\x03$lang('$link', this)\x03\x01>$word</a>);
             $out .= $html.$space;
             ($h_word, $h_space) = ('', '');
 #         print STDERR ">>$html\n";

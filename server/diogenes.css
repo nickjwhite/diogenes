@@ -404,3 +404,7 @@ img.prev {
   border-style: solid;
   border-color: grey transparent transparent transparent;
 }
+
+.highlighted-word {
+  background-color: lightgrey;
+}

@@ -27,7 +27,7 @@ use open IN  => ":bytes", OUT => ":utf8";
 use XML::Tiny;
 use CGI qw(:standard);
 
-my $debug = 1;
+my $debug = 0;
 
 # This is the directory whence the decorative images that come with
 # the script are served.  Overridden later for DiogenesWeb

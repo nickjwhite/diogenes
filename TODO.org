@@ -14,10 +14,6 @@ The current code does seem to work when searching texts, and even when jumping t
 ** Compare output to Hipparchia
 Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
 ** See about enabling user to configure the font.
-** Highlight word that has been clicked
-Likewise highlight jumpto passage in lexicon, if possible
-Requires rewriting perseus_handler
-possibly not worth it, as it may break parsing of hyphenated words.
 * Long-term to-do items
 ** Try to restart diogenes-server if it is killed
 ** Make settings page shorter and clearer

@@ -200,6 +200,9 @@ function sidebarDismiss () {
     sidebar.innerHTML = "";
     sidebarControl.innerHTML = "";
     mainWindow.setAttribute("class", "main-full");
+    if (current_parse) {
+        current_parse.classList.remove("highlighted-word");
+    }
 }
 
 function sidebarFullscreen () {
@@ -218,14 +221,28 @@ function sidebarSplitscreen () {
     sidebarControl();
 }
 
+var current_parse
+function highlight (element) {
+    if (current_parse) {
+        current_parse.classList.remove("highlighted-word");
+    }
+    current_parse = element
+    current_parse.classList.add("highlighted-word");
+}
 
-function parse_grk (word) {
+// For historical reasons, element and its text content are passed
+// separately; this also permits us to parse all of a hyphenated word
+// while highlighting the part that was clicked.
+function parse_grk (word, element) {
+    if (typeof element !== 'undefined') { highlight(element) }
     sendRequest("parse", "grk", word);
 }
-function parse_lat (word) {
+function parse_lat (word, element) {
+    if (typeof element !== 'undefined') { highlight(element) }
     sendRequest("parse", "lat", word);
 }
-function parse_eng (word) {
+function parse_eng (word, element) {
+    if (typeof element !== 'undefined') { highlight(element) }
     sendRequest("parse", "eng", word);
 }
 
