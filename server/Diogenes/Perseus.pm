@@ -114,7 +114,8 @@ my $setup = sub {
     $xml_out = 1 if $f->param('xml');
     $inp_enc = $f->param('inp_enc') || '';
     $qquery = ($lang eq "grk" and $inp_enc ne 'utf8') ? $beta_to_utf8->($query) : $query;
-    $qquery = Encode::decode(utf8=>$qquery);
+    # Convert to utf8 unless already converted
+    $qquery = Encode::decode(utf8=>$qquery) unless $qquery =~ /[^\x00-\xFF]/;
 
     print STDERR "Perseus: >$request, $lang, $query, $qquery<\n" if $debug;
 
