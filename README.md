@@ -40,8 +40,11 @@ pre-computed data from Github:
 If you would prefer to build the morphology data and dictionaries
 yourself, see the instructions below.
 
-There are a few other files that need to be assembled before Diogenes
-can be run. To do that run this command:
+Creating the Diogenes icons for various platforms requires a number of
+external programs that can be installed with the `librsvg`, `libicns`
+and `icoutils` packages on Linux or via Homebrew on OS X.  These, and a
+few other files, need to be assembled before Diogenes can be
+run. To do that run this command:
 
     make
 
@@ -62,16 +65,15 @@ Building the installers
 To build an installer for your target platform, run one of the
 commands below.  All installers can be built on either Linux or OS X.
 You will need to install a number of auxiliary programs, including
-`librsvg`, `libicns`, `icoutils`, `wine`, `innoextract` and `rpm`.
-All of these can easily be installed on Linux via your distribution
-and on OS X using Homebrew (on OS X, Wine version 4.5 works, which can
-be installed via `brew cask install
-homebrew/cask-versions/wine-devel`).  To create Linux
-installers you will also need to install `fpm`, which is done via the
-Ruby package manager (see https://fpm.readthedocs.io/en/latest/).
+`wine`, `innoextract` and `rpm`. All of these can easily be installed
+on Linux and on OS X using Homebrew (on OS X, Wine version 4.5 works,
+which can be installed via `brew cask install
+homebrew/cask-versions/wine-devel`).  To create Linux installers you
+will also need to install `fpm`, which is done via the Ruby package
+manager (see https://fpm.readthedocs.io/en/latest/).
 
     make installer-w32        # Make a Windows installer
-    make installer-mac        # Make a Mac installer
+    make installer-mac        # Make a zip file of the Mac app
     make installer-deb64      # Make a Debian package
     make installer-rpm64      # Make an RPM Linux package
     make installer-arch64     # Make a pacman package for Arch Linux
@@ -118,8 +120,13 @@ for Diogenes.
 
 ### Step 1
 
-The first step is to generate Greek and Latin wordlists, which are derived from the TLG wordlist and the Perseus corpus for Greek and from the PHI, Perseus and DigiLibLT corpora for Latin.  The DigiLibLT corpus has to be downloaded first by hand after making an account on their website, but the Perseus corpora are downloaded automatically. Run this command, specifying the location of the non-Perseus databases
-on the command line:
+The first step is to generate Greek and Latin wordlists, which are
+derived from the TLG wordlist and the Perseus corpus for Greek and
+from the PHI, Perseus and DigiLibLT corpora for Latin.  The DigiLibLT
+corpus has to be downloaded first by hand after making an account on
+their website, but the Perseus corpora are downloaded
+automatically. Run this command, specifying the location of the
+non-Perseus databases on the command line:
 
     make -f mk.tlg-phi-words PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e DIGILIBDIR=~/path/to/digilib
 
