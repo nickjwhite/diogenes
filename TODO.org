@@ -1,5 +1,5 @@
 * Current issues (before 4.3)
-** Fix two windows bugs in searching
+** Remove stale HTTP cache when upgrading
 * Post-release to-do items.
 ** Fix Wide character warnings when a filter name is in utf8
 This is tricky, as some names seem to be latin-1, not utf8.
