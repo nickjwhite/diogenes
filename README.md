@@ -66,11 +66,18 @@ To build an installer for your target platform, run one of the
 commands below.  All installers can be built on either Linux or OS X.
 You will need to install a number of auxiliary programs, including
 `wine`, `innoextract` and `rpm`. All of these can easily be installed
-on Linux and on OS X using Homebrew (on OS X, Wine version 4.5 works,
-which can be installed via `brew cask install
-homebrew/cask-versions/wine-devel`).  To create Linux installers you
-will also need to install `fpm`, which is done via the Ruby package
-manager (see https://fpm.readthedocs.io/en/latest/).
+on Linux (make sure to install the 64-bit version of wine) and on OS X
+using Homebrew (`brew cask install homebrew/cask/wine-stable`).  To
+create Linux installers you will also need to install `fpm`, which is
+done via the Ruby package manager (see
+https://fpm.readthedocs.io/en/latest/).
+
+[NB. At the moment there is no 32-bit version of Inno Setup available,
+which is the windows packager we use. OS X since Catalina will not run
+32-bit apps, even under emulation, so 64-bit wine cannot help in this
+case.  As a (hopefully) temporary workaround, docker is used instead
+of wine to run Inno Setup, which requires installing Docker Desktop
+(Mac) or Docker CE (Linux).]
 
     make installer-w32        # Make a Windows installer
     make installer-mac        # Make a zip file of the Mac app
