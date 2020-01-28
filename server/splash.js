@@ -173,7 +173,7 @@ var searchTooltip =
     'If your Greek search term includes accents or uppercase letters, '+
     'it will be interpreted in strict mode and Diogenes will only match words '+
     'with your exact accentuation and capitalization. '+
-    'In other words, if you specify one accent or capital letter, '+
+    'In other words, if you specify one accent or capital letter in your search pattern, '+
     'you must specify them all. '+
     '</span></div></div>';
 
@@ -206,7 +206,7 @@ function splash_setup () {
     infoText['search'] = '<h2 class="info-h2">Simple Search</h2>' +
         '<p class="info-field">Corpus: ' + corporaAll + '</p>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
-        '<p class="info-text">Choose the relevant corpus, and then enter a pattern (word or sequence of words) to search for.  Enter Greek without diacritics. <b>NB.</b> To restrict a search to the beginning or end of a word, enter a space before or after the letters in your pattern.' + searchTooltip + '</p>';
+        '<p class="info-text">Choose the relevant corpus, and then enter a pattern (word or sequence of words) to search for.  <b>NB.</b> To restrict a search to the beginning or end of a word, enter a space before or after the letters in your pattern.' + searchTooltip + '</p>';
 
     infoText['author'] = '<h2 class="info-h2">Search within Author(s)</h2>' +
         '<p class="info-field">Corpus: ' + corporaCore + '</p>' +
