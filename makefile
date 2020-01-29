@@ -63,6 +63,7 @@ linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	cp -r dependencies app/linux64
 	cp -r dist app/linux64
 	cp -r client app/linux64/resources/app
+	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/linux64/resources/app/version.js
 	mv app/linux64/electron app/linux64/diogenes
 	cp COPYING README.md app/linux64
 
@@ -118,6 +119,7 @@ w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/ic
 	mkdir -p app/w32
 	cp -r electron/electron-v$(ELECTRONVERSION)-win32-ia32/* app/w32
 	cp -r client app/w32/resources/app
+	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/w32/resources/app/version.js
 	mv app/w32/electron.exe app/w32/diogenes.exe
 	cp -r server app/w32
 	cp -r dependencies app/w32
@@ -140,6 +142,7 @@ w64: all electron/electron-v$(ELECTRONVERSION)-win32-x64 build/w64perl build/ico
 	mkdir -p app/w64
 	cp -r electron/electron-v$(ELECTRONVERSION)-win32-x64/* app/w64
 	cp -r client app/w64/resources/app
+	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/w64/resources/app/version.js
 	mv app/w64/electron.exe app/w64/diogenes.exe
 	cp -r server app/w64
 	cp -r dependencies app/w64
@@ -167,6 +170,7 @@ mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
 	mkdir -p app/mac/about
 	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac
 	cp -r client app/mac/Electron.app/Contents/Resources/app
+	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/mac/Electron.app/Contents/Resources/app/version.js
 	cp -r server app/mac/Electron.app/Contents
 	cp -r dependencies app/mac/Electron.app/Contents
 	cp build/diogenes.icns app/mac/Electron.app/Contents/Resources/

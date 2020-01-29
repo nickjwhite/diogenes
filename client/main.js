@@ -30,6 +30,12 @@ const settingsPath = app.getPath('userData')
 const winStatePath = path.join(settingsPath, 'windowstate.json')
 const prefsFile = path.join(settingsPath, 'diogenes.prefs')
 
+const versionFile = path.resolve(__dirname, 'version.js')
+var currentVersion = "0.0"
+if (fs.existsSync(versionFile)) {
+    currentVersion = settingsFromFile(versionFile).version
+}
+
 // Ensure the app is single-instance (see 'second-instance' event
 // handler below)
 function initialise() {
@@ -115,6 +121,36 @@ function createWindow (oldWin, offset_x, offset_y) {
     return win
 }
 
+function checkVersion (win) {
+    // Retrieve previous version and compare with current.  If this is
+    // a new version of Diogenes, we have to clear the HTTP cache, or
+    // we may continue to use the js, css, etc. files from the
+    // obsolete version.
+    win.webContents.executeJavaScript('localStorage.getItem("diogenesVersion")')
+        .then( (oldVersion) => {
+            if (oldVersion != currentVersion) {
+                console.log('Old version: '+oldVersion+'; Current version: '+currentVersion)
+                // Not promisified yet in the Electron we are using, but will be soon
+                // win.webContents.session.clearCache()
+                //     .then( () => {
+                //         console.log('Deleted stale cache')
+                //         win.webContents.reload()
+                //     } )
+                //     .catch( (e) => {console.log('Failed to delete stale cache: '+e)} )
+                win.webContents.session.clearCache( () => {
+                    console.log('Deleted stale cache')
+                    win.webContents.reload()
+                } )
+                win.webContents.executeJavaScript('localStorage.setItem("diogenesVersion", '+'"'+currentVersion+'")')
+                    .then( () => {console.log('New version number saved')} )
+                    .catch( (e) => {console.log('Failed to save new version number: '+e)} )
+            }
+        })
+        // Errors from non-promisified clearCache fall through
+        // .catch( (e) => {console.log('Failed to get old version number: '+e)} )
+        .catch( (e) => {console.log('checkVersion failed: '+e)} )
+}
+
 // Create the initial window and start the diogenes server
 function createFirstWindow () {
     lockFile = path.join(settingsPath, 'diogenes-lock.json')
@@ -128,6 +164,10 @@ function createFirstWindow () {
     })
 
     win = createWindow(null, 0, 0);
+
+    win.webContents.on("dom-ready", () => {
+        checkVersion(win)
+    })
 
     // Remove any stale lockfile
     if (fs.existsSync(lockFile)) {
@@ -256,7 +296,7 @@ function startServer () {
 }
 
 // Load settings in lockfile into an object
-function settingsFromLockFile(fn) {
+function settingsFromFile(fn) {
 	let s = fs.readFileSync(fn, {'encoding': 'utf8'})
 	return JSON.parse(s)
 }
@@ -279,7 +319,7 @@ function loadWhenLocked(lockFile, prefsFile, win) {
 			return
 		}
 
-		dioSettings = settingsFromLockFile(lockFile)
+		dioSettings = settingsFromFile(lockFile)
 
 		if(dioSettings.port === undefined || dioSettings.pid === undefined) {
 			console.error("Error, no port or pid settings found in lockFile")
