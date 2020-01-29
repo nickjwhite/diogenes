@@ -1002,8 +1002,8 @@ $output{browser} = sub
     my $author_sort = sub
     {
         my ($a, $b) = @_;
-        $a =~ tr/a-zA-Z//cd;
-        $b =~ tr/a-zA-Z//cd;
+        $a =~ tr/a-zA-Z0-9//cd;
+        $b =~ tr/a-zA-Z0-9//cd;
         return (uc $a cmp uc $b);
     };
 
