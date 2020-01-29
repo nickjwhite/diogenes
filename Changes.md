@@ -1,16 +1,19 @@
 # Changes in Version 4 of Diogenes
 
-## 4.3 (forthcoming)
-* Highlight clicked word when parsing.
+## 4.3
+* Highlight clicked word.
+* Fix sorting of authors with identical names.
+* Automatically clear Electron's HTTP cache when upgrading to a new version of Diogenes, which was a source of some subtle bugs.
 * Fix export crash when dealing with corrupted input files.
 * Now using the Logeion version of Lewis and Short.
-* Update Greek punctuation to align with Unicode recommendations.
+* Aligned Greek punctuation with current Unicode recommendations.
 * Reinstated searching for Greek words with accents and capital letters.
-* Also fixed parsing of capitalized Latin words.
+* Added tooltip for Greek text entry, strict and loose.
+* Fixed parsing of capitalized Latin words.
 * Improved speed of Perseus look-ups.
 * Fixed crash in Juvenal when encountering unknown markup.
 * Fixed LSJ short definition for πᾶς.
-* Added binding for Escape key to dismiss sidebar.
+* Added key binding for Escape key to dismiss sidebar.
 
 ## 4.2
 * Fixed bug where the morphology of elided Greek forms was not parsed.
