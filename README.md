@@ -42,9 +42,13 @@ yourself, see the instructions below.
 
 Creating the Diogenes icons for various platforms requires a number of
 external programs that can be installed with the `librsvg`, `libicns`
-and `icoutils` packages on Linux or via Homebrew on OS X.  These, and a
-few other files, need to be assembled before Diogenes can be
-run. To do that run this command:
+and `icoutils` packages on Linux or via Homebrew on OS X.  Building
+the Windows app also requires `wine`, which can be installed in the same
+way.
+
+
+A few other files need to be assembled before Diogenes can be run. To
+do that run this command:
 
     make
 
