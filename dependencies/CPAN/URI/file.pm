@@ -1,19 +1,18 @@
 package URI::file;
 
 use strict;
-use vars qw(@ISA $VERSION $DEFAULT_AUTHORITY %OS_CLASS);
+use warnings;
 
-require URI::_generic;
-@ISA = qw(URI::_generic);
-$VERSION = sprintf("%d.%02d", q$Revision: 4.19 $ =~ /(\d+)\.(\d+)/);
+use parent 'URI::_generic';
+our $VERSION = "4.21";
 
 use URI::Escape qw(uri_unescape);
 
-$DEFAULT_AUTHORITY = "";
+our $DEFAULT_AUTHORITY = "";
 
 # Map from $^O values to implementation classes.  The Unix
 # class is the default.
-%OS_CLASS = (
+our %OS_CLASS = (
      os2     => "OS2",
      mac     => "Mac",
      MacOS   => "Mac",
@@ -37,7 +36,6 @@ sub os_class
     $class;
 }
 
-sub path { shift->path_query(@_) }
 sub host { uri_unescape(shift->authority(@_)) }
 
 sub new
@@ -228,12 +226,12 @@ usually many URIs that map to any given file name.  For instance, an
 authority of "localhost" maps the same as a URI with a missing or empty
 authority.
 
-Example 1: The Mac uses ":" as path separator, but not in the same way
-as a generic URI. ":foo" is a relative name.  "foo:bar" is an absolute
-name.  Also, path segments can contain the "/" character as well as the
-literal "." or "..".  So the mapping looks like this:
+Example 1: The Mac classic (Mac OS 9 and earlier) used ":" as path separator,
+but not in the same way as a generic URI. ":foo" was a relative name.  "foo:bar"
+was an absolute name.  Also, path segments could contain the "/" character as well
+as the literal "." or "..".  So the mapping looks like this:
 
-  Mac                   URI
+  Mac classic           URI
   ----------            -------------------
   :foo:bar     <==>     foo/bar
   :            <==>     ./
@@ -281,7 +279,7 @@ RFC 1630
    The special value "localhost" is used in the host field to indicate
    that the filename should really be used on whatever host one is.
    This for example allows links to be made to files which are
-   distribted on many machines, or to "your unix local password file"
+   distributed on many machines, or to "your unix local password file"
    subject of course to consistency across the users of the data.
 
    A void host field is equivalent to "localhost".

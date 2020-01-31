@@ -12,32 +12,43 @@
 #                                                                        #
 ##########################################################################
 
-package Diogenes::CGI;
+# This is a slightly odd module, in that it has been lightly converted
+# from a CGI script (which was once written to run under mod_perl,
+# hence the use of lexical vars everywhere to hold coderefs).  The
+# entry point is the single exception, go().
 
+# We start with compile-time declarations
+
+package Diogenes::Script;
+use strict;
+use File::Spec::Functions qw(:ALL);
+use FindBin qw($Bin);
+use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 use Data::Dumper;
-
 use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %database @databases @filters);
-# use Diogenes::CGI_utils qw($f %st $get_state $set_state);
 use Diogenes::Search;
 use Diogenes::Indexed;
 use Diogenes::Browser;
-
-use strict;
-use File::Spec::Functions qw(:ALL);
 use Encode;
+use CGI qw(:standard);
+#use CGI;
+# use CGI::Carp 'fatalsToBrowser';
 
-$Diogenes::Base::cgi_flag = 1;
+BEGIN {
+   if ( $Diogenes::Base::OS eq 'windows' ) {
+      eval "use Win32::ShellQuote qw(quote_native); 1" or die $@;
+   }
+}
 
-my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
+# These are lexical vars shared between the subroutines below.  Many
+# are config-dependent.  They are initialised at run-time in
+# $setup->().
 
-binmode (STDOUT, ':utf8');
+my ($f, $init, $filter_file, $default_encoding, $default_choice,
+    $default_criteria, $filter_flag, $charset);
 
-# Force read of config files
-my %args_init = (-type => 'none');
-my $init = new Diogenes::Base(%args_init);
-my $filter_file = $init->{filter_file};
+# These are lexical constants whose values are fixed.
 
-# my @choices = reverse sort keys %choices;
 my @choices = (
     'TLG Texts',
     'PHI Latin Corpus',
@@ -48,7 +59,6 @@ my @choices = (
     'PHI Coptic Texts',
     'TLG Bibliography',
     );
-
 # Probable input language for morphological search
 my %prob_lang = ( 'phi' => 'lat',
                   'tlg' => 'grk',
@@ -56,66 +66,19 @@ my %prob_lang = ( 'phi' => 'lat',
                   'ins' => 'grk',
                   'chr' => 'grk',
                   'misc' => 'lat' );
-my $default_choice;
-my $choice_from_config = quotemeta $init->{cgi_default_corpus};
-for (@choices)
-{
-    if ($_ =~ m/$choice_from_config/i)
-    {
-        $default_choice = $_;
-        last;
-    }
-}
-warn "I don't understand default search type $init->{cgi_default_corpus}\n"
-    unless $default_choice;
-
-my $default_encoding = $init->{cgi_default_encoding} || 'UTF-8';
-
-my $default_criteria = $init->{default_criteria};
-
-# This is the directory whence the decorative images that come with
-# the script are served.
 my $picture_dir = 'images/';
-
-my $check_mod_perl = $init->{check_mod_perl};
-
 my $version = $Diogenes::Base::Version;
-my (%handler, %output, $filter_flag);
 
-use CGI qw(:standard);
-#use CGI;
-# use CGI::Carp 'fatalsToBrowser';
-$ENV{PATH} = "/bin/:/usr/bin/";
-$| = 1;
-
-
-# We need to pre-set the encoding for the earlier pages, so that the right
-# header is sent out the first time Greek is displayed
-$f->param('greek_output_format', $default_encoding) unless
-    $f->param('greek_output_format');
-
-# This works for WinGreek, etc, and any encoding/font that's designed
-# more for cutting and pasting than for proper viewing in a browser.
-my $charset = 'iso-8859-1';
-
-if ($f->param('greek_output_format') and
-    $f->param('greek_output_format') =~ m/UTF-?8|Unicode/i)
-{
-    $charset = 'UTF-8';
-    #$charset = 'iso-10646-1';
-}
-elsif ($f->param('greek_output_format') and
-       $f->param('greek_output_format') =~ m/8859.?7/i)
-{
-    $charset = 'ISO-8859-7';
-}
+# Containers for coderefs
+my (%handler, %output);
 
 # Preserving state: all previous parameters are embedded as hidden
-# fields in each subsequent page.
+# fields in each subsequent page.  Remember that this sets up a single
+# namespace for all cgi parameters on all pages of the script, so be
+# careful not to duplicate parameter names from page to page.
 my %st;
-# Remember that this sets up a single namespace for all cgi
-# parameters on all pages of the script, so be careful not to
-# duplicate parameter names from page to page.
+my $previous_page;
+my $current_filter;
 
 my $set_state = sub
 {
@@ -139,6 +102,10 @@ my $set_state = sub
 
 my $get_state = sub
 {
+    # Make sure to clear state (esp. in non-forking server)
+    %st = ();
+    undef $current_filter;
+
     my @params = $f->param();
     my %real_params;
     /XXstate$/ || $real_params{$_}++ for @params;
@@ -163,8 +130,6 @@ my $get_state = sub
     }
 };
 
-$get_state->();
-
 my $read_filters = sub {
     if (-e $filter_file)
     {
@@ -178,15 +143,13 @@ my $read_filters = sub {
 
         close $filter_fh or die "Can't close filter file ($filter_file): $!";
 
+        # utf8::encode($_->{name}) for @filters;
 #         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
-
+        # Unicode chars are encoded like \x{e3}, so we don't need to
+        # read the file as utf8 or convert the strings to utf8.
     }
 };
 
-$read_filters->() unless @filters;
-
-
-my $previous_page = $st{current_page};
 
 my $my_footer = sub
 {
@@ -198,11 +161,12 @@ my $my_footer = sub
     print $f->end_form,
         '<div class="push"></div></div>'; # sticky footer
     print
-        $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2017 Peter Heslin.});
+        $f->p({class => 'footer'}, qq{Databases may be subject to licensing restrictions. Diogenes (version $version) is free software, &copy; 1999-2019 Peter Heslin.});
 
     print $f->end_html;
 };
 
+my $numerically = sub { $a <=> $b; };
 
 my $print_title = sub
 {
@@ -258,7 +222,7 @@ my $print_header = sub
     print q{<div class="header_back"><a onclick="window.history.back()" class="back_button">
     <svg width="15px" height="20px" viewBox="0 0 50 80" xml:space="preserve">
     <polyline fill="none" stroke="#28709a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="
-	45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
+        45,80 0,40 45,0"/></svg><div class="back_button_text">Back</div></a></div>};
 
     # Provide facility to restore an earlier Perseus query, but make invisible to start.
     print qq{<div class="invisible" id="header_restore"><a onclick="jumpFrom()"><span class="restore_text">Restore</span><img id="splitscreen" src="${picture_dir}view-restore.png" srcset="${picture_dir}view-restore.hidpi.png 2x" alt="Split Screen" /></a></div>};
@@ -285,7 +249,18 @@ my $print_error_page = sub
         $f->p($msg));
 
     print $f->end_html;
-    exit;
+};
+
+my $print_error = sub
+{
+    my $msg = shift;
+    $msg ||= 'Sorry. You seem to have made a request that I do not understand.';
+
+    print $f->center(
+        $f->h1('ERROR'),
+        $f->p($msg));
+
+    print $f->end_html;
 };
 
 my $strip_html = sub
@@ -320,14 +295,13 @@ my $database_error = sub
                <div style="display: block; width: 50%;">
                  <h2 id="database-error">Error: Database not found</h2>
                  <p>The <b>$disk_type</b> database was not found.  Diogenes does not come with databases of texts; these must be acquired separately.</p>
-                 <p>To tell Diogenes where on your computer the text are located, go to Settings -> Databases.</p>
+                 <p>To tell Diogenes where on your computer the text are located, go to File -> Database Locations in the menu.</p>
                </div>
              </center>
                 );
 
     $st{current_page} = 'splash';
     $my_footer->();
-    exit;
 };
 
 my $print_navbar = sub {
@@ -335,24 +309,24 @@ my $print_navbar = sub {
   <div class="navbar-area">
     <nav role="navigation">
       <ul class="menu">
-	<li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
-	<li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
+        <li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
+        <li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
           <ul id="submenu1">
-	    <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
+            <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
             <li><a href="#" onclick="info('author')" accesskey="a">Within an Author</a></li>
             <li><a href="#" onclick="info('multiple')" accesskey="m">Multiple Terms</a></li>
             <li><a href="#" onclick="info('lemma')" accesskey="f">Inflected Forms</a></li>
             <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
           </ul>
         </li>
-	<li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
+        <li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
           <ul id="submenu2">
-	    <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
+            <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
             <li><a href="#" onclick="info('parse')" accesskey="i">Inflexion</a></li>
           </ul>
         </li>
-	<li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
-	<li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
+        <li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
+        <li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
         <li><a href="#" onclick="info('help')">Help</a></li>
       </ul>
     </nav>
@@ -372,6 +346,7 @@ $output{splash} = sub
 
     print '<input type="hidden" name="action" id="action" value=""/>';
     print '<input type="hidden" name="splash" id="splash" value="true"/>';
+    print '<input type="hidden" name="export-path" id="export-path" value=""/>';
     print "\n";
     print '<div id="corpora-list1">';
     foreach (@choices) {
@@ -402,14 +377,13 @@ $output{splash} = sub
     $my_footer->();
 };
 
-my $current_filter;
 my $get_filter = sub
 {
     my $name = shift;
+    # utf8::encode($name);
     for (@filters) {
         return $_ if $_->{name} eq $name;
     }
-    die ("Filter for $name not found!");
     return undef;
 };
 
@@ -477,6 +451,10 @@ $handler{splash} = sub
     elsif ($action eq 'author')
     {
         $output{author_search}->();
+    }
+    elsif ($action eq 'export')
+    {
+        $output{export_xml}->();
     }
     else
     {
@@ -614,6 +592,85 @@ my $get_args = sub
     return %args;
 };
 
+$output{export_xml} = sub {
+
+    $print_title->('Diogenes XML Export Page');
+    $print_header->();
+    $st{current_page} = 'export';
+    my %args = $get_args->();
+    $args{type} = $st{short_type};
+    my $q = new Diogenes::Search(%args);
+    $database_error->($q) if not $q->check_db;
+
+    my @auths;
+    if ($st{author} and $st{author} =~ m/\S/) {
+        @auths = sort keys %{ $q->match_authtab($st{author}) };
+        unless (scalar @auths)
+        {
+            $print_error->(qq(There were no texts matching the author $st{author}));
+            return;
+        }
+    }
+    elsif ($current_filter) {
+        if (ref $current_filter->{authors} eq 'ARRAY') {
+            @auths = sort @{ $current_filter->{authors} };
+        }
+        elsif (ref $current_filter->{authors} eq 'HASH') {
+            @auths = sort keys %{ $current_filter->{authors} };
+        }
+        else {
+            $print_error->("ERROR in filter definition.")
+        }
+    }
+
+    my $export_path = $st{'export-path'};
+    print $f->h2('Exporting texts as XML'),
+        $f->p("This can take a while. Go to menu item Navigate -> Stop/Kill to interrupt conversion. Export folder: $export_path"),
+        $f->hr;
+
+    # TODO: Should have just used $^X
+    my $perl_name;
+    if ($Diogenes::Base::OS eq 'windows') {
+        $perl_name = File::Spec->catfile($Bin, '..', 'strawberry', 'perl', 'bin', 'perl.exe');
+    }
+    else {
+        # For Mac and Unix, we assume perl is in the path
+        $perl_name = 'perl';
+    }
+    my @cmd;
+    push @cmd, $perl_name;
+    push @cmd, File::Spec->catfile($Bin, 'xml-export.pl');
+    # LibXML does not work under Strawberry Perl
+    push @cmd, '-x' if $Diogenes::Base::OS eq 'windows';
+    push @cmd, '-c';
+    push @cmd, $st{short_type};
+    push @cmd, '-o';
+    push @cmd, $export_path;
+    if (@auths) {
+        my $n = join ',', @auths;
+        push @cmd, '-n';
+        push @cmd, $n;
+    }
+    my ($command, $fh);
+    if ($Diogenes::Base::OS eq 'windows') {
+        $command = quote_native(@cmd);
+        open ($fh, '-|', $command) or die "Cannot exec $command: $!";
+    }
+    else {
+        open ($fh, '-|', @cmd) or die "Cannot exec: "
+            . (join ' ', @cmd) . ": $!";
+    }
+    # print $f->p("Command: $command \n");
+    $fh->autoflush(1);
+    print '<pre>';
+    {
+        local $/ = "\n";
+        print $_ while (<$fh>);
+    }
+    print $f->h3('Finished XML conversion.');
+    print '</pre>';
+};
+
 $output{author_search} = sub
 {
     # A quick and dirty author search
@@ -628,7 +685,7 @@ $output{author_search} = sub
     my @auths = $q->select_authors(author_regex => $st{author});
     unless (scalar @auths)
     {
-        $print_error_page->(qq(There were no texts matching the author $st{author_pattern}));
+        $print_error->(qq(There were no texts matching the author $st{author_pattern}));
         return;
     }
 
@@ -939,7 +996,17 @@ $output{browser} = sub
         my $auth = (keys %auths)[0];
         $st{author} = [keys %auths]->[0];
         $output{browser_works}->();
+        return;
     }
+
+    my $author_sort = sub
+    {
+        my ($a, $b) = @_;
+        $a =~ tr/a-zA-Z0-9//cd;
+        $b =~ tr/a-zA-Z0-9//cd;
+        return (uc $a cmp uc $b);
+    };
+
 
     $print_title->('Diogenes Author Browser');
     $print_header->();
@@ -964,8 +1031,8 @@ $output{browser} = sub
                 $f->p( 'Please select one and click on the button below.'),
                 $f->p(
                     $f->scrolling_list( -name => 'author',
-                                        -Values => [sort {author_sort($auths{$a}, $auths{$b})} keys %auths],
-#                                         -Values => [sort numerically keys %auths],
+                                        -Values => [sort {$author_sort->($auths{$a}, $auths{$b})} keys %auths],
+#                                         -Values => [sort $numerically keys %auths],
                                         -labels => \%auths, -size=>$size,
                                         -autofocus => 'autofocus',
                                         -required => 'required'
@@ -977,13 +1044,6 @@ $output{browser} = sub
 
     $my_footer->();
 
-    sub author_sort
-    {
-        my ($a, $b) = @_;
-        $a =~ tr/a-zA-Z//cd;
-        $b =~ tr/a-zA-Z//cd;
-        return (uc $a cmp uc $b);
-    }
 };
 
 $handler{browser_authors} = sub { $output{browser_works}->(); };
@@ -1024,7 +1084,7 @@ $output{browser_works} = sub
                 $f->p('Please select one.'),
                 $f->p(
                     $f->scrolling_list( -name => 'work',
-                                        -Values => [sort numerically keys %works],
+                                        -Values => [sort $numerically keys %works],
                                         -labels => \%works,
                                         -autofocus => 'autofocus',
                                         -required => 'required')),
@@ -1130,7 +1190,7 @@ $output{browser_output} = sub
              print STDERR "$jumpTo; $corpus, $st{author}, $st{work}, @target\n" if $q->{debug};
         }
         else {
-            $print_error_page->("Bad location description: $jumpTo");
+            $print_error->("Bad location description: $jumpTo");
         }
         # Try to fix cases where we are not given the number of levels we expect
         $q->parse_idt($st{author});
@@ -1174,15 +1234,13 @@ $output{browser_output} = sub
     }
     elsif ($st{browser_forward})
     {
-        ($st{begin_offset}, $st{end_offset}) = $q->browse_forward ($st{begin_offset},
-                                                                       $st{end_offset},
-                                                                       $st{author}, $st{work});
+        ($st{begin_offset}, $st{end_offset}) =
+            $q->browse_forward($st{begin_offset}, $st{end_offset}, $st{author}, $st{work});
     }
     elsif ($st{browser_back})
     {
-        ($st{begin_offset}, $st{end_offset}) = $q->browse_backward ($st{begin_offset},
-                                                                        $st{end_offset},
-                                                                        $st{author}, $st{work});
+        ($st{begin_offset}, $st{end_offset}) =
+            $q->browse_backward($st{begin_offset}, $st{end_offset}, $st{author}, $st{work});
     }
     else
     {
@@ -1229,6 +1287,8 @@ $output{filter_splash} = sub
     print
         $f->h1("Filters: user-defined subsets of the databases."),
 
+        $f->p('<b>NB.</b> Due to a current bug, only use non-accented Latin characters in the names of your sub-corpora'),
+
         $f->p('From this page you can create new corpora or subsets of
         the databases to search within, and you can also view and
         delete existing user-defined corpora.  Note that these
@@ -1251,13 +1311,13 @@ $output{filter_splash} = sub
                                $dis)),
         $f->p(
             $f->submit (-name=>'list',
-                        -value=>'List contents'),
+                        -value=>'List contents of subset'),
             $f->br,
             $f->submit (-name=>'delete',
-                        -value=>'Delete entire corpus'),
+                        -value=>'Delete subset'),
             $f->br,
             $f->submit (-name=>'duplicate',
-                        -value=>'Duplicate corpus under new name: '),
+                        -value=>'Duplicate subset under new name: '),
             $f->textfield( -name => 'duplicate_name',
                            -size => 60, -default => '')),
 
@@ -1265,7 +1325,7 @@ $output{filter_splash} = sub
         corpus, choose "List contents" and you can do that on the next
         page.  To add authors to an existing corpus, find the new
         authors using either the simple corpus or complex subset
-        options above, and then use the name of the existing corpus
+        options below, and then use the name of the existing corpus
         you want to add them to.  The new authors will be merged into
         the old, and for any duplicated author the new set of works will
         replace the old.  If you want to preserve the existing corpus
@@ -1322,9 +1382,8 @@ $output{filter_splash} = sub
         forth.  You can use these classifications to define a subset
         of works in the TLG to narrow down your search. '),
 
-    $f->submit( -name => 'complex',
-                -value => 'Define a complex TLG corpus');
-
+        $f->p($f->submit( -name => 'complex',
+                -value => 'Define a complex TLG corpus'));
 
 
     $my_footer->();
@@ -1442,6 +1501,9 @@ the selected authors' );
 };
 
 my $save_filters = sub {
+    # for (@filters) {
+    #     utf8::decode($_->{name}) if Encode::is_utf8($_->{name});
+    # }
     open my $filter_fh, ">$filter_file"
         or die "Can't write to filter file ($filter_file): $!";
     print $filter_fh Data::Dumper->Dump([\@filters], ['*filters']);
@@ -1561,7 +1623,7 @@ $output{refine_works} = sub
         $q->format_output(\$author, 'l', 1);
 
         print $f->h2($author);
-        for my $work_num (sort numerically
+        for my $work_num (sort $numerically
                           keys %{ $work{$q->{type}}{$a} })
         {
             push @work_nums, $work_num;
@@ -1833,6 +1895,9 @@ $output{list_filter} = sub
 {
     my $filter = $get_filter->($st{filter_choice});
     my $type = $filter->{type};
+    my $name = $filter->{name};
+    # Not sure why this conversion is necessary here and not elsewhere.
+    # utf8::encode($name);
     $st{short_type} = $type;
     $st{type} = $database{$type};
 
@@ -1852,7 +1917,7 @@ $output{list_filter} = sub
 
     print
         $f->h2('User-defined corpus listing'),
-        $f->p(qq(Here is the subset of the $type database named $st{filter_choice}:));
+        $f->p(qq(Here is the subset of the $type database named $name:));
 #               (join '<br />', @texts);
     print $f->checkbox_group( -name => "filter_list",
                               -Values => [0 .. $#texts],
@@ -1892,22 +1957,23 @@ $handler{list_filter} = sub
     }
 };
 
-sub deep_copy {
+my $deep_copy;
+$deep_copy = sub {
     my $this = shift;
     if (not ref $this) {
       $this;
     } elsif (ref $this eq "ARRAY") {
-        [map deep_copy($_), @$this];
+        [map $deep_copy->($_), @$this];
     } elsif (ref $this eq "HASH") {
-        +{map { $_ => deep_copy($this->{$_}) } keys %$this};
+        +{map { $_ => $deep_copy->($this->{$_}) } keys %$this};
     } else { die "what type is $_?" }
-}
+};
 
 
 $output{duplicate_filter} = sub {
     return if $get_filter->($st{duplicate_name});
     my $old_filter = $get_filter->($st{filter_choice});
-    my $new_filter = deep_copy($old_filter);
+    my $new_filter = $deep_copy->($old_filter);
     $new_filter->{name} = $st{duplicate_name};
     push @filters, $new_filter;
     $save_filters_and_go->();
@@ -1945,9 +2011,6 @@ $output{delete_filter_items} = sub {
 };
 
 
-sub numerically { $a <=> $b; }
-
-
 my $mod_perl_error = sub
 {
     $print_title->('Error');
@@ -1964,38 +2027,113 @@ my $mod_perl_error = sub
     return;
 };
 
-# End of subroutine definitions -- here's where the dispatching gets done
+# Initialization of query
+my $setup = sub {
 
-# Flow control
-# warn $previous_page;
+    my $parameters = shift;
+    if ($parameters) {
+        $f = new CGI($parameters);
+    }
+    elsif ($Diogenes_Daemon::params) {
+        $f = new CGI($Diogenes_Daemon::params)
+    }
+    else {
+        $f = new CGI;
+    }
 
-if ($check_mod_perl and not $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl/)
-{
-    $mod_perl_error->();
-}
-elsif ($f->param('JumpTo'))
-{
-    # Jump straight to a passage in the browser
-    my $jump = $f->param('JumpTo');
-    $jump =~ m/^([^,]+)/;
-    $st{short_type} = $1;
-    $st{type} = $database{$1};
-    $output{browser_output}->($jump);
-}
-elsif (not $previous_page)
-{
-    # First time, print opening page
-    $output{splash}->();
-}
-else
-{
-    # Data present, pass control to the appropriate subroutine
-    if ($handler{$previous_page})
+    $Diogenes::Base::cgi_flag = 1;
+
+    # Force read of config files
+    my %args_init = (-type => 'none');
+    $init = new Diogenes::Base(%args_init);
+    $filter_file = $init->{filter_file};
+
+    my $choice_from_config = quotemeta $init->{cgi_default_corpus};
+    for (@choices)
     {
-        $handler{$previous_page}->();
+        if ($_ =~ m/$choice_from_config/i)
+        {
+            $default_choice = $_;
+            last;
+        }
+    }
+    warn "I don't understand default search type $init->{cgi_default_corpus}\n"
+        unless $default_choice;
+
+    $default_encoding = $init->{cgi_default_encoding} || 'UTF-8';
+    $default_criteria = $init->{default_criteria};
+
+    $ENV{PATH} = "/bin/:/usr/bin/";
+    $| = 1;
+
+    # We need to pre-set the encoding for the earlier pages, so that
+    # the right header is sent out the first time Greek is displayed
+    $f->param('greek_output_format', $default_encoding) unless
+        $f->param('greek_output_format');
+
+    # This works for WinGreek, etc, and any encoding/font that's designed
+    # more for cutting and pasting than for proper viewing in a browser.
+    $charset = 'iso-8859-1';
+
+    if ($f->param('greek_output_format') and
+        $f->param('greek_output_format') =~ m/UTF-?8|Unicode/i)
+    {
+        $charset = 'UTF-8';
+        #$charset = 'iso-10646-1';
+    }
+    elsif ($f->param('greek_output_format') and
+           $f->param('greek_output_format') =~ m/8859.?7/i)
+    {
+        $charset = 'ISO-8859-7';
+    }
+
+    $get_state->();
+    $read_filters->() unless @filters;
+    $previous_page = $st{current_page};
+};
+
+# Dispatch query
+my $dispatch = sub {
+    
+    my $check_mod_perl = $init->{check_mod_perl};
+    if ($check_mod_perl and not $ENV{GATEWAY_INTERFACE} =~ /^CGI-Perl/)
+    {
+        $mod_perl_error->();
+    }
+    elsif ($f->param('JumpTo'))
+    {
+        # Jump straight to a passage in the browser
+        my $jump = $f->param('JumpTo');
+        $jump =~ m/^([^,]+)/;
+        $st{short_type} = $1;
+        $st{type} = $database{$1};
+        $output{browser_output}->($jump);
+    }
+    elsif (not $previous_page)
+    {
+        # First time, print opening page
+        $output{splash}->();
     }
     else
     {
-        $print_error_page->();
+        # Data present, pass control to the appropriate subroutine
+        if ($handler{$previous_page})
+        {
+            $handler{$previous_page}->();
+        }
+        else
+        {
+            $print_error_page->();
+        }
     }
-}
+};
+
+$Diogenes::Script::go = sub {
+    my $parameters = shift;
+    $setup->($parameters);
+    $dispatch->()
+};
+
+
+# End of module
+1;

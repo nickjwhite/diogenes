@@ -1,36 +1,25 @@
-* Bugs
-* Add menu item to go back to firstrun.html
-
-* Test on Windows:
-  cause tibullus crash and see if server respawns.
-
-
-
-* Add XML output functionality
-** Phase 1
-   Substitute libxml with XML::DOM:Lite for portability and test it.
-   Import code into a module.
-   Integrate into splash page, with folder select native pop-up.
-   Include schema.
-** Phase 2
-   Adapt latex output code to do further markup.
-   Revise schema and test.
-
-* Redesign home page
-  add diogenes-help.html as FAQs
-  Add contributions / thanks prominently to diogenes
-
-  Register domain
-  set up payment via dept card
-  
-
-* Long-term, aspirational to-do items
-** Clean-up various Perl warnings.
-** Replace Perseus LSJ with Helma's from Logeion
-** Try to restart diogenes-server if it is killed
-** Replace XML::Tiny with XML::DOM::Lite
-** Implement print menu item
-** Make new icon for Windows with a light background
-   The foreground colour of the current icon, which has a transparent background, matches one of the common colours of the background of the Windows 10 start menus, so it disappears in these cases.
+* Current issues (before 4.3)
+** Remove stale HTTP cache when upgrading
+* Post-release to-do items.
+** Fix Wide character warnings when a filter name is in utf8
+This is tricky, as some names seem to be latin-1, not utf8.
+** Zoom in/out does not work on Linux and Windows
+** Implement server for Unix/Mac that preforks multiple children.
+Preforking for speed; multiple children to permit keepalive connections.
+** Fix bug with non-ascii paths to databases on Windows
+The current code does seem to work when searching texts, and even when jumping to context from search results, but fails when browsing.  The .idt files are opened without a problem in the preliminary stages of browsing, and the seek_passage subroutine works when jumping from a search result, but not when browsing.  Browsing forward after jump to context is also broken.  A strange bug.
+** Compare output to Hipparchia
+Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
+** See about enabling user to configure the font.
+* Long-term to-do items
 ** Make settings page shorter and clearer
-   roughly a variant of firstrun page, but ensure that it still works outside of electron
+   roughly a variant of firstrun page, but ensure that it still works outside of elect
+** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page
+https://github.com/pjheslin/diogenes/issues/20
+(and shift move back/forward buttons to the far left where they won't get covered by Perseus window.
+** Try XML::YAX
+Possibly faster and better supported, by same author as XML::DOM::Lite.
+** Fix Strawberry Perl to use included libxml.
+I think this just requires adding strawberry\c\bin to the PATH, so that it can find libxml2-2__.dll
+** Possibly refactor application to only parse prefs file once
+We should avoid re-parsing prefs file at each query.

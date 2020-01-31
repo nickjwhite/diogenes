@@ -3,16 +3,17 @@
 "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Diogenes First Run Setup</title>
+    <title>Diogenes Database Setup</title>
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' localhost">
     <link rel="stylesheet" type="text/css" href="firstrun.css" />
   </head>
   <body id="firstrunpage">
     <img id="biglogo" src="../assets/Diogenes_Logo.png" srcset="../assets/Diogenes_Logo.hidpi.png 2x" />
-    <h1>First Run Setup  <span id="almost">(you're almost there...)</span></h1>
-    <p>Diogenes needs to know where on your computer the databases of ancient texts are located.  If you need to change the locations later, you can do this via the application menu: File&nbsp;-> Diogenes Settings.</p>
-    <p>The databases are not distributed with Diogenes; they must be acquired separately.</p>
-    <p>You will need at least one database to use Diogenes.</p>
+    <h1>Database Setup</h1>
+    <p>In order to function, Diogenes needs to know where on your computer the databases of ancient texts are located.  These databases are not distributed with Diogenes; they must be acquired separately.
+    You will need at least one database to use Diogenes effectively. </p>
+
+    <p>If you need to access this Database Setup page again later on, you can do so via the File menu.</p>
 
     <div class="dbbuttons">
 
@@ -31,15 +32,32 @@
     </div>
 
     <div class="dbpath">
-      <input id="DDPbutton" type="submit" value="⭢ DDP (Papyri, etc)" />
+      <input id="DDPbutton" type="submit" value="⭢ Papyri, Inscriptions, etc." />
       <span class="path" id="DDPpath"></span>
       <span class="ok" id="DDPok"></span>
     </div>
 
+    <p>Where are the <i>Thesaurus Linguae Latinae</i> PDFs saved on your computer? (These are optional.)</p>
+
+    <div class="dbpath">
+      <input id="TLL_PDFbutton" type="submit" value="⭢ TLL PDFs" />
+      <span class="path" id="TLL_PDFpath"></span>
+      <span class="ok" id="TLL_PDFok"></span>
+    </div>
+
+    <p>Where is the PDF of the <i>Oxford Latin Dictionary</i> saved on your computer (optional)?</p>
+
+    <div class="dbpath">
+      <input id="OLD_PDFbutton" type="submit" value="⭢ OLD PDF" />
+      <span class="path" id="OLD_PDFpath"></span>
+      <span class="ok" id="OLD_PDFok"></span>
+    </div>
+
+
     </div>
 
     <div id="donesection">
-    <p><button id="done" type="submit"><img src="../assets/icon.png" /> Start Diogenes</button></p>
+    <p><button id="done" type="submit"><img src="../assets/icon.png" /> Finished Setup</button></p>
     </div>
   </body>
 </html>

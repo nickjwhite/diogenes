@@ -1,5 +1,8 @@
 #!/usr/bin/perl -w
 
+# NB.  This is obsolete legacy code; the current version is
+# xml-export.pl in the server directory.
+
 # phi2tei converts databases of classical texts in the CD-ROM format
 # develped by the Packard Humanities Institute (PHI) to XML files
 # conforming to the P5 specification of the Text Encoding Initiative
@@ -87,6 +90,7 @@ The following optional switches are supported:
 }
 
 use Data::Dumper;
+push @INC, '.';
 use Diogenes::Base qw(%work %author %work_start_block %level_label
                       %database);
 use Diogenes::Browser;

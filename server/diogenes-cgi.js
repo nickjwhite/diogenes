@@ -1,10 +1,13 @@
 var picture_dir = 'images/';
 
-window.addEventListener("load", function() {
+function stopSpinningCursor() {
     // Turn off spinning cursor
     var body = document.getElementsByTagName("BODY")[0];
     body.classList.remove("waiting");
+}
 
+window.addEventListener("load", function() {
+    stopSpinningCursor();
     // If we have jumped to a passage from a lexicon, show that entry again after loading.
     var dio_form = document.getElementById("form");
     if (dio_form.JumpFromShowLexicon &&
@@ -18,6 +21,31 @@ window.addEventListener("load", function() {
         restore.classList.remove('invisible');
     }
 });
+
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' || event.keyCode === 27) {
+        sidebarDismiss();
+    }
+});
+
+function isElectron () {
+    if (typeof navigator === 'object' && typeof navigator.userAgent === 'string' && navigator.userAgent.indexOf('Electron') >= 0) {
+        return true;
+    }
+}
+
+function openPDF (path) {
+    if (path) {
+        if (isElectron()) {
+            var event = new CustomEvent('openWithExternal', { detail: path });
+            document.dispatchEvent(event)
+        }
+        else {
+            window.open(path)
+        }
+    }
+}
+
 
 // Select All for the checkboxes
 function setAll() {
@@ -79,15 +107,16 @@ function sendRequest(action, lang, query, enc) {
             req = new ActiveXObject("Microsoft.XMLHTTP");  // Internet Explorer
         }
         req.onreadystatechange = stateHandler;
-        req.open("POST", "Perseus.cgi");
+        // For safety, we should really use encodeURIComponent() to
+        // encode these params and then decode them in Perseus.cgi.
+        var uri = "Perseus.cgi?" + "do=" + action + "&lang=" + lang + "&q="+ query
         if (enc) {
-            // Send utf8 from user input
-            req.send("do="+action+"&lang="+lang+"&q="+query+"&inp_enc="+enc);
+            // Send utf8 from user input (as opposed to text links, which use transliteration)
+            uri = uri + "&inp_enc=" + enc
         }
-        else {
-            // From text links (which use transliteration)
-            req.send("do="+action+"&lang="+lang+"&q="+query);
-        }
+        req.open("GET", uri);
+        req.send();
+
         return true;
     }
     return true;
@@ -171,6 +200,9 @@ function sidebarDismiss () {
     sidebar.innerHTML = "";
     sidebarControl.innerHTML = "";
     mainWindow.setAttribute("class", "main-full");
+    if (current_parse) {
+        current_parse.classList.remove("highlighted-word");
+    }
 }
 
 function sidebarFullscreen () {
@@ -189,14 +221,28 @@ function sidebarSplitscreen () {
     sidebarControl();
 }
 
+var current_parse
+function highlight (element) {
+    if (current_parse) {
+        current_parse.classList.remove("highlighted-word");
+    }
+    current_parse = element
+    current_parse.classList.add("highlighted-word");
+}
 
-function parse_grk (word) {
+// For historical reasons, element and its text content are passed
+// separately; this also permits us to parse all of a hyphenated word
+// while highlighting the part that was clicked.
+function parse_grk (word, element) {
+    if (typeof element !== 'undefined') { highlight(element) }
     sendRequest("parse", "grk", word);
 }
-function parse_lat (word) {
+function parse_lat (word, element) {
+    if (typeof element !== 'undefined') { highlight(element) }
     sendRequest("parse", "lat", word);
 }
-function parse_eng (word) {
+function parse_eng (word, element) {
+    if (typeof element !== 'undefined') { highlight(element) }
     sendRequest("parse", "eng", word);
 }
 

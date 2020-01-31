@@ -1,7 +1,11 @@
 package URI::file::Base;
 
 use strict;
+use warnings;
+
 use URI::Escape qw();
+
+our $VERSION = '1.76';
 
 sub new
 {
@@ -16,7 +20,7 @@ sub new
 
     if (defined $auth) {
 	$auth =~ s,%,%25,g unless $escaped_auth;
-	$auth =~ s,([/?\#]),$URI::Escape::escapes{$1},g;
+	$auth =~ s,([/?\#]), URI::Escape::escape_char($1),eg;
 	$auth = "//$auth";
 	if (defined $path) {
 	    $path = "/$path" unless substr($path, 0, 1) eq "/";
@@ -28,7 +32,7 @@ sub new
 	$auth = "";
     }
 
-    $path =~ s,([%;?]),$URI::Escape::escapes{$1},g unless $escaped_path;
+    $path =~ s,([%;?]), URI::Escape::escape_char($1),eg unless $escaped_path;
     $path =~ s/\#/%23/g;
 
     my $uri = $auth . $path;
@@ -61,8 +65,8 @@ sub _file_is_localhost
     return 1 if $host eq "localhost";
     eval {
 	require Net::Domain;
-	lc(Net::Domain::hostfqdn()) eq $host ||
-	lc(Net::Domain::hostname()) eq $host;
+	lc(Net::Domain::hostfqdn() || '') eq $host ||
+	lc(Net::Domain::hostname() || '') eq $host;
     };
 }
 

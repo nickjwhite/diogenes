@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.0.0pr2";
+$Diogenes::Base::Version =  "4.3";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -52,8 +52,70 @@ use Exporter;
 our($RC_DEBUG, $OS, $config_dir);
 $RC_DEBUG = 0;
 
-$OS = ($^O=~/MSWin/i or $^O =~/dos/) ? 'windows' :
-    ($^O=~/darwin/i) ? 'mac' : 'unix';
+use Encode;
+BEGIN {
+    $OS = ($^O=~/MSWin/i or $^O=~/Win32/i or $^O =~/dos/) ? 'windows' :
+        ($^O=~/darwin/i) ? 'mac' : 'unix';
+
+    if ($OS eq 'windows' ) {
+        eval "use Win32; 1" or die $@;
+    }
+}
+
+
+# For Windows pathnames
+our $code_page;
+if ($OS eq 'windows') {
+    $code_page = Win32::GetACP() || q{};
+    if ($code_page) {
+        $code_page = 'cp'.$code_page;
+        $code_page = Encode::resolve_alias($code_page) || q{};
+        print STDERR "Code page: $code_page\n";
+    }
+}
+
+
+# Because of the pre-Unicode history of Diogenes, most of its data is
+# represented by Perl internally as octets, even when those bytes
+# represent utf8 data.  The prefs file, however, is now written by
+# Node.js as utf8, so it makes sense to read that in as utf8.  The
+# paths work fine on Linux and Mac, but there are issues with Windows.
+# In order to provide a similar level of support for Unicode path
+# names on Windows, we would need to install a binary module that
+# provides access to the Win32 Unicode file API ( such as
+# Win32::LongPath) and change all of the file access functions in
+# Diogenes to be conditional on the OS.
+
+# Here, we convert the utf8 paths from the prefs file to the local
+# Windows 8-bit codepage using Encode.  (If we read in the prefs file
+# as raw bytes, we would have to use Encode::from_to instead.) This
+# will always be imperfect, as it only permits paths that use a very
+# limited set of characters from that local codepage rather than
+# arbitrary Unicode.  But that is all we can do until Perl provides
+# access to the Windows wide character API via the standard functions
+# (e.g. open).  Perhaps if Strawberry Perl starts to include
+# Win32::LongPath vel sim., it would be worth modifying Diogenes to
+# use it.
+
+# FIXME.  Unfortunately, there is a mysterious bug that causes this
+# limited solution to fail.  The codepage path conversion on Windows
+# works fine for basic searching and when using JumpTo to go to a
+# particular passage of a text, but fails when browsing through a
+# text.  The .txt file fails to open when there is non-ascii code in
+# the path in seek_passage and browse_forward.  Even though the
+# authtab file and the corresponding .idt file open fine.  Most
+# perplexing is the fact that JumpTo works fine, as that seems to
+# follow an essentially identical code path.  A mystery.
+
+sub windows_filename {
+    my ($filename) = @_;
+    if ($code_page) {
+        # my $ret = Encode::from_to($filename, 'utf8', $codepage);
+        # print STDERR "Codepage conversion failed\n" unless defined $ret;
+        $filename = Encode::encode($code_page, $filename);
+    }
+    return $filename;
+}
 
 eval "require 'Diogenes.map';";
 $Diogenes::Base::map_error = $@;
@@ -142,6 +204,9 @@ my %defaults = (
     tlg_dir => '',
     phi_dir => '',
     ddp_dir => '',
+    tll_pdf_dir => '',
+    # Not a dir but a file path, but this makes the Electron code easier
+    old_pdf_dir => '',
     authtab => 'authtab.dir',
     tlg_file_prefix => 'tlg',
     phi_file_prefix => 'lat',
@@ -226,7 +291,7 @@ sub validate
 };
 
 
-# nw.js sets the environment variable.
+# The electron client sets the environment variable.
 sub get_user_config_dir
 {
     if ($ENV{'Diogenes_Config_Dir'})
@@ -257,12 +322,12 @@ sub get_user_config_dir
             if (-e "$ENV{USERPROFILE}\\AppData\\Roaming")
             {
                 # Vista
-                return "$ENV{USERPROFILE}\\AppData\\Roaming\\diogenes\\Diogenes-Browser\\";
+                return "$ENV{USERPROFILE}\\AppData\\Roaming\\Diogenes\\";
             }
             elsif (-e "$ENV{USERPROFILE}\\Application Data")
             {
                 # Windows 2000 and XP
-                return "$ENV{USERPROFILE}\\Application Data\\diogenes\\Diogenes-Browser\\";
+                return "$ENV{USERPROFILE}\\Application Data\\Diogenes\\";
             }
             else { warn "Could not find user profile dir!! \n" }
         }
@@ -304,7 +369,7 @@ sub read_config_files
         next unless $rc_file;
         print STDERR "Trying config file: $rc_file ... " if $RC_DEBUG;
         next unless -e $rc_file;
-        open RC, "<$rc_file" or die ("Can't open (apparently extant) file $rc_file: $!");
+        open RC, '<:encoding(UTF-8)', "$rc_file" or die ("Can't open (apparently extant) file $rc_file: $!");
         print STDERR "Opened.\n" if $RC_DEBUG;
         local $/ = "\n";
         while (<RC>) 
@@ -338,7 +403,7 @@ sub new
     $args{ validate($_) } = $passed{$_} foreach keys %passed;
 
     my $user_config_dir = get_user_config_dir;
-    # For prefs saved by nw.js and Settings.cgi
+    # For prefs saved by Electron.js and Settings.cgi
     $self->{auto_config} = File::Spec->catfile($user_config_dir, 'diogenes.prefs');
     # For manual editing by the user
     $self->{user_config} = File::Spec->catfile($user_config_dir, 'diogenes.config');
@@ -352,14 +417,18 @@ sub new
 
     %{ $self } = ( %{ $self }, %defaults, $self->read_config_files, %args );
     
-    my @dirs = qw/tlg_dir phi_dir ddp_dir/;
+    my @dirs = qw/tlg_dir phi_dir ddp_dir tll_pdf_dir/;
 
     # Make sure all the directories end in a '/' (except for empty
     # values).
     for my $dir (@dirs) 
     {
-#         print STDERR "--$dir: $self->{$dir}\n";
-        $self->{$dir} .= '/' unless $self->{$dir} eq '' or $self->{$dir} =~ m#[/\\]$#;
+        # print STDERR "--$dir: $self->{$dir}\n";
+        $self->{$dir} .= '/' unless $self->{$dir} eq '' or
+            $self->{$dir} =~ m#[/\\]$#;
+        if ($OS eq 'windows') {
+            $self->{$dir} = windows_filename($self->{$dir});
+        }
     }
     
     # Clone values that are references, so we don't clobber what was passed.
@@ -1081,7 +1150,7 @@ sub parse_lists
                     }
                     elsif ( $ord == hex '20' ) 
                     {
-                        die "Ooops while parsing $file at $j" if $ord & hex '20';
+                        warn("Ooops while parsing $file at $j") if $ord & hex '20';
                     }
                     elsif ( $ord < hex '40' ) 
                     {
@@ -1090,7 +1159,7 @@ sub parse_lists
                     }
                     elsif ( $ord < hex '60' ) 
                     {
-                        die "Ooops while parsing $file at $j\n" if $ord & hex '20';
+                        warn("Ooops while parsing $file at $j\n") if $ord & hex '20';
                         $high = ($ord & hex '01') << 8; 
                         $j++;
                         $ord = ord (substr ($buf, $j, 1));
@@ -1105,7 +1174,7 @@ sub parse_lists
                     }
                     else 
                     {
-                        die "Oops while parsing $file at $j";
+                        warn("Oops while parsing $file at $j");
                     }
                     
                     $j++;
@@ -1391,7 +1460,7 @@ sub parse_idt
         {
             # Get the starting blocks of each top-level subsection    
             $block = (ord (substr $idt_buf, ++$i, 1) << 8) + ord (substr $idt_buf, ++$i, 1);
-            die "Error.  New section not followed by beginning ID" 
+            warn("Error.  New section not followed by beginning ID")
                 unless ord (substr $idt_buf, ++$i, 1) == 8;
             $i++;
             while ((my $sub_code = ord (substr ($idt_buf, $i, 1))) >> 7)
@@ -1776,14 +1845,15 @@ sub parse_bookmark
     
     if ($left == 7) 
     {       
-        # These bytes are found in some versions of the PHI disk (eg. Phaedrus)
-        # God knows what they mean.  phi2ltx says they mark the beginning and
-        # end of an "exception".
+        # These bytes are found in some versions of the PHI disk
+        # (eg. Phaedrus) God knows what they mean.  phi2ltx says they
+        # mark the beginning and end of an "exception".
         return if $code == hex('f8') or $code == hex('f9');
         
-        die ("I don't understand what to do with level ".
+        warn("I don't understand what to do with level ".
              "$left (right = $right, code = ". (sprintf "%lx", $code) . 
-             "; offset ". (sprintf "%lx", $$i) ); 
+             "; offset ". (sprintf "%lx", $$i) );
+        return;
     }
     
     if ($left == 6) 
@@ -1809,7 +1879,7 @@ sub parse_bookmark
         $$i += 3        if $right == 12;
         my $junk = get_ascii_string( $buf, $i ) if $right == 10 
             or $right == 13 or $right == 15;
-        die "I don't understand a right nybble value of 14" if $right == 14;
+        warn("I don't understand a right nybble value of 14") if $right == 14;
         return;
     }
     
@@ -1823,10 +1893,14 @@ sub parse_bookmark
     # The usual case: increment the counter specified by the left nybble.
     if ($right == 0) 
     {       
+        # print STDERR ">$left, $right, $self->{level}{$left}\n";
+        # When previous line num is "post 308" for a lacuna, delete
+        # post before incrementing
+        $self->{level}{$left} =~ s/^post\s+//;
         # Also incr. non-digits: 1e1 goes to 1e2, 1b goes to 1c, etc.
         $self->{level}{$left} = '' unless exists $self->{level}{$left};
         $self->{level}{$left} =~ s/([a-zA-Z]*[0-9]*)$/my $rep = $1 || 0;
-                                                                                                                $rep++; $rep/ex; 
+        $rep++; $rep/ex;
         ##print "))".$left.": ".$self->{level}{$left}."\n" if $self->{debug};
     }
     # Otherwise, set counter to value whose type is given in right nybble.
@@ -1897,7 +1971,7 @@ sub parse_bookmark
     } 
     else 
     {   #no other possibilities 
-        die ("I've fallen and I can't get up!"); 
+        warn("I've fallen and I can't get up!");
     }
 }
 
@@ -1934,30 +2008,40 @@ sub print_output
     {
         my $aux = $$ref;
         $aux =~ s#\x02##g;
-        print { $self->{aux_out} } ($aux);
+        my $success = print { $self->{aux_out} } ($aux);
+        print STDERR "Aux print failed! $!\n" unless $success;
     }
 
     return if $self->{output_format} eq 'none';
+    print STDERR "Formatting...\n" if $self->{debug};
     $self->format_output($ref);
 
+    print STDERR "Printing...\n" if $self->{debug};
     if (not defined $self->{interleave_printing})
     {
         $$ref =~ s#\x02##g;
-        print $$ref;
+        my $success = print $$ref;
+        print STDERR "Print failed! $!\n" unless $success;
     }
     else
-    {
+      {
+        my $success;
         my $first_cit = shift @{ $self->{interleave_printing} };
-        print $first_cit if $first_cit;
+        $success = print $first_cit if $first_cit;
+        print STDERR "Print failed (first_cit)! $!\n" unless $success;
         while ($$ref =~ m#(.*?)(?:\x02|$)#gs)
         {
-            print $1;
+            $success = print $1;
+            print STDERR "Print failed ($1)! $!\n" unless $success;
             my $citation = shift @{ $self->{interleave_printing} };
-            print $citation if $citation;
+            $success = print $citation if $citation;
+            print STDERR "Print failed (citation)! $!\n" unless $success;
         }
         my $citation = shift @{ $self->{interleave_printing} };
-        print $citation if $citation;
+        $success = print $citation if $citation;
+        print STDERR "Print failed (last_cit)! $!\n" unless $success;
     }
+    print STDERR "Printed.\n" if $self->{debug};
 }
 
 sub format_output
@@ -2013,6 +2097,7 @@ sub format_output
         }
     }
     $$ref =~ s/\x01//g;
+    print STDERR "Formatted.\n" if $self->{debug};
 }
 
 sub greek_with_latin
@@ -2105,14 +2190,14 @@ sub perseus_handler
             }
             else
             {
-                die "What language is $lang?\n"
+                warn("What language is $lang?\n");
             }
             $self->html_escape(\$word);
             $self->html_escape(\$space);
             # \x03\x02 gets changed to %, \x03\x01 to " and \x03\x03 to _
             # URL escape (from CGI.pm)
             $link =~ s/([^a-zA-Z0-9_.%;&?\/\\:=-])/"\x03\x02".sprintf("%02X",ord($1))/eg;
-            my $html = qq(<a onClick=\x03\x01parse\x03\x03$lang('$link')\x03\x01>$word</a>); 
+            my $html = qq(<a onClick=\x03\x01parse\x03\x03$lang('$link', this)\x03\x01>$word</a>);
             $out .= $html.$space;
             ($h_word, $h_space) = ('', '');
 #         print STDERR ">>$html\n";
@@ -2178,19 +2263,19 @@ sub beta_encoding_to_latin1
 {
     my $ref = shift;
     
-    my %acute = (a => "\xe1", e => "\xe9", i => "\xed", o => "\xf3", u => "\xfa", 
-                 A => "\xc1", E => "\xc9", I => "\xcd", O => "\xd3", U => "\xda"); 
+    my %acute = (a => "\xe1", e => "\xe9", i => "\xed", o => "\xf3", u => "\xfa", y => "\xfd",
+                 A => "\xc1", E => "\xc9", I => "\xcd", O => "\xd3", U => "\xda", Y => "\xdd");
     my %grave = (a => "\xe0", e => "\xe8", i => "\xec", o => "\xf2", u => "\xf9", 
                  A => "\xc0", E => "\xc8", I => "\xcc", O => "\xd2", U => "\xd9"); 
-    my %diaer = (a => "\xe4", e => "\xeb", i => "\xef", o => "\xf6", u => "\xfc", 
-                 A => "\xc4", E => "\xcb", I => "\xcf", O => "\xd6", U => "\xdc"); 
+    my %diaer = (a => "\xe4", e => "\xeb", i => "\xef", o => "\xf6", u => "\xfc", y => "\xfd",
+                 A => "\xc4", E => "\xcb", I => "\xcf", O => "\xd6", U => "\xdc", Y => "\x178");
     my %circm = (a => "\xe2", e => "\xea", i => "\xee", o => "\xf4", u => "\xfb", 
                  A => "\xc2", E => "\xca", I => "\xce", O => "\xd4", U => "\xdb"); 
 
 
-    $$ref =~ s/([aeiouAEIOU])\//$acute{$1}||'?'/ge;
+    $$ref =~ s/([aeiouyAEIOUY])\//$acute{$1}||'?'/ge;
     $$ref =~ s/([aeiouAEIOU])\\/$grave{$1}||'?'/ge;
-    $$ref =~ s/([aeiouAEIOU])\+/$diaer{$1}||'?'/ge;
+    $$ref =~ s/([aeiouyAEIOUY])\+/$diaer{$1}||'?'/ge;
     $$ref =~ s/([aeiouAEIOU])\=/$circm{$1}||'?'/ge;
 }
 
@@ -2972,6 +3057,7 @@ sub beta_encoding_to_external
                                 {       # Caps and trailing diacrits
                                         if        ($b eq 'S' and $c eq '2') { $c = ''; } # Oops. final sigma
                                         elsif ($c eq '|' ) { $a .= '|'; } # Iota "subscript" after a cap
+                                        elsif ($a =~ m/^\*/) {$a .= $c} # In all caps titles, sometimes accents are put after the letter
                                         else  { warn "Unknown BETA code: $a$b$c"; }
                                 }
                                 my $code = $alphabet{$b} || '';
@@ -2992,7 +3078,7 @@ sub beta_encoding_to_external
                                                 ($a =~ /\=/ and push @codes, 'peri');
                                                 my $loner = join '_', @codes; 
                                                 $pre = $encoding{$encoding}{$loner} || '';
-                                                warn 'No mapping exists for BETA code '.
+                                                warn 'No mapping exists for BETA code (pre) '.
                                                         ($a||'').($b||'').($c||'')." in encoding $encoding.\n" 
                                                         if (not $pre) and (length $a > 1);
                                         }
@@ -3034,7 +3120,7 @@ sub beta_encoding_to_external
                                 $code = $other{$b} if $b and $other{$b}; 
 
                                 $post = $encoding{$encoding}{$code} unless $post;
-                                warn 'No mapping exists for BETA code '.
+                                warn 'No mapping exists for BETA code (post) '.
                                         ($a||'').($b||'').($c||'')." in encoding $encoding.\n" unless $post;
                                 $post ? $pre.$post : $a.$b.$c;
                                 !gex;

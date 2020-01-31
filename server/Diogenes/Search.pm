@@ -27,7 +27,6 @@ sub do_search
 sub pgrep 
 {
     my $self = shift;
-        
     chdir "$self->{cdrom_dir}" or 
         $self->barf ("cannot chdir to $self->{cdrom_dir} ($!)");
     print STDERR "\nCurrent dir: ",`pwd`, 
@@ -39,7 +38,7 @@ sub pgrep
         # achitectures (ie. Mac) that don't like unix-shell style globbing.
         opendir (INP_DIR, "$self->{cdrom_dir}") or 
             $self->barf ("Cannot open $self->{cdrom_dir} ($!)");
-        @ARGV = grep {/$self->{file_prefix}.+$self->{txt_suffix}/i} readdir INP_DIR;
+        @ARGV = sort grep {/$self->{file_prefix}.+$self->{txt_suffix}/i} readdir INP_DIR;
         closedir INP_DIR;
     }
     
@@ -61,18 +60,28 @@ sub pgrep
         # Do the (full-file) search.  
         #print Data::Dumper->Dump(\@ARGV);
         while ($buf = <>) 
-        { 
+        {
             # Search for the minimum necessary number of patterns
             for (   my $pass = 0; $pass <= $final_pass; $pass++  )
             {
                 # Before each pass, make sure that the browser is still listening;
                 # SIGPIPE does not work under MS Windows
-                return if $Diogenes_Daemon::flag and not print ("\0");
+                my $success = print ("\0");
+                if (not $success) {
+                    print STDERR "Test print failed! $!\n";
+                    # die does not exit server, but halts eval of cgi script
+                    die if $Diogenes_Daemon::flag;
+                } else {
+                    # print STDERR "OK!\n" if $self->{debug};
+                }
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
                 undef $self->{seen}{$ARGV};
-                push @{ $self->{seen}{$ARGV} }, pos $buf 
-                    while ($buf =~ m#$pattern#g);
+                undef $self->{match_start}{$ARGV};
+                while ($buf =~ m#$pattern#g) {
+                    push @{ $self->{seen}{$ARGV} }, pos $buf;
+                    push @{ $self->{match_start}{$ARGV} }, $-[0];
+                }
                 if ($self->{seen}{$ARGV})
                 {
                     my $auth_num = $ARGV;
@@ -90,7 +99,7 @@ sub pgrep
     # were requested.
         
     my ($filename, $offset, $start_block, $end_block);
-    foreach my $author (keys %{ $self->{req_auth_wk} }) 
+    foreach my $author (sort (keys %{ $self->{req_auth_wk} }))
     {
         # pad with leading zeroes 
         $filename = sprintf '%04d', $author;
@@ -131,14 +140,20 @@ sub pgrep
             # This does the search, storing the locations in %seen
             # Search for the minimum necessary number of patterns
             for (   my $pass = 0; $pass <= $final_pass; $pass++  )
-            {
-                return if $Diogenes_Daemon::flag and not print ("\0");
+              {
+                my $success = print ("\0");
+                if (not $success) {
+                    print STDERR "Test print failed! $!\n";
+                    die if $Diogenes_Daemon::flag;
+                }
                 my $pattern = @{ $self->{pattern_list} }[$pass];
                 # clear the last search
                 undef $self->{seen}{$author};
-                
-                push @{ $self->{seen}{$author} }, (pos $buf) 
-                    while $buf =~ m#$pattern#g;
+                undef $self->{match_start}{$author};
+                while ($buf =~ m#$pattern#g) {
+                    push @{ $self->{seen}{$author} }, (pos $buf);
+                    push @{ $self->{match_start}{$author} }, $-[0];
+                }
                 $self->extract_hits($author);
             }
         }
@@ -211,19 +226,24 @@ sub make_strict_greek_pattern
     $pat =~ s#\s+# #g;                      # normalize spacing
 
     my @pats;
-    my @parts = split /( )/, $pat;
-    for (my $i = 0; $i < (length scalar(@parts)); $i++ ) {
-        next if $parts[$i] eq ' ';
-        my $begin = ($i == 0 || $parts[$i-1] ne ' ') ? 0 : 1;
-        my $end   = ($i == ((length scalar(@parts)) - 1) || $parts[$i+1] ne ' ') ? 0 : 1;
-        my ($part_pat, undef) = 
-            Diogenes::Indexed::make_tlg_regexp($self, $parts[$i], (not $begin), (not $end));
-        push @pats, $part_pat;
+    my $pattern;
+    if ($pat =~ m/\s/) {
+        my @parts = split /\s+/, $pat;
+        foreach my $part (@parts) {
+            my ($part_pat, undef) =
+                Diogenes::Indexed::make_tlg_regexp($self, $part, (not $begin), (not $end));
+            push @pats, $part_pat;
+        }
+        $pattern = join '\s+[^A-Z]*', @pats;
     }
-    my $pattern = join ' ', @pats;
+    else {
+        ($pattern, undef) =
+            Diogenes::Indexed::make_tlg_regexp($self, $pat, (not $begin), (not $end));
+        print STDERR "foo";
+    }
 
-    s/\x073(?!\?)/(?:/g;                                # turn ( into (?: for speed
-    s/\x074/)/g;                
+    s/\x073(?!\?)/(?:/g; # turn ( into (?: for speed
+    s/\x074/)/g;
     return $pattern;
 }
 
@@ -556,6 +576,7 @@ sub extract_hits
         # is to start at the beginning of the correct block
         $last_offset = $offset;
         $offset = $self->{seen}{$auth}[$match];
+        print STDERR "Match num: $match; offset: $offset\n" if $self->{debug};
         my $buf_start  = (($offset >> 13) << 13);
         
         # Optimize case where one hit comes close after the previous,
@@ -592,8 +613,7 @@ sub extract_hits
                          ($self->{work_num}) != $self->{current_work});  
             
         }
-        
-        $start = $offset - 2;
+        $start = $self->{match_start}{$auth}[$match] - 2;
                 
         # Get context block
         if ($self->{numeric_context}) 
@@ -681,7 +701,7 @@ sub extract_hits
             my $matching_sets = values %matches;
             print STDERR "+ $result\n" if $self->{debug};
             print STDERR "+ $matching_sets: $auth, $offset\n" if $self->{debug};
-            die "ERROR: Disappearing Match!\n" unless $matching_sets;
+            warn "ERROR: Disappearing Match!\n" unless $matching_sets;
             next HIT unless $matching_sets >= $self->{min_matches_int};
             next HIT if $self->{reject_pattern} and $result =~ m/$self->{reject_pattern}/;
         }
@@ -696,9 +716,12 @@ sub extract_hits
                 (@{ $self->{pattern_list} });
             my $matching_sets = values %matches;
             print STDERR "+ $result\n" if $self->{debug};
-#                       print STDERR "+ ".$self->{pattern_list}[0]."\n" if $self->{debug};
+            # print STDERR "+ ".$self->{pattern_list}[0]."\n" if $self->{debug};
             print STDERR "+ $matching_sets: $auth, $offset\n" if $self->{debug};
-            die "ERROR: Disappearing Match!\n" unless $matching_sets;
+#            my $seens = join ':', @{ $self->{seen}{$auth} };
+#            print STDERR  "$seens\n";
+
+            warn "ERROR: Disappearing Match!!\n" unless $matching_sets;
             next HIT unless $matching_sets >= $self->{min_matches_int};
             next HIT if $self->{reject_pattern} and $result =~ m/$self->{reject_pattern}/;
         }

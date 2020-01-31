@@ -16,7 +16,7 @@ UninstallDisplayIcon={app}\diogenes.ico
 DirExistsWarning=no
 
 [Files]
-Source: "..\w32\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
+Source: "..\app\w32\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{commonprograms}\Diogenes"; Filename: "{app}\diogenes.exe"; IconFilename:{app}\diogenes.ico

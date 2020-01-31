@@ -1,11 +1,5 @@
 #!/usr/bin/perl -w
 
-# Starts a daemon running in the background and listening at a 
-# specified port, whose only purpose is to invoke the Diogenes.cgi 
-# script for a web browser on the same machine. 
-# It caches the CGI script for speed, so restart the daemon if you edit
-# the CGI script.
-#
 # Needs LWP-5.32 or better.
 #
 # Possible Todos:
@@ -13,45 +7,44 @@
 # Handle decoding of multipart forms (which might then need to be
 # re-encoded as URL-escaped query strings).
 
-BEGIN 
+BEGIN
 {
     print "\nStarting Diogenes...\n";
 }
 
-
 package Diogenes_Daemon;
 require 5.005;
 use strict;
-use vars qw($client $params $flag $config);
+use vars qw($params $flag $config);
 $|=1;
 
 
-# Script to pre-compile and run
-my $CGI_SCRIPT = 'Diogenes.cgi';
-
-# A pre-forked process?  If set to 1 on unix, this will leave an extra
-# process hanging around after the parent has been killed.
-my $PRE_FORK = 0;
+# Script to run when nothing else is specified.
+my $cgi_script = 'Diogenes.cgi';
 
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
+use Encode;
 
+push @INC, '.';
 # Use local CPAN
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 
-use HTTP::Daemon;  
+use HTTP::Daemon;
 # use CGI qw(-nodebug -compile :standard);
 use CGI qw(-nodebug :standard);
 use CGI::Carp 'fatalsToBrowser';
-# From v. 3.10 XHTML defaults to 1, which turns on multipart forms,
-# which we can't handle.
-$CGI::XHTML =0;
+# From v. 3.10 of CGI.pm XHTML defaults to 1, which turns on multipart
+# forms, which we can't handle.
+$CGI::XHTML = 0;
 
 use HTTP::Request;
 use HTTP::Status;
 use HTTP::Headers;
 use Cwd;
 use Diogenes::Base;
+use Diogenes::Script;
+use Diogenes::Perseus;
 use Net::Domain qw(hostfqdn);
 use Socket;
 use Getopt::Std;
@@ -84,27 +77,27 @@ USAGE: diogenes-server.pl [-dhlb] [-p port] [-H host] [-m netmask]
 
     -l  Check to make sure that all queries are from localhost.
 
-    -m  Specify the netmask (eg. 255.255.0.0); external queries will be 
-        refused.  
+    -m  Specify the netmask (eg. 255.255.0.0); external queries will be
+        refused.
 
     -P  Specify the path to the Perseus data directory
-    
+
     -d  Turn on debugging output.
 
 END
     exit;
 }
 
-my %cgi_subroutine;
-my $DEBUG = 0;
-$DEBUG = 1 if $opt_d;
-$ENV{Diogenes_Debug} = 1 if $DEBUG;
+my %tll_list;
+my $debug = 0;
+$debug = 1 if $opt_d;
+$ENV{Diogenes_Debug} = 1 if $debug;
 $| = 1;
 
-print "\@INC: ", join "\n", @INC, "\n" if $DEBUG;
+print "\@INC: ", join "\n", @INC, "\n" if $debug;
 
 # To let the CGI program know it is us that invoked it.
-$flag = 1; 
+$flag = 1;
 
 $ENV{Diogenes_Perseus_Dir} = $opt_P if $opt_P;
 # binmode STDOUT, ':utf8';
@@ -137,10 +130,7 @@ $netmask = unpack ('N', inet_aton($opt_m)) if defined $opt_m;
 my $root_dir = $Bin;
 $root_dir .= '/' unless $root_dir =~ m#[/\\]$#;
 
-# Pre-compile the main cgi script
-compile_cgi_subroutine("Diogenes.cgi");
-
-print "Server Root: $root_dir\n" if $DEBUG;
+print "Server Root: $root_dir\n" if $debug;
 
 my $server;
 my $max_port_tries = 20;
@@ -162,47 +152,36 @@ unless ($server)
     exit;
 }
 
+warn "Local address: $HOST_dot\n" if $debug;
 
-print "\nStartup complete. ", 
+# The fork() emulation in Perl under MS Windows is broken, and
+# segfaults frequently in a normally forking server. An entirely
+# non-forking server, however, leads to problems with cleaning up the
+# state after an interrupted query.  So instead, we pre-fork one and
+# only one child to handle connections.  Pre-forking more children
+# than that does not work reliably under Windows.  This single child is
+# really a thread, so it dies correctly when the parent process quits.
+
+# The protocol is HTTP 1.1 with keep-alive header, so the server will
+# keep the connection open for a long time (e.g. to the Electron
+# client) after serving a request, which means that a non-forking
+# server will block other clients, such as a browser wanting to
+# download a PDF.  Easiest solution is to timeout connections on
+# Windows after 1 second.  This does degrade performance a bit.
+
+# Occasionally, on Windows, the accept loop falls through.  So we wrap
+# the whole thing in a loop.
+
+write_lock();
+print "\nStartup complete. ",
     "You may now point your browser at ",
     "this address:\n",
     "http://$HOST:$PORT\n";
 
-warn "Local address: $HOST_dot\n" if $DEBUG;
-
-# Wait loop for requests.  Global var $client is not only an object ref, but
-# also the filehandle ref we write back to.
-
-# The fork() emulation in Perl under MS Windows is broken, and
-# segfaults frequently with a normally forking server.  So instead, we
-# prefork one (and only one) child right away to handle connections.
-
-# This approach would problematic on unix, because after the parent is
-# killed, the pre-forked child does not die, but hangs around,
-# listening at the socket for one last connection.  It's not a problem
-# on Windows, however, since the "child" is really a thread, and so
-# dies when the "parent" is killed.
-
 my $pid;
-
-# This causes the accept loop to abort for some reason
-# use POSIX qw(:sys_wait_h);
-# sub reaper
-# {
-#     1 until (-1 == waitpid(-1, WNOHANG));
-#     print "handler\n";
-# }
-#  $SIG{CHLD} = \&reaper;
-
-# Supposed to prevent zombies
-$SIG{CHLD} = 'IGNORE';
-
-# Occasionally, on Windows, the accept loop falls through -- not sure
-# why.  So we wrap the whole thing in a loop, which ought to be and in
-# most cases is superfluous.
 while (1)
 {
-    if ($Diogenes::Base::OS eq 'windows' or $PRE_FORK)
+    if ($Diogenes::Base::OS eq 'windows')
     {
         $pid = fork;
         if ($pid)
@@ -218,35 +197,42 @@ while (1)
         else
         {
             # I am the child -- I wait for a request and process it.
-            while ($client = $server->accept)
+            while (my $client = $server->accept)
             {
+                # Single child, so must not let keep-alive connections block
+                $client->timeout(1);
+                print STDERR "New conn.\n" if $debug;
                 # Windows gets confused if we die in midstream w/o chdir'ing # back
                 chdir $root_dir or die "Couldn't chdir to $root_dir: $!\n";
-                handle_request();
+                handle_request($client);
+                $client->close;
+                print STDERR "Closed conn.\n" if $debug;
             }
         }
     }
-    else 
+    else
     {
         # A "normal" forking server
         write_lock();
-        while ($client = $server->accept) 
+        while (my $client = $server->accept)
         {
-            handle_connection();
+            handle_connection($client);
         }
     }
+    print STDERR "Starting again ...\n";
 }
-print "An error has occurred in receiving your web browser's connection.\n";
+print "An error has occurred.\n";
 exit;
 
-# Process each request by forking a child (non-preforking, unix only).
+# Process each request by forking a child (forking server, unix only).
 sub handle_connection
 {
+    my $client = shift;
     $pid = fork;
     if ($pid)
     {
         # I am the parent -- I do nothing.
-        close $client;
+        $client->close;
         return;
     }
     elsif (not defined $pid)
@@ -257,141 +243,207 @@ sub handle_connection
     else
     {
         # I am the child -- I process the request.
-        handle_request();
+        handle_request($client);
+        $client->close;
         exit 0; # Kill children off to reclaim their memory
     }
 }
 
 sub handle_request
 {
+    my $client = shift;
     my $remote_host = $client->peerhost;
-    warn "Request from: ".$remote_host."\n" if $DEBUG;
-    
+    warn "Request from: ".$remote_host."\n" if $debug;
+
     my $request = $client->get_request;
+    print STDERR $request->as_string if $debug and defined $request;
+
     unless (defined $request)
     {
-        warn "Bad request\n" ;
+        warn "Null request: ".$client->reason."\n";
         return;
     }
-REQUEST:
+    warn "Requested URL: ".$request->url->as_string."\n" if $debug;
+    #         warn "Full request from browser: ". $request->as_string if $debug;
+
+    if (not defined $remote_host
+        or ($opt_l and $remote_host ne $HOST_dot )
+        or ($netmask and (unpack ('N', inet_aton($remote_host)) & $netmask) !=
+            ($HOST_long & $netmask) ))
     {
-        warn "Requested URL: ".$request->url->as_string."\n" if $DEBUG;
-#         warn "Full request from browser: ". $request->as_string if $DEBUG;
-        
-        if (not defined $remote_host 
-            or ($opt_l and $remote_host ne $HOST_dot )
-            or ($netmask and (unpack ('N', inet_aton($remote_host)) & $netmask) != 
-                ($HOST_long & $netmask) ))
-        {
-            warn  "WARNING! WARNING! ... \n" .
-                "Connection attempted from an unauthorized " .
-                "computer: $remote_host\n";
-            $client->send_error(RC_FORBIDDEN);
-            last REQUEST
-        }
-
-        
-        # We only deal with GET and POST methods
-        unless ($request->method eq 'GET' or $request->method eq 'POST')
-        {
-            warn "Illegal method: only GET and POST are supported: ".$request->method."\n";  
-            $client->send_error(RC_NOT_IMPLEMENTED);
-            last REQUEST
-        }
-        my $requested_file = ($request->url->path);
-        warn "Requested file: $requested_file; cwd: ".cwd."\n" if $DEBUG;
-        my $leading_slash = ($requested_file =~ m#^/#) ? 1 : 0;
-        if ($requested_file =~ m#\.\.#)
-        {
-            warn "Warning: attempted directory traversal: $requested_file \n";
-            $client->send_error(RC_FORBIDDEN);
-            last REQUEST
-        }
-        $requested_file = $CGI_SCRIPT if $requested_file eq '/';
-        # Internet exploder stupidity
-        $requested_file =~ s#^\Q$root_dir\E##;  
-        $requested_file =~ s#^[/\\]##;
-        $requested_file = $CGI_SCRIPT if $requested_file =~ m/diogenes-server/i;
-        $requested_file = $CGI_SCRIPT if $requested_file =~ m/Diogenes\.cgi/i;
-        warn "Relative file name: $requested_file\n" if $DEBUG;
-
-        my $cookie = $request->header('Cookie');
-        $ENV{HTTP_COOKIE} = $cookie if $cookie;
-        
-        # Deal with the various ways our CGI script might be
-        # requested by a browser.
-
-        # $params is a global which is accessed by the CGI script and
-        # passed as a parameter to CGI->new in order to instantiate
-        # the CGI object.  We could pass this info via environment
-        # variables, except that for POST methods, CGI.pm wants to
-        # read the query data from STDIN.
-        $params = '';
-        if ($requested_file =~ m/\.cgi/i or $requested_file eq $CGI_SCRIPT)
-        {
-            if ($request -> method eq 'GET')
-            {
-                $params = $request->url->query;        
-                $params ||= '';
-                warn "GET request.".($params ? " Query:$params\n" : "\n") if $DEBUG;
-                $ENV{REQUEST_METHOD} = 'GET';
-                $ENV{QUERY_STRING} = $params;
-            }
-            else ## eq 'POST'
-            {
-                my $content_type = $request->headers->content_type;
-                if ($content_type =~ /multipart.*/) {
-                    # We do not handle multipart submission, since that
-                    # would need to be turned into a URL-encoded string to
-                    # pass as an initializer for CGI.pm.  TODO?
-                    warn "Multipart form submission is not supported by the Diogenes server.\n";
-                    $client->send_error(RC_NOT_IMPLEMENTED);
-                    last REQUEST
-                }
-                else {
-                    $params = $request->content;
-                    $params ||= '';
-                    warn "POST request. Content: $params\n" if $DEBUG;
-                    # We pass the params via the global $param, since
-                    # otherwise, we'd need to stuff the params into
-                    # our own STDIN, which would cost a fork,
-                    # probably.  Tried pretending this was a GET
-                    # request, and passing via %ENV, but that was Bad.
-                }
-            }
-            # Workaround for annoying CGI.pm bug/warning
-            $ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
-
-            
-            # Here we compile if necessary and execute any CGI scripts
-            $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
-            # This tells CGI.pm the name of the host and script, which goes into
-            # the action parameter of the form element(s)
-            my $host = $request->header('Host');
-            $ENV{HTTP_HOST} = $host if $host;
-            $ENV{SCRIPT_NAME} = ($leading_slash ? '/' : '') . "$requested_file";
-
-            compile_cgi_subroutine($requested_file)
-                unless exists $cgi_subroutine{$requested_file}; 
-            # Trap any exceptions
-            eval {$cgi_subroutine{$requested_file}->()};
-            warn "Diogenes Error: $@" if $@; 
-        }
-        else
-        {
-            # Merrily serve up all non .cgi files (but only files in the
-            # root dir).
-            $requested_file =~ s#^/##;
-            $requested_file = $root_dir . $requested_file;
-            warn "Sending file: $requested_file\n" if $DEBUG;
-            #Windows IE doesn't like this:
-            #my $ret = $client->send_file_response($root_dir.$requested_file);
-            my $ret = $client->send_file_response($requested_file);
-            warn "File $requested_file not found!\n" unless $ret eq RC_OK;
-        }
+        warn  "WARNING! WARNING! ... \n" .
+            "Connection attempted from an unauthorized " .
+            "computer: $remote_host\n";
+        $client->send_error(RC_FORBIDDEN);
+        return;
     }
-    close $client;
-    undef $client;
+
+    # We only deal with GET and POST methods
+    unless ($request->method eq 'GET' or $request->method eq 'POST')
+    {
+        warn "Illegal method: only GET and POST are supported: ".$request->method."\n";
+        $client->send_error(RC_NOT_IMPLEMENTED);
+        return;
+    }
+    my $requested_file = ($request->url->path);
+    warn "Requested file: $requested_file; cwd: ".cwd."\n" if $debug;
+    my $leading_slash = ($requested_file =~ m#^/#) ? 1 : 0;
+    if ($requested_file =~ m#\.\.#)
+    {
+        warn "Warning: attempted directory traversal: $requested_file \n";
+        $client->send_error(RC_FORBIDDEN);
+        return;
+    }
+    $requested_file = $cgi_script if $requested_file eq '/';
+    # Internet exploder stupidity
+    $requested_file =~ s#^\Q$root_dir\E##;
+    $requested_file =~ s#^[/\\]##;
+    $requested_file = $cgi_script if $requested_file =~ m/diogenes-server/i;
+    $requested_file = $cgi_script if $requested_file =~ m/Diogenes\.cgi/i;
+    warn "Relative file name: $requested_file\n" if $debug;
+
+    my $cookie = $request->header('Cookie');
+    $ENV{HTTP_COOKIE} = $cookie if $cookie;
+
+    # Deal with the various ways our CGI script might be
+    # requested by a browser.
+
+    # $params is a global which is accessed by the CGI script and
+    # passed as a parameter to CGI->new in order to instantiate
+    # the CGI object.  We could pass this info via environment
+    # variables, except that for POST methods, CGI.pm wants to
+    # read the query data from STDIN.
+    $params = '';
+    if ($requested_file =~ m/\.cgi/i or $requested_file eq $cgi_script)
+    {
+        if ($request -> method eq 'GET')
+        {
+            $params = $request->url->query;
+            $params ||= '';
+            warn "GET request.".($params ? " Query:$params\n" : "\n") if $debug;
+            $ENV{REQUEST_METHOD} = 'GET';
+            $ENV{QUERY_STRING} = $params;
+        }
+        else ## eq 'POST'
+        {
+            my $content_type = $request->headers->content_type;
+            if ($content_type =~ /multipart.*/) {
+                # We do not handle multipart submission, since that
+                # would need to be turned into a URL-encoded string to
+                # pass as an initializer for CGI.pm.  TODO?
+                warn "Multipart form submission is not supported by the Diogenes server.\n";
+                $client->send_error(RC_NOT_IMPLEMENTED);
+                return;
+            }
+            else {
+                $params = $request->content;
+                $params ||= '';
+                warn "POST request. Content: $params\n" if $debug;
+                # We pass the params via the global $param, since
+                # otherwise, we'd need to stuff the params into
+                # our own STDIN, which would cost a fork,
+                # probably.  Tried pretending this was a GET
+                # request, and passing via %ENV, but that was Bad.
+            }
+        }
+        # Workaround for annoying CGI.pm bug/warning
+        $ENV{QUERY_STRING} = '' unless $ENV{QUERY_STRING};
+
+        $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
+        # This tells CGI.pm the name of the host and script, which goes into
+        # the action parameter of the form element(s)
+        my $host = $request->header('Host');
+        $ENV{HTTP_HOST} = $host if $host;
+        $ENV{SCRIPT_NAME} = ($leading_slash ? '/' : '') . "$requested_file";
+
+        # We 'use' the cgi script (which avoids re-parsing the file
+        # for each request).  That file should end in a true statement
+        # and is lexically scoped but shares our namespace, which it
+        # should not pollute: i.e it should use lexical vars to hold
+        # subroutine refs.  The script does not see $client, which is
+        # lexically scoped to this file, but it shares STDOUT with us,
+        # so the select command passes the reference to the correct
+        # filehandle.
+
+        select $client;
+
+        if ($requested_file eq $cgi_script) {
+            # The module has been pre-compiled, and we use eval here
+            # to trap errors (especially important for the non-forking
+            # server).
+            eval { $Diogenes::Script::go->($params) }
+        }
+        elsif ($requested_file eq 'Perseus.cgi') {
+            eval { $Diogenes::Perseus::go->($params) }
+        }
+        else {
+            # Other scripts have to be re-parsed each time.
+            do $requested_file;
+        }
+        warn "Diogenes Error: $@" if $@;
+
+    }
+    elsif ($requested_file =~ m#^tll-pdf|ox-lat-dict\.pdf#) {
+        $client->send_basic_header(RC_OK, '(OK)', 'HTTP/1.1');
+        # Serve TLL/OLD pdfs, but first translate filename
+        my %args_init = (-type => 'none');
+        my $init = new Diogenes::Base(%args_init);
+        my ($pdf_path, $pdf_file);
+
+        if ($requested_file =~ m#^tll-pdf#) {
+            $requested_file =~ m#^tll-pdf/(\d+).pdf#;
+            my $file_number = $1;
+            warn "Bad PDF file URI" unless $file_number;
+
+            tll_list_read() unless %tll_list;
+            $pdf_file = $tll_list{$file_number};
+            warn "Bad PDF file number" unless $pdf_file;
+            warn "Translating PDF file $file_number as $pdf_file\n" if $debug;
+
+            if ($Diogenes::Base::OS eq 'windows') {
+                # Data is proper utf-8, not octets.
+                $pdf_file = Encode::encode($Diogenes::Base::code_page, $pdf_file);
+            }
+            $pdf_path = $init->{tll_pdf_dir};
+            $pdf_file = File::Spec->catfile($pdf_path, $pdf_file);
+        }
+        else {
+            $pdf_path = $init->{old_pdf_dir};
+            $pdf_file = $init->{old_pdf_dir};
+        }
+
+        unless ($pdf_path) {
+            warn "Error: pdf_path not set\n";
+            $client->send_error(RC_NOT_FOUND, "Location of the requested pdf file has not been set.");
+            return;
+        }
+        unless (-e $pdf_path) {
+            warn "Error: pdf_path ($pdf_path) does not exist.\n";
+            $client->send_error(RC_NOT_FOUND, "The requested pdf file ($pdf_path) was not found.");
+            return;
+        }
+        warn "Serving PDF file $pdf_file\n" if $debug;
+        unless (-e $pdf_file) {
+            warn "Error: pdf_file ($pdf_file) does not exist\n";
+            $client->send_error(RC_NOT_FOUND, "Requested pdf file ($pdf_file) was not found.");
+            return;
+        }
+
+        my $ret = $client->send_file_response($pdf_file);
+        warn "File $requested_file failed to send!\n" unless $ret eq RC_OK;
+    }
+    else
+    {
+        # Merrily serve up all non .cgi files (but only files in the
+        # root dir).
+        $requested_file =~ s#^/##;
+        $requested_file = $root_dir . $requested_file;
+        warn "Sending file: $requested_file\n" if $debug;
+        #Windows IE doesn't like this:
+        #my $ret = $client->send_file_response($root_dir.$requested_file);
+        my $ret = $client->send_file_response($requested_file);
+        warn "File $requested_file not found!\n" unless $ret eq RC_OK;
+    }
 }
 
 sub write_lock
@@ -400,7 +452,7 @@ sub write_lock
     # to receive connections.
     unlink $lock_file;
     unlink $lock_file_temp;
-    print "Writing $lock_file\n" if $DEBUG;
+    print "Writing $lock_file\n" if $debug;
     open FLAG, ">$lock_file_temp" or warn "Could not create lock file: $!";
     print FLAG
 "{
@@ -413,38 +465,16 @@ sub write_lock
     rename $lock_file_temp, $lock_file;
 
 }
-    
-sub compile_cgi_subroutine
-{
-    my $script_file = shift;
-    my $cgi_script;
-    open SCRIPT, "<$root_dir$script_file" or warn "Unable to find the file $script_file.\n", 
-    "The current configuration says it should be located in $root_dir.\n";
-    binmode SCRIPT;
-    {
-        local $/; undef $/;
-        ($cgi_script) = <SCRIPT>;
-    }
-    my $code = << 'CODE_END';
 
-    $cgi_subroutine{$script_file} = sub
-{
-    package Diogenes_Daemon;
-    open *Diogenes_Daemon::client;
-    select $Diogenes_Daemon::client;
-    $| = 1;
-    
-CODE_END
+sub tll_list_read {
+    my $data_dir = File::Spec->catdir($Bin, '..', 'dependencies', 'data');
+    my $list = File::Spec->catfile($data_dir, 'tll-pdf-list.txt');
 
-        $code .= $cgi_script . '}';
-    
-    # $code now has the code of the CGI script wrapped in a
-    # subroutine declaration, which we can call later.
-    eval $code;
-    if ($@)
-    {
-        print "Error compiling CGI script: $@\n";
-        exit;
+    open my $list_fh, '<:encoding(UTF-8)', $list or
+        die "Could not open $list: $!";
+    while (<$list_fh>) {
+        m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
+        $tll_list{$1} = $2;
     }
 }
 

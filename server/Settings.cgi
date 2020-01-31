@@ -1,5 +1,11 @@
 #!/usr/bin/perl -w
 use strict;
+use FindBin qw($Bin);
+use File::Spec::Functions qw(:ALL);
+push @INC, '.';
+# Use local CPAN
+use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
+
 use Diogenes::Base;
 use CGI qw(:standard);
 use CGI::Carp 'fatalsToBrowser';
@@ -205,3 +211,5 @@ else
     $display_splash->();
 }
 
+# So that we can eval this file using "do"
+1;

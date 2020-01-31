@@ -1,0 +1,15 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+        "Name": "pjheslin/diogenesmorph",
+        "Update": "true"
+    },
+    "Ports": [
+        {
+            "ContainerPort": "8990"
+        }
+    ],
+    "linuxParameters": {
+        "initProcessEnabled": true
+    }
+}

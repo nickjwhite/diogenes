@@ -1,112 +1,37 @@
 #!/usr/bin/perl -w
-
 # Interface to Perseus morphological data and dictionaries.
+
+# This cgi script has been recast as a module, so that we can require
+# it once and not reparse the file for each query that comes to the
+# server.
 package Diogenes::Perseus;
+
 use strict;
+use FindBin qw($Bin);
+use File::Spec::Functions qw(:ALL);
+# Use local CPAN
+use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
+my $perseus_dir = catdir($Bin, '..', 'dependencies', 'data');
+
 use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %database @databases @filters);
 use Diogenes::EntityTable;
 use FileHandle;
 use Encode;
+use URI::Escape;
 
-# The lexica are now utf8, but we need to read the files in as bytes, as we want to jump into the middle and read backwards.  We then convert entries to utf8 by hand.
+# The lexica are now utf8, but we need to read the files in as bytes,
+# as we want to jump into the middle and read backwards.  We then
+# convert entries to utf8 by hand.
 use open IN  => ":bytes", OUT => ":utf8";
-
-use FindBin qw($Bin);
-use File::Spec::Functions qw(:ALL);
-
-# Use local CPAN
-use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );
 
 use XML::Tiny;
 use CGI qw(:standard);
 
 my $debug = 0;
 
-binmode ((select), ':utf8');
-
-my $f = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
-print STDERR "$Diogenes_Daemon::params\n" if $debug;
-
 # This is the directory whence the decorative images that come with
-# the script are served.
+# the script are served.  Overridden later for DiogenesWeb
 my $picture_dir = 'images/';
-
-unless ($f->param('noheader')) {
-    print $f->header(-charset=>'utf-8');
-}
-if ($f->param('popup')) {
-    print $f->start_html(-title=>'Perseus Data',
-                         -meta=>{'content' => 'text/html;charset=utf-8'},
-                         -encoding=>"utf-8",
-                         -script=>{-type=>'text/javascript',
-                                   -src=>'diogenes-cgi.js'},
-                         -style=>{ -type=>'text/css',
-                                   -src=>'diogenes.css'});
-    # For jumpTo
-    print $f->start_form(-name=>'form',
-                         -id=>'form',
-                         -action=>"Diogenes.cgi");
-    print $f->hidden( -name => 'JumpTo',
-                      -default => "",
-                      -override => 1 );
-    print $f->hidden( -name => 'JumpFromQuery',
-                      -default => $f->param('q'),
-                      -override => 1 );
-    print $f->hidden( -name => 'JumpFromLang',
-                      -default => $f->param('lang'),
-                      -override => 1 );
-    print $f->hidden( -name => 'JumpFromAction',
-                      -default => $f->param('do'),
-                      -override => 1 );
-
-    print qq{<div>};
-
-    # Subsequent pages should use this same pop-up
-    print qq{<div id="sidebar" class="sidebar-newpage"></div>}
-} else {
-    print qq{<div id="sidebar-control"></div>};
-}
-
-my $footer = sub {
-    if ($f->param('popup')) {
-        print '</div>'; # font div
-        print $f->end_form;
-        print $f->end_html;
-    }
-};
-
-my $request = $f->param('do') or warn "Bad Perseus request (a)";
-my $query = $f->param('q') or warn "Bad Perseus request (b)";
-my $lang = $f->param('lang') or warn "Bad Perseus request (c)";
-my $xml_out = 1 if $f->param('xml');
-my $inp_enc = $f->param('inp_enc') || '';
-
-if ($lang ne 'grk') {
-    # Latin -- do nothing.
-}
-elsif ($inp_enc eq 'Unicode') {
-    # Already decoded utf8
-    my $c = new Diogenes::UnicodeInput;
-    $query = $c->unicode_greek_to_beta($query);
-}
-elsif ($inp_enc eq 'utf8' or
-       $query =~ m/[\x80-\xff]/) {
-    # Raw bytes that need to be decoded
-    $query = Encode::decode(utf8=>$query);
-    my $c = new Diogenes::UnicodeInput;
-    $query = $c->unicode_greek_to_beta($query);
-}
-elsif ($inp_enc eq 'Perseus-style') {
-    eval "require Diogenes::Search; 1;";
-    $query = Diogenes::Search::simple_latin_to_beta({}, $query);
-}
-elsif ($inp_enc eq 'BETA code') {
-    $query =~ s#\\#/#g;                       # normalize accents
-}
-elsif ($inp_enc) {
-    warn "I don't understand encoding $inp_enc!\n";
-}
-$query =~ tr/A-Z/a-z/;
 
 my %dicts = (
     grk => ['grc.lsj.xml', 'LSJ', 'xml'],
@@ -115,33 +40,180 @@ my %dicts = (
     );
 my %format_fn;
 
-warn "I don't know about language $lang!\n" unless exists $dicts{$lang};
-
-use FindBin qw($Bin);
-use File::Spec::Functions qw(:ALL);
-my $perseus_dir = catdir($Bin, '..', 'dependencies', 'data');
-if (not -e $perseus_dir) {
-    $perseus_dir = $ENV{Diogenes_Perseus_Dir} if $ENV{Diogenes_Perseus_Dir};
-    if (not -e $perseus_dir) {
-        print "<b>Sorry -- Perseus Data not installed!</b>";
-        $footer->();
-        exit;
-    }
-}
-
-my $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
-my $dict_name = $dicts{$lang}->[1];
-my $dict_format = $dicts{$lang}->[2];
-my (%index_start, %index_end, $index_max, $size);
-my ($idt_file, $txt_file, $dict_offset);
-my $idt_fh = new FileHandle;
-my $search_fh = new FileHandle;
-my $format_sub;
-
 use vars '$translate_abo';
 do "perseus-abo.pl" or die ($! or $@);
 
-my ($comp_fn, $key_fn);
+# For searching LSJ
+# v is digammma, 0 is for prefatory material
+my @alphabet = qw(0 a b g d e v z h q i k l m n c o p r s t u f x y w);
+my %alph;
+my $i = 1;
+for (@alphabet) {
+    $alph{$_} = $i;
+    $i++;
+}
+# For English
+my @suffixes = qw{s es d ed n en ing};
+
+# Needed by setup().
+my $beta_to_utf8 = sub {
+    my $text = shift;
+    if ($text !~ m/^[\x00-\x7f]*$/) {
+        # In Logeion LSJ, the Greek (apart from keys) is already utf8
+        return $text;
+    }
+    $text =~ s/#?(\d)$/ $1/g;
+    my %fake_obj;    # Dreadful hack
+    $fake_obj{encoding} = 'UTF-8';
+    $text =~ tr/a-z/A-Z/;
+    Diogenes::Base::beta_encoding_to_external(\%fake_obj, \$text);
+    $text =~ s/([\x80-\xff])\_/$1&#x304;/g; # combining macron
+    $text =~ s/_/&nbsp;&#x304;/g;
+    $text =~ s/([\x80-\xff])\^/$1&#x306;/g; # combining breve
+    $text =~ s/\^/&nbsp;&#x306;/g;
+    # Decode from a 'binary string' to a UTF-8 'text string' so the
+    # UTF-8 strings from Diogenes::EntityTable can be mixed freely
+    return Encode::decode('utf-8', $text);
+};
+
+my ($f, $request, $query, $qquery, $lang, $xml_out, $inp_enc);
+my $footer = sub {
+    if ($f->param('popup')) {
+        print '</div>'; # font div
+        print $f->end_form;
+        print $f->end_html;
+    }
+};
+
+our (%index_start, %index_end, $index_max);
+my ($dict_file, $dict_name, $dict_format, $idt_fh, $search_fh);
+my ($size, $idt_file, $txt_file, $dict_offset);
+my ($comp_fn, $key_fn, $format_sub);
+my ($lem_num, $logeion_link);
+my ($dweb);
+
+my $setup = sub {
+
+    my $parameters = shift;
+    binmode ((select), ':utf8');
+    $| = 1;
+
+    if ($parameters) {
+        $f = new CGI($parameters);
+    }
+    elsif ($Diogenes_Daemon::params) {
+        $f = new CGI($Diogenes_Daemon::params)
+    }
+    else {
+        $f = new CGI;
+    }
+
+    $request = $f->param('do') or warn "Bad Perseus request (a)";
+    $query = $f->param('q') or warn "Bad Perseus request (b)";
+    $lang = $f->param('lang') or warn "Bad Perseus request (c)";
+    $xml_out = 1 if $f->param('xml');
+    $inp_enc = $f->param('inp_enc') || '';
+    $qquery = ($lang eq "grk" and $inp_enc ne 'utf8') ? $beta_to_utf8->($query) : $query;
+    # Convert to utf8 unless already converted
+    $qquery = Encode::decode(utf8=>$qquery) unless $qquery =~ /[^\x00-\xFF]/;
+
+    print STDERR "Perseus: >$request, $lang, $query, $qquery<\n" if $debug;
+
+    $dweb = $f->param('dweb');
+    if ($dweb) {
+        $picture_dir = 'https://d.iogen.es/static/images/';
+    }
+
+    $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
+    $dict_name = $dicts{$lang}->[1];
+    $dict_format = $dicts{$lang}->[2];
+    $idt_fh = new FileHandle;
+    $search_fh = new FileHandle;
+
+    unless ($f->param('noheader')) {
+        print $f->header(
+            -charset=>'utf-8',
+            -'Access-Control-Allow-Origin' => '*');
+    }
+    if ($f->param('popup')) {
+        print $f->start_html(-title=>'Perseus Data',
+                             -meta=>{'content' => 'text/html;charset=utf-8'},
+                             -encoding=>"utf-8",
+                             -script=>{-type=>'text/javascript',
+                                           -src=>'diogenes-cgi.js'},
+                             -style=>{ -type=>'text/css',
+                                           -src=>'diogenes.css'});
+        # For jumpTo
+        print $f->start_form(-name=>'form',
+                             -id=>'form',
+                             -action=>"Diogenes.cgi");
+        print $f->hidden( -name => 'JumpTo',
+                          -default => "",
+                          -override => 1 );
+        print $f->hidden( -name => 'JumpFromQuery',
+                          -default => $f->param('q'),
+                          -override => 1 );
+        print $f->hidden( -name => 'JumpFromLang',
+                          -default => $f->param('lang'),
+                          -override => 1 );
+        print $f->hidden( -name => 'JumpFromAction',
+                          -default => $f->param('do'),
+                          -override => 1 );
+
+        print qq{<div>};
+
+        # Subsequent pages should use this same pop-up
+        print qq{<div id="sidebar" class="sidebar-newpage"></div>}
+    }
+    else {
+        print qq{<div id="sidebar-control"></div>};
+    }
+
+    if ($lang ne 'grk') {
+        # Latin -- do nothing.
+    }
+    elsif ($inp_enc eq 'Unicode') {
+        # Already decoded utf8
+        my $c = new Diogenes::UnicodeInput;
+        $query = $c->unicode_greek_to_beta($query);
+    }
+    elsif ($inp_enc eq 'utf8' or
+           $query =~ m/[\x80-\xff]/) {
+        # Raw bytes that need to be decoded
+        $query = Encode::decode(utf8=>$query);
+        my $c = new Diogenes::UnicodeInput;
+        $query = $c->unicode_greek_to_beta($query);
+        $query = lc $query;
+        # print STDERR "Q2: $query\n";
+    }
+    elsif ($inp_enc eq 'Perseus-style') {
+        eval "require Diogenes::Search; 1;";
+        $query = Diogenes::Search::simple_latin_to_beta({}, $query);
+    }
+    elsif ($inp_enc eq 'BETA code') {
+        $query =~ s#\\#/#g;                       # normalize accents
+    }
+    elsif ($inp_enc) {
+        warn "I don't understand encoding $inp_enc!\n";
+    }
+    #$query =~ tr/A-Z/a-z/;
+    # print STDERR "Q3: $query\n";
+
+    warn "I don't know about language $lang!\n" unless exists $dicts{$lang};
+
+    if (not -e $perseus_dir) {
+        $perseus_dir = $ENV{Diogenes_Perseus_Dir} if $ENV{Diogenes_Perseus_Dir};
+        if (not -e $perseus_dir) {
+            print "<b>Sorry -- Perseus Data not installed!</b>";
+            $footer->();
+            die("No Perseus data!");
+        }
+    }
+    $lem_num = 0;
+    $logeion_link = qq{<a href="https://logeion.uchicago.edu/$qquery" target="logeion">Logeion</a>};
+
+};
+
 # For ascii-sorted files.
 my $ascii_comp_fn = sub {
     my ($a, $b) = @_;
@@ -161,15 +233,6 @@ my $space_key_fn = sub {
     return ($1, $line);
 };
 
-# For searching LSJ
-# v is digammma, 0 is for prefatory material
-my @alphabet = qw(0 a b g d e v z h q i k l m n c o p r s t u f x y w);
-my %alph;
-my $i = 1;
-for (@alphabet) {
-    $alph{$_} = $i;
-    $i++;
-}
 my $beta_comp_fn = sub {
     my ($a, $b) = @_;
 #     print "$a|$b|\n";
@@ -190,7 +253,7 @@ my $beta_comp_fn = sub {
 my $xml_key_fn = sub {
     my $line = shift;
     my $key;
-    if ($line =~ m/<(?:entryFree|div2)[^>]*key\s*=\s*\"([^"]*)\"/)
+    if ($line =~ m/<(?:entryFree|div2|div1)[^>]*key\s*=\s*\"([^"]*)\"/)
     {
         $key = $1;
         $key =~ s/[^a-zA-Z]//g;
@@ -238,12 +301,19 @@ my $latin_parse_setup = sub {
     $key_fn = $tab_key_fn;
 };
 
+my $tll_parse_setup = sub {
+    $idt_file = File::Spec->catfile($perseus_dir, 'tll-bookmarks.idt');
+    $txt_file = File::Spec->catfile($perseus_dir, 'tll-bookmarks.txt');
+    $comp_fn = $ascii_comp_fn;
+    $key_fn = $tab_key_fn;
+};
+
 my $parse_prelims = sub {
     open $idt_fh, "<$idt_file" or die $!;
     local $/ = undef;
     my $code = <$idt_fh>;
     eval $code;
-    warn "Error reading in saved corpora: $@" if $@;
+    warn "Error eval'ing $idt_file: $@" if $@;
     open $search_fh, "<$txt_file" or die $!;
 };
 
@@ -262,8 +332,8 @@ my $parse_prelims = sub {
 
 # We use global var to avoid leaking memory with recursive anon subs.
 use vars '$binary_search';
-$/ = "\n";
-local $binary_search = sub {
+our $binary_search = sub {
+    local $/ = "\n";
     my $word = shift;
     my $start = shift;
     my $stop = shift;
@@ -291,29 +361,28 @@ my $try_parse = sub {
     return $binary_search->($word, $start, $stop);
 };
 
-my $beta_to_utf8 = sub {
-    my $text = shift;
-    if ($text !~ m/^[\x00-\x7f]*$/) {
-        # In Logeion LSJ, the Greek (apart from keys) is already utf8
-        return $text;
+my $normalize_latin_lemma = sub {
+    my $lemma = shift;
+    $lemma =~ s/[_^]//g;
+
+    if ($lemma =~ m/-/) {
+        $lemma =~ s/(.*)-(.*)/$1$2/;
     }
-    $text =~ s/#?(\d)$/ $1/g;
-    my %fake_obj;    # Dreadful hack
-    $fake_obj{encoding} = 'UTF-8';
-    $text =~ tr/a-z/A-Z/;
-    Diogenes::Base::beta_encoding_to_external(\%fake_obj, \$text);
-    $text =~ s/([\x80-\xff])\_/$1&#x304;/g; # combining macron
-    $text =~ s/_/&nbsp;&#x304;/g;
-    $text =~ s/([\x80-\xff])\^/$1&#x306;/g; # combining breve
-    $text =~ s/\^/&nbsp;&#x306;/g;
-    # Decode from a 'binary string' to a UTF-8 'text string' so the
-    # UTF-8 strings from Diogenes::EntityTable can be mixed freely
-    return Encode::decode('utf-8', $text);
+    $lemma =~ s/\d$//;
+    return $lemma;
+};
+
+my $normalize_greek_lemma = sub {
+    my $lemma = shift;
+    # We strip breathings, too, because that surprises less
+    $lemma =~ s/[_^,-\\\/=+\d)(]//g;
+    return $lemma;
 };
 
 my $text_with_links = sub {
     my $text =  shift;
     my $text_lang = shift;
+    my $inhibit_conversion = shift;
     $text_lang = "lat" if $text_lang eq "la";
     $text_lang = "grk" if $text_lang eq "greek";
     my $out = '';
@@ -325,7 +394,8 @@ my $text_with_links = sub {
         my $form = $word;
         $form =~ s/\-//g;
         $form =~ s/[^A-Za-z]//g if $text_lang eq 'eng';
-        $word = $beta_to_utf8->($word) if $text_lang eq "grk";
+        $word = $beta_to_utf8->($word) if $text_lang eq "grk"
+            and not $inhibit_conversion;
         # We use a new page, since otherwise the back button won't get
         # us back where we came from. -- Changed to workaround FF bug.
         if ($form) {
@@ -341,8 +411,6 @@ my $text_with_links = sub {
 
     return $out;
 };
-
-my $qquery = ($lang eq "grk") ? $beta_to_utf8->($query) : $query;
 
 my $munge_ls_lemma = sub {
     my $text =shift;
@@ -362,18 +430,17 @@ use vars '$xml_lang', '$munge_tree', '$munge_content', '$munge_element', '$xml_i
 my ($out, $in_link);
 my $munge_xml = sub {
     my $text = shift;
-    # Tiny.pm will complain if not well-formed -- get rid of stray divs and milestones
-    $text =~ s/^.*?<entryFree /<entryFree /;
-    $text =~ s/^.*?<div2 /<div2 /;
-    $text =~ s/<\/entryFree>.*$/<\/entryFree>/;
-    $text =~ s/<\/div2>.*$/<\/div2>/;
+    # Tiny.pm will complain if not well-formed -- get rid of stray
+    # divs and milestones before and after entry
+    $text =~ s/^.*?(<(?:entryFree|div1|div2) )/$1/;
+    $text =~ s/(<\/(?:entryFree|div1|div2)>).*$/$1/;
     # Tiny needs a space before close of empty tag
     $text =~ s#<([^>]*\S)/>#<$1 />#g;
     return $text if $xml_out;
     $out = '';
     local $xml_lang = '' ; # dynamically scoped
     local $xml_ital = 0  ;
-#    print STDERR ">>$text\n";
+    # print STDERR ">>$text\n";
     my $tree = XML::Tiny::parsefile($text,
                                     'no_entity_parsing' => 1,
                                     'input_is_string' => 1,
@@ -387,7 +454,7 @@ my $munge_xml = sub {
     return $out;
 };
 
-local $munge_tree = sub {
+our $munge_tree = sub {
     my $array_ref = shift;
     foreach my $item (@{ $array_ref }) {
         $munge_content->($item);
@@ -409,6 +476,11 @@ my $munge_text = sub {
            # Hack to make all non-italicized L-S text Latin
            $text = $text_with_links->($text, 'lat');
         }
+        elsif ($lang eq 'grk' and $text =~ m/\p{Greek}/) {
+           # Hack to catch any Unicode greek (as in Logeion LSJ);
+           # inhibit conversion again to Unicode.
+            $text = $text_with_links->($text, 'grk', 1);
+        }
         else {
             $text = $text_with_links->($text, 'eng');
         }
@@ -416,7 +488,7 @@ my $munge_text = sub {
     $out .= $text;
 };
 
-local $munge_content = sub {
+our $munge_content = sub {
     my $item = shift;
     if ($item->{type} eq 'e') {
         $munge_element->($item);
@@ -437,8 +509,17 @@ my $swap_element = sub {
             $out .= '</div>';
         } else {
             my $level = $e->{attrib}->{level};
-            my $padding = $level * 2;
-            $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em">};
+            my $factor = $dweb ? 1 : 2;
+            my $padding = $level * $factor;
+            my $heading = $e->{attrib}->{n};
+            if ($heading) {
+                # Some entries wrongly begin with a dot, which makes this look bad, unfortunately
+                $heading .= '. ';
+                $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em; text-indent: -1em"><b>$heading</b>};
+            }
+            else {
+                $out .= qq{<div id="sense" style="padding-left: $padding}.qq{em; padding-bottom: 0.5em">};
+            }
         }
     }
     # Try to emphasize English words in lexica
@@ -472,14 +553,67 @@ my $swap_element = sub {
 
 };
 
-local $munge_element = sub {
+my $tll_pdf_link = sub {
+    return '' if $dweb;
+    return '' unless $lang eq 'lat';
+    my $word = shift;
+    # Remove numbered entries, since there is no reason to believe
+    # that the numbers used by L-S and TLL will correspond.
+    $word =~ s/\s*\d+$//;
+    $word = $normalize_latin_lemma->($word);
+    $tll_parse_setup->();
+    $parse_prelims->();
+    my $bookmark = $try_parse->($word);
+    return '' unless $bookmark;
+
+    $bookmark =~ m/^(\d+)\t(\d+)$/ or die "No match for $bookmark\n";
+    my $tll_file = $1;
+    my $page = $2;
+    # print STDERR "!!$word->$bookmark->$tll_file->$page\n";
+    my $href = "tll-pdf/$tll_file.pdf#page=$page";
+    return qq{<a onClick="openPDF('$href')" href="#"><i>TLL</i></a>};
+};
+
+my $old_pdf_link = sub {
+    return '' if $dweb;
+    return '' unless $lang eq 'lat';
+    # Short file with only running heads, linear search, stop when
+    # past target.
+    my $word = shift;
+    $word =~ s/\s*\d+$//;
+    $word = $normalize_latin_lemma->($word);
+    $word =~ tr/vj/ui/;
+    $word =~ tr /A-Z/a-z/;
+    my $old_file = File::Spec->catfile($perseus_dir, 'old-bookmarks.txt');
+    return '<br/>' unless -e $old_file;
+    open my $old_fh, "<$old_file" or warn "Could not open $old_file!\n";
+    my $page = 1;
+    local $/ = "\n";
+    while (my $line = <$old_fh>) {
+        $line =~ m/(\w+)\t(\d+)/;
+        my $headword = $1;
+        $page = $2;
+        next unless $headword and $page;
+        # print STDERR "$word, $headword, $page, ".($word cmp $headword)."\n";
+        last if (($word cmp $headword) <= 0);
+    }
+    my $href = "ox-lat-dict.pdf#page=$page";
+    return qq{ <a onClick="openPDF('$href')" href="#"><i>OLD</i></a>};
+};
+
+our $munge_element = sub {
     my $e = shift;
     $swap_element->($e, 0); # open it
-    if ($e->{name} eq 'entryFree' or $e->{name} eq 'div2') {
+    if ($e->{name} eq 'entryFree' or $e->{name} eq 'div2' or $e->{name} eq 'div1') {
         my $key = $e->{attrib}->{key};
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';
-        $out .= '<h2>' . $key . '</h2>';
+        $out .= '<h2><span style="display:block;float:left">' . $key . '</span>';
+        $out .= '<span style="display:block;text-align:right;">&nbsp;';
+        $out .= $tll_pdf_link->($key);
+        $out .= $old_pdf_link->($key);
+        $out .= '</span></h2>';
+        # $out .= '<h2>' . $key . '</h2>';
     }
     if ($e->{attrib}->{lang} ) {
         local $xml_lang = $e->{attrib}->{lang};
@@ -493,10 +627,11 @@ local $munge_element = sub {
 $format_fn{xml} = sub {
     my $text = shift;
 #      print STDERR "\n\n$text\n\n";
-    print "<div>";
+    print qq{<hr /><div>};
     print qq{<a onClick="prevEntry$lang($dict_offset)"><img class="prev" src="${picture_dir}go-previous.png" srcset="${picture_dir}go-previous.hidpi.png 2x" alt="Previous Entry" /></a> };
+    # print "TLL Link";
     print qq{<a onClick="nextEntry$lang($dict_offset)"><img class="next" src="${picture_dir}go-next.png" srcset="${picture_dir}go-next.hidpi.png 2x" alt="Next Entry" /></a>};
-    print "</div><hr />";
+    print "</div><br/>";
     print $munge_xml->($text);
 };
 
@@ -567,6 +702,8 @@ my $format_analysis = sub {
             my ($dict, $conf, $lemma, $trans, $info) = ($1, $2, $3, $4, $5);
             $lemma = $beta_to_utf8->($lemma) if $lang eq 'grk';
             $lemma = $munge_ls_lemma->($lemma) if $lang eq 'lat';
+            # The greek-analyses.txt file is subtly utf8, as the short defs include some Unicode punctuation.
+            $trans = Encode::decode('utf-8', $trans);
             $lemma .= " ($trans)" if $trans =~ m/\S/;
             $lemma .= ": $info";
             push @out, [$dict, $conf, $lemma];
@@ -631,8 +768,6 @@ the spot it should appear.)");
     }
 };
 
-my $lem_num = 0;
-
 my $format_inflect = sub {
     $lem_num++;
     my ($lem, $out) = @_;
@@ -683,25 +818,6 @@ my $do_inflects = sub {
         $do_inflect->($_);
     }
 };
-
-my $normalize_latin_lemma = sub {
-    my $lemma = shift;
-    $lemma =~ s/[_^]//g;
-
-    if ($lemma =~ m/-/) {
-        $lemma =~ s/(.*)-(.*)/$1$2/;
-    }
-    $lemma =~ s/\d$//;
-    return $lemma;
-};
-
-my $normalize_greek_lemma = sub {
-    my $lemma = shift;
-    # We strip breathings, too, because that surprises less
-    $lemma =~ s/[_^,-\\\/=+\d)(]//g;
-    return $lemma;
-};
-
 
 my $find_lemma = sub {
     my $filename = ($lang eq 'grk' ? 'greek' : 'latin') . '-lemmata.txt';
@@ -783,14 +899,17 @@ my $do_parse = sub {
     $query =~ s#\\#/#g;
     # Remove ~hit~ and punctuation
     $query =~ s/~hit~//;
-    $query =~ s/[~,.;:?!"']//g;
+    # Do not remove apostrophes from Greek! (Morpheus knows about elided forms)
+    $query =~ s/[~,.;:?!"]//g;
+    # In Latin, however, apostrophes are just single quotation marks and need to be removed.
+    $query =~ s/[']//g if $lang eq 'lat';
     my $word = $query;
     # remove leading & trailing spaces
     $word =~ s/^\s+//g;
     $word =~ s/\s+$//g;
     # remove diareses
     $word =~ s/\+//g;
-#     print "\n\n-$word-$query-\n";
+    # print STDERR "\n\n-$word-$query-\n";
     # Accent thrown back from enclitic?
     $word =~ s/^(.*[\\\/=].*)[\\\/=]/$1/;
     my $analysis = $try_parse->($word);
@@ -806,6 +925,7 @@ my $do_parse = sub {
             $analysis = $try_parse->($word);
             if (not defined $analysis) {
                 if ($word =~ s/^([aeiouhw])([\\\/=|)(]+)([aeiouhw])/$1$3$2/) {
+                    # print STDERR "Try-$word-$query-\n";
                     $analysis = $try_parse->($word);
                 }
             }
@@ -827,8 +947,6 @@ my $try_english = sub {
     my $entry = $do_lookup->($lemma, 1);
 };
 
-my @suffixes = qw{s es d ed n en ing};
-
 my $parse_english = sub {
     return if  $try_english->($query);
     eval "require PorterStemmer;";
@@ -844,41 +962,48 @@ my $parse_english = sub {
 
 };
 
-print STDERR "Perseus: >$request, $lang, $query<\n" if $debug;
+my $dispatch = sub {
+    print $logeion_link.'<br/>';
 
-if ($request eq 'parse') {
-    if ($lang eq 'eng') {
-        $parse_english->();
+    if ($request eq 'parse') {
+        if ($lang eq 'eng') {
+            $parse_english->();
+        }
+        else {
+            $do_parse->();
+        }
+    }
+    elsif ($request eq 'lookup') {
+        $do_lookup->($query);
+    }
+    elsif ($request eq 'inflect') {
+        $do_inflect->($query);
+    }
+    elsif ($request eq 'inflects') {
+        $do_inflects->();
+    }
+    elsif ($request eq 'lemma') {
+        $find_lemma->();
+    }
+    elsif ($request eq 'get_entry') {
+        $get_entry->();
+    }
+    elsif ($request eq 'prev_entry') {
+        $get_entry->('prev');
+    }
+    elsif ($request eq 'next_entry') {
+        $get_entry->('next');
     }
     else {
-        $do_parse->();
+        warn "Bad Perseus request (d)";
     }
-}
-elsif ($request eq 'lookup') {
-    $do_lookup->($query);
-}
-elsif ($request eq 'inflect') {
-    $do_inflect->($query);
-}
-elsif ($request eq 'inflects') {
-    $do_inflects->();
-}
-elsif ($request eq 'lemma') {
-    $find_lemma->();
-}
-elsif ($request eq 'get_entry') {
-    $get_entry->();
-}
-elsif ($request eq 'prev_entry') {
-    $get_entry->('prev');
-}
-elsif ($request eq 'next_entry') {
-    $get_entry->('next');
-}
-else {
-    warn "Bad Perseus request (d)";
-}
+};
 
-$footer->();
+$Diogenes::Perseus::go = sub {
+    my $parameters = shift;
+    $setup->($parameters);
+    $dispatch->();
+    $footer->();
+};
 
 1;

@@ -1,5 +1,5 @@
 const {app, BrowserWindow, Menu, MenuItem, ipcMain, session} = require('electron')
-const {execFile} = require('child_process')
+const {spawn} = require('child_process')
 const path = require('path')
 const process = require('process')
 const fs = require('fs')
@@ -22,12 +22,19 @@ let currentLinkURL = null
 let findTargetWin;
 let mySearchText;
 
-const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
+//const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
+const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.resolve(__dirname, 'preload.js')}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
 const settingsPath = app.getPath('userData')
 const winStatePath = path.join(settingsPath, 'windowstate.json')
 const prefsFile = path.join(settingsPath, 'diogenes.prefs')
+
+const versionFile = path.resolve(__dirname, 'version.js')
+var currentVersion = "0.0"
+if (fs.existsSync(versionFile)) {
+    currentVersion = settingsFromFile(versionFile).version
+}
 
 // Ensure the app is single-instance (see 'second-instance' event
 // handler below)
@@ -53,32 +60,41 @@ linkContextMenu.append(new MenuItem({label: 'Open', click: (item, win) => {
 }}))
 linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, win) => {
     if(currentLinkURL) {
-	let newwin = createWindow(20, 20)
+	let newwin = createWindow(win, 20, 20)
 	newwin.loadURL(currentLinkURL)
 	currentLinkURL = null
     }
 }}))
 
 // Create a new window (either the first or an additional one)
-function createWindow (offset_x, offset_y) {
+function createWindow (oldWin, offset_x, offset_y) {
+    var winstate;
 
-    // Use saved window state if available
-    let winstate = getWindowState(winStatePath)
-    if(winstate && winstate.bounds) {
-	x = winstate.bounds.x
-	y = winstate.bounds.y
-	w = winstate.bounds.width
-	h = winstate.bounds.height
-    } else {
-	x = undefined
-	y = undefined
+    if (oldWin == null) {
+        // Use saved window state if available
+        let winstate = getWindowState(winStatePath)
+        if(winstate && winstate.bounds) {
+	    x = winstate.bounds.x
+	    y = winstate.bounds.y
+	    w = winstate.bounds.width
+	    h = winstate.bounds.height
+        } else {
+	    x = undefined
+	    y = undefined
+	    w = 800
+	    h = 600
+        }
+    }
+    else {
+        const pos = oldWin.getPosition()
+        x = pos[0]
+        y = pos[1]
+        // Add desired offset from existing window.
+        x = x + offset_x
+        y = y + offset_y
 	w = 800
 	h = 600
     }
-
-    // Add any desired offset from previously saved window location (useful for showing additional windows)
-    x = x + offset_x
-    y = y + offset_y
 
     let win = new BrowserWindow({x: x, y: y, width: w, height: h,
 	                         show: false, webPreferences: webprefs, winopts})
@@ -105,6 +121,36 @@ function createWindow (offset_x, offset_y) {
     return win
 }
 
+function checkVersion (win) {
+    // Retrieve previous version and compare with current.  If this is
+    // a new version of Diogenes, we have to clear the HTTP cache, or
+    // we may continue to use the js, css, etc. files from the
+    // obsolete version.
+    win.webContents.executeJavaScript('localStorage.getItem("diogenesVersion")')
+        .then( (oldVersion) => {
+            if (oldVersion != currentVersion) {
+                console.log('Old version: '+oldVersion+'; Current version: '+currentVersion)
+                // Not promisified yet in the Electron we are using, but will be soon
+                // win.webContents.session.clearCache()
+                //     .then( () => {
+                //         console.log('Deleted stale cache')
+                //         win.webContents.reload()
+                //     } )
+                //     .catch( (e) => {console.log('Failed to delete stale cache: '+e)} )
+                win.webContents.session.clearCache( () => {
+                    console.log('Deleted stale cache')
+                    win.webContents.reload()
+                } )
+                win.webContents.executeJavaScript('localStorage.setItem("diogenesVersion", '+'"'+currentVersion+'")')
+                    .then( () => {console.log('New version number saved')} )
+                    .catch( (e) => {console.log('Failed to save new version number: '+e)} )
+            }
+        })
+        // Errors from non-promisified clearCache fall through
+        // .catch( (e) => {console.log('Failed to get old version number: '+e)} )
+        .catch( (e) => {console.log('checkVersion failed: '+e)} )
+}
+
 // Create the initial window and start the diogenes server
 function createFirstWindow () {
     lockFile = path.join(settingsPath, 'diogenes-lock.json')
@@ -113,11 +159,15 @@ function createFirstWindow () {
     // Set the Content Security Policy headers
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 	callback({ responseHeaders: Object.assign({
-	    "Content-Security-Policy": [ "default-src 'self' 'unsafe-inline'" ]
+	    "Content-Security-Policy": [ "default-src 'self' logeion.uchicago.edu *.logeion.org 'unsafe-inline'" ]
 	}, details.responseHeaders)})
     })
 
-    win = createWindow(0, 0);
+    win = createWindow(null, 0, 0);
+
+    win.webContents.on("dom-ready", () => {
+        checkVersion(win)
+    })
 
     // Remove any stale lockfile
     if (fs.existsSync(lockFile)) {
@@ -150,9 +200,9 @@ app.on('browser-window-created', (event, win) => {
     // do so may result in unexpected behavior" but I haven't seen any yet.
     win.webContents.on('new-window', (event, url) => {
 	event.preventDefault()
-	const win = createWindow(20, 20)
-	win.once('ready-to-show', () => win.show())
-	win.loadURL(url)
+	let newWin = createWindow(win, 20, 20)
+	newWin.once('ready-to-show', () => newWin.show())
+	newWin.loadURL(url)
 	//event.newGuest = win
     })
 
@@ -209,12 +259,12 @@ app.on('second-instance', () => {
 
 // Only allow loading content from localhost
 app.on('web-contents-created', (event, contents) => {
-	contents.on('will-navigate', (event, navigationUrl) => {
-		const url = new URL(navigationUrl)
-		if (url.hostname !== 'localhost') {
-			event.preventDefault()
-		}
-	})
+    contents.on('will-navigate', (event, navigationUrl) => {
+	const url = new URL(navigationUrl)
+	if (url.hostname !== 'localhost') {
+	    event.preventDefault()
+	}
+    })
 })
 
 // Start diogenes-server.pl
@@ -222,7 +272,7 @@ function startServer () {
 	// For Mac and Unix, we assume perl is in the path
 	let perlName = 'perl'
 	if (process.platform == 'win32') {
-		perlName = path.join(app.getAppPath(), '..', 'strawberry', 'perl', 'bin', 'perl.exe')
+		perlName = path.join(app.getAppPath(), '..', '..', 'strawberry', 'perl', 'bin', 'perl.exe')
 	}
 
 	// server/ can be either at ../server or ../../server depending on whether
@@ -232,7 +282,7 @@ function startServer () {
 		serverPath = path.join(app.getAppPath(), '..', '..', 'server', 'diogenes-server.pl')
 	}
 
-	let server = execFile(perlName, [serverPath], {'windowsHide': true})
+        let server = spawn(perlName, [serverPath], {'windowsHide': true})
 	server.stdout.on('data', (data) => {
 		console.log('server stdout: ' + data)
 	})
@@ -240,13 +290,13 @@ function startServer () {
 		console.log('server stderr: ' + data)
 	})
 	server.on('close', (code) => {
-		console.log('Diogenes server exited')
+		console.log('Diogenes server exited (or failed to start)')
 	})
 	return server
 }
 
 // Load settings in lockfile into an object
-function settingsFromLockFile(fn) {
+function settingsFromFile(fn) {
 	let s = fs.readFileSync(fn, {'encoding': 'utf8'})
 	return JSON.parse(s)
 }
@@ -269,7 +319,7 @@ function loadWhenLocked(lockFile, prefsFile, win) {
 			return
 		}
 
-		dioSettings = settingsFromLockFile(lockFile)
+		dioSettings = settingsFromFile(lockFile)
 
 		if(dioSettings.port === undefined || dioSettings.pid === undefined) {
 			console.error("Error, no port or pid settings found in lockFile")
@@ -324,17 +374,19 @@ function saveWindowState(win, path) {
 
 // Load window dimensions and state from a file
 function getWindowState(path) {
-	let s
-	try {
-		s = fs.readFileSync(path, {'encoding': 'utf8'})
-	} catch(e) {
-		return false
-	}
-	try {
-		JSON.parse(s)
-	} catch(e) {
-		return false
-	}
+    let s
+    let ret
+    try {
+	s = fs.readFileSync(path, {'encoding': 'utf8'})
+    } catch(e) {
+	return false
+    }
+    try {
+	ret = JSON.parse(s)
+    } catch(e) {
+	return false
+    }
+    return ret
 }
 
 // Load either the Diogenes homepage or the firstrun page
@@ -359,28 +411,74 @@ function initializeMenuTemplate () {
                         let newWin
                         if (typeof win === 'undefined') {
                             // No existing application window (for Mac only)
-                            newWin = createWindow(0, 0)
+                            newWin = createWindow(null, 0, 0)
                         } else {
                             // Additional window
-                            newWin = createWindow(20, 20)
+                            newWin = createWindow(win, 20, 20)
                         }
                         newWin.loadURL('http://localhost:' + dioSettings.port)
                     }
                 },
                 {
-                    label: 'Database Setup',
+                    label: 'Save File',
+                    accelerator: 'CmdOrCtrl+S',
+                    click: (menu, win) => {
+                        win.webContents.send('saveFileRequest', win);
+                        ipcMain.on('saveFileResponse', (event, path) => {
+                            win.webContents.savePage(path, 'HTMLOnly', function(error) {
+                                if (!error)
+                                    console.log("Saved page successfully");
+                            });
+                        })
+                    }
+                },
+                {
+                    label: 'Print to PDF',
+                    accelerator: 'CmdOrCtrl+P',
+                    click: (menu, win) => {
+                        win.webContents.send('printPDFRequest', win);
+                        ipcMain.on('printPDFResponse', (event, path) => {
+                            win.webContents.printToPDF({}, (error, data) => {
+                                if (error) throw error
+                                fs.writeFile(path, data, (error) => {
+                                    if (error) throw error
+                                    console.log('Wrote PDF successfully.')
+                                })
+                            })
+                        })
+                    }
+                },
+                {
+                    label: 'Database Locations',
                     accelerator: 'CmdOrCtrl+B',
                     click: (menu, win) => {
-                        let newWin = createWindow(20, 20)
+                        let newWin = createWindow(win, 20, 20)
                         newWin.loadFile("pages/firstrun.html")
                     }
                 },
                 {
-                    label: 'Diogenes Settings',
-                    accelerator: 'CmdOrCtrl+S',
+                    label: 'Download TLL PDFs',
                     click: (menu, win) => {
-                        let newWin = createWindow(20, 20)
+                        win.webContents.send('TLLPathRequest', win);
+                        ipcMain.on('TLLPathResponse', (event, path) => {
+                            let newWin = createWindow(win, 20, 20)
+                            newWin.loadURL('http://localhost:' + dioSettings.port + '/tll-pdf-download.cgi')
+                        })
+                    }
+                },
+                {
+                    label: 'Other Settings',
+                    accelerator: 'CmdOrCtrl+T',
+                    click: (menu, win) => {
+                        let newWin = createWindow(win, 20, 20)
 		        newWin.loadURL('http://localhost:' + dioSettings.port + '/Settings.cgi')
+                    }
+                },
+                {
+                    label: 'Close Window',
+                    accelerator: 'CmdOrCtrl+W',
+                    click: (menu, win) => {
+                        win.close()
                     }
                 }
             ]
@@ -391,8 +489,15 @@ function initializeMenuTemplate () {
             role: 'editMenu'
         },
         {
-            label: 'Go',
+            label: 'Navigate',
             submenu: [
+                {label: 'Stop/Kill',
+                 accelerator: 'CmdOrCtrl+K',
+                 click: (menu, win) => {
+                     let contents = win.webContents
+                     contents.stop()
+                     win.webContents.executeJavaScript('stopSpinningCursor()')
+                 }},
                 {label: 'Back',
                  accelerator: 'CmdOrCtrl+[',
                  click: (menu, win) => {
@@ -434,14 +539,14 @@ function initializeMenuTemplate () {
         {
             label: 'View',
             submenu: [
-                {role: 'resetzoom',
+                {role: 'resetZoom',
                  label: 'Original Zoom'},
-                {role: 'zoomin'},
-                {role: 'zoomout'},
+                {role: 'zoomIn'},
+                {role: 'zoomOut'},
                 {type: 'separator'},
                 {role: 'togglefullscreen'},
                 {type: 'separator'},
-                {role: 'toggledevtools'}
+                {role: 'toggleDevTools'}
             ]
         },
         {
@@ -453,7 +558,7 @@ function initializeMenuTemplate () {
             submenu: [
                 {
                     label: 'Learn More',
-                    click () { require('electron').shell.openExternal('http://community.dur.ac.uk/p.j.heslin/Software/Diogenes/diogenes-help.html') }
+                    click () { require('electron').shell.openExternal('https://d.iogen.es/d') }
                 }
             ]
         }
@@ -489,7 +594,7 @@ function initializeMenuTemplate () {
 
     if (process.platform !== 'darwin') {
         template[0].submenu.push(
-                {role: 'quit'}
+            {role: 'quit', accelerator: 'CmdOrCtrl+Q'}
         )
     }
 
@@ -515,6 +620,7 @@ function findText (win) {
         movable: true,
         frame: false,
         transparent: false,
+        webPreferences: webprefs
     })
     findWin.once('ready-to-show', () => {
         findWin.show()

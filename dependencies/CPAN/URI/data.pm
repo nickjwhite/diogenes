@@ -1,9 +1,11 @@
 package URI::data;  # RFC 2397
 
-require URI;
-@ISA=qw(URI);
-
 use strict;
+use warnings;
+
+use parent 'URI';
+
+our $VERSION = '1.76';
 
 use MIME::Base64 qw(encode_base64 decode_base64);
 use URI::Escape  qw(uri_unescape);
@@ -55,7 +57,8 @@ sub data
 	$self->opaque("$enc,$new");
     }
     return unless defined wantarray;
-    return $base64 ? decode_base64($data) : uri_unescape($data);
+    $data = uri_unescape($data);
+    return $base64 ? decode_base64($data) : $data;
 }
 
 # I could not find a better way to interpolate the tr/// chars from
