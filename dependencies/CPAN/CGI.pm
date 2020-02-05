@@ -1687,7 +1687,7 @@ sub startform {
     my($method,$action,$enctype,@other) = 
 	rearrange([METHOD,ACTION,ENCTYPE],@p);
 
-    $method = lc($method) || 'post';
+    $method = lc($method || 'post');
     $enctype = $enctype || &URL_ENCODED;
     unless (defined $action) {
 
