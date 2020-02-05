@@ -119,9 +119,10 @@ my $setup = sub {
 
     print STDERR "Perseus: >$request, $lang, $query, $qquery<\n" if $debug;
 
+    # DiogenesWeb version number
     $dweb = $f->param('dweb');
     if ($dweb) {
-        $picture_dir = 'https://d.iogen.es/static/images/';
+        $picture_dir = "../static/images/";
     }
 
     $dict_file = File::Spec->catfile($perseus_dir, $dicts{$lang}->[0]);
@@ -136,13 +137,28 @@ my $setup = sub {
             -'Access-Control-Allow-Origin' => '*');
     }
     if ($f->param('popup')) {
-        print $f->start_html(-title=>'Perseus Data',
-                             -meta=>{'content' => 'text/html;charset=utf-8'},
-                             -encoding=>"utf-8",
-                             -script=>{-type=>'text/javascript',
-                                           -src=>'diogenes-cgi.js'},
-                             -style=>{ -type=>'text/css',
-                                           -src=>'diogenes.css'});
+        if ($dweb) {
+            print $f->start_html(-title=>'Perseus Data',
+                                 -meta=>{'content' => 'text/html;charset=utf-8'},
+                                 -encoding=>"utf-8",
+                                 -script=>[
+                                      {-type=>'text/javascript',
+                                       -src=>"../static/ver/$dweb/js/version.js"},
+                                      {-type=>'text/javascript',
+                                       -src=>"../static/ver/$dweb/js/file-sidebar.js"},
+                                 ],
+                                 -style=>{ -type=>'text/css',
+                                           -src=>"../static/ver/$dweb/css/DiogenesWeb.css"});
+        }
+        else {
+            print $f->start_html(-title=>'Perseus Data',
+                                 -meta=>{'content' => 'text/html;charset=utf-8'},
+                                 -encoding=>"utf-8",
+                                 -script=>{-type=>'text/javascript',
+                                               -src=>'diogenes-cgi.js'},
+                                 -style=>{ -type=>'text/css',
+                                               -src=>'diogenes.css'});
+        }
         # For jumpTo
         print $f->start_form(-name=>'form',
                              -id=>'form',
@@ -159,6 +175,12 @@ my $setup = sub {
         print $f->hidden( -name => 'JumpFromAction',
                           -default => $f->param('do'),
                           -override => 1 );
+        if ($dweb) {
+            # Says not to create the sidebar controls
+            print $f->hidden( -name => 'popupParse',
+                              -default => 1,
+                              -id => 'popupParse' );
+        }
 
         print qq{<div>};
 
@@ -210,8 +232,15 @@ my $setup = sub {
         }
     }
     $lem_num = 0;
-    $logeion_link = qq{<a href="https://logeion.uchicago.edu/$qquery" target="logeion">Logeion</a>};
-
+    # When back and forth surfing through the lexica, $query is a
+    # numerical offset, so we will have to work harder to figure out
+    # the word.  Until then, we switch the feature off.  FIXME
+    if ($qquery =~ /^[0-9\s]+$/ or $lang eq 'eng') {
+        $logeion_link = ''
+    }
+    else {
+        $logeion_link = qq{<a href="https://logeion.uchicago.edu/$qquery" target="logeion">Logeion</a>};
+    }
 };
 
 # For ascii-sorted files.
@@ -963,8 +992,9 @@ my $parse_english = sub {
 };
 
 my $dispatch = sub {
-    print $logeion_link.'<br/>';
-
+    if ($logeion_link) {
+        print $logeion_link.'<br/>';
+    }
     if ($request eq 'parse') {
         if ($lang eq 'eng') {
             $parse_english->();
