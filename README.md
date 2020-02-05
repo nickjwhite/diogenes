@@ -173,7 +173,7 @@ e.g. https://github.com/Alatius/morpheus
 ### Step 3
 
 The next step is to download the LSJ Greek lexicon and the L-S Latin
-lexica, which were originally digitized by the Perseus project and
+lexicon, which were originally digitized by the Perseus project and
 have subsequently been corrected by the Logeion project.  To get the
 lexica from Logeion, run:
 

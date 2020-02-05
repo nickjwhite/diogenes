@@ -7,7 +7,6 @@ include mk.common
 
 GITHUBTOKEN=replace-this-token
 CLOUDFRONTID=replace-this-id
-PRERELEASE=false
 
 DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 
@@ -269,6 +268,8 @@ install/diogenes-mac-$(DIOGENESVERSION).pkg: app/mac
 	fpm --prefix=/Applications -C app/mac -t osxpkg -n Diogenes -v $(DIOGENESVERSION) --osxpkg-identifier-prefix uk.ac.durham.diogenes -s dir Diogenes.app
 	mv Diogenes-$(DIOGENESVERSION).pkg install/diogenes-mac-$(DIOGENESVERSION).pkg
 
+# Add --verbose to fpm call to diagnose any errors
+
 installer-deb64: install/diogenes-$(DIOGENESVERSION)_amd64.deb
 install/diogenes-$(DIOGENESVERSION)_amd64.deb: app/linux64
 	mkdir -p install
@@ -339,11 +340,11 @@ clean:
 
 # These targets will not be of interest to anyone else
 
-# make release PRERELEASE=true/false GITHUBTOKEN=github-access-token
+# make release GITHUBTOKEN=github-access-token
 release: $(installers)
-	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
-	git push origin master
-	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=$(PRERELEASE)
+#	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
+#	git push origin master
+	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
 	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
 
 # make update-website CLOUDFRONTID=id
@@ -357,3 +358,13 @@ morph-deploy:
 	docker build -t pjheslin/diogenesmorph .
 	docker push pjheslin/diogenesmorph
 	eb deploy
+
+# If data has changed, update prebuilt data
+prebuilt: prebuilt-data.tar.xz
+	mv prebuilt-data.tar.xz ../diogenes-prebuilt-data/
+	cd ../diogenes-prebuilt-data; git add prebuilt-data.tar.xz; git commit -m "Update to prebuilt data"; git push
+
+prebuilt-data.tar.xz:
+	tar -cvf prebuilt-data.tar $(DATA)
+	xz prebuilt-data.tar
+
