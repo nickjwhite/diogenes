@@ -10,3 +10,9 @@
 /server/fonts
 /install
 /server/favicon.ico
+
+# Elastic Beanstalk Files
+#.elasticbeanstalk/*
+#!.elasticbeanstalk/*.cfg.yml
+#!.elasticbeanstalk/*.global.yml
+#!.elasticbeanstalk/config.yml
