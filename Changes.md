@@ -1,5 +1,8 @@
 # Changes in Version 4 of Diogenes
 
+## 4.4 (Forthcoming)
+* Fix find-in-page mini-window bug in fullscreen mode.
+
 ## 4.3
 * Highlight clicked word.
 * Fix sorting of authors with identical names.
