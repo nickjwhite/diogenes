@@ -362,7 +362,9 @@ my $parse_prelims = sub {
 # We use global var to avoid leaking memory with recursive anon subs.
 use vars '$binary_search';
 our $binary_search = sub {
-    local $/ = "\n";
+    # "local" fails and becomes slurping on versions of Windows
+    # local $/ = "\n";
+    $/ = "\n";
     my $word = shift;
     my $start = shift;
     my $stop = shift;
