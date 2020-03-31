@@ -1553,6 +1553,7 @@ sub read_tlg_biblio
 {
     # Only reads in file, too massive to parse now
     my $self = shift;
+    $self->{print_bib_info} = 1;
     return if $bibliography;
     local $/;
     undef $/;
@@ -1562,7 +1563,6 @@ sub read_tlg_biblio
     binmode BIB;
     $bibliography = <BIB>;
     close BIB, $filename or die "Couldn't close $filename: $!";
-    $self->{print_bib_info} = 1;
 }
 
 sub read_phi_biblio
