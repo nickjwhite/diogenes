@@ -781,16 +781,14 @@ sub extract_hits
         $this_work = "$author{$self->{type}}{$self->{auth_num}}, ";
         $this_work .= 
             "$work{$self->{type}}{$self->{auth_num}}{$self->{work_num}} ";
-        $location .= ($self->{print_bib_info} and not 
-                      $self->{bib_info_printed}{$self->{auth_num}}{$self->{work_num}})
+        $location .= ($self->{print_bib_info} and not  $self->{bib_info_printed}{$self->{auth_num}}{$self->{work_num}})
             ? $self->get_biblio_info($self->{type}, $self->{auth_num}, $self->{work_num})
             : $this_work;
-            $self->{bib_info_printed}{$self->{auth_num}}{$self->{work_num}} = 'yes'
-            if $self->{print_bib_info}; 
-        
-            $location .="\&\n";
+        $self->{bib_info_printed}{$self->{auth_num}}{$self->{work_num}} = 'yes' if $self->{print_bib_info};
 
-            my $jumpto = $self->{type}.','.$self->{auth_num}.','.$self->{work_num};
+        $location .="\&\n";
+
+        my $jumpto = $self->{type}.','.$self->{auth_num}.','.$self->{work_num};
             
         foreach (reverse sort keys %{ $self->{level} }) 
         {
