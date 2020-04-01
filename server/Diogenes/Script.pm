@@ -1280,7 +1280,8 @@ $output{filter_splash} = sub
     my $no_filters_msg = 'There are no saved texts';
     my $dis = '';
     $dis = '-disabled=>"true"' unless @filters;
-    my @filter_names = ($no_filters_msg) unless @filters;
+    my @filter_names;
+    @filter_names = ($no_filters_msg) unless @filters;
     push @filter_names, $_->{name} for @filters;
 
 
@@ -2087,8 +2088,10 @@ my $setup = sub {
         $charset = 'ISO-8859-7';
     }
 
+    # Persisting this variable across calls causes problems
+    undef @filters;
     $get_state->();
-    $read_filters->() unless @filters;
+    $read_filters->();
     $previous_page = $st{current_page};
 };
 
