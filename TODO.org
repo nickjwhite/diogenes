@@ -1,6 +1,11 @@
 * Current issues (before 4.3)
 ** Remove stale HTTP cache when upgrading
+** Window size is only remembered for first window
+** Reinstate TLG word-list searching on user-defined subsets
+** Think about a way to override font selection
+https://github.com/foliojs/font-manager
 * Post-release to-do items.
+** Add advanced settings menu item to run Settings.cgi
 ** Fix Wide character warnings when a filter name is in utf8
 This is tricky, as some names seem to be latin-1, not utf8.
 ** Zoom in/out does not work on Linux and Windows
@@ -12,6 +17,7 @@ The current code does seem to work when searching texts, and even when jumping t
 Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
 ** See about enabling user to configure the font.
 * Long-term to-do items
+** Make search output paged?
 ** Make settings page shorter and clearer
    roughly a variant of firstrun page, but ensure that it still works outside of elect
 ** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page

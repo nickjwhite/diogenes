@@ -1,7 +1,9 @@
 # Changes in Version 4 of Diogenes
 
 ## 4.4 (Forthcoming)
-* Fix find-in-page mini-window bug in fullscreen mode.
+* Fixed find-in-page mini-window bug in fullscreen mode.
+* Fixed bug where parsing a word caused the program to hang for certain Windows users.
+* Fixed bug where full bibliographical information was displayed inconsistently on Windows.
 
 ## 4.3
 * Highlight clicked word.
