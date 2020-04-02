@@ -68,11 +68,10 @@ linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, 
 
 // Create a new window (either the first or an additional one)
 function createWindow (oldWin, offset_x, offset_y) {
-    var winstate;
+    var winstate = getWindowState(winStatePath)
 
     if (oldWin == null) {
         // Use saved window state if available
-        let winstate = getWindowState(winStatePath)
         if(winstate && winstate.bounds) {
 	    x = winstate.bounds.x
 	    y = winstate.bounds.y
@@ -92,8 +91,13 @@ function createWindow (oldWin, offset_x, offset_y) {
         // Add desired offset from existing window.
         x = x + offset_x
         y = y + offset_y
-	w = 800
-	h = 600
+        if(winstate && winstate.bounds) {
+	    w = winstate.bounds.width
+	    h = winstate.bounds.height
+        } else {
+	    w = 800
+	    h = 600
+        }
     }
 
     let win = new BrowserWindow({x: x, y: y, width: w, height: h,

@@ -1,6 +1,4 @@
 * Current issues (before 4.3)
-** Remove stale HTTP cache when upgrading
-** Window size is only remembered for first window
 ** Reinstate TLG word-list searching on user-defined subsets
 ** Think about a way to override font selection
 https://github.com/foliojs/font-manager

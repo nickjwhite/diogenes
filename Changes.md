@@ -2,6 +2,7 @@
 
 ## 4.4 (Forthcoming)
 * Fixed find-in-page mini-window bug in fullscreen mode.
+* Fixed new window to use user-specified window size.
 * Fixed bug where parsing a word caused the program to hang for certain Windows users.
 * Fixed bug where full bibliographical information was displayed inconsistently on Windows.
 
