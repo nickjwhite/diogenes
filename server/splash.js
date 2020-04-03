@@ -225,6 +225,7 @@ function splash_setup () {
         '<p class="info-text">Search for particular inflected forms of a given word.  Enter the corpus and (part of) a word in its dictionary form.</p>';
 
     infoText['word_list'] = '<h2 class="info-h2">TLG Word List Search</h2>' +
+        '<p class="info-field">Corpus: ' + corporaAll + '</p>' +
         '<p class="info-field">Pattern:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
         '<p class="info-text">The <i>TLG</i> has a word-list that serves as an index.  For narrow searches, using the word list can be faster; for big searches, it may be much slower.  Enter a word (without diacritics) to see matches from the word-list.  Put a space in front to match only at the beginning of words.</p>';
 

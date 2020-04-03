@@ -701,11 +701,15 @@ $output{author_search} = sub
 my $use_and_show_filter = sub
 {
     my $q = shift;
+    my $word_list_search = shift;
     my $filter;
     $filter = $current_filter ? $current_filter :
         ($st{saved_filter} ? $get_filter->($st{saved_filter}) : undef);
     if ($filter)
     {
+        if ($word_list_search and $filter->{type} ne 'tlg') {
+            $print_error->('You cannot perform a TLG word-index search on a user-defined subcorpus which is not part of the TLG!')
+        }
         my $work_nums = $filter->{authors};
         my @texts = $q->select_authors( -author_nums => $work_nums);
 
@@ -876,7 +880,7 @@ $output{indexed_search} = sub
     $st{current_page} = 'word_list';
     my @params = $f->param;
 
-    $use_and_show_filter->($q);
+    $use_and_show_filter->($q, 'true');
     # Since this is a 2-step search, we have to save it.
     $st{saved_filter} = $st{corpus} if $current_filter;
 
