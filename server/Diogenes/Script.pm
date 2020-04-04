@@ -184,12 +184,20 @@ my $print_title = sub
         $script = {-type=>'text/javascript',
                    -src=>'diogenes-cgi.js'};
     }
+    my $user_css = '';
+    my $user_css_file = File::Spec->catfile($Diogenes::Base::config_dir, 'user.css');
+    if (-e $user_css_file) {
+        open my $css_fh, '<', $user_css_file or die $!;
+        local $/ = undef;
+        $user_css = <$css_fh>;
+    }
     print
         $f->start_html(-title=>$title,
                        -encoding=>$charset,
                        -script=>$script,
                        -style=>{ -type=>'text/css',
-                                 -src=>'diogenes.css'},
+                                 -src=>'diogenes.css',
+                                 -verbatim=>$user_css},
                        -meta=>{'content' => 'text/html;charset=utf-8'},
                        -class=>'waiting'),
     '<div class="wrapper">', # for sticky footer and side padding
