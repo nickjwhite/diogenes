@@ -5,6 +5,7 @@
 * Fixed new window to use user-specified window size.
 * Fixed bug where parsing a word caused the program to hang for certain Windows users.
 * Fixed bug where full bibliographical information was displayed inconsistently on Windows.
+* Reinstated word-list searches for user-defined subsets of the TLG.
 
 ## 4.3
 * Highlight clicked word.

@@ -1,5 +1,4 @@
 * Current issues (before 4.3)
-** Reinstate TLG word-list searching on user-defined subsets
 ** Think about a way to override font selection
 https://github.com/foliojs/font-manager
 * Post-release to-do items.
