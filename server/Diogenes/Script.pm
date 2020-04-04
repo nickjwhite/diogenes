@@ -708,7 +708,8 @@ my $use_and_show_filter = sub
     if ($filter)
     {
         if ($word_list_search and $filter->{type} ne 'tlg') {
-            $print_error->('You cannot perform a TLG word-index search on a user-defined subcorpus which is not part of the TLG!')
+            $print_error->('You cannot perform a TLG word-index search on a user-defined subcorpus which is not part of the TLG!');
+            $q->barf;
         }
         my $work_nums = $filter->{authors};
         my @texts = $q->select_authors( -author_nums => $work_nums);
