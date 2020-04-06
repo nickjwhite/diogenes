@@ -117,7 +117,7 @@ my $setup = sub {
     # Convert to utf8 unless already converted
     $qquery = Encode::decode(utf8=>$qquery) unless $qquery =~ /[^\x00-\xFF]/;
 
-    print STDERR "Perseus: >$request, $lang, $query, $qquery<\n" if $debug;
+    print STDERR "Perseus: >$request, $lang, $query, $qquery, $inp_enc<\n" if $debug;
 
     # DiogenesWeb version number
     $dweb = $f->param('dweb');
@@ -202,7 +202,7 @@ my $setup = sub {
     elsif ($inp_enc eq 'utf8' or
            $query =~ m/[\x80-\xff]/) {
         # Raw bytes that need to be decoded
-        $query = Encode::decode(utf8=>$query);
+        $query = Encode::decode('utf8', $query);
         my $c = new Diogenes::UnicodeInput;
         $query = $c->unicode_greek_to_beta($query);
         $query = lc $query;
@@ -235,7 +235,7 @@ my $setup = sub {
     # When back and forth surfing through the lexica, $query is a
     # numerical offset, so we will have to work harder to figure out
     # the word.  Until then, we switch the feature off.  FIXME
-    if ($qquery =~ /^[0-9\s]+$/ or $lang eq 'eng') {
+    if ($qquery =~ /^[0-9\s]+$/ or $lang eq 'eng' or $f->param('noheader')) {
         $logeion_link = ''
     }
     else {
@@ -405,6 +405,7 @@ my $normalize_latin_lemma = sub {
 
 my $normalize_greek_lemma = sub {
     my $lemma = shift;
+    $lemma = lc $lemma;
     # We strip breathings, too, because that surprises less
     $lemma =~ s/[_^,-\\\/=+\d)(]//g;
     return $lemma;
@@ -872,7 +873,7 @@ my $find_lemma = sub {
             $dicts{$key} = $dict;
         }
     }
-    my $qq = $lang eq "grk" ? $beta_to_utf8->($query) : $query;
+    my $qq = $f->param('q');
     if (@results) {
         my %labels;
         $labels{$_} = qq{<a onClick="getEntry$lang('$dicts{$_}');">}.

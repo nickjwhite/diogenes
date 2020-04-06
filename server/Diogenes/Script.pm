@@ -729,15 +729,24 @@ my $use_and_show_filter = sub
     }
 };
 
+my $input_encoding = sub {
+    my $word = shift;
+    if ($word =~ m/^\p{InBasicLatin}+$/) {
+        return ('lat', '')
+    }
+    else {
+        return ('grk', 'Unicode')
+    }
+};
+
 $output{lookup} = sub {
     my $action = shift;
     $print_title->('Diogenes Perseus Lookup Page');
     $print_header->();
     $st{current_page} = 'lookup';
 
-    my $lang = $prob_lang{$st{short_type}};
-    my $inp_enc = $init->{input_encoding};
     my $query = $st{query};
+    my ($lang, $inp_enc) = $input_encoding->($query);
     $query =~ s/\s//g;
     if ($inp_enc eq 'Unicode') {
         $lang = ($query =~ m/^[\x01-\x7f]+$/) ? 'lat' : 'grk';
@@ -745,10 +754,9 @@ $output{lookup} = sub {
     $lang = 'eng' if $query =~ s/^@//;
 #     my $perseus_params = qq{do=$action&lang=$lang&q=$query&popup=1&noheader=1&inp_enc=$inp_enc};
     my $perseus_params = qq{do=$action&lang=$lang&q=$query&noheader=1&inp_enc=$inp_enc};
-    print STDERR ">>$perseus_params\n"  if $init->{debug};
+    print STDERR ">>X $perseus_params\n"  if $init->{debug};
     $Diogenes_Daemon::params = $perseus_params;
-    do "Perseus.cgi" or die $!;
-
+    eval { $Diogenes::Perseus::go->($perseus_params) };
     $my_footer->();
 
 };
@@ -762,12 +770,12 @@ $output{lemma} = sub {
     $st{saved_filter} = $st{corpus} if $current_filter;
     my %args = $get_args->();
     my $q = new Diogenes::Base(%args);
-    $st{lang} = $q->{input_lang} =~ m/g/i ? 'grk' : 'lat';
-    my $inp_enc = $init->{input_encoding};
+    my ($lang, $inp_enc) = $input_encoding->($st{query});
+    $st{lang} = $lang;
     my $perseus_params = qq{do=lemma&lang=$st{lang}&q=$st{query}&noheader=1&inp_enc=}.$inp_enc;
-    print STDERR ">>$perseus_params\n" if $init->{debug};
+    print STDERR ">>XX $perseus_params\n" if $init->{debug};
     $Diogenes_Daemon::params = $perseus_params;
-    do "Perseus.cgi" or die $!;
+    eval { $Diogenes::Perseus::go->($perseus_params) };
 
     print
         $f->p(
@@ -798,8 +806,11 @@ $output{lemmata} = sub {
     my $n = 0;
     $st{current_page} = 'inflections';
     my $lem_string = join " ", @{ $st{lemma_list} };
-    $Diogenes_Daemon::params = qq{do=inflects&lang=$st{lang}&q=$lem_string&noheader=1};
-    do "Perseus.cgi" or die $!;
+    my $perseus_params = qq{do=inflects&lang=$st{lang}&q=$lem_string&noheader=1};
+    $Diogenes_Daemon::params = $perseus_params;
+    print STDERR ">>XXX $perseus_params\n" if $init->{debug};
+    eval { $Diogenes::Perseus::go->($perseus_params) };
+
     delete $st{lemma_list};
     print
         $f->hr,
