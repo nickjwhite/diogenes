@@ -10,6 +10,7 @@
 /server/fonts
 /install
 /server/favicon.ico
+Changes.html
 
 # Elastic Beanstalk Files
 #.elasticbeanstalk/*
