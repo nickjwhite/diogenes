@@ -185,11 +185,14 @@ my $print_title = sub
                    -src=>'diogenes-cgi.js'};
     }
     my $user_css = '';
-    my $user_css_file = File::Spec->catfile($Diogenes::Base::config_dir, 'user.css');
-    if (-e $user_css_file) {
-        open my $css_fh, '<', $user_css_file or die $!;
-        local $/ = undef;
-        $user_css = <$css_fh>;
+    for my $file (qw(config.css user.css)) {
+        my $css_file = File::Spec->catfile($Diogenes::Base::config_dir, $file);
+        if (-e $css_file) {
+            open my $css_fh, '<', $css_file or die $!;
+            local $/ = undef;
+            $user_css .= <$css_fh>;
+            $user_css .= "\n";
+        }
     }
     print
         $f->start_html(-title=>$title,
