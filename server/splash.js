@@ -168,9 +168,12 @@ var searchTooltip =
     'Use your computer\'s Unicode Greek keyboard. '+
     'There are two Greek input modes for searching: loose and strict. '+
     'In loose mode, just enter Greek lowercase letters and (optionally) '+
-    'breathings.  This will search for both upper and lowercase letters '+
+    'breathings. You can do this in the Greek or Latin alphabet ' +
+    '(using Beta code transliteration). ' +
+    'This will search for both upper and lowercase letters '+
     'and will permit accents to appear anywhere in the search term. '+
-    'If your Greek search term includes accents or uppercase letters, '+
+    'If your search term is entered in Greek letters ' +
+    'with accents or uppercase, '+
     'it will be interpreted in strict mode and Diogenes will only match words '+
     'with your exact accentuation and capitalization. '+
     'In other words, if you specify one accent or capital letter in your search pattern, '+
