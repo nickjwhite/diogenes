@@ -4,9 +4,11 @@ const {ipcRenderer} = require('electron')
 const {dialog} = require('electron').remote
 const path = require('path');
 const fs = require('fs');
+const fontList = require('./node-font-list/index.js')
 
 dioSettingsDir = ipcRenderer.sendSync('getsettingsdir')
 dioSettingsFile = path.join(dioSettingsDir, 'diogenes.prefs')
+cssConfigFile = path.join(dioSettingsDir, 'config.css')
 
 let dbs = ['PHI', 'TLG', 'DDP', 'TLL_PDF', 'OLD_PDF']
 
@@ -234,6 +236,101 @@ function findEvent (e) {
     var string = e.detail.findString
     var direction = e.detail.findDirection
     ipcRenderer.send('findText', string, direction)
+}
+
+// Show list of installed fonts
+function showFonts () {
+    document.getElementById('fontSelectButton').addEventListener('click', setNewFont)
+    document.getElementById('fontRevertButton').addEventListener('click', revertFont)
+    document.getElementById('fontAbortButton').addEventListener('click', cancelFont)
+
+    var list = document.getElementById('fontList')
+    var current = cssReadFont()
+    console.log('current:', current)
+    fontList.getFonts()
+        .then(fonts => {
+            // console.log(fonts)
+            fonts.forEach(font => {
+                var option = document.createElement('option')
+                option.setAttribute('value', font)
+                var text = font.replace(/^"|"$/g, '')
+                option.append(document.createTextNode(text));
+                if (current && text == current) {
+                    option.setAttribute('selected', 'selected')
+                }
+                list.append(option)
+            })
+        })
+        .catch(err => {
+            console.log(err)
+        })
+}
+
+function isFontPage() {
+    // Only load on the font select page
+    if (document.getElementById('fontPage') !== null) {
+        showFonts()
+    }
+}
+
+window.addEventListener('load', isFontPage, false)
+
+function setNewFont () {
+    var list = document.getElementById("fontList");
+    var font = list.options[list.selectedIndex].value;
+    font = font.replace(/^"|"$/g, '')
+    cssWriteFont(font)
+    window.close()
+}
+
+function revertFont () {
+    try {
+        fs.unlinkSync(cssConfigFile)
+    } catch(e) {
+        console.log('Could not unlink CSS file. ', e)
+    }
+    window.close()
+}
+
+function cancelFont () {
+    window.close()
+}
+
+function cssReadFont () {
+    // Read existing db settings
+    try {
+        data = fs.readFileSync(cssConfigFile, 'utf8')
+        console.log('data: ', data)
+    } catch(e) {
+        return null
+    }
+    if (data) {
+        let re = new RegExp('font-family:\\s*["\'](.*?)["\'];', 'm')
+        let ar = re.exec(data)
+        if(ar) {
+            console.log('ar: ', ar)
+            return ar[1]
+        }
+        return null
+    }
+}
+
+function cssWriteFont (font) {
+    try {
+        fs.unlinkSync(cssConfigFile)
+    } catch (e) {
+        console.log('No existing CSS config.')
+    }
+    data = `body {
+  font-family: '${font}';
+}
+`
+    try {
+        fs.writeFileSync(cssConfigFile, data)
+    } catch(e) {
+        console.log('Could not write CSS file. ', e)
+    }
+    window.close()
 }
 
 

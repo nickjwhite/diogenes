@@ -402,6 +402,23 @@ function loadFirstPage(prefsFile, win) {
 	}
 }
 
+function makeFontWin (win) {
+    return new BrowserWindow({
+        parent: win,
+        show: true,
+        modal: true,
+        width: 600,
+        height: 400,
+        resizable: false,
+        movable: false,
+        frame: true,
+        transparent: false,
+        fullscreen: false,
+        webPreferences: webprefs
+    })
+}
+
+
 // Menus
 function initializeMenuTemplate () {
     const template = [
@@ -458,6 +475,14 @@ function initializeMenuTemplate () {
                     click: (menu, win) => {
                         let newWin = createWindow(win, 20, 20)
                         newWin.loadFile("pages/firstrun.html")
+                    }
+                },
+                {
+                    label: 'Change Font',
+                    accelerator: 'CmdOrCtrl+U',
+                    click: (menu, win) => {
+                        let newWin = makeFontWin()
+                        newWin.loadFile("pages/font.html")
                     }
                 },
                 {

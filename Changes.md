@@ -1,12 +1,14 @@
 # Changes in Version 4 of Diogenes
 
 ## 4.4 (Forthcoming)
-* Fixed find-in-page mini-window bug in fullscreen mode.
-* Fixed new window to use user-specified window size.
+* Added a new menu item to set the display font.
+* Added facility to permit user-defined CSS to override display settings.
 * Fixed bug where parsing a word caused the program to hang for certain Windows users.
-* Fixed bug where full bibliographical information was displayed inconsistently on Windows.
+* Fixed new window to use user-specified window size.
 * Reinstated word-list searches for user-defined subsets of the TLG.
 * Fixed morphological search functionality that was broken in the previous release.
+* Fixed find-in-page mini-window bug in fullscreen mode.
+* Fixed bug where full bibliographical information was displayed inconsistently on Windows.
 
 ## 4.3
 * Highlight clicked word.

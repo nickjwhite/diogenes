@@ -1,6 +1,3 @@
-* Current issues (before 4.3)
-** Think about a way to override font selection
-https://github.com/foliojs/font-manager
 * Post-release to-do items.
 ** Add advanced settings menu item to run Settings.cgi
 ** Fix Wide character warnings when a filter name is in utf8

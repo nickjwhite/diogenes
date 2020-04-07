@@ -11,6 +11,7 @@
 /install
 /server/favicon.ico
 Changes.html
+/client/node-font-list
 
 # Elastic Beanstalk Files
 #.elasticbeanstalk/*
