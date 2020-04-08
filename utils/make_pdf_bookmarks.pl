@@ -110,10 +110,11 @@ foreach my $file (@sorted) {
 
           # We only record first entry when a lemma has several
           next LINE if $title =~ m/^[23456789]\.\ /;
+          # Addenda.  In vol. 44, these are corrigenda, so we do not
+          # want to overwrite the earlier, correct bookmark.
+          next LINE if $title =~ m/\[ADD\]/;
           # Leading 1.
           $title =~ s/^1\.\s+//;
-          # Addenda
-          $title =~ s/\s*\[ADD\]//;
           # Embedded punctuation
           $title =~ s/\&lt;//g;
           $title =~ s/\&gt;//g;
