@@ -245,6 +245,9 @@ function showFonts () {
     document.getElementById('fontAbortButton').addEventListener('click', cancelFont)
 
     var list = document.getElementById('fontList')
+    var loading = document.getElementById('fontLoading')
+    var select = document.createElement('select')
+    select.setAttribute('id', 'fontSelect')
     var current = cssReadFont()
     console.log('current:', current)
     fontList.getFonts()
@@ -258,8 +261,10 @@ function showFonts () {
                 if (current && text == current) {
                     option.setAttribute('selected', 'selected')
                 }
-                list.append(option)
+                select.append(option)
             })
+            list.removeChild(loading)
+            list.append(select)
         })
         .catch(err => {
             console.log(err)
@@ -276,7 +281,7 @@ function isFontPage() {
 window.addEventListener('load', isFontPage, false)
 
 function setNewFont () {
-    var list = document.getElementById("fontList");
+    var list = document.getElementById("fontSelect");
     var font = list.options[list.selectedIndex].value;
     font = font.replace(/^"|"$/g, '')
     cssWriteFont(font)
