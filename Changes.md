@@ -9,6 +9,7 @@
 * Fixed morphological search functionality that was inadvertently broken in the previous release.
 * Fixed find-in-page mini-window bug in fullscreen mode.
 * Fixed bug where full bibliographical information was displayed inconsistently on Windows.
+* Fixed some erroneous TLL page references, caused by later corrigenda.
 
 ## 4.3
 * Highlight clicked word.
