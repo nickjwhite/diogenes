@@ -342,8 +342,8 @@ clean:
 
 # make release GITHUBTOKEN=github-access-token
 release: $(installers)
-#	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
-#	git push origin master
+	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
+	git push origin master
 	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
 	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
 
