@@ -26,7 +26,11 @@ END
 my %greek_punctuation = (
     "\x{0387}" => ':',
     "\x{037E}" => ';',
-    "\x{2014}" => '_'
+    "\x{2014}" => '_',
+    # All marks of elision need to be turned into apostrophes
+    "\x{0027}" => '\'',
+    "\x{2019}" => '\'',
+    "\x{1FBD}" => '\''
     );
 
 sub unicode_pattern {
@@ -86,12 +90,14 @@ sub unicode_greek_to_beta {
     }
 
     my $out = '';
-    while ($pat =~ m/(\s*)(\p{L})(\p{Mn}*)(\p{P}*)(\s*)/g) {
+    # Koronis (for elision) is not included in \p{P} class
+    while ($pat =~ m/(\s*)(\p{L})(\p{Mn}*)([\p{P}\x{1FBD}]*)(\s*)/g) {
         my $front_space = $1 || '';
         my $initial_char = $2;
         my $initial_diacrits = $3 || '';
         my $punct = $4 || '';
         my $end_space = $5 || '';
+        # print STDERR "|$1|$2|$3|$4|$5|\n";
         my ($char, $diacrits) = $self->decompose($initial_char, $initial_diacrits);
         my $cap;
         if (exists $upper_to_lower{$char}) {

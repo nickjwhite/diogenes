@@ -201,6 +201,7 @@ my $setup = sub {
     }
     elsif ($inp_enc eq 'utf8' or
            $query =~ m/[\x80-\xff]/) {
+        # print STDERR "Q1: $query\n";
         # Raw bytes that need to be decoded
         $query = Encode::decode('utf8', $query);
         my $c = new Diogenes::UnicodeInput;
@@ -931,14 +932,17 @@ my $do_parse = sub {
     $query =~ s#\\#/#g;
     # Remove ~hit~ and punctuation
     $query =~ s/~hit~//;
-    # Do not remove apostrophes from Greek! (Morpheus knows about elided forms)
+    # remove leading & trailing spaces
+    $query =~ s/^\s+//g;
+    $query =~ s/\s+$//g;
+    # Do not remove apostrophes from Greek! (Morpheus knows about elided forms) ...
     $query =~ s/[~,.;:?!"]//g;
+    # ... but do change Unicode koronis or curly quote into an
+    # apostrophe when it shows elision, or Morpheus won't understand.
+    $query =~ s/[᾽’]$/'/g;
     # In Latin, however, apostrophes are just single quotation marks and need to be removed.
     $query =~ s/[']//g if $lang eq 'lat';
     my $word = $query;
-    # remove leading & trailing spaces
-    $word =~ s/^\s+//g;
-    $word =~ s/\s+$//g;
     # remove diareses
     $word =~ s/\+//g;
     # print STDERR "\n\n-$word-$query-\n";
