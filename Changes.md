@@ -1,5 +1,8 @@
 # Changes in Version 4 of Diogenes
 
+## 4.5 (forthcoming)
+* Fixed LSJ link when parsing ὄνος.
+
 ## 4.4
 * Added a new menu item to permit the user to set the display font.
 * Added a facility to permit user-defined CSS to override display settings.

@@ -32,10 +32,11 @@ while (<>) {
                 next if $var eq '0';
                 $var = lc($var);
             }
-            # Error in both LSJs
+            # Errors in both LSJs
             next if ($key eq 'fakos' and $var eq 'o( ');
             next if ($key eq 'gunaikeios' and $var eq 'ko/lpos');
             next if ($key eq 'pappas' and $var eq 'pa=s');
+            next if ($key eq 'leukosternos' and $var eq 'o)/nos');
             print_variants($var);
         }
     }
