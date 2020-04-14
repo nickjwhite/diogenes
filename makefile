@@ -341,7 +341,8 @@ clean:
 # These targets will not be of interest to anyone else
 
 # make release GITHUBTOKEN=github-access-token
-release: $(installers)
+# release: $(installers)
+release:
 	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
 	git push origin master
 	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
