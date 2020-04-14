@@ -239,7 +239,7 @@ my $setup = sub {
         $logeion_link = ''
     }
     else {
-        $logeion_link = qq{<a href="https://logeion.uchicago.edu/$qquery" target="logeion">Logeion</a>};
+        $logeion_link = qq{<a href="https://logeion.uchicago.edu/$qquery" class="logeion-link" target="logeion">Logeion</a>};
     }
 };
 

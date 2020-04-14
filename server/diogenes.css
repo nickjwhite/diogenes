@@ -408,3 +408,8 @@ img.prev {
 .highlighted-word {
   background-color: lightgrey;
 }
+
+.logeion-link {
+  text-decoration: none;
+  color: #28709a;
+}
