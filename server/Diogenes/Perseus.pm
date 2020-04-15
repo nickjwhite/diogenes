@@ -148,7 +148,8 @@ my $setup = sub {
                                        -src=>"../static/ver/$dweb/js/file-sidebar.js"},
                                  ],
                                  -style=>{ -type=>'text/css',
-                                           -src=>"../static/ver/$dweb/css/DiogenesWeb.css"});
+                                -src=>"../static/ver/$dweb/css/DiogenesWeb.css"});
+            print qq{<span hidden>$Diogenes::Base::Version</span>};
         }
         else {
             print $f->start_html(-title=>'Perseus Data',
@@ -189,6 +190,7 @@ my $setup = sub {
     }
     else {
         print qq{<div id="sidebar-control"></div>};
+        print qq{<span hidden>Version $Diogenes::Base::Version</span>};
     }
 
     if ($lang ne 'grk') {
