@@ -627,13 +627,11 @@ my $old_pdf_link = sub {
     open my $old_fh, "<$old_file" or warn "Could not open $old_file!\n";
     my $page = 1;
     local $/ = "\n";
-    print STDERR "W: $word\n";
     while (my $line = <$old_fh>) {
         $line =~ m/(\w+)\t(\d+)/;
         my $headword = $1;
         $page = $2;
         next unless $headword and $page;
-        print STDERR "H: $headword";
         # print STDERR "$word, $headword, $page, ".($word cmp $headword)."\n";
         last if (($word cmp $headword) <= 0);
     }
