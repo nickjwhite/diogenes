@@ -619,16 +619,21 @@ my $old_pdf_link = sub {
     $word = $normalize_latin_lemma->($word);
     $word =~ tr/vj/ui/;
     $word =~ tr /A-Z/a-z/;
+    # Remove numeric entities for accents, macrons, etc.
+    $word =~ s/&[^;]+;//g;
+    $word =~ s/[^a-z]//g;
     my $old_file = File::Spec->catfile($perseus_dir, 'old-bookmarks.txt');
     return '<br/>' unless -e $old_file;
     open my $old_fh, "<$old_file" or warn "Could not open $old_file!\n";
     my $page = 1;
     local $/ = "\n";
+    print STDERR "W: $word\n";
     while (my $line = <$old_fh>) {
         $line =~ m/(\w+)\t(\d+)/;
         my $headword = $1;
         $page = $2;
         next unless $headword and $page;
+        print STDERR "H: $headword";
         # print STDERR "$word, $headword, $page, ".($word cmp $headword)."\n";
         last if (($word cmp $headword) <= 0);
     }
