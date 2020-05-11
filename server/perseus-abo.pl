@@ -77,7 +77,9 @@ $Diogenes::Perseus::translate_abo = sub {
                 # has changed so that the lives of the Caesars are now
                 # independent, numbered works rather than named books
                 # of a single work.
-                $abo = 'phi,1348,001:' . $suet_map{$num} . $loc;
+                if (exists $suet_map{$num} and $loc) {
+                    $abo = 'phi,1348,001:' . $suet_map{$num} . $loc;
+                }
             }
             else {
                 print STDERR "Could not understand Suetonius abo: $abo\n"
