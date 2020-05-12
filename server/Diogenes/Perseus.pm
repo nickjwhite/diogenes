@@ -596,6 +596,11 @@ my $tll_pdf_link = sub {
     # that the numbers used by L-S and TLL will correspond.
     $word =~ s/\s*\d+$//;
     $word = $normalize_latin_lemma->($word);
+    # Remove numeric entities for accents, macrons, etc.
+    $word =~ s/&[^;]+;//g;
+    $word =~ s/[^a-z]//g;
+    $word =~ tr/vj/ui/;
+    print STDERR "W: $word\n";
     $tll_parse_setup->();
     $parse_prelims->();
     my $bookmark = $try_parse->($word);
