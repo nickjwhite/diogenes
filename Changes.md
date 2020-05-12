@@ -1,6 +1,9 @@
 # Changes in Version 4 of Diogenes
 
 ## 4.5 (forthcoming)
+* Fixed downloading of TLL PDFs after reorganization of BAdW website.
+* Fixed OLD and TLL links for words with diacritics.
+* Removed some errors in TLL page numbers.
 * Fixed LSJ link when parsing ὄνος.
 
 ## 4.4

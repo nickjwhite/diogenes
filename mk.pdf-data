@@ -35,10 +35,3 @@ $(DATA)/tll-pdf-list.txt: $(DATA)/tll-bookmarks.txt
 
 clean:
 	rm -f $(DATAFILES)
-
-downfoo:
-	for TLL in $(TLLFILES); do curl -go "$(TLLDIR)/$$TLL" "$(TLLSITE)/$$TLL"; done
-
-download:
-	mkdir -p $(TLLDIR)
-	cd $(TLLDIR);curl -gO $(TLLFILES)

@@ -124,10 +124,13 @@ foreach my $file (@sorted) {
           next LINE if $title =~ m/^[ ,\-]/;
 
           # Iterate over comma-separated forms
-        WORD: while ($title =~ m/(\w+?)(?:,\s+|\s*$)/g) {
-            my $word = $1;
+          my @words = split /,/, $title;
+        WORD: foreach my $word (@words) {
+            $word =~ s/^\s+//g;
+            $word =~ s/\s+$//g;
             next WORD if $word =~ m/-/;
             next WORD if $word =~ m/^(us|onis)$/;
+            $word =~ tr/vj/ui/;
 
             $bookmarks{$word} = "$index\t$page";
         }
