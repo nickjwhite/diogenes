@@ -808,7 +808,7 @@ $output{lemmata} = sub {
     $print_header->();
     my $n = 0;
     $st{current_page} = 'inflections';
-    my $lem_string = join " ", @{ $st{lemma_list} };
+    my $lem_string = join "{}", @{ $st{lemma_list} };
     my $perseus_params = qq{do=inflects&lang=$st{lang}&q=$lem_string&noheader=1};
     $Diogenes_Daemon::params = $perseus_params;
     print STDERR ">>XXX $perseus_params\n" if $init->{debug};

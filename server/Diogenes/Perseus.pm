@@ -855,7 +855,7 @@ my $do_inflect = sub {
 };
 
 my $do_inflects = sub {
-    my @lemmata = split /[,\s]+/, $query;
+    my @lemmata = split /{}/, $query;
     for (@lemmata) {
         next if m/^\s*$/;
         $do_inflect->($_);

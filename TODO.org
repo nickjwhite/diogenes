@@ -1,9 +1,3 @@
-* Bugs
-** Word-list search bug when one of the patterns is very short, by error
-Try ἐκ,ἀνά-στατόω
-Diogenes Error: Input pattern is not long enough (must be at least 2 letters).
-Fix lemmata like this and give better error message (or permit for indexed searches)
-** Default to having all word list items selected.
 * Post-release to-do items.
 ** Add advanced settings menu item to run Settings.cgi
 ** Fix Wide character warnings when a filter name is in utf8

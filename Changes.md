@@ -3,6 +3,7 @@
 ## 4.5 (forthcoming)
 * Fixed downloading of TLL PDFs after reorganization of BAdW website.
 * Fixed OLD and TLL links for words with diacritics.
+* Fixed bug in morphological search when Perseus lemma has a comma in it.
 * Removed some errors in TLL page numbers.
 * Fixed LSJ link when parsing ὄνος.
 
