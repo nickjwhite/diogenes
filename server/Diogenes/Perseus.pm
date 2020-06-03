@@ -449,6 +449,8 @@ my $text_with_links = sub {
 
 my $munge_ls_lemma = sub {
     my $text =shift;
+    $text =~ s/&lt;/</g;
+    $text =~ s/&gt;/>/g;
     $text =~ s/\_/&#x304;/g;
     $text =~ s/\^/&#x306;/g;
     $text =~ s/#?(\d)$/ $1/g;
@@ -648,7 +650,16 @@ our $munge_element = sub {
     my $e = shift;
     $swap_element->($e, 0); # open it
     if ($e->{name} eq 'entryFree' or $e->{name} eq 'div2' or $e->{name} eq 'div1') {
-        my $key = $e->{attrib}->{key};
+        my $key;
+        if ($e->{content}->[0]->{name} eq 'head' and
+            $e->{content}->[0]->{attrib}->{orth_orig}) {
+            # Only present in Logeion LSJ
+            $key = $e->{content}->[0]->{attrib}->{orth_orig};
+        }
+        else {
+            $key = $e->{attrib}->{key};
+        }
+        print STDERR "K: $key\n";
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';
         $out .= '<h2><span style="display:block;float:left">' . $key . '</span>';
