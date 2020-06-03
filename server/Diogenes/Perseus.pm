@@ -659,7 +659,6 @@ our $munge_element = sub {
         else {
             $key = $e->{attrib}->{key};
         }
-        print STDERR "K: $key\n";
         $key = $munge_ls_lemma->($key) if $lang eq 'lat';
         $key = $beta_to_utf8->($key) if $lang eq 'grk';
         $out .= '<h2><span style="display:block;float:left">' . $key . '</span>';
