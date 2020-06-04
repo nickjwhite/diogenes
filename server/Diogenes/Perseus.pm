@@ -602,7 +602,6 @@ my $tll_pdf_link = sub {
     $word =~ s/&[^;]+;//g;
     $word =~ s/[^a-z]//g;
     $word =~ tr/vj/ui/;
-    print STDERR "W: $word\n";
     $tll_parse_setup->();
     $parse_prelims->();
     my $bookmark = $try_parse->($word);

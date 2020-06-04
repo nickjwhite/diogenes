@@ -1,5 +1,8 @@
 # Changes in Version 4 of Diogenes
 
+## 4.6 (forthcoming)
+* Fixed display of some LSJ headwords.
+
 ## 4.5
 * Fixed downloading of TLL PDFs after reorganization of BAdW website.
 * Fixed OLD and TLL links for words with diacritics.
