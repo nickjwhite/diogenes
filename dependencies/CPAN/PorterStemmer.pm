@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 
 # Porter stemmer in Perl. Few comments, but it's easy to follow against the rules in the original
 # paper, in

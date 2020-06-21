@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 use strict;
 
 my $tlgdir = shift @ARGV or die "Usage: $0 tlgdir\n";

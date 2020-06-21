@@ -2,7 +2,7 @@
 # uses <div1> instead of <div2> as for LSJ.
 
 
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 use strict;
 use warnings;
 # utf8 in and out.
