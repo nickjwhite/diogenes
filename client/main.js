@@ -67,10 +67,19 @@ linkContextMenu.append(new MenuItem({label: 'Open in New Window', click: (item, 
 }}))
 
 // Create a new window (either the first or an additional one)
-function createWindow (oldWin, offset_x, offset_y) {
+function createWindow (oldWin, offset_x, offset_y, defaultPos) {
     var winstate = getWindowState(winStatePath)
 
-    if (oldWin == null) {
+    if (defaultPos) {
+        // These values can get messed up when swapping displays so
+        // that all windows are put off-screen, so we need to provide
+        // an emergency way for the user to reset them.
+        x = 0
+        y = 0
+        w = 800
+        h = 600
+    }
+    else if (oldWin == null) {
         // Use saved window state if available
         if(winstate && winstate.bounds) {
 	    x = winstate.bounds.x
@@ -418,6 +427,15 @@ function makeFontWin (win) {
     })
 }
 
+function makeNewWin (win, defaultPos) {
+    if (typeof win === 'undefined') {
+        // No existing application window (for Mac only)
+        return createWindow(null, 0, 0, defaultPos)
+    } else {
+        // Additional window
+        return createWindow(win, 20, 20, defaultPos)
+    }
+}
 
 // Menus
 function initializeMenuTemplate () {
@@ -429,14 +447,15 @@ function initializeMenuTemplate () {
                     label: 'New Window',
                     accelerator: 'CmdOrCtrl+N',
                     click: (menu, win) => {
-                        let newWin
-                        if (typeof win === 'undefined') {
-                            // No existing application window (for Mac only)
-                            newWin = createWindow(null, 0, 0)
-                        } else {
-                            // Additional window
-                            newWin = createWindow(win, 20, 20)
-                        }
+                        let newWin = makeNewWin(win, false)
+                        newWin.loadURL('http://localhost:' + dioSettings.port)
+                    }
+                },
+                {
+                    label: 'New Win (reset position)',
+                    accelerator: 'CmdOrCtrl+!',
+                    click: (menu, win) => {
+                        let newWin = makeNewWin(win, true)
                         newWin.loadURL('http://localhost:' + dioSettings.port)
                     }
                 },
