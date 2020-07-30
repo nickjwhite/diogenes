@@ -19,9 +19,6 @@ let startupDone = false
 
 let currentLinkURL = null
 
-let findTargetWin;
-let mySearchText;
-
 //const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
 const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.resolve(__dirname, 'preload.js')}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
@@ -229,6 +226,12 @@ app.on('browser-window-created', (event, win) => {
 	    currentLinkURL = null
 	}
     })
+
+    // Clear "find" highlighting when we navigate to a new page
+    win.webContents.on('did-start-loading', (event, result) => {
+        win.webContents.stopFindInPage('clearSelection')
+    })
+
 })
 
 // This method will be called when Electron has finished
@@ -650,13 +653,29 @@ function initializeMenuTemplate () {
 }
 
 // Find-in-page mini-window
+
+let findWin
+let findTargetWin;
+let mySearchText;
+
 function findText (win) {
+
+    if (win === findWin) {
+        // Wrongly called find from active find window
+        return
+    }
+    if (findWin && findWin.isVisible()) {
+        // Find window present by unfocused
+        findWin.focus()
+        return
+    }
+
     findTargetWin = win;
     let findWidth = 340
-    let find_x = win.getBounds().x + win.getContentBounds().width - findWidth
-    let find_y = win.getBounds().y
+    let find_x = findTargetWin.getBounds().x + win.getContentBounds().width - findWidth
+    let find_y = findTargetWin.getBounds().y
 
-    let findWin = new BrowserWindow({
+    findWin = new BrowserWindow({
         parent: win,
         show: false,
         modal: false,
@@ -675,28 +694,26 @@ function findText (win) {
         findWin.show()
         findWin.focus()
     })
+    findWin.on('closed', () => {
+        win.webContents.stopFindInPage('clearSelection')
+        ipcMain.removeAllListeners('findText')
+        findWin = null
+    })
 
     ipcMain.on("findText", (event, text, dir) => {
         if (text === "") {
-            win.webContents.stopFindInPage('clearSelection')
+            findTargetWin.webContents.stopFindInPage('clearSelection')
         }
         else {
             if (dir === "next") {
-                win.webContents.findInPage(text)
+                console.log("next!")
+                findTargetWin.webContents.findInPage(text)
             } else {
-                win.webContents.findInPage(text, {'forward': false})
+                findTargetWin.webContents.findInPage(text, {'forward': false})
             }
             mySearchText = text
         }
     })
-    findWin.on('closed', () => {
-        win.webContents.stopFindInPage('clearSelection')
-        ipcMain.removeAllListeners('findText')
-    })
-    // Clear highlighting when we navigate to a new page
-    win.webContents.on('did-start-loading', (event, result) => {
-         win.webContents.stopFindInPage('clearSelection')
-     })
 
     findWin.loadFile("pages/find.html")
 }
