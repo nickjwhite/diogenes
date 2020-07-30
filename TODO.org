@@ -1,3 +1,24 @@
+* Bugs
+Pigman: When I search for John [1–8]:16, I am taken to the correct verse,  but when I search for [9–16]:16, I am taken to 21:16 (I stopped trying at chap
+. 14).
+* For next version
+** Fix short defs by using Helma's data.
+** Keystrokes:
+add a keystroke to clear all form elements.  I could also add keystrokes to go to the top/bottom of a long page of search results.
+** Check this:
+The shortcuts used to navigate do not work on PC, Windows 10 (version 1909).
+I suggest also that "move back" and "move forward" (at the bottom of a page) could also be found at the top of a page when you want to navigate in contex
+t.
+** Have jump-to field at bottom of page that defaults to current passage
+** Have Back button show home page in last state.
+** Fix TLL PDF download under Windows
+Fix Unicode path problem by renaming to TLL01.pdf etc., but continue to permit old names.
+** Bug: L-S quies jumping to Nepos Att.
+** Add citation info from authtab.xml to exported XML files.
+** Update TLL
+We are pleased to announce that the TLL Open Access now includes headwords from N (n to neate) and R (r to refobeo), excluding only material published in
+ the most recent three years. New material will be added annually to maintain this three-year window in accordance with our agreement with de Gruyter.
+
 * Post-release to-do items.
 ** Add advanced settings menu item to run Settings.cgi
 ** Fix Wide character warnings when a filter name is in utf8
