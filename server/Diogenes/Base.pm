@@ -301,8 +301,17 @@ sub get_user_config_dir
     }
     elsif ($OS eq 'unix')
     {
-        if ($ENV{HOME})
+        # Electron's config dirs, which we will want to use from the
+        # command-line if settings were earlier set from the GUI
+        if ($ENV{XDG_CONFIG_HOME} and -e "$ENV{XDG_CONFIG_HOME}/Diogenes") {
+            return "$ENV{XDG_CONFIG_HOME}/Diogenes/";
+        }
+        elsif (-e "$ENV{HOME}/.config/Diogenes") {
+            return "$ENV{HOME}/.config/Diogenes/";
+        }
+        elsif ($ENV{HOME})
         {
+            # The old, pre-Electron config dir
             return "$ENV{HOME}/.diogenes/";
         }
         else { warn "Could not find user profile dir! \n" }
