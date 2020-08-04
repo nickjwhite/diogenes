@@ -1800,6 +1800,7 @@ sub parse_non_ascii
                 if ($$i > length $$buf)
                 {
                     warn ("Went beyond end of the buffer!");
+                    $self->{end_of_file_flag} = 1;
                     return;
                 }
             }

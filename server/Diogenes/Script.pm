@@ -1280,8 +1280,13 @@ $output{browser_output} = sub
             $f->p(
                 $f->submit( -name => 'browser_back',
                             -value => 'Move Back'),
-                $f->submit( -name => 'browser_forward',
-                            -value=> 'Move Forward')));
+                ($q->{end_of_file_flag} ?
+                 # ' <span class="highlighted-word">End of File</span>' :
+                 $f->submit( -name => 'end_of_file',
+                             -value=> 'End of File',
+                             -disabled=> 1) :
+                 $f->submit( -name => 'browser_forward',
+                             -value=> 'Move Forward'))));
 
     delete $st{browser_forward};
     delete $st{browser_back};
