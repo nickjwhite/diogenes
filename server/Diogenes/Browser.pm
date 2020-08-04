@@ -351,9 +351,9 @@ sub compare
     my ($current_bin, $current_ascii) = $current =~ m/^(\d+)?(.*)$/;
     my ($target_bin,  $target_ascii ) = $target  =~ m/^(\d+)?(.*)$/;
     
-    #print "|$current_bin|$current_ascii|$target_bin|$target_ascii|\n";
+    #print STDERR "|$current_bin|$current_ascii|$target_bin|$target_ascii|\n";
     
-    # Match if leading binary part greater than or equal to target
+    # Match if leading binary part greater than or less than target
     return -1 if defined $current_bin and defined $target_bin and 
         $current_bin < $target_bin;
     return  1 if defined $current_bin and defined $target_bin and 
@@ -390,6 +390,10 @@ sub compare
     # $current_ascii, $target_ascii) >= 0; return 1 if (index
     # $target_ascii, $current_ascii) >= 0;
     return -1 unless defined $current_bin or defined $target_bin;
+
+    # If we are looking for a text suffix, e.g. Val Max section
+    # 1(ext), don't match if the suffix is not there.
+    return -1 if $target_ascii ne '' and $current_ascii eq '';
     
     # Is this really necessary?
     my @current = ($current_ascii =~ m/(\d+|\D)/g);
