@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 
 # This script is part of the Diogenes desktop application.  It
 # converts texts to XML conforming to TEI version P5, as validated by

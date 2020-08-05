@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 use strict;
 
 my $usage = "Usage: $0 index.txt wordlist.txt < analyses.txt\n";
