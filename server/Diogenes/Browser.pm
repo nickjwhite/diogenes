@@ -359,7 +359,10 @@ sub compare
     return  1 if defined $current_bin and defined $target_bin and 
         $current_bin > $target_bin;
     return -1 if not defined $current_bin and defined $target_bin;
-    return  1 if defined $current_bin and not defined $target_bin;
+    # This is wrong.  If we are looking for a target of "fr" and the
+    # fragments are at the end of the file, we don't want to match on
+    # a bare book number.
+    # return  1 if defined $current_bin and not defined $target_bin;
     
     # If both are not defined or both are defined and equal, we
     # examine the ascii part
