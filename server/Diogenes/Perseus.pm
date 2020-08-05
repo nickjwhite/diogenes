@@ -17,6 +17,7 @@ use Diogenes::Base qw(%encoding %context @contexts %choices %work %author %datab
 use Diogenes::EntityTable;
 use FileHandle;
 use Encode;
+use Unicode::Normalize;
 use URI::Escape;
 
 # The lexica are now utf8, but we need to read the files in as bytes,
@@ -397,6 +398,11 @@ my $try_parse = sub {
 
 my $normalize_latin_lemma = sub {
     my $lemma = shift;
+
+    # Remove accents from utf8 text
+    $lemma = NFKD( $lemma );
+    $lemma =~ s/\p{NonspacingMark}//g;
+    # Remove macrons and breves from ascii text
     $lemma =~ s/[_^]//g;
 
     if ($lemma =~ m/-/) {
