@@ -5,7 +5,7 @@
 * Many citation refs in Lewis and Short have been fixed by Logeion.
 * Fixed display of some LSJ headwords.
 * Fixed picking up GUI config settings when running server from the Linux command-line.
-* Fixed browsing to Val. Max "(ext)" sections.
+* Fixed browsing to Val. Max "(ext)" sections and fragments at end of file.
 
 ## 4.5
 * Fixed downloading of TLL PDFs after reorganization of BAdW website.
