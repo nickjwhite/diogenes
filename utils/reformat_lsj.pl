@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 # Unfortunately Perseus updated the formatting of their XML files
 # to be more usable, which broke our naive XML parsing. This script
 # returns the XML to its less readable form, as that is easier than

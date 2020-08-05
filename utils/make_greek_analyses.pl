@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 # Bug: doesn't seem to be outputing definitions properly yet
 use strict;
 use FindBin qw($Bin);

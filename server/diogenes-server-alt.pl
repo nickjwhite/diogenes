@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 
 # An effort to put together a more robust server using Net::Server.
 # Unfortunately, it does not work very well on Windows.  Requires

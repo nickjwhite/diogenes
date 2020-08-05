@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env -S perl -w
 # Interface to Perseus morphological data and dictionaries.
 
 # This cgi script has been recast as a module, so that we can require
