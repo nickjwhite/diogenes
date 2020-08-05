@@ -382,7 +382,7 @@ our $binary_search = sub {
     chomp $line;
     (my $key, my $value) = $key_fn->($line);
     my $cmp = $comp_fn->($word, $key);
-#       print "debug: $start -> $mid -> $stop  cmp: $cmp; $word vs $key\n";
+    # print STDERR "debug: $start -> $mid -> $stop  cmp: $cmp; $word vs $key\n";
     return $binary_search->($word, $start, $mid) if ($cmp == -1);
     return $binary_search->($word, $mid, $stop) if ($cmp == 1);
     return $value;
@@ -454,7 +454,7 @@ my $text_with_links = sub {
 };
 
 my $munge_ls_lemma = sub {
-    my $text =shift;
+    my $text = shift;
     $text =~ s/&lt;/</g;
     $text =~ s/&gt;/>/g;
     $text =~ s/\_/&#x304;/g;
@@ -600,6 +600,7 @@ my $tll_pdf_link = sub {
     return '' if $dweb;
     return '' unless $lang eq 'lat';
     my $word = shift;
+    # print STDERR "Before lemma: $word\n";
     # Remove numbered entries, since there is no reason to believe
     # that the numbers used by L-S and TLL will correspond.
     $word =~ s/\s*\d+$//;
@@ -608,6 +609,7 @@ my $tll_pdf_link = sub {
     $word =~ s/&[^;]+;//g;
     $word =~ s/[^A-Za-z]//g;
     $word =~ tr/vj/ui/;
+    # print STDERR "TLL lemma: $word\n";
     $tll_parse_setup->();
     $parse_prelims->();
     my $bookmark = $try_parse->($word);
@@ -634,6 +636,7 @@ my $old_pdf_link = sub {
     # Remove numeric entities for accents, macrons, etc.
     $word =~ s/&[^;]+;//g;
     $word =~ s/[^a-z]//g;
+    # print STDERR "OLD lemma: $word\n";
     my $old_file = File::Spec->catfile($perseus_dir, 'old-bookmarks.txt');
     return '<br/>' unless -e $old_file;
     open my $old_fh, "<$old_file" or warn "Could not open $old_file!\n";
