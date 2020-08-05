@@ -101,8 +101,9 @@ foreach my $file (@sorted) {
               $title =~ s/^\d*\s*//;
               $title =~ s/\.$//;
               $title =~ s/[()-]//g;
-              $title =~ tr /A-Z/a-z/;
-
+              $title =~ tr/A-Z/a-z/;
+              # Ex-upper-case v's need to be lower-case u's
+              $title =~ tr/v/u/;
 
               print "$title\t$page\n";
               next LINE;

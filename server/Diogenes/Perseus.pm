@@ -631,8 +631,8 @@ my $old_pdf_link = sub {
     my $word = shift;
     $word =~ s/\s*\d+$//;
     $word = $normalize_latin_lemma->($word);
+    $word =~ tr/A-Z/a-z/;
     $word =~ tr/vj/ui/;
-    $word =~ tr /A-Z/a-z/;
     # Remove numeric entities for accents, macrons, etc.
     $word =~ s/&[^;]+;//g;
     $word =~ s/[^a-z]//g;
