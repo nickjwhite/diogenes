@@ -600,7 +600,7 @@ my $tll_pdf_link = sub {
     $word = $normalize_latin_lemma->($word);
     # Remove numeric entities for accents, macrons, etc.
     $word =~ s/&[^;]+;//g;
-    $word =~ s/[^a-z]//g;
+    $word =~ s/[^A-Za-z]//g;
     $word =~ tr/vj/ui/;
     $tll_parse_setup->();
     $parse_prelims->();
