@@ -404,7 +404,8 @@ sub read_config_files
 
 sub read_tlg_chronology {
     my $self = shift;
-    return if $self->{tlg_chron_info} or $self->{tlg_ordered_filenames};
+    return if $self->{tlg_chron_info} or $self->{tlg_ordered_filenames}
+    or $self->{tlg_ordered_authnums};
     my ($vol, $dir, $file) = File::Spec->splitpath(module_path('Diogenes::Base'));
     my $chron_file = File::Spec->catpath( $vol, $dir, 'tlg-chronology.txt');
     open my $chron_fh, "<$chron_file" or die "Could not open $chron_file: $!";
@@ -415,6 +416,7 @@ sub read_tlg_chronology {
             $date =~ s/\s+$//;
             my $filename = $self->{tlg_file_prefix}.$num.$self->{txt_suffix};
             push @{ $self->{tlg_ordered_filenames} }, $filename;
+            push @{ $self->{tlg_ordered_authnums} }, $num;
             $self->{tlg_chron_info}{$num} = $date;
         }
         else {
@@ -503,7 +505,9 @@ sub new
         $self->{cdrom_dir}   = $self->{tlg_dir};
         $self->{file_prefix} = $self->{tlg_file_prefix};
         $self->{input_lang} = 'g' unless $self->{input_lang};
-        $self->read_tlg_chronology;
+        if ($self->{tlg_use_chronology}) {
+            $self->read_tlg_chronology;
+        }
     }
     
     # DDP
