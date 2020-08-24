@@ -999,11 +999,23 @@ sub select_authors
     
     @ARGV = ();
     # Only put into @ARGV those files we want to search in their entirety!
-    foreach my $au (keys %{ $self->{req_authors} }) 
-    {
-        $file = $self->{file_prefix} . (sprintf '%04d', $au) . $self->{txt_suffix};
-        push @ARGV, $file;
+    if ($self->{tlg_use_chronology} and $self->{type} eq 'tlg') {
+        # Do chronological sort of authors for TLG
+        foreach my $num (@{ $self->{tlg_ordered_authnums} }) {
+            my $short_num = $num;
+            $short_num =~ s/^0+//g;
+            if (exists $self->{req_authors}{$num} or exists $self->{req_authors}{$short_num}) {
+                push @ARGV, $self->{tlg_file_prefix} . (sprintf '%04d', $num) . $self->{txt_suffix};
+            }
+        }
     }
+    else {
+        foreach my $au (keys %{ $self->{req_authors} }) {
+            $file = $self->{file_prefix} . (sprintf '%04d', $au) . $self->{txt_suffix};
+            push @ARGV, $file;
+        }
+    }
+
     # print "\nusing \@ARGV: ", Data::Dumper->Dump ([\@ARGV], ['*ARGV']);
     warn "There were no texts matching your criteria" unless 
         @ARGV or $self->{req_auth_wk};
