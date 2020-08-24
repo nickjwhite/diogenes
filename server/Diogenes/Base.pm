@@ -36,6 +36,7 @@ use Cwd;
 use Carp;
 use File::Spec;
 use Data::Dumper;
+use Module::Path 'module_path';
 use Diogenes::BetaHtml;
 use Diogenes::UnicodeInput;
 
@@ -403,13 +404,22 @@ sub read_config_files
 
 sub read_tlg_chronology {
     my $self = shift;
-    unless (@Diogenes::Base::tlg_chron_order) {
-        do "tlg-chronology.pl" or die ($! or $@);
-    }
-    return if $self->{tlg_ordered_filenames};
-    foreach (@Diogenes::Base::tlg_chron_order) {
-        push @{ $self->{tlg_ordered_filenames} },
-            $self->{file_prefix}.$_.$self->{txt_suffix};
+    return if $self->{tlg_chron_info} or $self->{tlg_ordered_filenames};
+    my ($vol, $dir, $file) = File::Spec->splitpath(module_path('Diogenes::Base'));
+    my $chron_file = File::Spec->catpath( $vol, $dir, 'tlg-chronology.txt');
+    open my $chron_fh, "<$chron_file" or die "Could not open $chron_file: $!";
+    while (<$chron_fh>) {
+        if (m/^(\d\d\d\d)\s+(.*?)$/) {
+            my $num = $1;
+            my $date = $2;
+            $date =~ s/\s+$//;
+            my $filename = $self->{tlg_file_prefix}.$num.$self->{txt_suffix};
+            push @{ $self->{tlg_ordered_filenames} }, $filename;
+            $self->{tlg_chron_info}{$num} = $date;
+        }
+        else {
+            die "Badly formed line in $chron_file: $_";
+        }
     }
 }
 
