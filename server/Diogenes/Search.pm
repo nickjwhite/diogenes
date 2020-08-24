@@ -34,12 +34,17 @@ sub pgrep
     
     unless ($self->{filtered}) 
     {
-        # In theory, the following code is platform independent for
-        # achitectures (ie. Mac) that don't like unix-shell style globbing.
-        opendir (INP_DIR, "$self->{cdrom_dir}") or 
-            $self->barf ("Cannot open $self->{cdrom_dir} ($!)");
-        @ARGV = sort grep {/$self->{file_prefix}.+$self->{txt_suffix}/i} readdir INP_DIR;
-        closedir INP_DIR;
+        if ($self->{tlg_use_chronology} and $self->{type} eq 'tlg') {
+            @ARGV = @{ $self->{tlg_ordered_filenames} };
+        }
+        else {
+            # In theory, the following code is platform independent for
+            # achitectures (ie. Mac) that don't like unix-shell style globbing.
+            opendir (INP_DIR, "$self->{cdrom_dir}") or
+                $self->barf ("Cannot open $self->{cdrom_dir} ($!)");
+            @ARGV = sort grep {/$self->{file_prefix}.+$self->{txt_suffix}/i} readdir INP_DIR;
+            closedir INP_DIR;
+        }
     }
     
     $self->barf ("I can't find any data files!") 

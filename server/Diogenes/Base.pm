@@ -277,6 +277,9 @@ my %defaults = (
 
     line_print_modulus => 5,
 
+    # Chronological search may be a bit slower, but negligible these days.
+    tlg_use_chronology => 1,
+
     # obsolete
     user => 'default'
     
@@ -398,6 +401,17 @@ sub read_config_files
     return %configuration;
 }
 
+sub read_tlg_chronology {
+    my $self = shift;
+    unless (@Diogenes::Base::tlg_chron_order) {
+        do "tlg-chronology.pl" or die ($! or $@);
+    }
+    return if $self->{tlg_ordered_filenames};
+    foreach (@Diogenes::Base::tlg_chron_order) {
+        push @{ $self->{tlg_ordered_filenames} },
+            $self->{file_prefix}.$_.$self->{txt_suffix};
+    }
+}
 
 sub new 
 {
@@ -479,6 +493,7 @@ sub new
         $self->{cdrom_dir}   = $self->{tlg_dir};
         $self->{file_prefix} = $self->{tlg_file_prefix};
         $self->{input_lang} = 'g' unless $self->{input_lang};
+        $self->read_tlg_chronology;
     }
     
     # DDP
