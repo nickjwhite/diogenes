@@ -1671,7 +1671,9 @@ sub get_tlg_biblio_info
     }
     $self->{biblio_details}{$auth}{$work} = 
         join '', (
-            "$author{$self->{type}}{$self->{auth_num}}, ",
+            "$author{$self->{type}}{$self->{auth_num}}",
+            ($self->{tlg_chron_info}) ?
+            ' (c. '.$self->{tlg_chron_info}{$self->{auth_num}}.'), ' : ', ',
             ($data{wrk}) ? "$data{wrk}\&" : '' ,
             ' ('.$self->{auth_num}.': '.$self->{work_num}.')',
             ($data{tit}) ? "\n\"$data{tit}\&\"" : '' ,
