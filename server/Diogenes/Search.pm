@@ -100,11 +100,30 @@ sub pgrep
     
     # Now search in any files that are to be read only in part.
     
+    my @ordered_authors = ();
+    if ($self->{tlg_use_chronology} and $self->{type} eq 'tlg') {
+        # Do chronological sort of authors for TLG
+        foreach my $num (@{ $self->{tlg_ordered_authnums} }) {
+            my $short_num = $num;
+            $short_num =~ s/^0+//g;
+            if (exists $self->{req_auth_wk}{$num}) {
+                push @ordered_authors, $num;
+            }
+            elsif (exists $self->{req_auth_wk}{$short_num}) {
+                push @ordered_authors, $short_num;
+            }
+        }
+    }
+    else {
+        # Just do ordinary sort
+        @ordered_authors = sort numerically (keys %{ $self->{req_auth_wk} });
+    }
+
     # Read in only the desired blocks from files for which only certain works 
     # were requested.
-        
+
     my ($filename, $offset, $start_block, $end_block);
-    foreach my $author (sort (keys %{ $self->{req_auth_wk} }))
+    foreach my $author (@ordered_authors)
     {
         # pad with leading zeroes 
         $filename = sprintf '%04d', $author;
@@ -839,5 +858,7 @@ sub extract_hits
         
     } # end of foreach.
 } # end of sub extract_hits.
+
+sub numerically { $a <=> $b; }
 
 1;
