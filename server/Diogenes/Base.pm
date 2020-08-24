@@ -996,7 +996,13 @@ sub select_authors
     }
     print STDERR Data::Dumper->Dump ([\$self->{req_authors}, \$self->{req_auth_wk}], 
                                      ['req_authors', 'req_auth_wk']) if $self->{debug};
-    
+
+    # NB. This is where we set up searches restricted by author.
+    # Searches restricted by author/work are handled in Search.pm.  If
+    # you mix both types of restriction (which the GUI does not
+    # allow), the searches will be separate and sequential, which may
+    # look odd from a chronological point of view.  So don't do that.
+
     @ARGV = ();
     # Only put into @ARGV those files we want to search in their entirety!
     if ($self->{tlg_use_chronology} and $self->{type} eq 'tlg') {
@@ -1025,14 +1031,39 @@ sub select_authors
     # return auth & work names
     my ($basename, @ret);
     my $index = 0;
-    foreach my $auth (sort numerically keys %{ $self->{req_authors} }) 
+    my @ordered_authors = ();
+    if ($self->{tlg_use_chronology} and $self->{type} eq 'tlg') {
+        foreach my $num (@{ $self->{tlg_ordered_authnums} }) {
+            if (exists $self->{req_authors}{$num}) {
+                push @ordered_authors, $num;
+            }
+        }
+    }
+    else {
+        @ordered_authors = sort numerically keys %{ $self->{req_authors} };
+    }
+
+    foreach my $auth (@ordered_authors)
     {
         my $formatted_auth = $auths{$self->{type}}{$auth};
         $self->format_output(\$formatted_auth, 'l');
         push @ret, $formatted_auth;
         $self->{prev_list}[$index++] = $auth;
     }
-    foreach my $auth (sort numerically keys %{ $self->{req_auth_wk} }) 
+
+    @ordered_authors = ();
+    if ($self->{tlg_use_chronology} and $self->{type} eq 'tlg') {
+        foreach my $num (@{ $self->{tlg_ordered_authnums} }) {
+            if (exists $self->{req_auth_wk}{$num}) {
+                push @ordered_authors, $num;
+            }
+        }
+    }
+    else {
+        @ordered_authors = sort numerically keys %{ $self->{req_auth_wk} };
+    }
+
+    foreach my $auth (@ordered_authors)
     {
         $basename = $auths{$self->{type}}{$auth};
         $self->format_output(\$basename, 'l');
