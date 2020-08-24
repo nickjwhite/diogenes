@@ -815,7 +815,20 @@ sub do_word_search
         
     # Loop through each author in which one or more of our words were found
     # (according to the word list)
-    foreach $author (sort numerically keys %{ $self->{word_counts} }) 
+
+   my @ordered_authors = ();
+    if ($self->{tlg_use_chronology} and $self->{type} eq 'tlg') {
+        foreach my $num (@{ $self->{tlg_ordered_authnums} }) {
+            if (exists $self->{word_counts}{$num}) {
+                push @ordered_authors, $num;
+            }
+        }
+    }
+    else {
+        @ordered_authors = sort numerically keys %{ $self->{word_counts} };
+    }
+
+    foreach $author (@ordered_authors)
     {
         $filename = $self->{file_prefix} . $author;
         
