@@ -1,7 +1,6 @@
 * Bugs
-Pigman: When I search for John [1–8]:16, I am taken to the correct verse,  but when I search for [9–16]:16, I am taken to 21:16 (I stopped trying at chap
-. 14).
 * For next version
+** Update lexica and cut a release for Helma.  Try without zeros in text boxes.
 ** Fix short defs by using Helma's data.
 ** Keystrokes:
 add a keystroke to clear all form elements.  I could also add keystrokes to go to the top/bottom of a long page of search results.
@@ -18,6 +17,12 @@ Fix Unicode path problem by renaming to TLL01.pdf etc., but continue to permit o
 ** Update TLL
 We are pleased to announce that the TLL Open Access now includes headwords from N (n to neate) and R (r to refobeo), excluding only material published in
  the most recent three years. New material will be added annually to maintain this three-year window in accordance with our agreement with de Gruyter.
+
+** Add FAQ about re-centering lost window
+** Import font_fixes from xml-export into desktop display
+** Update to Electron 9
+*** Add PDF view
+*** See if this fixes zoom issue
 
 * Post-release to-do items.
 ** Add advanced settings menu item to run Settings.cgi
