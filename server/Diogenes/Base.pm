@@ -34,9 +34,13 @@ use strict;
 use integer;
 use Cwd;
 use Carp;
-use File::Spec;
 use Data::Dumper;
+# Use local CPAN
+use File::Spec;
+use FindBin qw($Bin);
+use lib ($Bin, File::Spec->catdir($Bin, '..', 'dependencies', 'CPAN') );
 use Module::Path 'module_path';
+
 use Diogenes::BetaHtml;
 use Diogenes::UnicodeInput;
 
