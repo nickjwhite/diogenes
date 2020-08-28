@@ -1,7 +1,9 @@
 # Changes in Version 4 of Diogenes
 
 ## 4.6 (forthcoming)
-* Deal gracefully with hitting the end of a file.
+* TLG search results are now presented in rough chronological order (with thanks to Jiang Qian for helping).
+* There is a new software package (diogenes-epub) for converting Diogenes XML output to epub format for e-readers.
+* Diogenes now deals gracefully with hitting the end of a file.
 * Many citation refs in Lewis and Short have been fixed by Logeion.
 * Fixed display of some LSJ headwords.
 * Fixed picking up GUI config settings when running server from the Linux command-line.
