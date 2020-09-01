@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 
 # Needs LWP-5.32 or better.
 #
@@ -15,6 +15,7 @@ BEGIN
 package Diogenes_Daemon;
 require 5.005;
 use strict;
+use warnings;
 use vars qw($params $flag $config);
 $|=1;
 

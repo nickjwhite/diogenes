@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 # Code for pre-forking server is from Perl Cookbook 17.12
 # This server is used by DiogenesWeb.
 

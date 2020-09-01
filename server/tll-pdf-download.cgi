@@ -1,5 +1,7 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 use strict;
+use warnings;
+
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
 # Use local CPAN

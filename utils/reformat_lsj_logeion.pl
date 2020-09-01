@@ -1,6 +1,8 @@
-# Lightly reformat the Logeion LSJ.  Cut frontmatter, etc. from each file and remove spurious newlines within entries.
+#!/usr/bin/env perl
 
-#!/usr/bin/env -S perl -w
+# Lightly reformat the Logeion LSJ.  Cut frontmatter, etc. from each
+# file and remove spurious newlines within entries.
+
 use strict;
 use warnings;
 # utf8 in and out.

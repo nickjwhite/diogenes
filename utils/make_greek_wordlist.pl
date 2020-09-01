@@ -1,5 +1,6 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 use strict;
+use warnings;
 
 my $tlgdir = shift @ARGV or die "Usage: $0 tlgdir\n";
 

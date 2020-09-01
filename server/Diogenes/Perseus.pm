@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 # Interface to Perseus morphological data and dictionaries.
 
 # This cgi script has been recast as a module, so that we can require
@@ -7,6 +7,8 @@
 package Diogenes::Perseus;
 
 use strict;
+use warnings;
+
 use FindBin qw($Bin);
 use File::Spec::Functions qw(:ALL);
 # Use local CPAN

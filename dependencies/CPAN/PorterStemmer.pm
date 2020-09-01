@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 
 # Porter stemmer in Perl. Few comments, but it's easy to follow against the rules in the original
 # paper, in
@@ -13,6 +13,7 @@
 # Munged into a package -- PJH
 
 package PorterStemmer;
+use warnings;
 
 my   %step2list =
    ( 'ational'=>'ate', 'tional'=>'tion', 'enci'=>'ence', 'anci'=>'ance', 'izer'=>'ize', 'bli'=>'ble',

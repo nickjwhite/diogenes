@@ -1,5 +1,6 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 use strict;
+use warnings;
 
 my $i = 0;
 my %seen;

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 
 ##########################################################################
 #                                                                        #
@@ -21,6 +21,7 @@
 
 package Diogenes::Script;
 use strict;
+use warnings;
 use File::Spec::Functions qw(:ALL);
 use FindBin qw($Bin);
 use lib ($Bin, catdir($Bin, '..', 'dependencies', 'CPAN') );

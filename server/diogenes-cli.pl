@@ -1,4 +1,4 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 
 ###################################################################################
 #                                                                                 #
@@ -43,6 +43,8 @@ use Diogenes::Browser;
 use integer;
 use Getopt::Std;
 use strict;
+use warnings;
+
 use Encode;
 
 use vars qw($opt_l $opt_w $opt_g $opt_b $opt_r $opt_p $opt_O $opt_R

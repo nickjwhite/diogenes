@@ -1,6 +1,8 @@
-#!/usr/bin/env -S perl -w
+#!/usr/bin/env perl
 # Bug: doesn't seem to be outputing definitions properly yet
 use strict;
+use warnings;
+
 use FindBin qw($Bin);
 use File::Spec::Functions qw(catdir);
 
