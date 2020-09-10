@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.5a";
+$Diogenes::Base::Version =  "4.5b";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -1720,11 +1720,18 @@ sub get_tlg_biblio_info
             $data{$field} .= $data{$field} ? ", $datum" : $datum;
         }
     }
+    my $chron = ($self->{tlg_chron_info}) ? $self->{tlg_chron_info}{$self->{auth_num}} : '';
+    if ($chron eq 'Varia' or $chron eq 'Incertum') {
+        $chron = ' (' . $chron . '), ';
+    }
+    elsif ($chron) {
+        $chron = ' (c. ' . $chron . '), '
+    }
+
     $self->{biblio_details}{$auth}{$work} = 
         join '', (
             "$author{$self->{type}}{$self->{auth_num}}",
-            ($self->{tlg_chron_info}) ?
-            ' (c. '.$self->{tlg_chron_info}{$self->{auth_num}}.'), ' : ', ',
+            $chron,
             ($data{wrk}) ? "$data{wrk}\&" : '' ,
             ' ('.$self->{auth_num}.': '.$self->{work_num}.')',
             ($data{tit}) ? "\n\"$data{tit}\&\"" : '' ,
