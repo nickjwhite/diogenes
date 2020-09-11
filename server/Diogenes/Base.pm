@@ -616,7 +616,7 @@ sub new
     }
 
     # This has to come after we have adjusted for uppercase
-    if ($self-{type} eq 'tlg' and $self->{tlg_use_chronology}) {
+    if ($self->{type} eq 'tlg' and $self->{tlg_use_chronology}) {
         $self->read_tlg_chronology;
     }
 
