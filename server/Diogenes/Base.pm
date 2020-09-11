@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.5b";
+$Diogenes::Base::Version =  "4.5c";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -509,9 +509,6 @@ sub new
         $self->{cdrom_dir}   = $self->{tlg_dir};
         $self->{file_prefix} = $self->{tlg_file_prefix};
         $self->{input_lang} = 'g' unless $self->{input_lang};
-        if ($self->{tlg_use_chronology}) {
-            $self->read_tlg_chronology;
-        }
     }
     
     # DDP
@@ -616,7 +613,13 @@ sub new
     {
         $self->{$_} = uc $self->{$_} for 
             qw(file_prefix txt_suffix idt_suffix authtab);
-    }  
+    }
+
+    # This has to come after we have adjusted for uppercase
+    if ($self-{type} eq 'tlg' and $self->{tlg_use_chronology}) {
+        $self->read_tlg_chronology;
+    }
+
     
     # min_matches_int is for "internal", since we have to munge it here
     $self->{min_matches_int} = '';
