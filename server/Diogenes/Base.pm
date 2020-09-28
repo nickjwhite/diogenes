@@ -27,7 +27,7 @@
 package Diogenes::Base;
 require 5.006;
 
-$Diogenes::Base::Version =  "4.5c";
+$Diogenes::Base::Version =  "4.5e";
 $Diogenes::Base::my_address = 'p.j.heslin@durham.ac.uk';
 
 use strict;
@@ -612,7 +612,7 @@ sub new
     if ($self->{uppercase_files})
     {
         $self->{$_} = uc $self->{$_} for 
-            qw(file_prefix txt_suffix idt_suffix authtab);
+            qw(file_prefix txt_suffix idt_suffix authtab tlg_file_prefix);
     }
 
     # This has to come after we have adjusted for uppercase
