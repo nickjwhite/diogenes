@@ -518,8 +518,10 @@ $output{multiple} = sub
                 $f->submit(-name=>'Add_Pattern',
                            -value=>'Add this pattern to the list'));
 
-    my @matches = ('any', 2 .. $#patterns, 'all');
-
+    # In case we allow repetition, we want to permit a higher number
+    # of matches than just the number of patterns
+    my $max_matches = 5 + $#patterns;
+    my @matches = ('any', 2 .. $max_matches, 'all');
 
     print
         $f->hr(),
@@ -534,9 +536,9 @@ $output{multiple} = sub
 
     print
         $f->h2('Quantity'),
-        $f->p('Define the minimum number of these patterns that must be ',
-              'present within a given scope in order to qualify as a successful ',
-              'match.'),
+        $f->p('Define the minimum number of times these patterns must match ',
+              'within a given scope in order to qualify as a successful ',
+              'hit.'),
         $f->popup_menu( -name => 'min_matches',
                         -Values => \@matches,
                         -Default => 'all');
@@ -548,7 +550,17 @@ $output{multiple} = sub
         $f->textfield( -name => 'reject_pattern',
                        -size => 50,
                        -default => '');
+    print
+        $f->h2('Permit repetition'),
 
+        $f->p('Tick to permit a pattern that matches more than once in a passage to 
+              count multiple times toward the quantity of successful matches set above. ',
+              'E.g. to search for the repetition of a word or pattern, enter one pattern, 
+              enter the minimum number of times it needs to appear, and tick this box.'),
+        $f->checkbox(-name=>'repeat_matches',
+                                  -checked=>0,
+                                  -value=>1,
+                                  -label=>'Count repeating matches');
     print
         $f->p('&nbsp;'),
         $f->center(
@@ -592,7 +604,7 @@ my $get_args = sub
         $args{pattern} = $st{query};
     }
 
-    for my $arg (qw(context min_matches reject_pattern))
+    for my $arg (qw(context min_matches reject_pattern repeat_matches))
     {
         $args{$arg} = $st{$arg} if $st{$arg};
     }

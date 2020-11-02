@@ -52,9 +52,17 @@ sub pgrep
     local $/;
     undef $/;
     
-    my $final_pass = $self->{numeric_context} ? 
-          @{ $self->{pattern_list} } - 1
-        : @{ $self->{pattern_list} } - $self->{min_matches_int};
+    my $final_pass;
+    if ($self->{repeat_matches}) {
+        # min_matches is irrelevant for passes in this case
+        $final_pass = @{ $self->{pattern_list} } - 1
+    }
+    else {
+        $final_pass = $self->{numeric_context} ?
+            @{ $self->{pattern_list} } - 1
+            : @{ $self->{pattern_list} } - $self->{min_matches_int};
+    }
+    print STDERR "FP: $final_pass\n" if $self->{debug};
     my ($buf, $i);
     $self->{buf} = \$buf;
     $self->read_blacklist if $self->{blacklist_file};
@@ -722,7 +730,15 @@ sub extract_hits
         {
             my $n = 0;
             map {$matches{$n}++ if $result =~ /$_/; $n++;}(@{ $self->{pattern_list} });
-            my $matching_sets = values %matches;
+            my $matching_sets = 0;
+            if ($self->{repeat_matches}) {
+                # Count total number of matches for all patterns
+                $matching_sets += $_ for values %matches;
+            }
+            else {
+                # Count number of individual patterns that match
+                $matching_sets = values %matches;
+            }
             print STDERR "+ $result\n" if $self->{debug};
             print STDERR "+ $matching_sets: $auth, $offset\n" if $self->{debug};
             warn "ERROR: Disappearing Match!\n" unless $matching_sets;
@@ -738,7 +754,16 @@ sub extract_hits
                                                                         #ge;
                      $n++;}
                 (@{ $self->{pattern_list} });
-            my $matching_sets = values %matches;
+
+            my $matching_sets = 0;
+            if ($self->{repeat_matches}) {
+                # Count total number of matches for all patterns
+                $matching_sets += $_ for values %matches;
+            }
+            else {
+                # Count number of individual patterns that match
+                my $matching_sets = values %matches;
+            }
             print STDERR "+ $result\n" if $self->{debug};
             # print STDERR "+ ".$self->{pattern_list}[0]."\n" if $self->{debug};
             print STDERR "+ $matching_sets: $auth, $offset\n" if $self->{debug};

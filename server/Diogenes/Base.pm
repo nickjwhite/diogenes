@@ -285,6 +285,9 @@ my %defaults = (
     # Chronological search may be a bit slower, but negligible these days.
     tlg_use_chronology => 1,
 
+    # For multiple matching, count multiple matches for each pattern
+    repeat_matches => 0,
+
     # obsolete
     user => 'default'
     
