@@ -30,6 +30,7 @@
 0263    7-6 B.C.
 0009    7-6 B.C.
 1274    7-6 B.C.
+0622    7-6 B.C.
 1607    7/6 B.C.
 1541    7/6 B.C.
 1182    7/6 B.C.
@@ -208,6 +209,8 @@
 0011    5 B.C.
 0006    5 B.C.
 0003    5 B.C.
+0043    5 B.C.
+1788    5 B.C.
 2638    5 B.C.?
 2355    5 B.C.?
 2306    5 B.C.?
@@ -216,6 +219,7 @@
 1438    5 B.C.?
 1134    5 B.C.?
 0418    5 B.C.?
+0248    5 B.C.?
 4390    5-4 B.C.
 2645    5-4 B.C.
 2313    5-4 B.C.
@@ -278,6 +282,7 @@
 0065    5/4 B.C.
 0294    5/3 B.C.?
 0498    5/3 B.C.
+1802    5 B.C./A.D. 10
 0751    p. 5 B.C.
 0523    p. 5 B.C.
 0479    p. 5 B.C.
@@ -452,7 +457,9 @@
 0481    4 B.C.?
 0457    4 B.C.?
 0446    4 B.C.?
+0637    4 B.C.?
 0240    4 B.C.?
+2511    4 B.C.?
 2334    4-3 B.C.
 2300    4-3 B.C.
 2265    4-3 B.C.
@@ -668,6 +675,9 @@
 0001    3 B.C.
 2185    3 B.C.
 1549    3 B.C.
+0037    3 B.C.
+0044    3 B.C.
+0427    3 B.C.
 2630    3 B.C.?
 2624    3 B.C.?
 2548    3 B.C.?
@@ -706,6 +716,8 @@
 0206    3 B.C.?
 0174    3 B.C.?
 0051    3 B.C.?
+0202    3 B.C.?
+0430    3 B.C.?
 2294    3-2 B.C.
 2284    3-2 B.C.
 1972    3-2 B.C.
@@ -721,12 +733,16 @@
 0586    3-2 B.C.
 0543    3-2 B.C.
 0222    3-2 B.C.
+0493    3-2 B.C.
 2333    3-2 B.C.?
 2205    3-2 B.C.?
 2204    3-2 B.C.?
 1663    3-2 B.C.?
 1649    3-2 B.C.?
 1180    3-2 B.C.?
+1906    3-2 B.C.?
+2349    3-2 B.C.?
+2566    3-2 B.C.?
 2587    3/2 B.C.
 1967    3/2 B.C.
 1835    3/2 B.C.
@@ -754,6 +770,7 @@
 0571    3 B.C.?/A.D. 1
 1695    3 B.C./A.D. 2
 1252    3 B.C./A.D. 2
+0527    3 B.C./A.D. 3
 2482    p. 3 B.C.
 2396    p. 3 B.C.
 2651    a. 2 B.C.
@@ -762,6 +779,7 @@
 1535    a. 2 B.C.
 1498    a. 2 B.C.
 1105    a. 2 B.C.
+0394    a. 2 B.C.
 2525    a. 2 B.C.?
 2215    a. 2 B.C.?
 2650    2 B.C.
@@ -810,6 +828,12 @@
 0063    2 B.C.
 0036    2 B.C.
 0035    2 B.C.
+1785    2 B.C.
+1786    2 B.C.
+1793    2 B.C.
+1794    2 B.C.
+1795    2 B.C.
+2194    2 B.C.
 2649    2 B.C.?
 2647    2 B.C.?
 2474    2 B.C.?
@@ -848,6 +872,7 @@
 2460    2 B.C./A.D. 3
 1700    2 B.C./A.D. 3
 1551    2 B.C.-A.D. 4
+1325    2 B.C.-A.D. 4
 1792    p. 2 B.C.
 2652    a. 1 B.C.
 2552    a. 1 B.C.
@@ -909,6 +934,7 @@
 1204    1 B.C.?
 0663    1 B.C.?
 0039    1 B.C.?
+2556    1 B.C.?
 1949    1 B.C.-A.D. 1
 1838    1 B.C.-A.D. 1
 1611    1 B.C.-A.D. 1
@@ -926,6 +952,7 @@
 1496    1 B.C.-A.D. 1?
 1747    1 B.C./A.D. 1
 0613    1 B.C./A.D. 1?
+1177    1 B.C./A.D. 3
 1858    1 B.C./A.D. 4?
 1987    p. 1 B.C.
 1803    p. 1 B.C.
@@ -960,6 +987,7 @@
 1301    A.D. 1
 1701    A.D. 1
 1703    A.D. 1
+1765    A.D. 1
 1828    A.D. 1
 1890    A.D. 1
 2424    A.D. 1
@@ -994,6 +1022,10 @@
 1622    A.D. 1-2
 1760    A.D. 1-2
 1867    A.D. 1-2
+0055    A.D. 1-2
+1161    A.D. 1-2
+1411    A.D. 1-2
+1412    A.D. 1-2
 2255    A.D. 1-2?
 4086    A.D. 1-2?
 1482    a. A.D. 1/2
@@ -1013,6 +1045,7 @@
 4325    A.D. 1/3
 4150    A.D. 1?/6
 1816    A.D. 1-7
+0072    A.D. 1-7
 0734    p. A.D. 1
 1118    p. A.D. 1
 0276    a. A.D. 2
@@ -1143,6 +1176,8 @@
 1992    A.D. 2
 2969    A.D. 2
 2970    A.D. 2
+0605    A.D. 2
+2655    A.D. 2
 0053    A.D. 2?
 0069    A.D. 2?
 0116    A.D. 2?
@@ -1184,6 +1219,7 @@
 0141    A.D. 2-3?
 0531    A.D. 2-3?
 1759    A.D. 2-3?
+0350    a. A.D. 2
 0269    a. A.D. 2/3
 0271    a. A.D. 2/3
 0272    a. A.D. 2/3
@@ -1199,8 +1235,10 @@
 2140    A.D. 2/3
 1373    A.D. 2/3?
 1515    A.D. 2/3?
+5003    A.D. 2-4
 1286    A.D. 2?/4
 0304    A.D. 2/4
+2654    A.D. 2/4
 1487    A.D. 2/4?
 0061    p. A.D. 2
 0071    p. A.D. 2
@@ -1227,6 +1265,7 @@
 2367    a. A.D. 3
 2398    a. A.D. 3
 2617    a. A.D. 3
+1680    a. A.D. 3
 1369    a. A.D. 3?
 2178    A.D. 3
 2577    A.D. 3
@@ -1265,9 +1304,11 @@
 2586    A.D. 3/4
 2601    A.D. 3/4
 2531    A.D. 3/4?
+2243    A.D. 3/4?
 0646    A.D. 3/5
 4003    A.D. 3/5
 0752    A.D. 3/10
+1386    A.D. 3-17
 0077    p. A.D. 3
 2007    p. A.D. 3
 2009    p. A.D. 3
@@ -1332,6 +1373,7 @@
 4139    A.D. 4
 4282    A.D. 4
 4324    A.D. 4
+2948    A.D. 4
 0691    A.D. 4?
 0286    A.D. 4?
 0737    A.D. 4?
@@ -1373,6 +1415,7 @@
 2233    p. A.D. 4
 1757    a. A.D. 5
 2120    a. A.D. 5
+2458    a. A.D. 5
 0290    a. A.D. 5?
 2048    A.D. 5
 2591    A.D. 5
@@ -1421,7 +1464,9 @@
 4374    A.D. 5/6?
 3178    A.D. 5/7
 4290    A.D. 5/10
+2738    A.D. 5-16
 4102    p. A.D. 5
+1459    a. A.D. 6
 2881    A.D. 6
 3185    A.D. 6
 4015    A.D. 6
@@ -1597,54 +1642,38 @@
 9009    A.D. 15
 3176    A.D. 15-16
 9018    A.D. 15-16
-0037    Incertum
 0038    Incertum
 0040    Incertum
 0042    Incertum
-0043    Incertum
-0044    Incertum
 0045    Incertum
 0046    Incertum
 0047    Incertum
 0049    Incertum
 0050    Incertum
-0055    Incertum
 0056    Incertum
-0072    Varia
 0092    Incertum
 0125    Incertum
 0200    Incertum
-0202    Incertum
 0230    Varia
 0231    Varia
 0234    Varia
 0235    Varia
-0248    Incertum
 0295    Varia
 0296    Varia
 0297    Varia
 0349    Incertum
-0350    Incertum
 0351    Incertum
 0352    Incertum
 0353    Incertum
 0354    Incertum
 0386    Incertum
-0394    Incertum
 0395    Incertum
 0408    Varia
-0427    Incertum
-0430    Incertum
-0493    Incertum
-0527    Varia
 0579    Varia
 0598    Varia
 0602    Varia
-0605    Incertum
-0622    Incertum
 0623    Incertum
 0636    Incertum
-0637    Incertum
 0659    Varia
 0662    Varia
 0721    Varia
@@ -1657,22 +1686,15 @@
 1127    Varia
 1129    Varia
 1139    Varia
-1161    Incertum
-1177    Incertum
 1278    Incertum
 1281    Incertum
 1298    Incertum
 1318    Incertum
-1325    Incertum
 1327    Incertum
 1334    Incertum
 1344    Varia
 1345    Varia
 1379    Varia
-1386    Varia
-1411    Incertum
-1412    Incertum
-1459    Incertum
 1471    Varia
 1509    Incertum
 1576    Incertum
@@ -1681,41 +1703,30 @@
 1613    Incertum
 1615    Incertum
 1639    Varia
-1680    Incertum
 1681    Incertum
 1690    Incertum
 1738    Varia
 1749    Incertum
 1750    Varia
 1754    Incertum
-1765    Varia
 1775    Incertum
 1780    Incertum
 1782    Incertum
 1783    Incertum
-1785    Incertum
-1786    Incertum
 1787    Incertum
-1788    Incertum
 1791    Incertum
-1793    Incertum
-1794    Incertum
-1795    Incertum
 1801    Varia
-1802    Varia
 1805    Varia
 1817    Varia
 1819    Incertum
 1821    Varia
 1896    Incertum
-1906    Incertum
 2004    Incertum
 2030    Incertum
 2175    Incertum
 2190    Incertum
 2192    Incertum
 2193    Incertum
-2194    Incertum
 2195    Incertum
 2196    Incertum
 2201    Incertum
@@ -1723,35 +1734,25 @@
 2203    Incertum
 2213    Incertum
 2239    Varia
-2243    Incertum
 2268    Incertum
 2287    Incertum
-2349    Incertum
 2354    Incertum
-2458    Incertum
-2511    Incertum
 2532    Incertum
 2533    Incertum
 2555    Incertum
-2556    Incertum
 2557    Incertum
 2559    Incertum
 2560    Incertum
-2566    Incertum
 2568    Incertum
 2619    Incertum
 2628    Incertum
 2631    Incertum
 2646    Varia
 2648    Varia
-2654    Varia
-2655    Incertum
 2680    Incertum
 2691    Incertum
 2695    Varia
-2738    Varia
 2742    Varia
-2948    Incertum
 2949    Incertum
 3002    Varia
 4026    Varia
@@ -1782,7 +1783,6 @@
 4397    Incertum
 5000    Varia
 5002    Varia
-5003    Varia
 5008    Varia
 5009    Varia
 5010    Varia
