@@ -601,6 +601,7 @@ sub extract_hits
         qr /^\.\ |^.\.\.|^\ [A-Za-z]|^fr\.|^cf\.|^eg\.|^.\$|^..@\d|^...[&\$]|^..._|^..\.[ \]]\d|^[A-Z]|^.[A-Z]/;
         
     my ($offset, $last_offset, $parsed_block) = (-1, -1, 0);
+    my $matching_sets;
     HIT: foreach $match ( 0 .. $#{ $self->{seen}{$auth} } ) 
     {
         # The blocks containing the work in
@@ -730,7 +731,7 @@ sub extract_hits
         {
             my $n = 0;
             map {$matches{$n}++ if $result =~ /$_/; $n++;}(@{ $self->{pattern_list} });
-            my $matching_sets = 0;
+            $matching_sets = 0;
             if ($self->{repeat_matches}) {
                 # Count total number of matches for all patterns
                 $matching_sets += $_ for values %matches;
@@ -755,14 +756,15 @@ sub extract_hits
                      $n++;}
                 (@{ $self->{pattern_list} });
 
-            my $matching_sets = 0;
+
             if ($self->{repeat_matches}) {
                 # Count total number of matches for all patterns
+                $matching_sets = 0;
                 $matching_sets += $_ for values %matches;
             }
             else {
                 # Count number of individual patterns that match
-                my $matching_sets = values %matches;
+                $matching_sets = scalar keys %matches;
             }
             print STDERR "+ $result\n" if $self->{debug};
             # print STDERR "+ ".$self->{pattern_list}[0]."\n" if $self->{debug};
