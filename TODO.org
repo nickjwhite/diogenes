@@ -1,6 +1,5 @@
 * Bugs
 * For forthcoming version
-** Guard against fatal error on missing TLG files.
 ** Update lexica and cut a release for Helma.  Try without zeros in text boxes.
 ** Update TLL
 We are pleased to announce that the TLL Open Access now includes headwords from N (n to neate) and R (r to refobeo), excluding only material published in
@@ -42,6 +41,7 @@ At present, we seem to look for each inflected form in each work separately, whi
 ** Improve epub output
 Write dedicated xml to html-for-epub converter.
 * Long-term to-do items
+** Record criteria for complex filters to permit them to be recreated and modified.
 ** Make search output paged?
 ** Make settings page shorter and clearer
    roughly a variant of firstrun page, but ensure that it still works outside of elect
