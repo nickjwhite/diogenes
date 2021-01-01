@@ -63,6 +63,7 @@ $| = 1;  # autoflush
 
 print "Downloading TLL PDF files.\n";
 
+ FILE:
 foreach my $url (@urls) {
     my $filename = $file_names{$url};
     $filename = uri_unescape($filename);
@@ -78,7 +79,10 @@ foreach my $url (@urls) {
     if ($Diogenes::Base::OS eq 'windows') {
         Encode::from_to($filename, 'utf8', $Diogenes::Base::code_page);
     }
-    print "Warning: overwriting already existing file: $filename!\n" if (-e $filename);
+    if (-e $filename) {
+        print "Skipping existing file: $filename\n";
+        next FILE;
+    }
     open my $fh, ">", $filename or die "Could not open $filename for writing: $!\n";
     binmode($fh); # essential for Windows
     print "\nDownloading $filename ...\n";
@@ -236,7 +240,18 @@ sub tll_file_names {
 "000094373%7BThLL%20vol.%2010.2.2%20col.%201233%E2%80%931970%20%28primaevus%E2%80%93propello%29%7D%5BCC%20BY-NC-ND%5D.pdf",
 "000094373%7BThLL%20vol.%2010.2.2%20col.%201971%E2%80%932798%20%28propemodum%E2%80%93pyxodes%29%7D%5BCC%20BY-NC-ND%5D.pdf",
 "036397929%7BThLL%20vol.%20onom.2%20col.%200001%E2%80%930814%20%28c%E2%80%93cyzistra%29%7D%5BCC%20BY-NC-ND%5D.pdf",
-"036397930%7BThLL%20vol.%20onom.3%20col.%200001%E2%80%930280%20%28d%E2%80%93dzoni%29%7D%5BCC%20BY-NC-ND%5D.pdf")
+"036397930%7BThLL%20vol.%20onom.3%20col.%200001%E2%80%930280%20%28d%E2%80%93dzoni%29%7D%5BCC%20BY-NC-ND%5D.pdf",
+
+# New fascicles
+"ThLL%20vol.%209.1.1%20col.%200001%E2%80%930208%20%28n%E2%80%93navalis%29.pdf",
+"ThLL%20vol.%209.1.2%20col.%200209%E2%80%930336%20%28navalis-nebel%29.pdf",
+"ThLL_IX_1__3_UEberhang_nemo_nemus.pdf",
+"ThLL%20vol.%2011.2.1%20col.%200001%E2%80%930144%20%28r-rarus%29.pdf",
+"ThLL%20vol.%2011.2.2%20col.%200145%E2%80%930320%20%28rarus-recido%29.pdf",
+"ThLL%20vol.%2011.2.3%20col.%200321%E2%80%930496%20%28recido-reddo%29.pdf",
+"ThLL%20vol.%2011.2.4%20col.%200497%E2%80%930656%20%28reddo-refocilo%29.pdf",
+"ThLL%20vol.%2011.2.5%20col.%200657%E2%80%930784%20%28refodio-regnum%29.pdf"
+        )
 };
 
 sub tll_urls {
@@ -286,8 +301,18 @@ sub tll_urls {
 "http://publikationen.badw.de/de/000094373/pdf/CC%20BY-NC-ND/ThLL%20vol.%2010.2.2%20col.%201233%E2%80%931970%20%28primaevus%E2%80%93propello%29",
 "http://publikationen.badw.de/de/000094373/pdf/CC%20BY-NC-ND/ThLL%20vol.%2010.2.2%20col.%201971%E2%80%932798%20%28propemodum%E2%80%93pyxodes%29",
 "http://publikationen.badw.de/de/036397929/pdf/CC%20BY-NC-ND/ThLL%20vol.%20onom.2%20col.%200001%E2%80%930814%20%28c%E2%80%93cyzistra%29",
-"http://publikationen.badw.de/de/036397930/pdf/CC%20BY-NC-ND/ThLL%20vol.%20onom.3%20col.%200001%E2%80%930280%20%28d%E2%80%93dzoni%29")
+"http://publikationen.badw.de/de/036397930/pdf/CC%20BY-NC-ND/ThLL%20vol.%20onom.3%20col.%200001%E2%80%930280%20%28d%E2%80%93dzoni%29",
+
+# These are new fascicles, as of Dec. 2020
+
+"http://publikationen.badw.de/de/039602104/pdf/CC%20BY-NC-ND/ThLL%20vol.%209.1.1%20col.%200001%E2%80%930208%20%28n%E2%80%93navalis%29",
+"http://publikationen.badw.de/de/039602104/pdf/CC%20BY-NC-ND/ThLL%20vol.%209.1.2%20col.%200209%E2%80%930336%20%28navalis-nebel%29",
+"http://www.thesaurus.badw.de/fileadmin/user_upload/Files/TLL/ThLL_IX_1__3_UEberhang_nemo_nemus.pdf",
+"http://publikationen.badw.de/de/040453075/pdf/CC%20BY-NC-ND/ThLL%20vol.%2011.2.1%20col.%200001%E2%80%930144%20%28r-rarus%29",
+"http://publikationen.badw.de/de/040453075/pdf/CC%20BY-NC-ND/ThLL%20vol.%2011.2.2%20col.%200145%E2%80%930320%20%28rarus-recido%29",
+"http://publikationen.badw.de/de/040453075/pdf/CC%20BY-NC-ND/ThLL%20vol.%2011.2.3%20col.%200321%E2%80%930496%20%28recido-reddo%29",
+"http://publikationen.badw.de/de/040453075/pdf/CC%20BY-NC-ND/ThLL%20vol.%2011.2.4%20col.%200497%E2%80%930656%20%28reddo-refocilo%29",
+"http://publikationen.badw.de/de/040453075/pdf/CC%20BY-NC-ND/ThLL%20vol.%2011.2.5%20col.%200657%E2%80%930784%20%28refodio-regnum%29"
+        )
 };
 
-
-   

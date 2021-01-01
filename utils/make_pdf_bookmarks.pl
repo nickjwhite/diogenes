@@ -48,7 +48,7 @@ else {
 
 my (@files, @sorted);
 sub compare {
-    ($a =~ /ThLL vol\. (.*?) \(/)[0] cmp ($b =~ /ThLL vol\. (.*?) \(/)[0]
+    ($a =~ /ThLL(?: vol\. |_)(.*?)(?: \(|UE)/)[0] cmp ($b =~ /ThLL(?: vol\. |_)(.*?)( \(|UE)/)[0]
         || $a cmp $b;
 }
 
