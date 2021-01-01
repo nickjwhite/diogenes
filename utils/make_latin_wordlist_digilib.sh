@@ -1,4 +1,4 @@
-#!usr/bin/env sh
+#!/usr/bin/env /bin/sh
 
 usage="Usage: $0 digilibltdir
 

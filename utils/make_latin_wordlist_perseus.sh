@@ -1,4 +1,4 @@
-#!usr/bin/env sh
+#!/usr/bin/env sh
 
 usage="Usage: $0 perseusdir
 
