@@ -10,22 +10,19 @@ all: $(BUILD)/lat.words $(BUILD)/grc.words
 GREEKLIT = $(BUILD)/canonical-greekLit
 LATINLIT = $(BUILD)/canonical-latinLit
 
-GREEKLITCOMMIT = 5d069b29bd9dd40c8bb1dc1b9e2623236ebb22b9
-LATINLITCOMMIT = 5b1e32979179c5e92aefe59e43a15cae7f3d1b3b
-
 $(GREEKLIT)/.git/HEAD:
 	rm -rf $(GREEKLIT)
 	cd $(BUILD) && git clone https://github.com/PerseusDL/canonical-greekLit
-	cd $(GREEKLIT) && git checkout $(GREEKLITCOMMIT)
+	cd $(GREEKLIT) && git checkout
 
 $(LATINLIT)/.git/HEAD:
 	rm -rf $(LATINLIT)
 	cd $(BUILD) && git clone https://github.com/PerseusDL/canonical-latinLit
-	cd $(LATINLIT) && git checkout $(LATINLITCOMMIT)
+	cd $(LATINLIT) && git checkout
 
-$(BUILD)/lat.words-perseus: utils/make_latin_wordlist_perseus.pl $(LATINLIT)/.git/HEAD
+$(BUILD)/lat.words-perseus: utils/make_latin_wordlist_perseus.sh $(LATINLIT)/.git/HEAD
 	mkdir -p $(BUILD)
-	./utils/make_latin_wordlist_perseus.pl $(LATINLIT) > $@
+	./utils/make_latin_wordlist_perseus.sh $(LATINLIT) > $@
 
 $(BUILD)/grc.words-perseus: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
 	mkdir -p $(BUILD)
@@ -34,16 +31,17 @@ $(BUILD)/grc.words-perseus: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.gi
 # DigilibLT has to be downloaded separately after registering for an
 # account.
 
-DIGILIBDIR = $(HOME)/digiliblt
+#DIGILIBDIR = $(HOME)/digiliblt
+DIGILIBDIR = ../../diogenes-web/app/static/texts/DigiLibLT/
 
-$(BUILD)/lat.words-digilib: utils/make_latin_wordlist_digilib.pl
+$(BUILD)/lat.words-digilib: utils/make_latin_wordlist_digilib.sh
 	mkdir -p $(BUILD)
-	./utils/make_latin_wordlist_digilib.pl $(DIGILIBDIR) > $@
+	./utils/make_latin_wordlist_digilib.sh $(DIGILIBDIR) > $@
 
 # PHI and TLG wordlists
 
-PHIDIR = $(HOME)/phi
-TLGDIR = $(HOME)/tlg_e
+PHIDIR = $(HOME)/Classics-Data/phi
+TLGDIR = $(HOME)/Classics-Data/tlg_e
 
 $(BUILD)/lat.words-phi: utils/make_latin_wordlist.pl
 	mkdir -p $(BUILD) $(DATA)
