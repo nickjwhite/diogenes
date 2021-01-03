@@ -42,9 +42,10 @@ yourself, see the instructions below.
 
 Creating the Diogenes icons for various platforms requires a number of
 external programs that can be installed with the `librsvg`, `libicns`
-and `icoutils` packages on Linux or via Homebrew on OS X.  Building
-the Windows app also requires `wine`, which can be installed in the same
-way.
+and `icoutils` packages via Homebrew on OS X, or the Linux packages
+`librsvg2-bin`, `libicns1`, `icoutils` and `icnsutils` (Debian).
+Building the Windows app also requires `wine`, which can be installed
+in the same way (but see below the workaround via Docker).
 
 A few other files need to be assembled before Diogenes can be run. To
 do that run this command:
@@ -72,8 +73,7 @@ You will need to install a number of auxiliary programs, including
 on Linux (make sure to install the 64-bit version of wine) and on OS X
 using Homebrew (`brew cask install homebrew/cask/wine-stable`).  To
 create Linux installers you will also need to install `fpm`, which is
-done via the Ruby package manager (see
-https://fpm.readthedocs.io/en/latest/).
+done via the [Ruby package manager](https://fpm.readthedocs.io/en/latest/).
 
 [NB. At the moment there is no 32-bit version of Inno Setup available,
 which is the windows packager we use. OS X since Catalina will not run

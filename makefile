@@ -16,7 +16,11 @@ UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
 STRAWBERRYPERLVERSION=5.28.0.1
 
-all: server/Diogenes/unicode-equivs.pl server/Diogenes/EntityTable.pm server/fonts/GentiumPlus-I.woff server/fonts/GentiumPlus-R.woff
+all: server/Diogenes/unicode-equivs.pl server/Diogenes/EntityTable.pm server/fonts/GentiumPlus-I.woff server/fonts/GentiumPlus-R.woff client/node-font-list/package.json
+
+client/node-font-list/package.json:
+	rm -rf client/node-font-list
+	cd client && git clone https://github.com/oldj/node-font-list.git
 
 $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt:
 	curl -o $@ http://www.unicode.org/Public/$(UNICODEVERSION)/ucd/UnicodeData.txt
@@ -80,13 +84,13 @@ electron/electron-v$(ELECTRONVERSION)-win32-x64:
 
 build/w32perl:
 	mkdir -p build/w32perl/strawberry
-	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+	curl -L http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	unzip -d build/w32perl/strawberry build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	rm build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 
 build/w64perl:
 	mkdir -p build/w64perl/strawberry
-	curl http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip > build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
+	curl -L http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip > build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 	unzip -d build/w64perl/strawberry build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 	rm build/w64perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-64bit-portable.zip
 
@@ -228,7 +232,8 @@ build/inno-setup/app/ISCC.exe:
 # this solution is from
 # https://gist.github.com/amake/3e7194e5e61d0e1850bba144797fd797
 installer-w32: install/diogenes-setup-win32-$(DIOGENESVERSION).exe
-install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
+#install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
+install/diogenes-setup-win32-$(DIOGENESVERSION).exe: app/w32
 	mkdir -p install
 	rm -f install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 # wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
