@@ -1,6 +1,6 @@
 # Changes in Version 4 of Diogenes
 
-## 4.6 (forthcoming)
+## 4.6
 
 * TLG search results are now presented in rough chronological order (with thanks
   to Jiang Qian for helping).
@@ -13,6 +13,8 @@
 * Fixed display of some LSJ headwords.
 * Fixed picking up GUI config settings when running server from the Linux command-line.
 * Fixed browsing to Val. Max "(ext)" sections and fragments at end of file.
+* Latest (short) fasicles of the TLG are downloaded, but cannot yet be used,
+  as the PDFs have no bookmarks in them.
 
 ## 4.5
 

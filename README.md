@@ -9,7 +9,7 @@ If you just want to install and run the program, go to the Diogenes
 webpage, and download a pre-packaged version for your operating system
 from there:
 
-https://d.iogen.es/d
+[https://d.iogen.es/d](https://d.iogen.es/d)
 
 The detailed technical information contained here is only for people
 who want to look at the source code of Diogenes and build it for
@@ -27,8 +27,8 @@ this project.
 
 Diogenes can either be built and run as a HTTP server application, or
 as a standalone application that seamlessly combines both server and
-browser by using the Electron application framework
-(https://electronjs.org/).
+browser by using the [Electron](https://electronjs.org/) application
+framework.
 
 Diogenes uses several dictionaries, as well as pre-computed morphology
 tables, which need to be built or downloaded before use.  If you want
@@ -45,7 +45,6 @@ external programs that can be installed with the `librsvg`, `libicns`
 and `icoutils` packages on Linux or via Homebrew on OS X.  Building
 the Windows app also requires `wine`, which can be installed in the same
 way.
-
 
 A few other files need to be assembled before Diogenes can be run. To
 do that run this command:
@@ -125,94 +124,92 @@ Building the morphology data & dictionaries
 
 Instead of downloading the pre-built lexical data via
 `make -f mk.prebuilt-data`, you can build it from scratch. The
-following commands will download the lexica and the Morpheus parser,
+following steps will download the lexica and the Morpheus parser,
 which have been provided by the Perseus project, and repackage them
 for Diogenes.
 
-### Step 1
+1. Wordlists
 
-The first step is to generate Greek and Latin wordlists, which are
-derived from the TLG wordlist and the Perseus corpus for Greek and
-from the PHI, Perseus and DigiLibLT corpora for Latin.  The DigiLibLT
-corpus has to be downloaded first by hand after making an account on
-their website, but the Perseus corpora are downloaded
-automatically. Run this command, specifying the location of the
-non-Perseus databases on the command line:
+    The first step is to generate Greek and Latin wordlists, which for
+    Greek are derived from the Perseus corpus and the TLG wordlist;
+    and for Latin from the PHI, Perseus and DigiLibLT corpora.  The
+    DigiLibLT corpus has to be downloaded first by hand after making
+    an account on their website, but the Perseus corpora are
+    downloaded automatically. Run this command, specifying the
+    location of the non-Perseus databases on the command line:
 
-    make -f mk.tlg-phi-words PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e DIGILIBDIR=~/path/to/digilib
+        make -f mk.wordlists PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e DIGILIBDIR=~/path/to/digilib
 
+1. Morphology
 
-### Step 2
+    The next step is to generate the morphological data by running
+    Morpheus over the wordlists.  This part of the build may need to
+    run on a Linux machine, as Morpheus has had issues on OS X.  If
+    want to skip this step, you can just download and use the
+    morphological data from version 3 of Diogenes, which still works
+    fine with version 4.  Run the following command and then go down
+    to Step 3 below:
 
-The next step is to generate the morphological data by running
-Morpheus over the wordlists.  This part of the build may need to run
-on a Linux machine, as Morpheus has had issues on OS X.  If want to
-skip this step, you can just download and use the morphological data
-from version 3 of Diogenes, which still works fine with version 4.
-Run the following command and then go down to Step 3 below:
+        make -f mk.morpheus-v3
 
-    make -f mk.morpheus-v3
+    If you prefer to run Morpheus over the wordlists yourself, you
+    have to choose between the old version which works well but only
+    compiles on Linux and the current version, which may be broken but
+    which compiles on Macs.
 
-If you prefer to run Morpheus over the wordlists yourself, you have to
-choose between the old version which works well but only compiles on
-Linux and the current version, which may be broken but which compiles
-on Macs.
+    To download, compile and run an older but known-good version of
+    Morpheus, run this command on Linux:
 
-To download, compile and run an older but known-good version of
-Morpheus, run this command on Linux:
+        make -f mk.morpheus-old
 
-    make -f mk.morpheus-old
+    The current version of Morpheus in the Perseus github repo has
+    been updated so that it compiles on Macs, but it is buggy and
+    produces incomplete and incorrect output. There are newer forks
+    which may have fixed those issues, but I haven't tested them.  See
+    e.g. [here](https://github.com/Alatius/morpheus).
 
-The current version of Morpheus in the Perseus github repo has been
-updated so that it compiles on Macs, but it is buggy and produces
-incomplete and incorrect output. There are newer forks which may have
-fixed those issues, but I haven't tested them.  See
-e.g. https://github.com/Alatius/morpheus
+1. Lexica
 
+    The next step is to download the LSJ Greek lexicon and the L-S
+    Latin lexicon, which were originally digitized by the Perseus
+    project and have subsequently been corrected by the Logeion
+    project.  To get the lexica from Logeion, run:
 
-### Step 3
+        make -f mk.lexica-logeion
 
-The next step is to download the LSJ Greek lexicon and the L-S Latin
-lexicon, which were originally digitized by the Perseus project and
-have subsequently been corrected by the Logeion project.  To get the
-lexica from Logeion, run:
+    Alternatively, you can get the Perseus version of the lexica by
+    running:
 
-    make -f mk.lexica-logeion
+        make -f mk.lexica-perseus
 
-Alternatively, you can get the Perseus version of the lexica by
-running:
+1. Integration
 
-    make -f mk.lexica-perseus
+    The next step is to integrate the morphological data with the
+    lexica, and package all this in the form that Diogenes requires.
+    To do this, run:
 
+        make -f mk.data
 
-### Step 4
+    The intermediate files generated in the course of all of the steps
+    above are put the build/ directory, and the final lexical data
+    which is used used by Diogenes at runtime is put in the
+    dependencies/data directory, whence it is read by
+    diogenes-server.pl.
 
-The final step is to integrate the morphological data with the lexica,
-and package all this in the form that Diogenes requires.  To do this,
-run:
+1. PDFs of Lexica
 
-    make -f mk.data
+    There is one more, optional, step, which is to integrate
+    information on where words can be found in the print versions of
+    the _Thesaurus Linguae Latinae_ and the first edition of the
+    _Oxford Latin Dictionary_.  The PDFs of the _TLL_ can be
+    downloaded from the website of the Bayerische Akademie der
+    Wissenschaften by hand, via a menus item in the Diogenes Electron
+    application, or by running on the command line:
 
-The intermediate files generated in the course of all of the steps
-above are put the build/ directory, and the final lexical data which
-is used used by Diogenes at runtime is put in the dependencies/data
-directory, whence it is read by diogenes-server.pl.
+        server/tll-pdf-download.pl path/to/destination/folder
 
-### Step 5
+    If you also have a PDF of the first edition of the _OLD_ that has
+    the running heads as bookmarks, you can extract the necessary
+    information from that as well.  To do so, run:
 
-There is one more, optional, step, which is to integrate information
-on where words can be found in the print versions of the _Thesaurus
-Linguae Latinae_ and the first edition of the _Oxford Latin
-Dictionary_.  The PDFs of the _TLL_ can be downloaded from the website
-of the Bayerische Akademie der Wissenschaften by hand, via a menus
-item in the Diogenes Electron application, or by running on the
-command line:
-
-    server/tll-pdf-download.pl path/to/destination/folder
-
-If you also have a PDF of the first edition of the _OLD_ that has the
-running heads as bookmarks, you can extract the necessary information
-from that as well.  To do so, run:
-
-    make -f mk.pdf-data TLLDIR=/path/to/tll/directory OLDFILE=/path/to/old/file
-
+        make -f mk.pdf-data TLLDIR=/path/to/tll/directory OLDFILE=/path/to/old/file
