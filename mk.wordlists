@@ -1,6 +1,6 @@
 # We make a Latin wordlist by iterating over three corpora: PHI,
 # Perseus and DigiLibLT.  We make a Greek wordlist by iterating over
-# the Perseus corpuse and adding that to the TLG wordlist.
+# the Perseus corpus and adding that to the TLG wordlist.
 
 include mk.common
 all: $(BUILD)/lat.words $(BUILD)/grc.words
@@ -24,9 +24,9 @@ $(BUILD)/lat.words-perseus: utils/make_latin_wordlist_perseus.sh $(LATINLIT)/.gi
 	mkdir -p $(BUILD)
 	./utils/make_latin_wordlist_perseus.sh $(LATINLIT) > $@
 
-$(BUILD)/grc.words-perseus: utils/make_greek_wordlist_perseus.pl $(GREEKLIT)/.git/HEAD
+$(BUILD)/grc.words-perseus: utils/make_greek_wordlist_perseus.sh $(GREEKLIT)/.git/HEAD
 	mkdir -p $(BUILD)
-	./utils/make_greek_wordlist_perseus.pl $(GREEKLIT) > $@
+	./utils/make_greek_wordlist_perseus.sh $(GREEKLIT) > $@
 
 # DigilibLT has to be downloaded separately after registering for an
 # account.
