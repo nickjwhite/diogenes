@@ -193,7 +193,15 @@ function openWithExternal (e) {
     // let win = new BrowserWindow()
     // win.loadURL(link)
 
-    shell.openExternal(link);
+    promise = shell.openExternal(link)
+    promise.then(function(ret) {
+        if (ret){
+            console.log('Open PDF error:', ret)
+        }
+        else {
+            console.log('PDF opened')
+        }
+    })
 }
 
 // Select location to save TLL PDFs prior to download
