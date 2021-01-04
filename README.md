@@ -73,7 +73,7 @@ You will need to install a number of auxiliary programs, including
 on Linux (make sure to install the 64-bit version of wine) and on OS X
 using Homebrew (`brew cask install homebrew/cask/wine-stable`).  To
 create Linux installers you will also need to install `fpm`, which is
-done via the [Ruby package manager](https://fpm.readthedocs.io/en/latest/).
+done via the Ruby package manager [(see instructions)](https://fpm.readthedocs.io/en/latest/installing.html).
 
 [NB. At the moment there is no 32-bit version of Inno Setup available,
 which is the windows packager we use. OS X since Catalina will not run

@@ -2,19 +2,21 @@
 
 ## 4.6
 
-* TLG search results are now presented in rough chronological order (with thanks
-  to Jiang Qian for helping).
-* Diogenes now deals gracefully with hitting the end of a file while browsing.
-* Multiple search feature now permits searching for the repetition of words in
-  a given passage.
+* TLG search results are now presented in (rough) chronological order
+  (with huge thanks to Jiang Qian for his assistance).
+* Multiple search feature now permits looking for the repetition of
+  a word (with thanks to Michael Putnam for the suggestion).
+* Many errors in Lewis and Short, especially citation references, have
+  been fixed by Logeion (thanks to Helma Dik).
+* Diogenes now deals more gracefully with hitting the end of a file
+  while browsing.
 * There is a new software package (diogenes-epub) for converting Diogenes XML
   output to epub format for e-readers.
-* Many citation refs in Lewis and Short have been fixed by Logeion.
 * Fixed display of some LSJ headwords.
 * Fixed picking up GUI config settings when running server from the Linux command-line.
 * Fixed browsing to Val. Max "(ext)" sections and fragments at end of file.
-* Latest (short) fasicles of the TLG are downloaded, but cannot yet be used,
-  as the PDFs have no bookmarks in them.
+* Latest (short) fasicles of the TLL are downloaded, but cannot yet be used,
+  as those PDFs have no bookmarks.
 
 ## 4.5
 

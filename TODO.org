@@ -3,7 +3,8 @@
 * For next version
 ** Update to Electron 11
 *** Add PDF view
-*** See if this fixes zoom issue
+*** See if this fixes zoom issue and opening PDFs on Linux
+** Change prebuilt-data repo to use git-lfs (and my ssh key)
 ** Try without zeros in text boxes.
 ** Further test TLL download under Windows.
 ** Fix short defs by using Helma's data.
