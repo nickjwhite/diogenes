@@ -422,7 +422,7 @@ sub read_tlg_chronology {
             my $date = $2;
             $date =~ s/\s+$//;
             my $filename = $self->{tlg_file_prefix}.$num.$self->{txt_suffix};
-            my $path = File::Spec->catpath($vol, $self->{tlg_dir}, $filename);
+            my $path = File::Spec->catpath($self->{tlg_dir}, $filename);
             if (-e $path) {
                 push @{ $self->{tlg_ordered_filenames} }, $filename;
                 push @{ $self->{tlg_ordered_authnums} }, $num;
