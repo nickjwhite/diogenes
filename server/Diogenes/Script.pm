@@ -1171,9 +1171,10 @@ $output{browser_passage} = sub
         next if $lab =~ m#^\*#;
         $lab =~ s#^(.)#\U$1\E#;
         %fields = ( -default => '0', -name => "level_$j", -size => 25 );
-        # autofocus first input box (HTML5)
+        # autofocus first input box (HTML5) and select the 0 to easily overwrite it
         if ($j == $#labels) {
-            $fields{'-autofocus'} = 'autofocus';
+            $fields{'-autofocus'} = '';
+            $fields{'-onfocus'} = "this.select()"
         }
         print
             "$lab: ", '</td><td>',
