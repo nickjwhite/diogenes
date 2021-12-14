@@ -1,6 +1,6 @@
 # Changes in Version 4 of Diogenes
 
-## 4.6
+## Forthcoming (4.6)
 
 * TLG search results are now presented in (rough) chronological order
   (with huge thanks to Jiang Qian for his assistance).
@@ -17,6 +17,7 @@
 * Fixed browsing to Val. Max "(ext)" sections and fragments at end of file.
 * Latest (short) fasicles of the TLL are downloaded, but cannot yet be used,
   as those PDFs have no bookmarks.
+* Fix to bug that interfered with chronological ordering except on Windows.
 
 ## 4.5
 
