@@ -10,6 +10,10 @@ body {
   height: 100%;
   margin: 0px;
 }
+.dark-mode {
+  background-color: black;
+  color: white;
+}
 body.waiting, body.waiting *{
     cursor: wait !important;
 }

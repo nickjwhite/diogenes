@@ -5,7 +5,9 @@ Steps to recreate the problem. 1) Search>Inflected Forms. 2) Corpus: Classical I
 Crashes for me, fails to convert Beta code for him.
 ** Pindar bug:
 I’m wondering whether you’d consider modifying the click to dictionary command so that it ignores the apostrophes used in Pindar (and elsewhere?) to indicate that mute+liquid are to be taken separately (e.g. γˈλώσσας, O. 6.12).
+** Replace icon for newer Macs.
 * For forthcoming version
+** Make it so going back to the splash screen goes back to the last selected option.
 ** Add download for Apple Silicon Macs 
 ** Add tgz download target for manual installation
 *** Give better instructions on website for manual install
@@ -24,6 +26,15 @@ add a keystroke to clear all form elements.  I could also add keystrokes to go t
 try again to fix this.
 ** Add link to settings.cgi in splash only for non-Electron clients and test
 https://github.com/pjheslin/diogenes/issues/74
+** Maybe disabling TOC should be an option
+** Add dark mode option.
+See how badly this slows down seeking.
+** way in the app for us to try out citation codes would be great.
+A quick dropdown box to jump to a citation written out
+If you’re not bothered about user-friendliness, a power-user option to enter a citation string should be easy enough to add.
+** Test "New Window (reset position)" menu item on Windows
+Try with a Windows laptop and an external monitor
+** Is it possible to display server errors in the client?
 * For next version
 ** Fix short defs by using Helma's data.
 ** Check this:
@@ -70,3 +81,5 @@ Possibly faster and better supported, by same author as XML::DOM::Lite.
 I think this just requires adding strawberry\c\bin to the PATH, so that it can find libxml2-2__.dll
 ** Possibly refactor application to only parse prefs file once
 We should avoid re-parsing prefs file at each query.
+** Add better interface to Suda, Etym. Magnum, et al.
+Provide a way to search them by headword
