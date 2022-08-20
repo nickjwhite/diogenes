@@ -10,7 +10,7 @@ CLOUDFRONTID=replace-this-id
 
 DIOGENESVERSION = $(shell grep "Diogenes::Base::Version" server/Diogenes/Base.pm | sed -n 's/[^"]*"\([^"]*\)"[^"]*/\1/p')
 
-ELECTRONVERSION = 5.0.6
+ELECTRONVERSION = 20.0.0
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
@@ -167,30 +167,66 @@ electron/electron-v$(ELECTRONVERSION)-darwin-x64:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-darwin-x64 electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-darwin-x64.zip
 
-mac: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
-	rm -rf app/mac
-	mkdir -p app/mac
-	mkdir -p app/mac/about
-	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac
-	cp -r client app/mac/Electron.app/Contents/Resources/app
-	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/mac/Electron.app/Contents/Resources/app/version.js
-	cp -r server app/mac/Electron.app/Contents
-	cp -r dependencies app/mac/Electron.app/Contents
-	cp build/diogenes.icns app/mac/Electron.app/Contents/Resources/
-	perl -pi -e 's/electron.icns/diogenes.icns/g' app/mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/Electron/Diogenes/g' app/mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' app/mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' app/mac/Electron.app/Contents/Info.plist
-	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac/Electron.app/Contents/Info.plist
-	mv app/mac/Electron.app app/mac/Diogenes.app
-	mv app/mac/Diogenes.app/Contents/MacOS/Electron app/mac/Diogenes.app/Contents/MacOS/Diogenes
-	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
-	mv "app/mac/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
-	cp COPYING app/mac/about/COPYING.txt
-	cp README.md app/mac/about/README.md
-	mv app/mac/LICENSE app/mac/about/
-	mv app/mac/LICENSES.chromium.html app/mac/about/
-	mv app/mac/version app/mac/about/
+electron/electron-v$(ELECTRONVERSION)-darwin-arm64:
+	mkdir -p electron
+	curl -L https://github.com/electron/electron/releases/download/v$(ELECTRONVERSION)/electron-v$(ELECTRONVERSION)-darwin-arm64.zip > electron/electron-v$(ELECTRONVERSION)-darwin-arm64.zip
+	unzip -d electron/electron-v$(ELECTRONVERSION)-darwin-arm64 electron/electron-v$(ELECTRONVERSION)-darwin-arm64.zip
+	rm electron/electron-v$(ELECTRONVERSION)-darwin-arm64.zip
+	# Remove spurious "Electron is damaged" error message
+	xattr -cr electron/electron-v$(ELECTRONVERSION)-darwin-arm64/Electron.app
+
+mac-x64: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
+	rm -rf app/mac-x64
+	mkdir -p app/mac-x64
+	mkdir -p app/mac-x64/about
+	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-x64/* app/mac-x64
+	cp -r client app/mac-x64/Electron.app/Contents/Resources/app
+	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/mac-x64/Electron.app/Contents/Resources/app/version.js
+	cp -r server app/mac-x64/Electron.app/Contents
+	cp -r dependencies app/mac-x64/Electron.app/Contents
+	cp build/diogenes.icns app/mac-x64/Electron.app/Contents/Resources/
+	perl -pi -e 's/electron.icns/diogenes.icns/g' app/mac-x64/Electron.app/Contents/Info.plist
+	perl -pi -e 's/Electron/Diogenes/g' app/mac-x64/Electron.app/Contents/Info.plist
+	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' app/mac-x64/Electron.app/Contents/Info.plist
+	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' app/mac-x64/Electron.app/Contents/Info.plist
+	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac-x64/Electron.app/Contents/Info.plist
+	mv app/mac-x64/Electron.app app/mac-x64/Diogenes.app
+	mv app/mac-x64/Diogenes.app/Contents/MacOS/Electron app/mac-x64/Diogenes.app/Contents/MacOS/Diogenes
+	# There are now multiple helper apps, and each has an Info.plist that
+	# may need modifying, so for now we just refrain from renaming
+	# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
+	# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-x64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
+	cp COPYING app/mac-x64/about/COPYING.txt
+	cp README.md app/mac-x64/about/README.md
+	mv app/mac-x64/LICENSE app/mac-x64/about/
+	mv app/mac-x64/LICENSES.chromium.html app/mac-x64/about/
+	mv app/mac-x64/version app/mac-x64/about/
+
+mac-arm64: all electron/electron-v$(ELECTRONVERSION)-darwin-arm64 build/diogenes.icns
+	rm -rf app/mac-arm64
+	mkdir -p app/mac-arm64
+	mkdir -p app/mac-arm64/about
+	cp -r electron/electron-v$(ELECTRONVERSION)-darwin-arm64/* app/mac-arm64
+	cp -r client app/mac-arm64/Electron.app/Contents/Resources/app
+	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/mac-arm64/Electron.app/Contents/Resources/app/version.js
+	cp -r server app/mac-arm64/Electron.app/Contents
+	cp -r dependencies app/mac-arm64/Electron.app/Contents
+	cp build/diogenes.icns app/mac-arm64/Electron.app/Contents/Resources/
+	perl -pi -e 's/electron.icns/diogenes.icns/g' app/mac-arm64/Electron.app/Contents/Info.plist
+	perl -pi -e 's/Electron/Diogenes/g' app/mac-arm64/Electron.app/Contents/Info.plist
+	perl -pi -e 's/com.github.electron/uk.ac.durham.diogenes/g' app/mac-arm64/Electron.app/Contents/Info.plist
+	perl -pi -e 's/$(ELECTRONVERSION)/$(DIOGENESVERSION)/g' app/mac-arm64/Electron.app/Contents/Info.plist
+	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac-arm64/Electron.app/Contents/Info.plist
+	mv app/mac-arm64/Electron.app app/mac-arm64/Diogenes.app
+	mv app/mac-arm64/Diogenes.app/Contents/MacOS/Electron app/mac-arm64/Diogenes.app/Contents/MacOS/Diogenes
+	# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
+	# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
+	cp COPYING app/mac-arm64/about/COPYING.txt
+	cp README.md app/mac-arm64/about/README.md
+	mv app/mac-arm64/LICENSE app/mac-arm64/about/
+	mv app/mac-arm64/LICENSES.chromium.html app/mac-arm64/about/
+	mv app/mac-arm64/version app/mac-arm64/about/
+
 
 zip-linux64: app/linux64
 	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
