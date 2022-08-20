@@ -1,9 +1,7 @@
-const {ipcRenderer} = require('electron') 
 const dbs = ['PHI', 'TLG', 'DDP', 'TLL_PDF', 'OLD_PDF']
 
 function firstrunSetup () {
-  data = ipcRenderer.sendSync('firstrunSetupMain')
-  
+  data = window.electron.firstrunSetupMain()
   for (let i = 0; i < dbs.length; i++) {
     let db = dbs[i]
     bindClickEvent(db)
@@ -18,7 +16,7 @@ function firstrunSetup () {
     }
   }
   document.getElementById('done').addEventListener('click', () => {
-    window.location.href = `http://localhost:` + ipcRenderer.sendSync('getport')
+    window.location.href = `http://localhost:` + window.electron.getport()
   })
   readyDoneButton()
 }
@@ -46,13 +44,13 @@ function bindClickEvent(dbName) {
   }
   
   document.getElementById(`${dbName}button`).addEventListener('click', () => {
-    folderPath = ipcRenderer.sendSync('dbOpenDialog', prop, dbName)
+    folderPath = window.electron.dbOpenDialog(prop, dbName)
     showPath(dbName, folderPath)
   })
 }
 
 function showPath(dbName, folderPath) {
-  authtabExists = ipcRenderer.sendSync('authtabExists', folderPath)
+  authtabExists = window.electron.authtabExists(folderPath)
   document.getElementById(`${dbName}path`).innerHTML = folderPath
   checkmark = document.getElementById(`${dbName}ok`)
   

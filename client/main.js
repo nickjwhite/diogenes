@@ -3,7 +3,6 @@ const {spawn} = require('child_process')
 const path = require('path')
 const process = require('process')
 const fs = require('fs')
-const dialog = require('dialog')
 const console = require('console')
 const fontList = require('./node-font-list/index.js')
 
@@ -23,6 +22,7 @@ let currentLinkURL = null
 
 //const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.join(app.getAppPath(), 'preload.js')}
 const webprefs = {contextIsolation: true, nodeIntegration: false, preload: path.resolve(__dirname, 'preload.js')}
+// const webprefs = {contextIsolation: true, nodeIntegration: false}
 const winopts = {icon: path.join(app.getAppPath(), 'assets', 'icon.png')}
 
 const settingsPath = app.getPath('userData')
@@ -737,14 +737,14 @@ app.whenReady().then(() => {
     event.returnValue = dbOpenDialog(prop, dbName)
   })
   ipcMain.on('authtabExists', (event, folderPath) => {
-    event.returnValue = dioSettings.authtabExists(folderPath)
+    event.returnValue = authtabExists(folderPath)
   })
 });
 
 function firstrunSetupMain() {
   // Create settings dir, if necessary
-  if (!fs.existsSync(dioSettingsDir)) {
-    fs.mkdirSync(dioSettingsDir)
+  if (!fs.existsSync(settingsPath)) {
+    fs.mkdirSync(settingsPath)
   }
   // Read existing db settings
   try {
@@ -788,9 +788,9 @@ function writeToSettings (dbName, folderPath) {
 
 function authtabExists (folderPath)  {
   if (fs.existsSync(`${folderPath}/authtab.dir`) || fs.existsSync(`${folderPath}/AUTHTAB.DIR`) ) {
-    return True
+    return true
   } else {
-    return False
+    return false
   }
 }
 
