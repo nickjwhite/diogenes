@@ -1,9 +1,11 @@
-const {app, BrowserWindow, Menu, MenuItem, ipcMain, session} = require('electron')
+const {app, BrowserWindow, Menu, MenuItem, ipcMain, session, dialog} = require('electron')
 const {spawn} = require('child_process')
 const path = require('path')
 const process = require('process')
 const fs = require('fs')
+const dialog = require('dialog')
 const console = require('console')
+const fontList = require('./node-font-list/index.js')
 
 // Keep a global reference of the window objects, to ensure they won't
 // be closed automatically when the JavaScript object is garbage collected.
@@ -347,16 +349,6 @@ function loadWhenLocked(lockFile, prefsFile, win) {
 		startupDone = true
 	})
 }
-
-// IPC used by firstrun page
-ipcMain.on('getport', (event, arg) => {
-	event.returnValue = dioSettings.port
-})
-
-// IPC used by firstrun page
-ipcMain.on('getsettingsdir', (event, arg) => {
-	event.returnValue = app.getPath('userData')
-})
 
 // Check if a database folder has been set
 function checkDbSet(prefsFile) {
@@ -717,3 +709,88 @@ function findText (win) {
 
     findWin.loadFile("pages/find.html")
 }
+
+//////////// Moved from preload for new security model
+
+// app.whenReady().then(() => {
+//   ipcMain.handle('open-dialog', (event, method, params) => {       
+//     dialog[method](params);
+//   });
+// });
+
+
+// Support for firstrun (db settings) page
+
+var dioSettingsFile = path.join(settingsPath, 'diogenes.prefs')
+var cssConfigFile = path.join(settingsPath, 'config.css')
+
+const dbs = ['PHI', 'TLG', 'DDP', 'TLL_PDF', 'OLD_PDF']
+
+app.whenReady().then(() => {
+  ipcMain.on('getport', (event, arg) => {
+    event.returnValue = dioSettings.port
+  })
+  ipcMain.on('firstrunSetupMain', (event, arg) => {
+    event.returnValue = firstrunSetupMain()
+  })
+  ipcMain.on('dbOpenDialog', (event, prop, dbName) => {
+    event.returnValue = dbOpenDialog(prop, dbName)
+  })
+  ipcMain.on('authtabExists', (event, folderPath) => {
+    event.returnValue = dioSettings.authtabExists(folderPath)
+  })
+});
+
+function firstrunSetupMain() {
+  // Create settings dir, if necessary
+  if (!fs.existsSync(dioSettingsDir)) {
+    fs.mkdirSync(dioSettingsDir)
+  }
+  // Read existing db settings
+  try {
+    data = fs.readFileSync(dioSettingsFile, 'utf8')
+  } catch(e) {
+    data = null
+  }
+  return data
+}
+
+function dbOpenDialog (prop, dbName) {
+  folderPath = dialog.showOpenDialogSync(null, {
+    title: `Set ${dbName} location`,
+    properties: [prop] }
+  )
+  writeToSettings(dbName, folderPath)
+  console.log(dbName + 'location set to: ' + folderPath)
+  return folderPath
+}
+
+function writeToSettings (dbName, folderPath) {
+  if( typeof folderPath === "undefined" ) {
+    return
+  }
+  try {
+    data = fs.readFileSync(dioSettingsFile, 'utf8')
+  } catch(e) {
+    data = '# Created by Diogenes'
+  }
+  let db_l = dbName.toLowerCase()
+  let newLine = `${db_l}_dir "${folderPath}"`
+  let re = new RegExp(`^${db_l}_dir.*$`, 'm')
+  let newData
+  if(re.test(data)) {
+    newData = data.replace(re, newLine)
+  } else {
+    newData = `${data}\n${newLine}`
+  }
+  fs.writeFileSync(dioSettingsFile, newData)
+}
+
+function authtabExists (folderPath)  {
+  if (fs.existsSync(`${folderPath}/authtab.dir`) || fs.existsSync(`${folderPath}/AUTHTAB.DIR`) ) {
+    return True
+  } else {
+    return False
+  }
+}
+
