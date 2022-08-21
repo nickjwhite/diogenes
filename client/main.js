@@ -881,7 +881,7 @@ function tllConfirm () {
 
 // Support for font selection
 
-// Must be async
+// Must await return of promise here 
 async function getFonts () {
   fonts = await fontList.getFonts()
   return fonts

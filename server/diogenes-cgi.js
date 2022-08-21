@@ -35,15 +35,7 @@ function isElectron () {
 }
 
 function openPDF (path) {
-    if (path) {
-        if (isElectron()) {
-            var event = new CustomEvent('openWithExternal', { detail: path });
-            document.dispatchEvent(event)
-        }
-        else {
-            window.open(path)
-        }
-    }
+  window.open(path)
 }
 
 
