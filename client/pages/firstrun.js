@@ -1,7 +1,7 @@
 const dbs = ['PHI', 'TLG', 'DDP', 'TLL_PDF', 'OLD_PDF']
 
-function firstrunSetup () {
-  data = window.electron.firstrunSetupMain()
+async function firstrunSetup () {
+  data = await window.electron.firstrunSetupMain()
   for (let i = 0; i < dbs.length; i++) {
     let db = dbs[i]
     bindClickEvent(db)
@@ -15,8 +15,9 @@ function firstrunSetup () {
       showPath(db, ar[1])
     }
   }
+  port = await window.electron.getport()
   document.getElementById('done').addEventListener('click', () => {
-    window.location.href = `http://localhost:` + window.electron.getport()
+    window.location.href = `http://localhost:` + port
   })
   readyDoneButton()
 }
@@ -43,14 +44,14 @@ function bindClickEvent(dbName) {
     prop = 'openDirectory';
   }
   
-  document.getElementById(`${dbName}button`).addEventListener('click', () => {
-    folderPath = window.electron.dbOpenDialog(prop, dbName)
+  document.getElementById(`${dbName}button`).addEventListener('click', async () => {
+    folderPath = await window.electron.dbOpenDialog(prop, dbName)
     showPath(dbName, folderPath)
   })
 }
 
-function showPath(dbName, folderPath) {
-  authtabExists = window.electron.authtabExists(folderPath)
+async function showPath(dbName, folderPath) {
+  authtabExists = await window.electron.authtabExists(folderPath)
   document.getElementById(`${dbName}path`).innerHTML = folderPath
   checkmark = document.getElementById(`${dbName}ok`)
   

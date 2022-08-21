@@ -95,8 +95,8 @@ function splashPerseus (action) {
     }
 }
 
-function XMLPathSelect () {
-  exportPath = window.electron.exportPathPick()
+async function XMLPathSelect () {
+  exportPath = await window.electron.exportPathPick()
   localStorage.setItem("exportPath", exportPath)
   document.getElementById("export-path").value = exportPath
   info('export')

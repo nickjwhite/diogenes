@@ -8,12 +8,9 @@ async function showFonts () {
   var loading = document.getElementById('fontLoading')
   var select = document.createElement('select')
   select.setAttribute('id', 'fontSelect')
-  var current = window.electron.cssReadFont()
+  var current = await window.electron.cssReadFont()
   console.log('current:', current)
 
-  // window.electron.getFonts().then(fonts => {
-  //   console.log('FFonts', fonts)
-  // })
   fonts = await window.electron.getFonts()
   console.log('Fonts', fonts)
   fonts.forEach(font => {
@@ -31,11 +28,11 @@ async function showFonts () {
   list.append(select)
 }
 
-function setNewFont () {
+async function setNewFont () {
   var list = document.getElementById("fontSelect");
   var font = list.options[list.selectedIndex].value;
   font = font.replace(/^"|"$/g, '')
-  ret = window.electron.cssWriteFont(font)
+  ret = await window.electron.cssWriteFont(font)
   if (ret == 'done') {
     window.close()
   } else {
@@ -43,8 +40,8 @@ function setNewFont () {
   }
 }
 
-function revertFont () {
-  ret = window.electron.cssRevertFont()
+async function revertFont () {
+  ret = await window.electron.cssRevertFont()
   if (ret == 'done') {
     window.close()
   } else {

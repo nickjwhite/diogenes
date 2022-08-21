@@ -695,39 +695,39 @@ function findText (win) {
 
 //////////// Moved from preload for new security model
 
-app.whenReady().then(() => {
-  ipcMain.on('getport', (event, arg) => {
-    event.returnValue = dioSettings.port
+app.whenReady().then( () => {
+  ipcMain.handle('getport', async (event, arg) => {
+    return dioSettings.port
   })
-  ipcMain.on('firstrunSetupMain', (event, arg) => {
-    event.returnValue = firstrunSetupMain()
+  ipcMain.handle('firstrunSetupMain', async (event, arg) => {
+    return firstrunSetupMain()
   })
-  ipcMain.on('dbOpenDialog', (event, prop, dbName) => {
-    event.returnValue = dbOpenDialog(prop, dbName)
+  ipcMain.handle('dbOpenDialog', async (event, prop, dbName) => {
+    return dbOpenDialog(prop, dbName)
   })
-  ipcMain.on('authtabExists', (event, folderPath) => {
-    event.returnValue = authtabExists(folderPath)
+  ipcMain.handle('authtabExists', async (event, folderPath) => {
+    return authtabExists(folderPath)
   })
-  ipcMain.on('exportPathPick', (event, arg) => {
-    event.returnValue = exportPathPick()
+  ipcMain.handle('exportPathPick', async (event, arg) => {
+    return exportPathPick()
   })
-  ipcMain.on('saveFile', (event, arg) => {
-    event.returnValue = saveFile()
+  ipcMain.handle('saveFile', async (event, arg) => {
+    return saveFile()
   })
-  ipcMain.on('printToPDF', (event, arg) => {
-    event.returnValue = printToPDF()
+  ipcMain.handle('printToPDF', async (event, arg) => {
+    return printToPDF()
   })
-  ipcMain.on('findText', (event, string, direction) => {
-    event.returnValue = findTextRemote(string, direction)
+  ipcMain.handle('findText', async (event, string, direction) => {
+    return findTextRemote(string, direction)
   })
-  ipcMain.on('cssWriteFont', (event, font) => {
-    event.returnValue = cssWriteFont(font)
+  ipcMain.handle('cssWriteFont', async (event, font) => {
+    return cssWriteFont(font)
   })
-  ipcMain.on('cssReadFont', (event) => {
-    event.returnValue = cssReadFont()
+  ipcMain.handle('cssReadFont', async (event) => {
+    return cssReadFont()
   })
-  ipcMain.on('cssRevertFont', (event) => {
-    event.returnValue = cssRevertFont()
+  ipcMain.handle('cssRevertFont', async (event) => {
+    return cssRevertFont()
   })
   ipcMain.handle('getFonts', getFonts)
 })
