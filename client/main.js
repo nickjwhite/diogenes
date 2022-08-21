@@ -459,7 +459,7 @@ function initializeMenuTemplate () {
                     accelerator: 'CmdOrCtrl+S',
                     click: (menu, win) => {
                       savePath = saveFile()
-                      console.log(savePath)
+                      console.log('Saving to: ' + savePath)
                       win.webContents.savePage(savePath, 'HTMLOnly',
                              function(error) {
                                if (!error)
@@ -471,16 +471,16 @@ function initializeMenuTemplate () {
                     label: 'Print to PDF',
                     accelerator: 'CmdOrCtrl+P',
                     click: (menu, win) => {
-                        win.webContents.send('printPDFRequest', win);
-                        ipcMain.on('printPDFResponse', (event, path) => {
-                            win.webContents.printToPDF({}, (error, data) => {
-                                if (error) throw error
-                                fs.writeFile(path, data, (error) => {
-                                    if (error) throw error
-                                    console.log('Wrote PDF successfully.')
-                                })
-                            })
+                      pdfPath = printToPDF()
+                      console.log('Printing to: ' + printPath)
+                      win.webContents.printToPDF({}).then(data => {
+                        fs.writeFile(pdfPath, data, (error) => {
+                          if (error) throw error
+                          console.log(`Wrote PDF successfully to ${pdfPath}`)
                         })
+                      }).catch(error => {
+                        console.log(`Failed to write PDF to ${pdfPath}: `, error)
+                      })
                     }
                 },
                 {
@@ -731,7 +731,10 @@ app.whenReady().then(() => {
   ipcMain.on('saveFile', (event, arg) => {
     event.returnValue = saveFile()
   })
-});
+  ipcMain.on('printToPDF', (event, arg) => {
+    event.returnValue = printToPDF()
+  })
+})
 
 // Support for firstrun (db settings) page
 
@@ -812,3 +815,12 @@ function saveFile () {
   return savePath
 }
 
+// Support for print to PDF
+
+function printToPDF () {
+  printPath = dialog.showSaveDialogSync(null, {
+    title: 'PDF File Location',
+    defaultPath: 'diogenes-print.pdf',
+    properties: ['createDirectory']})
+  return printPath
+}
