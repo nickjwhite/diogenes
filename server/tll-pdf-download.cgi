@@ -24,6 +24,8 @@ BEGIN {
 my $q = $Diogenes_Daemon::params ? new CGI($Diogenes_Daemon::params) : new CGI;
 print $q->header(-type=>"text/html; charset=utf-8");
 
+print $q->start_html(-script=>[{-language=>'javascript', -src=>'./diogenes-cgi.js'}]);
+
 my $d = new Diogenes::Base(-type => 'none');
 my $tll_path = $d->{tll_pdf_dir};
 

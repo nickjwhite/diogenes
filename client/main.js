@@ -502,11 +502,10 @@ function initializeMenuTemplate () {
                 {
                     label: 'Download TLL PDFs',
                     click: (menu, win) => {
-                        win.webContents.send('TLLPathRequest', win);
-                        ipcMain.on('TLLPathResponse', (event, path) => {
-                            let newWin = createWindow(win, 20, 20)
-                            newWin.loadURL('http://localhost:' + dioSettings.port + '/tll-pdf-download.cgi')
-                        })
+                      if (tllConfirm()) {
+                        let newWin = createWindow(win, 20, 20)
+                        newWin.loadURL('http://localhost:' + dioSettings.port + '/tll-pdf-download.cgi')
+                      }
                     }
                 },
                 {
@@ -824,3 +823,47 @@ function printToPDF () {
     properties: ['createDirectory']})
   return printPath
 }
+
+// Support for confirming TLL downloads
+
+function tllConfirm () {
+  // So as to have only one way to set this, we ask the user to
+  // set it via DB settings page rather than having a dialog here
+  // This needs to agree with value in tll-pdf-download.pl
+
+  try {
+    var data = fs.readFileSync(dioSettingsFile, 'utf8')
+  } catch(e) {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      message: 'Error. Settings file cannot be read.  Create one at File -> Database Locations'
+    })
+    return false
+  }
+
+  found = data.match(/^tll_pdf_dir\s+\"(.*)\"$/m)
+  if (found && found[1]) {
+    var tllPath = found[1]
+  } else {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      message: 'Error. Location for TLL PDFs has not yet been set.  Specify the location via File -> Database Locations'
+    })
+    return false
+  }
+
+  var ok = dialog.showMessageBoxSync({
+    type: 'question',
+    buttons: ['Cancel', 'OK'],
+    defaultId: 0,
+    title: 'Continue?',
+    message: 'Do you want to go ahead and download the PDFs of the Thesaurus Linguae Latinae? They will be saved to: ' + tllPath,
+    detail: 'Warning: retrieving these very large files from the website of the Bayerische Akademie der Wissenschaften may take quite a long time. To change the folder where they will be saved, cancel and go to File -> Database Locations.  Click OK to proceed with downloads.'
+  })
+  if (ok == 1) {
+    return true
+  } else {
+    return false
+  }
+}
+
