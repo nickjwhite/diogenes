@@ -656,9 +656,9 @@ function findText (win) {
         return
     }
     if (findWin && findWin.isVisible()) {
-        // Find window present by unfocused
-        findWin.focus()
-        return
+        // Find window present but unfocused
+      findWin.focus()
+      return
     }
 
     findTargetWin = win;
@@ -674,7 +674,7 @@ function findText (win) {
         height: 40,
         x: find_x,
         y: find_y,
-        resizable: false,
+        resizable: true,
         movable: true,
         frame: false,
         transparent: false,
@@ -687,23 +687,7 @@ function findText (win) {
     })
     findWin.on('closed', () => {
         win.webContents.stopFindInPage('clearSelection')
-        ipcMain.removeAllListeners('findText')
         findWin = null
-    })
-
-    ipcMain.on("findText", (event, text, dir) => {
-        if (text === "") {
-            findTargetWin.webContents.stopFindInPage('clearSelection')
-        }
-        else {
-            if (dir === "next") {
-                console.log("next!")
-                findTargetWin.webContents.findInPage(text)
-            } else {
-                findTargetWin.webContents.findInPage(text, {'forward': false})
-            }
-            mySearchText = text
-        }
     })
 
     findWin.loadFile("pages/find.html")
@@ -733,7 +717,26 @@ app.whenReady().then(() => {
   ipcMain.on('printToPDF', (event, arg) => {
     event.returnValue = printToPDF()
   })
+  ipcMain.on('findText', (event, string, direction) => {
+    event.returnValue = findTextRemote(string, direction)
+  })
 })
+
+// For events arising from the find mini-window
+function findTextRemote (string, direction) {
+  if (string === "") {
+    findTargetWin.webContents.stopFindInPage('clearSelection')
+  }
+  else {
+    if (direction === "next") {
+      findTargetWin.webContents.findInPage(string)
+    } else {
+      findTargetWin.webContents.findInPage(string, {'forward': false})
+    }
+    mySearchText = string
+  }  
+}
+   
 
 // Support for firstrun (db settings) page
 

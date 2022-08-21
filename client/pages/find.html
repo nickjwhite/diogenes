@@ -31,22 +31,21 @@ document.addEventListener('keydown', event => {
     }
 });
 
-function sendFindEvent (string, direction) {
-    var event = new CustomEvent('findEvent', { detail: {findString: string, findDirection: direction}});
-    document.dispatchEvent(event)
+function sendFindRequest (string, direction) {
+    window.electron.findText(string, direction)
 }
 
 function cancel() {
-    sendFindEvent("", "")
+    sendFindRequest("", "")
     this.close()
 }
 
 function next() {
-    sendFindEvent(document.getElementById("textToFind").value, "next")
+    sendFindRequest(document.getElementById("textToFind").value, "next")
 }
 
 function prev() {
-    sendFindEvent(document.getElementById("textToFind").value, "prev")
+    sendFindRequest(document.getElementById("textToFind").value, "prev")
 }
 
 </script>
