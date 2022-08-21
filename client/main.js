@@ -458,13 +458,13 @@ function initializeMenuTemplate () {
                     label: 'Save File',
                     accelerator: 'CmdOrCtrl+S',
                     click: (menu, win) => {
-                        win.webContents.send('saveFileRequest', win);
-                        ipcMain.on('saveFileResponse', (event, path) => {
-                            win.webContents.savePage(path, 'HTMLOnly', function(error) {
-                                if (!error)
-                                    console.log("Saved page successfully");
-                            });
-                        })
+                      savePath = saveFile()
+                      console.log(savePath)
+                      win.webContents.savePage(savePath, 'HTMLOnly',
+                             function(error) {
+                               if (!error)
+                                 console.log("Saved page successfully")
+                             })
                     }
                 },
                 {
@@ -728,6 +728,9 @@ app.whenReady().then(() => {
   ipcMain.on('exportPathPick', (event, arg) => {
     event.returnValue = exportPathPick()
   })
+  ipcMain.on('saveFile', (event, arg) => {
+    event.returnValue = saveFile()
+  })
 });
 
 // Support for firstrun (db settings) page
@@ -797,5 +800,15 @@ function exportPathPick () {
     title: 'Set location for XML directory',
     properties: ['openDirectory', 'createDirectory']})
   return xmlPath
+}
+
+// Support for File -> Save
+
+function saveFile () {
+  savePath = dialog.showSaveDialogSync(null, {
+    title: 'Save File Location',
+    defaultPath: 'diogenes-output.html',
+    properties: ['createDirectory']})
+  return savePath
 }
 

@@ -16,4 +16,7 @@ contextBridge.exposeInMainWorld('electron', {
   exportPathPick: () => {
     return ipcRenderer.sendSync('exportPathPick')
   },
+  saveFile: () => {
+    return ipcRenderer.sendSync('saveFile')
+  },
 })
