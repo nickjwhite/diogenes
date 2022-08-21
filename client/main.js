@@ -720,9 +720,19 @@ app.whenReady().then(() => {
   ipcMain.on('findText', (event, string, direction) => {
     event.returnValue = findTextRemote(string, direction)
   })
+  ipcMain.on('cssWriteFont', (event, font) => {
+    event.returnValue = cssWriteFont(font)
+  })
+  ipcMain.on('cssReadFont', (event) => {
+    event.returnValue = cssReadFont()
+  })
+  ipcMain.on('cssRevertFont', (event) => {
+    event.returnValue = cssRevertFont()
+  })
+  ipcMain.handle('getFonts', getFonts)
 })
 
-// For events arising from the find mini-window
+// Support for events arising from the find mini-window
 function findTextRemote (string, direction) {
   if (string === "") {
     findTargetWin.webContents.stopFindInPage('clearSelection')
@@ -737,7 +747,6 @@ function findTextRemote (string, direction) {
   }  
 }
    
-
 // Support for firstrun (db settings) page
 
 var dioSettingsFile = path.join(settingsPath, 'diogenes.prefs')
@@ -868,5 +877,58 @@ function tllConfirm () {
   } else {
     return false
   }
+}
+
+// Support for font selection
+
+// Must be async
+async function getFonts () {
+  fonts = await fontList.getFonts()
+  return fonts
+}
+
+function cssWriteFont (font) {
+  try {
+    fs.unlinkSync(cssConfigFile)
+  } catch (e) {
+    console.log('No existing CSS config.')
+  }
+  data = `body {
+  font-family: '${font}';
+}
+`
+  try {
+    fs.writeFileSync(cssConfigFile, data)
+  } catch (e) {
+    console.log('Could not write CSS file. ', e)
+    return e  
+  }
+  return 'done'
+}
+
+function cssReadFont () {
+  // Read existing settings
+  try {
+    data = fs.readFileSync(cssConfigFile, 'utf8')
+  } catch (e) {
+    return ""
+  }
+  if (data) {
+    let re = new RegExp('font-family:\\s*["\'](.*?)["\'];', 'm')
+    let ar = re.exec(data)
+    if (ar && ar[1]) {
+      return ar[1]
+    }
+  }
+  return ""
+}
+
+function cssRevertFont () {
+  try {
+    fs.unlinkSync(cssConfigFile)
+  } catch(e) {
+    return e
+  }
+  return 'done'
 }
 

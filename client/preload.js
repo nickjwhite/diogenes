@@ -19,6 +19,17 @@ contextBridge.exposeInMainWorld('electron', {
   findText: (string, direction) => {
     return ipcRenderer.sendSync('findText', string, direction)
   },
+  cssWriteFont: (font) => {
+    return ipcRenderer.sendSync('cssWriteFont', font)
+  },
+  cssReadFont: () => {
+    return ipcRenderer.sendSync('cssReadFont')
+  },
+  cssRevertFont: () => {
+    return ipcRenderer.sendSync('cssRevertFont')
+  },
+  getFonts: () => ipcRenderer.invoke('getFonts'),
+
   // Not used yet, but might be useful 
   saveFile: () => {
     return ipcRenderer.sendSync('saveFile')
