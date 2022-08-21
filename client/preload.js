@@ -13,5 +13,7 @@ contextBridge.exposeInMainWorld('electron', {
   authtabExists: (folderPath) => {
     return authtabExists = ipcRenderer.sendSync('authtabExists', folderPath)
   },
-  
+  exportPathPick: () => {
+    return ipcRenderer.sendSync('exportPathPick')
+  },
 })

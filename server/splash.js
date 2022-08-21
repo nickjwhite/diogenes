@@ -96,20 +96,11 @@ function splashPerseus (action) {
 }
 
 function XMLPathSelect () {
-    var event = new Event('XMLPathRequest');
-    document.dispatchEvent(event)
+  exportPath = window.electron.exportPathPick()
+  localStorage.setItem("exportPath", exportPath)
+  document.getElementById("export-path").value = exportPath
+  info('export')
 }
-
-function XMLPathSet (e) {
-    var path = e.detail;
-    exportPath = path;
-    localStorage.setItem("exportPath", path);
-    document.getElementById("export-path").value = exportPath;
-    info('export');
-}
-
-document.addEventListener('XMLPathResponse', XMLPathSet, false)
-
 
 var infoText ={};
 var exportText1;

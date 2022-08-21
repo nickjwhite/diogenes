@@ -712,20 +712,6 @@ function findText (win) {
 
 //////////// Moved from preload for new security model
 
-// app.whenReady().then(() => {
-//   ipcMain.handle('open-dialog', (event, method, params) => {       
-//     dialog[method](params);
-//   });
-// });
-
-
-// Support for firstrun (db settings) page
-
-var dioSettingsFile = path.join(settingsPath, 'diogenes.prefs')
-var cssConfigFile = path.join(settingsPath, 'config.css')
-
-const dbs = ['PHI', 'TLG', 'DDP', 'TLL_PDF', 'OLD_PDF']
-
 app.whenReady().then(() => {
   ipcMain.on('getport', (event, arg) => {
     event.returnValue = dioSettings.port
@@ -739,7 +725,17 @@ app.whenReady().then(() => {
   ipcMain.on('authtabExists', (event, folderPath) => {
     event.returnValue = authtabExists(folderPath)
   })
+  ipcMain.on('exportPathPick', (event, arg) => {
+    event.returnValue = exportPathPick()
+  })
 });
+
+// Support for firstrun (db settings) page
+
+var dioSettingsFile = path.join(settingsPath, 'diogenes.prefs')
+var cssConfigFile = path.join(settingsPath, 'config.css')
+
+const dbs = ['PHI', 'TLG', 'DDP', 'TLL_PDF', 'OLD_PDF']
 
 function firstrunSetupMain() {
   // Create settings dir, if necessary
@@ -761,7 +757,7 @@ function dbOpenDialog (prop, dbName) {
     properties: [prop] }
   )
   writeToSettings(dbName, folderPath)
-  console.log(dbName + 'location set to: ' + folderPath)
+  console.log(dbName + ' location set to: ' + folderPath)
   return folderPath
 }
 
@@ -792,5 +788,14 @@ function authtabExists (folderPath)  {
   } else {
     return false
   }
+}
+
+// Support for setting output dir for XML export
+
+function exportPathPick () {
+  xmlPath = dialog.showOpenDialogSync(null, {
+    title: 'Set location for XML directory',
+    properties: ['openDirectory', 'createDirectory']})
+  return xmlPath
 }
 
