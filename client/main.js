@@ -551,10 +551,24 @@ function initializeMenuTemplate () {
                      let contents = win.webContents
                      contents.goForward()
                  }},
-                {label: 'Home',
+                {label: 'Home Page',
                  accelerator: 'CmdOrCtrl+D',
                  click: (menu, win) => {
                      win.loadURL('http://localhost:' + dioSettings.port)
+                 }},
+                {label: 'Top of Page',
+                 accelerator: 'Home',
+                 click: (menu, win) => {
+                   sendKeybinding(win, 'Home')
+                 }},
+                {label: 'Bottom of Page',
+                 accelerator: 'End',
+                 click: (menu, win) => {
+                   sendKeybinding(win, 'End')
+                 }},
+                {label: 'Reload App',
+                 click: (menu, win) => {
+                   win.webContents.reloadIgnoringCache()
                  }},
 
                 {type: 'separator'},
@@ -640,6 +654,12 @@ function initializeMenuTemplate () {
     }
 
     return template
+}
+
+function sendKeybinding (win, code) {
+  win.webContents.sendInputEvent({ type: 'keyDown', keyCode: code })
+  win.webContents.sendInputEvent({ type: 'char', keyCode: code })
+  win.webContents.sendInputEvent({ type: 'keyUp', keyCode: code })
 }
 
 // Find-in-page mini-window
