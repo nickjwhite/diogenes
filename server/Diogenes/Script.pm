@@ -896,10 +896,11 @@ $handler{inflections} = sub {
             push @{ $st{query_list} }, " $form ";
         }
         my %args = $get_args->();
-        my $q = new Diogenes::Search(%args);
-        if ($prob_lang{$st{short_type}} eq "grk") {
+        $args{input_lang} = $st{lang};
+        if ($prob_lang{$st{short_type}} eq "grk" or $st{lang} eq "grk") {
             $args{input_encoding} = 'BETA code';
         }
+        my $q = new Diogenes::Search(%args);
         $database_error->($q) if not $q->check_db;
         $use_and_show_filter->($q);
         $q->do_search();
