@@ -1263,7 +1263,7 @@ $output{browser_output} = sub
     {
         my ($begin_offset, $end_offset) = $q->seek_passage ($st{author}, $st{work}, @target);
         # When looking at the start of a work, don't browse back
-        if (grep {!/^0$/} @target)
+        if (grep {!/^0$/} @target and not $q->{documentary})
         {
             ($st{begin_offset}, $st{end_offset}) =
                 $q->browse_half_backward($begin_offset, $end_offset, $st{author}, $st{work});
