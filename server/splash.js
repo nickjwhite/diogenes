@@ -27,6 +27,12 @@ function save_values () {
             author = document.getElementById("author_text").value;
             localStorage.setItem("author", author);
         }
+        // We just use temp storage for splash page state
+        if (document.getElementById("action")) {
+            action = document.getElementById("action").value;
+            sessionStorage.setItem("action", action);
+        }
+
     }
 }
 
@@ -149,7 +155,9 @@ function info (choice) {
     if (document.getElementById("query_text")) {
         document.getElementById("query_text").focus();
     }
-
+    if (document.getElementById("author_text")) {
+        document.getElementById("author_text").focus();
+    }
     document.getElementById("action").value = choice;
 }
 
@@ -179,6 +187,7 @@ function splash_setup () {
         query = localStorage.getItem("query");
         author = localStorage.getItem("author");
         exportPath = localStorage.getItem("exportPath");
+        action = sessionStorage.getItem("action");
     }
     if (exportPath) {
         document.getElementById("export-path").value = exportPath;
@@ -247,4 +256,7 @@ function splash_setup () {
         '<p class="info-text">For information about using Diogenes, see the <a target="_blank" href="https://d.iogen.es/d/faqs.html">website</a>.</p>' +
         '<p class="info-text">If are a student, a schoolteacher or a member of the general public who uses Diogenes, or if you are a university teacher who uses it in your undergraduate teaching, you can help to support its continuing development by sending a quick message describing the benefits it has brought to you to:  <a href="mailto:p.j.heslin@durham.ac.uk?subject=Diogenes Impact">p.j.heslin@durham.ac.uk</a>.</p>';
 
+  if (action) {
+    info(action)
+  }
 }

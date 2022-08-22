@@ -376,9 +376,10 @@ $output{splash} = sub
         $f->img({-src=>$picture_dir.'Diogenes_Logo.png',
                      -srcset=>$picture_dir.'Diogenes_Logo.hidpi.png 2x',
                      -alt=>'Diogenes',
+                     -onClick=>'sessionStorage.removeItem("action");location.reload();',
                      -height=>'104',
                      -width=>'374'})),
-    $f->start_form(-id=>'form', -method=> 'get');
+    print $f->start_form(-id=>'form', -method=> 'get');
     print "\n";
     $print_navbar->();
     print "\n";
