@@ -6,29 +6,27 @@ Crashes for me, fails to convert Beta code for him.
 ** Pindar bug:
 I’m wondering whether you’d consider modifying the click to dictionary command so that it ignores the apostrophes used in Pindar (and elsewhere?) to indicate that mute+liquid are to be taken separately (e.g. γˈλώσσας, O. 6.12).
 ** Replace icon for newer Macs.
-* For forthcoming version
-** Make it so going back to the splash screen goes back to the last selected option.
-** Add download for Apple Silicon Macs 
+* For forthcoming release
+** Add new download for Mac silicon
 ** Add tgz download target for manual installation
 *** Give better instructions on website for manual install
 Give config file location(s) and syntax for setting database locations 
-** Update to Electron 11
-*** Add PDF view
-*** See if this fixes zoom issue and opening PDFs on Linux
-bug with xdg-open and --no-sandbox causes external browser not to launch
-*** Add new download for Mac silicon
 ** Change prebuilt-data repo to use git-lfs (and my ssh key)
-** Focus on zeroes in text boxes.
+
+* For forthcoming version
+** Fix use of recent TLL fasicles
+See how badly this slows down seeking.
+** Make it so going back to the splash screen goes back to the last selected option.
 ** Further test TLL download under Windows.
 ** Keystrokes:
-add a keystroke to clear all form elements.  I could also add keystrokes to go to the top/bottom of a long page of search results.
+Focus Go on splash page after selection.
+
+
 ** Accented filter names
 try again to fix this.
 ** Add link to settings.cgi in splash only for non-Electron clients and test
 https://github.com/pjheslin/diogenes/issues/74
 ** Maybe disabling TOC should be an option
-** Add dark mode option.
-See how badly this slows down seeking.
 ** way in the app for us to try out citation codes would be great.
 A quick dropdown box to jump to a citation written out
 If you’re not bothered about user-friendliness, a power-user option to enter a citation string should be easy enough to add.
@@ -41,6 +39,7 @@ Try with a Windows laptop and an external monitor
 The shortcuts used to navigate do not work on PC, Windows 10 (version 1909).
 I suggest also that "move back" and "move forward" (at the bottom of a page) could also be found at the top of a page when you want to navigate in contex
 t.
+** Add dark mode option.
 ** Have jump-to field at bottom of page that defaults to current passage
 ** Have Back button show home page in last state.
 ** Fix TLL PDF download under Windows

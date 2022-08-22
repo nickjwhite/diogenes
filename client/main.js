@@ -196,44 +196,43 @@ function createFirstWindow () {
 // Track each window in a global 'windows' array, and set up the
 // context menu
 app.on('browser-window-created', (event, win) => {
-    // Track window in global windows object
-    windows.push(win)
+  // Track window in global windows object
+  windows.push(win)
 
-    win.on('closed', () => {
-	// Delete window id from list of windows
-	windows.splice(windows.indexOf(win), 1)
-    })
+  win.on('closed', () => {
+    // Delete window id from list of windows
+    windows.splice(windows.indexOf(win), 1)
+  })
 
-    // Intercept and handle new-window requests (e.g. from shift-click), to
-    // prevent child windows being created which would die if the parent was
-    // killed. This was something to do with the new window being a "guest"
-    // window, which I am intentionally setting here, to fix the issue. The
-    // Electron documentation states that it should be set for "failing to
-    // do so may result in unexpected behavior" but I haven't seen any yet.
-    win.webContents.on('new-window', (event, url) => {
-	event.preventDefault()
-	let newWin = createWindow(win, 20, 20)
-	newWin.once('ready-to-show', () => newWin.show())
-	newWin.loadURL(url)
-	//event.newGuest = win
-    })
+  // Intercept and handle new-window requests (e.g. from shift-click), to
+  // prevent child windows being created which would die if the parent was
+  // killed. This was something to do with the new window being a "guest"
+  // window, which I am intentionally setting here, to fix the issue. The
+  // Electron documentation states that it should be set for "failing to
+  // do so may result in unexpected behavior" but I haven't seen any yet.
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    let newWin = createWindow(win, 20, 20)
+    newWin.once('ready-to-show', () => newWin.show())
+    newWin.loadURL(url)
+    return { action: 'deny' };
+  })
+  
+  // Load context menu
+  win.webContents.on('context-menu', (e, params) => {
+    // Only load on links, which aren't javascript links
+    if(params.linkURL != "" && params.linkURL.indexOf("javascript:") != 0) {
+      currentLinkURL = params.linkURL
+      linkContextMenu.popup(win, params.x, params.y)
+    } else {
+      currentLinkURL = null
+    }
+  })
 
-    // Load context menu
-    win.webContents.on('context-menu', (e, params) => {
-	// Only load on links, which aren't javascript links
-	if(params.linkURL != "" && params.linkURL.indexOf("javascript:") != 0) {
-	    currentLinkURL = params.linkURL
-	    linkContextMenu.popup(win, params.x, params.y)
-	} else {
-	    currentLinkURL = null
-	}
-    })
-
-    // Clear "find" highlighting when we navigate to a new page
-    win.webContents.on('did-start-loading', (event, result) => {
-        win.webContents.stopFindInPage('clearSelection')
-    })
-
+  // Clear "find" highlighting when we navigate to a new page
+  win.webContents.on('did-start-loading', (event, result) => {
+    win.webContents.stopFindInPage('clearSelection')
+  })
+  
 })
 
 // This method will be called when Electron has finished

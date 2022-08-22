@@ -31,22 +31,23 @@ function save_values () {
 }
 
 window.addEventListener("load", function() {
-    // Set up submit handler
-    var form = document.getElementById('form');
-    if (form.attachEvent) {
-        form.attachEvent("submit", processForm);
-    }
-    else {
-        form.addEventListener("submit", processForm);
-    }
-    // Turn off spinning cursor
-    var body = document.getElementsByTagName("BODY")[0];
-    body.classList.remove("waiting");
+  // Set up submit handler
+  var form = document.getElementById('form');
+  if (form.attachEvent) {
+    form.attachEvent("submit", processForm)
+  }
+  else {
+    form.addEventListener("submit", processForm)
+  }
+  // Turn off spinning cursor
+  var body = document.getElementsByTagName("BODY")[0]
+  body.classList.remove("waiting")
+  
+  // Set up choices for splash page
+  splash_setup()
 
-    // Set up choices for splash page
-    splash_setup();
-});
-
+})
+  
 function processForm (e) {
     save_values();
     // Stop submit
@@ -102,7 +103,7 @@ async function XMLPathSelect () {
   info('export')
 }
 
-var infoText ={};
+var infoText = {};
 var exportText1;
 var exportText2;
 

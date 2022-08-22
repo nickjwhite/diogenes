@@ -1,12 +1,12 @@
 # Changes in Version 4 of Diogenes
 
-## Forthcoming (4.7)
+## 4.6 
 
 * Browser front-end updated to Electon version 20 (from version 5).
-* This should eliminate spurious anti-virus warnings.
+* This update should eliminate spurious anti-virus warnings.
 * PDFs are now shown in a new Diogenes window rather than in an external browser.
-
-## 4.6 (never released)
+* Native version for Macs with Apple processors.
+* Minor tweaks to UI, including semi-persistent state for splash screen (suggestion of Helge Baumann).
 
 * TLG search results are now presented in (rough) chronological order
   (with huge thanks to Jiang Qian for his assistance).

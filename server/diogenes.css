@@ -12,7 +12,7 @@ body {
 }
 .dark-mode {
   background-color: black;
-  color: white;
+  color: grey;
 }
 body.waiting, body.waiting *{
     cursor: wait !important;
