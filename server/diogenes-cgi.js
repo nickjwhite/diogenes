@@ -290,7 +290,7 @@ function nextEntryeng (loc) {
 
 function jumpTo (loc) {
     var dio_form = document.getElementById("form");
-    dio_form.JumpTo.value = loc;
+    dio_form.JumpToFromPerseus.value = loc;
     document.form.submit();
 }
 

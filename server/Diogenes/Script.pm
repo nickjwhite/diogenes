@@ -210,7 +210,7 @@ my $print_title = sub
     # Javascript can use it for jumpTo even before the page has
     # completely loaded.  JumpFrom is a place to hold Perseus query
     # params, in case they are needed later.
-    print $f->hidden( -name => 'JumpTo',
+    print $f->hidden( -name => 'JumpToFromPerseus',
                       -default => "",
                       -override => 1 );
     print $f->hidden( -name => 'JumpFromQuery',
@@ -1200,7 +1200,9 @@ $handler{browser_output} = sub { $output{browser_output}->() };
 
 $output{browser_output} = sub
 {
-    my $jumpTo =  shift;
+    my $jump =  shift;
+    my $perseus_jump = shift;
+    my $jumpTo = $jump || $perseus_jump;
     my %args = $get_args->();
     my $q = new Diogenes::Browser::Stateless( %args );
     $database_error->($q) if not $q->check_db;
@@ -1215,10 +1217,11 @@ $output{browser_output} = sub
         # Set signal to show the lexicon entry from whence we jumped
         # (the params have been stored previously in the other hidden
         # fields).
-        print $f->hidden( -name => 'JumpFromShowLexicon',
-                          -default => "yes",
-                          -override => 1 );
-
+        if ($perseus_jump) {
+            print $f->hidden( -name => 'JumpFromShowLexicon',
+                              -default => "yes",
+                              -override => 1 );
+        }
         if ($jumpTo =~ m/^([^,]+),\s*(\d+?),\s*(\d+?):(.+)$/) {
             my $corpus = $1;
             $st{author} = $2;
@@ -2150,14 +2153,17 @@ my $dispatch = sub {
     {
         $mod_perl_error->();
     }
-    elsif ($f->param('JumpTo'))
+    elsif ($f->param('JumpTo') or $f->param('JumpToFromPerseus'))
     {
-        # Jump straight to a passage in the browser
-        my $jump = $f->param('JumpTo');
+        # Jump straight to a passage in the browser, not the sidebar
+        my $context_jump = $f->param('JumpTo');
+        # If we have jumped from the sidebar, we want to restore the sidebar
+        my $perseus_jump = $f->param('JumpToFromPerseus');
+        my $jump = $context_jump || $perseus_jump;
         $jump =~ m/^([^,]+)/;
         $st{short_type} = $1;
         $st{type} = $database{$1};
-        $output{browser_output}->($jump);
+        $output{browser_output}->($jump, $perseus_jump);
     }
     elsif (not $previous_page)
     {
