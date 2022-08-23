@@ -2109,7 +2109,10 @@ sub print_output
         $self->{documentary} or $self->{type} eq 'phi';
     $$ref =~ s/[\x00-\x06\x0e-\x1f]+//g ;
     $$ref =~ s/[\x80-\xff]+/$newline/g ;
-    
+    # Don't interrupt a run of Greek with a Latin indicator at the start of the line.
+    $$ref =~ s/\&\x02\$/\x02\$/g ;
+    $$ref =~ s/\$\x02\&/\x02\&/g ;
+
 #     print STDERR "::$$ref\n";
     if (defined $self->{aux_out})
     {
