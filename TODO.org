@@ -1,79 +1,48 @@
+Merge new branch and make new one
+
 * Bugs
-** Clicking on "go to context" for search hits in the classical greek inscriptions seems to bring you to the inscription before the right one.
-** Bug:
-Steps to recreate the problem. 1) Search>Inflected Forms. 2) Corpus: Classical Inscriptions, pattern "θεος". 3) Select "θεός" and "Show Inflected Forms". 4) Select only Doric types (everything that starts with an "s", see screenshot).
-Crashes for me, fails to convert Beta code for him.
 ** Pindar bug:
 I’m wondering whether you’d consider modifying the click to dictionary command so that it ignores the apostrophes used in Pindar (and elsewhere?) to indicate that mute+liquid are to be taken separately (e.g. γˈλώσσας, O. 6.12).
+** Bug:
+L-S quies jumping to Nepos Att.
+** Accented filter names
+try again to fix this.
+
+* For forthcoming version
+** Go through github issues
+** Fix use of recent TLL fasicles
+See how badly this slows down seeking.
 ** Replace icon for newer Macs.
+** Add advanced settings menu item to run the equivalent of Settings.cgi
+
 * For forthcoming release
+** Add FAQ about re-centering lost window
+** Add info about diagnosing errors by running it from the terminal
 ** Add new download for Mac silicon
 ** Add tgz download target for manual installation
 *** Give better instructions on website for manual install
 Give config file location(s) and syntax for setting database locations 
 ** Change prebuilt-data repo to use git-lfs (and my ssh key)
-
-* For forthcoming version
-** Fix use of recent TLL fasicles
-See how badly this slows down seeking.
-** Make it so going back to the splash screen goes back to the last selected option.
-** Further test TLL download under Windows.
-** Keystrokes:
-Focus Go on splash page after selection.
-
-
-** Accented filter names
-try again to fix this.
-** Add link to settings.cgi in splash only for non-Electron clients and test
-https://github.com/pjheslin/diogenes/issues/74
-** Maybe disabling TOC should be an option
-** way in the app for us to try out citation codes would be great.
-A quick dropdown box to jump to a citation written out
-If you’re not bothered about user-friendliness, a power-user option to enter a citation string should be easy enough to add.
 ** Test "New Window (reset position)" menu item on Windows
 Try with a Windows laptop and an external monitor
-** Is it possible to display server errors in the client?
-* For next version
-** Fix short defs by using Helma's data.
+** See if Zoom in/out now works on Linux and Windows
+** Further test TLL download under Windows.
+Maybe fix Unicode path problem by renaming to TLL01.pdf etc., but continue to permit old names.
 ** Check this:
 The shortcuts used to navigate do not work on PC, Windows 10 (version 1909).
-I suggest also that "move back" and "move forward" (at the bottom of a page) could also be found at the top of a page when you want to navigate in contex
-t.
-** Add dark mode option.
-** Have jump-to field at bottom of page that defaults to current passage
-** Have Back button show home page in last state.
-** Fix TLL PDF download under Windows
-Fix Unicode path problem by renaming to TLL01.pdf etc., but continue to permit old names.
-** Bug: L-S quies jumping to Nepos Att.
-** Add citation info from authtab.xml to exported XML files.
-
-** Add FAQ about re-centering lost window
-** Import font_fixes from xml-export into desktop display
-** Make search work for selection box in text browser. 
-If not possible, add button to re-order texts alphabetically.
-* Post-release to-do items.
-** Add advanced settings menu item to run Settings.cgi
-** Fix Wide character warnings when a filter name is in utf8
-This is tricky, as some names seem to be latin-1, not utf8.
-** Zoom in/out does not work on Linux and Windows
-** Implement server for Unix/Mac that preforks multiple children.
-Preforking for speed; multiple children to permit keepalive connections.
-** Fix bug with non-ascii paths to databases on Windows
+** Check bug with non-ascii paths to databases on Windows
 The current code does seem to work when searching texts, and even when jumping to context from search results, but fails when browsing.  The .idt files are opened without a problem in the preliminary stages of browsing, and the seek_passage subroutine works when jumping from a search result, but not when browsing.  Browsing forward after jump to context is also broken.  A strange bug.
-** Compare output to Hipparchia
-Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
+
+* Near-term to-do items
+** Fix short defs by using Helma's data.
+** Add dark mode option.
+** Add citation info from authtab.xml to exported XML files.
+** Import font_fixes from xml-export into desktop display
+
+* Long-term to-do items
 ** Fix ordering of lemmatized search output
 At present, we seem to look for each inflected form in each work separately, which means that the order appears random: one form late in the work is output before another form which comes early in the work.
-** Improve epub output
-Write dedicated xml to html-for-epub converter.
-* Long-term to-do items
 ** Record criteria for complex filters to permit them to be recreated and modified.
-** Make search output paged?
-** Make settings page shorter and clearer
-   roughly a variant of firstrun page, but ensure that it still works outside of elect
-** Add compact "Go to chap _, sect _, line _" etc. of this work at bottom of browser page
-https://github.com/pjheslin/diogenes/issues/20
-(and shift move back/forward buttons to the far left where they won't get covered by Perseus window.
 ** Try XML::YAX
 Possibly faster and better supported, by same author as XML::DOM::Lite.
 ** Fix Strawberry Perl to use included libxml.
@@ -82,3 +51,7 @@ I think this just requires adding strawberry\c\bin to the PATH, so that it can f
 We should avoid re-parsing prefs file at each query.
 ** Add better interface to Suda, Etym. Magnum, et al.
 Provide a way to search them by headword
+** Improve epub output
+Write dedicated xml to html-for-epub converter.
+** Compare output to Hipparchia
+Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
