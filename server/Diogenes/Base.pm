@@ -2273,7 +2273,7 @@ sub perseus_handler
         my $space = $3 || '';
         my $link = $h_word . $orig_word;
         my $word = $h_word . $h_space . $orig_word;
-#         print STDERR ">>$word\n";
+        # print STDERR "1>>$word\n";
             
         if ($word =~ m/-~?$/)
         {       # Carry over hyphenated parts
@@ -2286,7 +2286,7 @@ sub perseus_handler
             $link =~ tr/A-Z/a-z/ if $lang eq 'grk'; 
             $link =~ s#\\#/#g if $lang eq 'grk';    # normalize barytone
             
-#          print STDERR ">>$link\n";
+            # print STDERR "2>>$link\n";
 
             $link =~ s/~[Hh]it~([^~]*)~/$1/g; 
             # Encode word itself
@@ -2312,7 +2312,7 @@ sub perseus_handler
             my $html = qq(<a onClick=\x03\x01parse\x03\x03$lang('$link', this)\x03\x01>$word</a>);
             $out .= $html.$space;
             ($h_word, $h_space) = ('', '');
-#         print STDERR ">>$html\n";
+            # print STDERR "3>>$html\n";
             
         }
     }

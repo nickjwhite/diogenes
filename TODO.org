@@ -1,5 +1,3 @@
-Merge new branch and make new one
-
 * Bugs
 ** Bug:
 L-S quies jumping to Nepos Att.
@@ -11,7 +9,6 @@ try again to fix this.
 ** Fix use of recent TLL fasicles
 See how badly this slows down seeking.
 ** Replace icon for newer Macs.
-** Add advanced settings menu item to run the equivalent of Settings.cgi
 
 * For forthcoming release
 ** Add FAQ about re-centering lost window
