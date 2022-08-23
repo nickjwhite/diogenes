@@ -1,8 +1,6 @@
 Merge new branch and make new one
 
 * Bugs
-** Pindar bug:
-I’m wondering whether you’d consider modifying the click to dictionary command so that it ignores the apostrophes used in Pindar (and elsewhere?) to indicate that mute+liquid are to be taken separately (e.g. γˈλώσσας, O. 6.12).
 ** Bug:
 L-S quies jumping to Nepos Att.
 ** Accented filter names

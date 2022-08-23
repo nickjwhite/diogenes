@@ -2260,6 +2260,8 @@ sub perseus_handler
     my ($self, $ref, $lang) = @_;
     my $out = '';
     my ($h_word, $h_space) = ('', '');
+
+    $$ref =~ s/%15/'/g; # Used irregularly in Pindar for a mid-word apostrophe
     # $punct are not part of the word, but should not interfere in morph lookup
     my ($beta, $punct) = $lang eq 'grk' ? ('-A-Za-z/\\\\|+)(=*~\'', '\\[\\]!?.')
         : ('-A-Za-z~\'', '\\[\\]!?.,:+\\\\/=');  
