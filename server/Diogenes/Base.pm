@@ -2598,7 +2598,7 @@ sub beta_to_html
     $$ref =~ s#\&amp;[678]((?:(?!\$|&amp;).)+)#<font size=-1>\U$1\E</font>#gs;
     $$ref =~ s#\$\d6((?:(?!\$|&amp;).)+)#<b><sup>$1</sup></b>#gs;
 
-    $$ref =~ s#\&amp\;#<basefont>#g;
+    $$ref =~ s#\&amp\;##g;
     $$ref =~ s#\$##g;
     
     # BETA { and } -- title, marginalia, etc.
@@ -2671,8 +2671,8 @@ sub beta_to_html
 
     # Try not to have citation info appear next to blank lines
 #     $$ref =~ s#\x02\n#\n\x02#g;
-    $$ref =~ s#\n#<br>\n#g;
-    $$ref =~ s#(</[Hh]\d>)\s*<br>#$1#g;
+    $$ref =~ s#\n+#<br/>\n#g;
+    $$ref =~ s#(</[Hh]\d>)\s*<br/>#$1#g;
     $$ref =~ s#<[Hh]\d></[Hh]\d>##g; # void marginal comments
 
 #   These have to stay, since babel, Ibycus uses ` as the grave accent

@@ -1278,12 +1278,13 @@ $output{browser_output} = sub
                 $q->browse_forward($begin_offset, $end_offset, $st{author}, $st{work});
         }
     }
-    elsif ($st{browser_forward})
+    # Submit button or submit image
+    elsif ($st{browser_forward} or $st{'browser_forward.x'})
     {
         ($st{begin_offset}, $st{end_offset}) =
             $q->browse_forward($st{begin_offset}, $st{end_offset}, $st{author}, $st{work});
     }
-    elsif ($st{browser_back})
+    elsif ($st{browser_back} or $st{'browser_back.x'})
     {
         ($st{begin_offset}, $st{end_offset}) =
             $q->browse_backward($st{begin_offset}, $st{end_offset}, $st{author}, $st{work});
@@ -1294,21 +1295,36 @@ $output{browser_output} = sub
     }
 
     print
+        '<p>',
         $f->p($f->hr),
-        $f->center(
-            $f->p(
-                $f->submit( -name => 'browser_back',
-                            -value => 'Move Back'),
-                ($q->{end_of_file_flag} ?
-                 # ' <span class="highlighted-word">End of File</span>' :
-                 $f->submit( -name => 'end_of_file',
-                             -value=> 'End of File',
-                             -disabled=> 1) :
-                 $f->submit( -name => 'browser_forward',
-                             -value=> 'Move Forward'))));
+        qq{<input type="image" name="browser_back" class="prev" src="${picture_dir}go-previous.png" srcset="${picture_dir}go-previous.hidpi.png 2x" alt="Previous" /> },
+        ($q->{end_of_file_flag} ? '' :
+        qq{<input type="image" name="browser_forward" class="next" src="${picture_dir}go-next.png" srcset="${picture_dir}go-next.hidpi.png 2x" alt="Subsequent" />});
 
-    delete $st{browser_forward};
-    delete $st{browser_back};
+
+    print
+        $f->center(
+            $f->submit( -name => 'browser_back',
+                        -value => 'Previous Text'),
+        
+            ($q->{end_of_file_flag} ?
+             $f->submit( -name => 'end_of_file',
+                         -value=> 'End of File',
+                         -disabled=> 1) :
+             $f->submit( -name => 'browser_forward',
+                         -value=> 'Subsequent Text')),
+            ' | Passage: ',
+            $f->textfield( -name => 'citation_jump_loc',
+                           -size => 15,
+                           -onkeydown => "if (event.keyCode == 13) {document.getElementById('citationGo').click();event.returnValue=false;event.cancel=true;}" ),
+            $f->submit( -name => 'citation_jump',
+                        -value=> 'Go',
+                        -id=>'citationGo')
+        ),
+        '</p>';
+
+    delete $st{browser_forward}; delete $st{'browser_forward.x'}; delete $st{'browser_forward.y'};
+    delete $st{browser_back}; delete $st{'browser_back.x'}; delete $st{'browser_back.y'};
 
     $my_footer->();
 };
@@ -2154,10 +2170,19 @@ my $dispatch = sub {
     {
         $mod_perl_error->();
     }
-    elsif ($f->param('JumpTo') or $f->param('JumpToFromPerseus'))
+    elsif ($f->param('JumpTo') or $f->param('JumpToFromPerseus') or $f->param('citation_jump'))
     {
-        # Jump straight to a passage in the browser, not the sidebar
-        my $context_jump = $f->param('JumpTo');
+        my $context_jump;
+        if ($f->param('citation_jump')) {
+            $context_jump = $choices{$st{corpus}} . ',' . $st{author} . ',' . $st{work} . ':';
+            my $loc = $f->param('citation_jump_loc');
+            $loc =~ s/\s//g;
+            $loc =~ s/[\.,;]/:/g;
+            $context_jump .= $loc;
+        } else {
+            # Jump straight to a passage from the text browser, not the sidebar
+            $context_jump = $f->param('JumpTo');
+        }
         # If we have jumped from the sidebar, we want to restore the sidebar
         my $perseus_jump = $f->param('JumpToFromPerseus');
         my $jump = $context_jump || $perseus_jump;

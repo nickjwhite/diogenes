@@ -474,6 +474,13 @@ sub print_location
     
     $location .= "\n\n";
     $self->print_output(\$location);
+
+    if ($self->{output_format} eq 'html') {
+        my $picture_dir = 'images/';
+        print qq{<input type="image" name="browser_back" class="prev" src="${picture_dir}go-previous.png" srcset="${picture_dir}go-previous.hidpi.png 2x" alt="Previous Text" /> };
+        print qq{<input type="image" name="browser_forward" class="next" src="${picture_dir}go-next.png" srcset="${picture_dir}go-next.hidpi.png 2x" alt="Subsequent Text" />};
+        print '<p style="clear: left;"></p>';
+    }
     
     return 1;   
 }

@@ -364,6 +364,14 @@ img.prev {
          float: left;
 }
 
+input.next {
+         float: left;
+}
+input.prev {
+         float: left;
+}
+
+
 .tooltip-container {
 
     text-align: center;
