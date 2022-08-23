@@ -98,6 +98,7 @@ build/rcedit.exe:
 	mkdir -p build
 	curl -Lo build/rcedit.exe https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
+# SVG icon
 build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png: dist/icon.svg
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
 	mkdir -p build/icons
@@ -192,8 +193,10 @@ mac-x64: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icn
 	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac-x64/Electron.app/Contents/Info.plist
 	mv app/mac-x64/Electron.app app/mac-x64/Diogenes.app
 	mv app/mac-x64/Diogenes.app/Contents/MacOS/Electron app/mac-x64/Diogenes.app/Contents/MacOS/Diogenes
+
 	# There are now multiple helper apps, and each has an Info.plist that
-	# may need modifying, so for now we just refrain from renaming
+	# may need modifying, so for now we just refrain from renaming it
+
 	# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
 	# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-x64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
 	cp COPYING app/mac-x64/about/COPYING.txt
