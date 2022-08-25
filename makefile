@@ -113,8 +113,14 @@ build/icons/diogenes.ico: build/icons/256.png build/icons/128.png build/icons/64
 	icotool -c build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png > $@
 	cp build/icons/diogenes.ico server/favicon.ico
 
-build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
-	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
+# For Mac (obsolete)
+# build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
+# 	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
+
+# Mac icon (from PNG made from SVG, with rounded corners and solid background)
+# png2icns now takes a 1024*1024 png, builds lower-res icons and packages them
+build/diogenes.icns:
+	png2icns -o build/diogenes.icns dist/Diogenes.png
 
 w32: all electron/electron-v$(ELECTRONVERSION)-win32-ia32 build/w32perl build/icons/diogenes.ico build/rcedit.exe
 	@echo "Making windows package. Note that this requires wine to be"

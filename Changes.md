@@ -6,8 +6,10 @@
 * This update should eliminate spurious anti-virus warnings.
 * PDFs are now shown in a new Diogenes window rather than in an external browser.
 * Native version for Macs with Apple processors.
-* Minor tweaks to UI, including semi-persistent state for splash screen (suggestion of Helge Baumann).
+* Minor tweaks to UI, including semi-persistent state for splash screen.
+* Updated icon for Macs (thanks to Helge Baumann).
 
+### Changes implemented earlier but not released
 * TLG search results are now presented in (rough) chronological order
   (with huge thanks to Jiang Qian for his assistance).
 * Multiple search feature now permits looking for the repetition of
