@@ -378,8 +378,7 @@ $output{splash} = sub
                      -alt=>'Diogenes',
                      -onClick=>'sessionStorage.removeItem("action");location.reload();',
                      -height=>'104',
-                     -width=>'374'})),
-    print $f->start_form(-id=>'form', -method=> 'get');
+                     -width=>'374'}));
     print "\n";
     $print_navbar->();
     print "\n";
