@@ -20,11 +20,10 @@ Building
 --------
 
 I would prefer not to have Diogenes packaged as part of a larger
-(e.g. Linux) free software distribution and would rather that users
-who are not building the application themselves download the installer
-from the Diogenes website.  This is because I use the download
-statistics to help justify spending part of my publicly funded time on
-this project.
+(e.g. Linux) distribution; I would rather that users who are not
+building the application themselves download the installer from the
+Diogenes website.  This is because I use the download statistics to
+help justify spending part of my publicly funded time on this project.
 
 Diogenes can either be built and run as a HTTP server application, or
 as a standalone application that seamlessly combines both server and
@@ -44,25 +43,28 @@ yourself, see the instructions below.
 Preliminaries
 -------------
 
-Creating the Diogenes icon file for Windows requires programs that can
-be installed with the `librsvg` and `libicns` Homebrew packages on OS
-X, or the Linux packages `librsvg2-bin` and `icoutils` (Debian).
+Creating the Diogenes icon file for Windows requires some utility
+programs, which can be installed on OS X (the Homebrew packages
+are`librsvg` and `icoutils`) and on Linux (the Debian packages are
+`librsvg2-bin` and `icoutils`).
 
 Creating the Mac icon file needs to be done on OS X and requires
 installing the `png2icns` package for Node.js: install Node via
-Homebrew and then run `npm install png2icns -g`. (One can also use an
-entirely different png2icns program that also runs on Linux, but it
-looks obsolescent.)
+Homebrew and then run `npm install png2icns -g`. (There is an entirely
+different png2icns program that also runs on Linux, but it looks
+obsolescent.)
 
-To assemble these and some other required files, run this command first:
+Once you have installed those utility programs, you can run this
+command, which will create the icons and collect a number of other
+required files:
 
     make
 
 Building the Electron app
 -------------------------
 
-To build the standalone Diogenes application, with the server and
-browser integrated via Electron, use one of these make commands
+To build the standalone Diogenes application which has the server and
+client browser integrated via Electron, use one of these make commands
 according to the platform you're building for:
 
     make linux64   # for linux (64 bit) build
@@ -73,9 +75,9 @@ according to the platform you're building for:
 Building the installers
 -----------------------
 
-All installers can be built on either Linux or OS X.  To create the
-Linux installers you will need to install `fpm`, which is done via the
-Ruby package manager [(see
+All of the installers can be built on either Linux or OS X.  To create
+the Linux installers you will need to install `fpm`, which is done via
+the Ruby package manager [(see
 instructions)](https://fpm.readthedocs.io/en/latest/installing.html),
 and for the RPM installer you will also need to install `rpm`, which
 is available on Homebrew.
@@ -95,7 +97,7 @@ There is a target in the Makefile to create an OS X pkg, but I don't
 recommend using it: if another version of Diogenes with the same
 version number is already installed, the Mac package installer will
 leave it untouched, will not install the new package, and will
-nonetheless report success.  So right now Diogenes.app is distributed
+nonetheless report success.  The Diogenes.app for OS X is distributed
 in a simple zip file, which seems to work fine for users.
 
 To build an installer for your target platform, run one of the
