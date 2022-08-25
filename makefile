@@ -298,12 +298,19 @@ install/diogenes-setup-win64-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.e
 # Experience shows that the pkg installer is fragile, so we have
 # reverted to distributing the app as a simple zip file, which is less
 # potentially confusing than a DMG installer.
-installer-mac: install/diogenes-mac-$(DIOGENESVERSION).zip
-install/diogenes-mac-$(DIOGENESVERSION).zip: app/mac
+installer-mac: install/diogenes-mac-x64-$(DIOGENESVERSION).zip install/diogenes-mac-arm64-$(DIOGENESVERSION).zip
+
+install/diogenes-mac-x64-$(DIOGENESVERSION).zip: app/mac-x64
 	mkdir -p install
-	rm -f install/diogenes-mac-$(DIOGENESVERSION).zip
-	cd app/mac; zip -r diogenes-mac-$(DIOGENESVERSION).zip Diogenes.app about
-	mv app/mac/diogenes-mac-$(DIOGENESVERSION).zip install/
+	rm -f install/diogenes-mac-x64-$(DIOGENESVERSION).zip
+	cd app/mac-x64; zip -r diogenes-mac-x64-$(DIOGENESVERSION).zip Diogenes.app about
+	mv app/mac/diogenes-mac-x64-$(DIOGENESVERSION).zip install/
+
+install/diogenes-mac-arm64-$(DIOGENESVERSION).zip: app/mac-arm64
+	mkdir -p install
+	rm -f install/diogenes-mac-arm64-$(DIOGENESVERSION).zip
+	cd app/mac-arm64; zip -r diogenes-mac-arm64-$(DIOGENESVERSION).zip Diogenes.app about
+	mv app/mac/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/
 
 # NB. Installing this Mac package will report success but silently
 # fail if there exists another copy of Diogenes.app with the same

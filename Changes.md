@@ -6,7 +6,7 @@
 * This update should eliminate spurious anti-virus warnings.
 * PDFs are now shown in a new Diogenes window rather than in an external browser.
 * Native version for Macs with Apple processors.
-* Minor tweaks to UI, including semi-persistent state for splash screen.
+* Minor tweaks to UI, including semi-persistent state for the splash screen and being able to jump to a new passage in the work currently being read.
 * Updated icon for Macs (thanks to Helge Baumann).
 
 ### Changes implemented earlier but not released

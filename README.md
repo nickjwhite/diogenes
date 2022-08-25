@@ -61,8 +61,9 @@ you're building for:
 
     make linux64   # for linux (64 bit) build
     make w32       # for windows build
-    make mac       # for mac osx build
-
+    make mac-x64   # for mac osx build (Intel)
+    make mac-arm64 # for mac osx build (Apple silicon)
+ 
 Building the installers
 -----------------------
 
@@ -83,7 +84,7 @@ of wine to run Inno Setup, which requires installing Docker Desktop
 (Mac) or Docker CE (Linux).]
 
     make installer-w32        # Make a Windows installer
-    make installer-mac        # Make a zip file of the Mac app
+    make installer-mac        # Make zip files of the Mac app for both Intel and ARM
     make installer-deb64      # Make a Debian package
     make installer-rpm64      # Make an RPM Linux package
     make installer-arch64     # Make a pacman package for Arch Linux
