@@ -226,7 +226,6 @@ my $print_title = sub
     # for Perseus data
     print qq{<div id="sidebar" class="sidebar-$init->{perseus_show}"></div>};
     print '<div id="main_window" class="main-full">';
-
 };
 
 my $print_header = sub
@@ -379,7 +378,6 @@ $output{splash} = sub
                      -onClick=>'sessionStorage.removeItem("action");location.reload();',
                      -height=>'104',
                      -width=>'374'}));
-    print "\n";
     $print_navbar->();
     print "\n";
     print $f->div({-class=>'info-area', -id=>'info'},

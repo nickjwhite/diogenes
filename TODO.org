@@ -1,32 +1,33 @@
 * Bugs
-** Bug:
-L-S quies jumping to Nepos Att.
 ** Accented filter names
 try again to fix this.
 
 * For forthcoming version
+** Fix re-opening of PDFs
 ** Go through github issues
 ** Fix use of recent TLL fasicles
-See how badly this slows down seeking.
+Try using TLL's index
 ** Replace icon for newer Macs.
+** Test chronological search functionality
+** Print out all(?) hidden source notes in browser
+Not just at start of page, as in Accius, Carmina
 
 * For forthcoming release
 ** Add FAQ about re-centering lost window
 ** Add info about diagnosing errors by running it from the terminal
-** Add new download for Mac silicon
-** Add tgz download target for manual installation
-*** Give better instructions on website for manual install
+** Give better instructions on website for manual install for older computers
 Give config file location(s) and syntax for setting database locations 
-** Change prebuilt-data repo to use git-lfs (and my ssh key)
 ** Test "New Window (reset position)" menu item on Windows
 Try with a Windows laptop and an external monitor
 ** See if Zoom in/out now works on Linux and Windows
+Also: The shortcuts used to navigate do not work on PC, Windows 10 (version 1909).
 ** Further test TLL download under Windows.
 Maybe fix Unicode path problem by renaming to TLL01.pdf etc., but continue to permit old names.
-** Check this:
-The shortcuts used to navigate do not work on PC, Windows 10 (version 1909).
 ** Check bug with non-ascii paths to databases on Windows
 The current code does seem to work when searching texts, and even when jumping to context from search results, but fails when browsing.  The .idt files are opened without a problem in the preliminary stages of browsing, and the seek_passage subroutine works when jumping from a search result, but not when browsing.  Browsing forward after jump to context is also broken.  A strange bug.
+** Add new download for Mac silicon
+** Add tgz download target for manual installation
+** Change prebuilt-data repo to use git-lfs (and my ssh key)
 
 * Near-term to-do items
 ** Fix short defs by using Helma's data.
