@@ -98,7 +98,7 @@ build/rcedit.exe:
 	mkdir -p build
 	curl -Lo build/rcedit.exe https://github.com/electron/rcedit/releases/download/v0.1.0/rcedit.exe
 
-# SVG icon
+# Windows icon
 build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png: dist/icon.svg
 	@echo "Rendering icons (needs rsvg-convert and Adobe Garamond Pro font)"
 	mkdir -p build/icons
@@ -113,12 +113,13 @@ build/icons/diogenes.ico: build/icons/256.png build/icons/128.png build/icons/64
 	icotool -c build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png > $@
 	cp build/icons/diogenes.ico server/favicon.ico
 
-# For Mac (obsolete)
+# Mac icon (using the obsolete libicns)
 # build/diogenes.icns: build/icons/256.png build/icons/128.png build/icons/64.png build/icons/48.png build/icons/32.png build/icons/16.png
 # 	png2icns $@ build/icons/256.png build/icons/128.png build/icons/48.png build/icons/32.png build/icons/16.png
 
-# Mac icon (from PNG made from SVG, with rounded corners and solid background)
-# png2icns now takes a 1024*1024 png, builds lower-res icons and packages them
+# Mac icon created using Node.js png2icns, which runs on OS X only: it
+# takes a 1024*1024 png, builds lower-res icons and packages them together.
+# Source png adapted from svg, with rounded corners and solid background.
 build/diogenes.icns:
 	png2icns -o build/diogenes.icns dist/Diogenes.png
 
