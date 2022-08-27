@@ -44,7 +44,7 @@ Preliminaries
 -------------
 
 Creating the Diogenes icon file for Windows requires some utility
-programs, which can be installed on OS X (the Homebrew packages
+programs that can be installed on OS X (the Homebrew packages
 are`librsvg` and `icoutils`) and on Linux (the Debian packages are
 `librsvg2-bin` and `icoutils`).
 

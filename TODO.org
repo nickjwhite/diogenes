@@ -1,13 +1,16 @@
+Fix new TLL pdfs
+Use proper filenames
+
 * Bugs
 ** Accented filter names
 try again to fix this.
 
 * For forthcoming version
 ** Fix re-opening of PDFs
+** Try using Winge's version of Morpheus
 ** Go through github issues
 ** Fix use of recent TLL fasicles
 Try using TLL's index
-** Replace icon for newer Macs.
 ** Test chronological search functionality
 ** Print out all(?) hidden source notes in browser
 Not just at start of page, as in Accius, Carmina
