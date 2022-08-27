@@ -13,6 +13,9 @@ DATAFILES = \
 	$(DATA)/tll-pdf-list.txt \
 	$(DATA)/old-bookmarks.txt
 
+$(BUILD)/index.json:
+	curl -k -o $@ https://publikationen.badw.de/de/thesaurus/-/index.json
+
 all: $(DATAFILES)
 
 .SUFFIXES: .txt .idt
@@ -23,7 +26,7 @@ all: $(DATAFILES)
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 mkfile_dir := $(dir $(mkfile_path))
 
-$(DATA)/tll-bookmarks.txt: utils/make_pdf_bookmarks.pl
+$(DATA)/tll-bookmarks.txt: utils/make_pdf_bookmarks.pl $(BUILD)/index.json
 	utils/make_pdf_bookmarks.pl -t "$(TLLDIR)" -l "$(mkfile_dir)/$(DATA)" > $(DATA)/tll-bookmarks.txt
 
 $(DATA)/old-bookmarks.txt: utils/make_pdf_bookmarks.pl
