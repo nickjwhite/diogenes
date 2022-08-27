@@ -748,6 +748,10 @@ app.whenReady().then( () => {
   ipcMain.handle('cssRevertFont', async (event) => {
     return cssRevertFont()
   })
+  ipcMain.handle('showPDF', async (event, path) => {
+    return showPDF(path)
+  })
+
   ipcMain.handle('getFonts', getFonts)
 })
 
@@ -951,3 +955,40 @@ function cssRevertFont () {
   return 'done'
 }
 
+// Support for opening PDFs
+
+function tll_list_read () {
+  const tllListPath = path.resolve(__dirname, '..', '..', 'dependencies', 'data', 'tll-pdf-list.txt');
+  const tllList = fs.readFileSync(tllListPath, {'encoding': 'utf8'})
+  console.log(tllList)
+}
+tll_list_read()
+  
+    // my $data_dir = File::Spec->catdir($Bin, );
+    // my $list = File::Spec->catfile($data_dir, 'tll-pdf-list.txt');
+
+    // open my $list_fh, '<:encoding(UTF-8)', $list or
+    //     die "Could not open $list: $!";
+    // while (<$list_fh>) {
+    //     m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
+    //     $tll_list{$1} = $2;
+    // }
+
+
+
+// If PDF is already open, show existing window
+function showPDF (PDFpath) {
+  pdfName = path.basename(PDFpath, '.pdf')
+  console.log(pdfName, '---')
+  allWindows = BrowserWindow.getAllWindows()
+  allWindows.forEach(window => {
+    var winUrl = win.webContents.getURL()
+    var winName = path.basename(winUrl, '.pdf')
+    console.log(winUrl)
+    if (winName == pdfName) {
+      window.webContents.loadURL(PDFpath)
+      return true
+    }
+  })
+  return false
+}
