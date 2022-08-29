@@ -81,8 +81,8 @@ function createWindow (oldWin, offset_x, offset_y, defaultPos) {
     else if (oldWin == null) {
         // Use saved window state if available
         if(winstate && winstate.bounds) {
-	    x = winstate.bounds.x
-	    y = winstate.bounds.y
+	    x = winstate.bounds.x + offset_x
+	    y = winstate.bounds.y + offset_y
 	    w = winstate.bounds.width
 	    h = winstate.bounds.height
         } else {
@@ -1042,9 +1042,7 @@ function showTLL (vol, pseudoUrl) {
       win.close()
     }
   }
-  var win = new BrowserWindow({
-    show: true
-  })
+  var win = createWindow(null, 20, 20)
   console.log('Loading TLL: ', tllURL)
   return win.webContents.loadURL(tllURL)
 }
