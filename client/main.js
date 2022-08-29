@@ -982,22 +982,9 @@ function tllFileMapRead () {
         }
       }
     })
-    // console.log(tllFileMap)
   }
 }
   
-    // my $data_dir = File::Spec->catdir($Bin, );
-    // my $list = File::Spec->catfile($data_dir, 'tll-pdf-list.txt');
-
-    // open my $list_fh, '<:encoding(UTF-8)', $list or
-    //     die "Could not open $list: $!";
-    // while (<$list_fh>) {
-    //     m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
-    //     $tll_list{$1} = $2;
-    // }
-
-var OLDwindow
-
 // Select type of PDF
 function showPDF (pseudoUrl) {
   var m = pseudoUrl.match(/^tll-pdf\/(.*?)\.pdf/)
@@ -1019,7 +1006,7 @@ function showTLL (vol, pseudoUrl) {
 
   tllDirUntrimmed = getTLLpath()
   tllDir = tllDirUntrimmed.replace(/\/$/, '')
-  if (!tllDir) { console.log('Error: tll_dir not set.') }
+  if (!tllDir) { console.log('Error: tll_pdf_dir not set.') }
   tllFileMapRead()
   var filename = tllFileMap[vol]
   if (!filename) { console.log('Error: filename not found for', vol) }
@@ -1045,7 +1032,42 @@ function showTLL (vol, pseudoUrl) {
   return win.webContents.loadURL(tllURL)
 }
 
+var OLDwindow = null
 function showOLD (pseudoUrl) {
-  
+  oldDirUntrimmed = getOLDpath()
+  oldDir = oldDirUntrimmed.replace(/\/$/, '')
+  if (!oldDir) { console.log('Error: old_pdf_dir not set.') }
+  if (m = pseudoUrl.match(/page=(\d+)$/)) {
+    var page = m[1]
+  } else {
+    console.log('Error. No page number:', pseudoUrl)
+  }
+  // We need to use loadURL, not loadFile, for #page= feature
+  var oldURL = 'file://' + oldDir + '#page=' + page
+  if (OLDwindow) {
+    // As above
+    OLDwindow.close()
+  }
+  OLDwindow = createWindow(null, 20, 20)
+  console.log('Loading OLD: ', oldURL)
+  return OLDwindow.webContents.loadURL(oldURL)
 }
 
+function getOLDpath () {
+  try {
+    var data = fs.readFileSync(dioSettingsFile, 'utf8')
+  } catch(e) {
+    dialog.showMessageBoxSync({
+      type: 'error',
+      message: 'Error. Settings file cannot be read.  Create one at File -> Database Locations'
+    })
+    return false
+  }
+
+  found = data.match(/^old_pdf_dir\s+\"(.*)\"$/m)
+  if (found && found[1]) {
+    return found[1]
+  } else {
+    return false
+  }
+}
