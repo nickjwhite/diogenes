@@ -392,7 +392,7 @@ sub handle_request
         my ($pdf_path, $pdf_file);
 
         if ($requested_file =~ m#^tll-pdf#) {
-            $requested_file =~ m#^tll-pdf/(\d+).pdf#;
+            $requested_file =~ m#^tll-pdf/([\d\.o]+).pdf#;
             my $file_number = $1;
             warn "Bad PDF file URI" unless $file_number;
 
@@ -474,7 +474,7 @@ sub tll_list_read {
     open my $list_fh, '<:encoding(UTF-8)', $list or
         die "Could not open $list: $!";
     while (<$list_fh>) {
-        m/^(\d+)\t(.*)$/ or die "Malformed list entry: $_";
+        m/^([\d\.o]+)\t(.*)$/ or die "Malformed list entry: $_";
         $tll_list{$1} = $2;
     }
 }

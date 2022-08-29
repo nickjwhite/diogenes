@@ -617,7 +617,7 @@ my $tll_pdf_link = sub {
     my $bookmark = $try_parse->($word);
     return '' unless $bookmark;
 
-    $bookmark =~ m/^(\d+)\t(\d+)$/ or die "No match for $bookmark\n";
+    $bookmark =~ m/^([\.\do]+)\t(\d+)$/ or die "No match for $bookmark\n";
     my $tll_file = $1;
     my $page = $2;
     # print STDERR "!!$word->$bookmark->$tll_file->$page\n";
