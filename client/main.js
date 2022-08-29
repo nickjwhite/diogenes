@@ -861,11 +861,7 @@ function printToPDF () {
 
 // Support for confirming TLL downloads
 
-function tllConfirm () {
-  // So as to have only one way to set this, we ask the user to
-  // set it via DB settings page rather than having a dialog here
-  // This needs to agree with value in tll-pdf-download.pl
-
+function getTLLpath () {
   try {
     var data = fs.readFileSync(dioSettingsFile, 'utf8')
   } catch(e) {
@@ -878,8 +874,19 @@ function tllConfirm () {
 
   found = data.match(/^tll_pdf_dir\s+\"(.*)\"$/m)
   if (found && found[1]) {
-    var tllPath = found[1]
+    return found[1]
   } else {
+    return false
+  }
+}
+
+function tllConfirm () {
+  // So as to have only one way to set this, we ask the user to
+  // set it via DB settings page rather than having a dialog here
+  // This needs to agree with value in tll-pdf-download.pl
+  
+  tllPath = getTLLpath ()
+  if (!tllPath) {
     dialog.showMessageBoxSync({
       type: 'error',
       message: 'Error. Location for TLL PDFs has not yet been set.  Specify the location via File -> Database Locations'
@@ -957,12 +964,29 @@ function cssRevertFont () {
 
 // Support for opening PDFs
 
-function tll_list_read () {
-  const tllListPath = path.resolve(__dirname, '..', '..', 'dependencies', 'data', 'tll-pdf-list.txt');
-  const tllList = fs.readFileSync(tllListPath, {'encoding': 'utf8'})
-  console.log(tllList)
+var tllFileMap = {}
+function tllFileMapRead () {
+  // We just read the file once, if necessary
+  if (Object.keys(tllFileMap).length === 0) {
+    const tllListPath = path.resolve(__dirname, '..', '..', 'dependencies', 'data', 'tll-pdf-list.txt');
+    const tllList = fs.readFileSync(tllListPath, {'encoding': 'utf8'})
+    console.log(tllList)
+    tllList.split("\n").forEach( line => {
+      console.log('line:', line)
+      var m = line.match(/^([\d\.o]+)\t(.*)$/)
+      if (m) {
+        var vol = m[1]
+        var filename = m[2]
+        if (vol && filename) {
+          tllFileMap[vol] = filename 
+        } else {
+        console.log('Error reading TLL file list:', line)
+        }
+      }
+    })
+    console.log(tllFileMap)
+  }
 }
-tll_list_read()
   
     // my $data_dir = File::Spec->catdir($Bin, );
     // my $list = File::Spec->catfile($data_dir, 'tll-pdf-list.txt');
@@ -974,21 +998,58 @@ tll_list_read()
     //     $tll_list{$1} = $2;
     // }
 
+var OLDwindow
 
+// Select type of PDF
+function showPDF (pseudoUrl) {
+  var m = pseudoUrl.match(/^tll-pdf\/(.*?)\.pdf/)
+  if (m) {
+    vol = m[1]
+    return showTLL(vol, pseudoUrl)
+  }
+  else if (pseudoUrl.match(/^ox-lat-dict\.pdf/)) {
+    return showOLD(pseudoUrl)
+  }
+  else {
+    console.log('Bad PDF pseudo-URL:', pseudoUrl)
+    return false
+  }
+}
 
 // If PDF is already open, show existing window
-function showPDF (PDFpath) {
-  pdfName = path.basename(PDFpath, '.pdf')
-  console.log(pdfName, '---')
-  allWindows = BrowserWindow.getAllWindows()
-  allWindows.forEach(window => {
-    var winUrl = win.webContents.getURL()
-    var winName = path.basename(winUrl, '.pdf')
-    console.log(winUrl)
-    if (winName == pdfName) {
-      window.webContents.loadURL(PDFpath)
-      return true
+function showTLL (vol, pseudoUrl) {
+
+  tllDirUntrimmed = getTLLpath()
+  tllDir = tllDirUntrimmed.replace(/\/$/, '')
+  if (!tllDir) { console.log('Error: tll_dir not set.') }
+  tllFileMapRead()
+  var filename = tllFileMap[vol]
+  if (!filename) { console.log('Error: filename not found for', vol) }
+  if (m = pseudoUrl.match(/page=(\d+)$/)) {
+    var page = m[1]
+  } else {
+    console.log('Error. No page number:', pseudoUrl)
+  }
+  // We need to use loadURL, not loadFile, for #page= feature
+  var tllURL = 'file://' + tllDir + '/' + filename + '#page=' + page
+  
+  for (const win of BrowserWindow.getAllWindows()){
+    if (win.title == filename) {
+      // This load fails intermittently, and in any case when it succeeds it reloads the PDF instead of scrolling to the new page, so we just close the window and then open a new one
+      // console.log('Re-loading TLL: ', tllURL)
+      // win.show()
+      // return win.webContents.loadURL(tllURL)
+      win.close()
     }
+  }
+  var win = new BrowserWindow({
+    show: true
   })
-  return false
+  console.log('Loading TLL: ', tllURL)
+  return win.webContents.loadURL(tllURL)
 }
+
+function showOLD (pseudoUrl) {
+  
+}
+
