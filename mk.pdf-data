@@ -26,8 +26,13 @@ all: $(DATAFILES)
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 mkfile_dir := $(dir $(mkfile_path))
 
-$(DATA)/tll-bookmarks.txt: utils/make_pdf_bookmarks.pl $(BUILD)/index.json
-	utils/make_pdf_bookmarks.pl -t "$(TLLDIR)" -l "$(mkfile_dir)/$(DATA)" > $(DATA)/tll-bookmarks.txt
+# Former code that extracted info from bookmarks in the PDFs; doesn't work for newest files.
+# $(DATA)/tll-bookmarks.txt: utils/make_pdf_bookmarks.pl
+#	utils/make_pdf_bookmarks.pl -t "$(TLLDIR)" -l "$(mkfile_dir)/$(DATA)" > $(DATA)/tll-bookmarks.txt
+
+# New code that uses the index.json file from the TLL
+$(DATA)/tll-bookmarks.txt: utils/get_tll_bookmarks.pl $(BUILD)/index.json
+	utils/get_tll_bookmarks.pl -t "$(TLLDIR)" -l "$(mkfile_dir)/$(DATA)" -i "$(BUILD)/index.json" > $(DATA)/tll-bookmarks.txt
 
 $(DATA)/old-bookmarks.txt: utils/make_pdf_bookmarks.pl
 	utils/make_pdf_bookmarks.pl -o "$(OLDFILE)" > $(DATA)/old-bookmarks.txt

@@ -60,6 +60,7 @@ my %start_page = %{ start_pages() };
 open(my $json_fh, "<:encoding(UTF-8)", $json_file)
     or die("Can't open $json_file: $!\n");
 my $junk = <$json_fh>; # throw away first line
+print STDERR "Processing index.json\n";
 while (<$json_fh>) {
     m#\{"0":\{"_":"(.*?)\s+<a onclick=\\"rI\(event,'-/(.*?)\.(jpg|pdf)#;
     my $word = $1;
