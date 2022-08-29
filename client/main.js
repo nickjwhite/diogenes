@@ -970,9 +970,7 @@ function tllFileMapRead () {
   if (Object.keys(tllFileMap).length === 0) {
     const tllListPath = path.resolve(__dirname, '..', '..', 'dependencies', 'data', 'tll-pdf-list.txt');
     const tllList = fs.readFileSync(tllListPath, {'encoding': 'utf8'})
-    console.log(tllList)
     tllList.split("\n").forEach( line => {
-      console.log('line:', line)
       var m = line.match(/^([\d\.o]+)\t(.*)$/)
       if (m) {
         var vol = m[1]
@@ -984,7 +982,7 @@ function tllFileMapRead () {
         }
       }
     })
-    console.log(tllFileMap)
+    // console.log(tllFileMap)
   }
 }
   

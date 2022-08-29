@@ -38,9 +38,10 @@ async function openPDF (path) {
   if (path) {
     if (isElectron()) {
       var retVal = await window.electron.showPDF(path)
-      if (!retVal) {
-        window.open(path)
-      }
+      // Always seems to return false
+      // if (!retVal) {
+      //   window.open(path)
+      // }
     }
     else {
       window.open(path)
