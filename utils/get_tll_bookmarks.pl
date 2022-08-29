@@ -47,7 +47,7 @@ while (my $file = readdir $dh) {
     next if $file =~ m/ThLL_IX_1__3_/; # No bookmark info available yet 
     my ($vol, $cs, $ce) = get_vol_and_col($file);
     my $key = "$vol.$cs";
-    print "$vol, $cs, $ce, $key\n";
+    # print STDERR "$vol, $cs, $ce, $key\n";
     push @pdfs, [$vol, $cs, $ce, $key];
     print $list_fh "$key\t$file\n"; 
 }
@@ -64,6 +64,7 @@ while (<$json_fh>) {
     m#\{"0":\{"_":"(.*?)\s+<a onclick=\\"rI\(event,'-/(.*?)\.(jpg|pdf)#;
     my $word = $1;
     my $vol_col = $2;
+    next if m/\"DT_RowId\":83061\}/; # Bad entry
     warn "BAD: $_" unless $word and $vol_col;
     $word =~ s#</?small>##g;
     $word =~ s#^\d\.##g;
@@ -85,7 +86,7 @@ while (<$json_fh>) {
     if ($key) {
         my $page = (($col - $start_col) / 2) + $start_page{$key};
         $bookmarks{$word} = "$key\t$page";
-        print "$word -> $vol -> $col -> $key -> $page\n";
+        # print STDERR "$word -> $vol -> $col -> $key -> $page\n";
     }
     else {
         print STDERR "Error processing $word; $vol_col; $vol; $col \n";
@@ -93,8 +94,6 @@ while (<$json_fh>) {
     }
 
 }
-
-exit;
 
 foreach my $k (sort keys %bookmarks) {
     print $k."\t".$bookmarks{$k}."\n";
