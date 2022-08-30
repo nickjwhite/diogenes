@@ -2,11 +2,14 @@
 
 ## 4.6 (forthcoming)
 
-* Browser front-end updated to Electon version 20 (from version 5).
-* This update should eliminate spurious anti-virus warnings.
-* PDFs are now shown in a new Diogenes window rather than in an external browser.
+* Browser front-end updated to Electon version 20 (from version 5):
+    * This should eliminate spurious anti-virus warnings (for now);
+    * PDFs are now shown in a new Diogenes window rather than in an external browser.
+* Tweaks to the user interface:
+    * better keyboard navigation;
+    * semi-persistent state for the splash screen;
+    * jump to a new passage in the work currently being read.
 * Native version for Macs with Apple processors.
-* Minor tweaks to UI, including semi-persistent state for the splash screen and being able to jump to a new passage in the work currently being read.
 * Updated icon for Macs (thanks to Helge Baumann).
 
 ### Changes implemented earlier but not released

@@ -320,8 +320,8 @@ my $print_navbar = sub {
   <div class="navbar-area">
     <nav role="navigation">
       <ul class="menu">
-        <li><a href="#" onclick="info('browse')" accesskey="r">Read</a></li>
-        <li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#">Search</a>
+        <li><a href="#" onclick="info('browse')" onfocus="dropup('submenu1'); dropup('submenu2')" accesskey="r">Read</a></li>
+        <li onmouseover="dropdown('submenu1')" onmouseout="dropup('submenu1')"><a href="#" onfocus="dropdown('submenu1');dropup('submenu2')">Search</a>
           <ul id="submenu1">
             <li><a href="#" onclick="info('search')" accesskey="s">Simple</a></li>
             <li><a href="#" onclick="info('author')" accesskey="a">Within an Author</a></li>
@@ -330,13 +330,13 @@ my $print_navbar = sub {
             <li><a href="#" onclick="info('word_list')" accesskey="w">Word List</a></li>
           </ul>
         </li>
-        <li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#">Lookup</a>
+        <li onmouseover="dropdown('submenu2')" onmouseout="dropup('submenu2')"><a href="#"  onfocus="dropdown('submenu2');dropup('submenu1')">Lookup</a>
           <ul id="submenu2">
             <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
             <li><a href="#" onclick="info('parse')" accesskey="i">Inflexion</a></li>
           </ul>
         </li>
-        <li><a href="#" onclick="info('filters')" accesskey="f">Filter</a></li>
+        <li><a href="#" onclick="info('filters')" onfocus="dropup('submenu1'); dropup('submenu2')" accesskey="f">Filter</a></li>
         <li><a href="#" onclick="info('export')" accesskey="e">Export</a></li>
         <li><a href="#" onclick="info('help')">Help</a></li>
       </ul>
