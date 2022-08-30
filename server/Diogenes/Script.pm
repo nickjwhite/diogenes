@@ -1302,6 +1302,7 @@ $output{browser_output} = sub
     print
         $f->center(
             $f->submit( -name => 'browser_back',
+                        -id => 'browser_back_submit',
                         -value => 'Previous Text'),
         
             ($q->{end_of_file_flag} ?
@@ -1309,6 +1310,7 @@ $output{browser_output} = sub
                          -value=> 'End of File',
                          -disabled=> 1) :
              $f->submit( -name => 'browser_forward',
+                         -id => 'browser_forward_submit',
                          -value=> 'Subsequent Text')),
             ' | Passage: ',
             $f->textfield( -name => 'citation_jump_loc',

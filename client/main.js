@@ -551,6 +551,17 @@ function initializeMenuTemplate () {
                      let contents = win.webContents
                      contents.goForward()
                  }},
+                {label: 'Previous Text',
+                 accelerator: 'CmdOrCtrl+,',
+                 // Currently broken, but docs indicate this should work
+                 click: (menu, win) => {
+                   sendKeybinding(win, 'CmdOrCtrl+,')
+                 }},
+                {label: 'Subsequent Text',
+                 accelerator: 'CmdOrCtrl+.',
+                 click: (menu, win) => {
+                   sendKeybinding(win, 'CmdOrCtrl+.')
+                 }},
                 {label: 'Home Page',
                  accelerator: 'CmdOrCtrl+D',
                  click: (menu, win) => {

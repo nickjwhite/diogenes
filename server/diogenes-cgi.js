@@ -23,9 +23,15 @@ window.addEventListener("load", function() {
 });
 
 document.addEventListener('keydown', event => {
-    if (event.key === 'Escape' || event.keyCode === 27) {
-        sidebarDismiss();
-    }
+  if (event.key === 'Escape' || event.keyCode === 27) {
+    sidebarDismiss();
+  }
+  if ((event.metaKey || event.ctrlKey) && event.code == 'Period') {
+    document.getElementById('browser_forward_submit').click();
+  }
+  if ((event.metaKey || event.ctrlKey) && event.code == 'Comma') {
+    document.getElementById('browser_back_submit').click();
+  }
 });
 
 function isElectron () {
@@ -376,3 +382,4 @@ function formFilter () {
         }
     }
 }
+
