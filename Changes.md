@@ -9,6 +9,7 @@
     * better keyboard navigation;
     * semi-persistent state for the splash screen;
     * jump to a new passage in the work currently being read.
+* Added support for the more recent TLL fascicles (from vols. 9.1 and 11.2).
 * Native version for Macs with Apple processors.
 * Updated icon for Macs (thanks to Helge Baumann).
 
@@ -26,8 +27,6 @@
 * Fixed display of some LSJ headwords.
 * Fixed picking up GUI config settings when running server from the Linux command-line.
 * Fixed browsing to Val. Max "(ext)" sections and fragments at end of file.
-* Latest (short) fasicles of the TLL are downloaded, but cannot yet be used,
-  as those PDFs have no bookmarks.
 * Fix to bug that interfered with chronological ordering except on Windows.
 
 ## 4.5
