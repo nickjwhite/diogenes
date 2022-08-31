@@ -31,9 +31,11 @@ use Diogenes::Search;
 use Diogenes::Indexed;
 use Diogenes::Browser;
 use Encode;
-use CGI qw(:standard);
-#use CGI;
-# use CGI::Carp 'fatalsToBrowser';
+use CGI qw(:standard :utf8);
+use JSON;
+use utf8;
+binmode STDERR, ":raw";
+
 
 BEGIN {
    if ( $Diogenes::Base::OS eq 'windows' ) {
@@ -134,20 +136,27 @@ my $get_state = sub
 my $read_filters = sub {
     if (-e $filter_file)
     {
-        open my $filter_fh, "<$filter_file"
+        open(my $filter_fh,'<:raw', $filter_file)
             or die "Can't read from filter file ($filter_file): $!";
-
         local $/ = undef;
-        my $code = <$filter_fh>;
-        eval $code;
-        warn "Error reading in saved corpora: $@" if $@;
-
+        my $contents = <$filter_fh>;
         close $filter_fh or die "Can't close filter file ($filter_file): $!";
 
-        # utf8::encode($_->{name}) for @filters;
-#         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
-        # Unicode chars are encoded like \x{e3}, so we don't need to
-        # read the file as utf8 or convert the strings to utf8.
+        if ($contents =~ m/^\@filters =/) {
+            # Legacy code to eval old-style Data Dumper file, which
+            # simply cannot deal reliably with Unicode data
+            eval $contents;
+            warn "Error reading in saved corpora: $@" if $@;
+        }
+        else {
+            binmode STDERR, ":raw";
+            print STDERR "Reading...\n";
+
+            print STDERR "JSON\n$contents";
+            @filters = @{ from_json $contents };
+            print STDERR %{ $filters[0] };
+
+        }
     }
 };
 
@@ -367,6 +376,7 @@ $output{splash} = sub
     print '<div id="corpora-list2">';
     foreach (@filter_names) {
         print qq{<option value="$_">$_</option>};
+        print STDERR "!$_\n";
     }
     print '</div>';
     print "\n";
@@ -390,7 +400,7 @@ $output{splash} = sub
 my $get_filter = sub
 {
     my $name = shift;
-    # utf8::encode($name);
+    utf8::encode($name);
     for (@filters) {
         return $_ if $_->{name} eq $name;
     }
@@ -984,6 +994,7 @@ $output{search} = sub
     my %args = $get_args->();
 
     my $q;
+    print STDERR 'type:', $args{type};
     if ($st{type} =~ m/TLG Word List/)
     {
         $q = new Diogenes::Indexed(%args);
@@ -1568,12 +1579,12 @@ the selected authors' );
 };
 
 my $save_filters = sub {
-    # for (@filters) {
-    #     utf8::decode($_->{name}) if Encode::is_utf8($_->{name});
-    # }
-    open my $filter_fh, ">$filter_file"
+    open(my $filter_fh,'>:raw', $filter_file)
         or die "Can't write to filter file ($filter_file): $!";
-    print $filter_fh Data::Dumper->Dump([\@filters], ['*filters']);
+    # binmode $filter_fh, ":raw";
+    print STDERR "Saving...\n";
+    print $filter_fh to_json \@filters;
+    print STDERR to_json \@filters;
     close $filter_fh or die "Can't close filter file ($filter_file): $!";
 };
 
@@ -1584,6 +1595,7 @@ my $go_splash = sub {
 my $save_filters_and_go = sub {
     $save_filters->();
     %st = ();
+    # Add load filters here
     $go_splash->();
 };
 
@@ -1629,12 +1641,13 @@ my $merge_filter = sub {
 $handler{simple_filter} = sub
 {
     if ($st{simple_filter_option} eq 'save_filter') {
-#         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
-
+        print STDERR "->@filters[0]->{name}\n" if @filters;
+        utf8::encode($st{saved_filter_name});
+        print STDERR "** $st{saved_filter_name}\n";
         $merge_filter->({ name => $st{saved_filter_name},
                           authors => $st{author_list},
                           type => $st{database} });
-#         print STDERR Data::Dumper->Dump([\@filters], ['*filters']);
+        print STDERR "^>@filters[0]->{name}\n";
 
         $save_filters_and_go->();
     }
@@ -2133,26 +2146,8 @@ my $setup = sub {
     $ENV{PATH} = "/bin/:/usr/bin/";
     $| = 1;
 
-    # We need to pre-set the encoding for the earlier pages, so that
-    # the right header is sent out the first time Greek is displayed
-    $f->param('greek_output_format', $default_encoding) unless
-        $f->param('greek_output_format');
-
-    # This works for WinGreek, etc, and any encoding/font that's designed
-    # more for cutting and pasting than for proper viewing in a browser.
-    $charset = 'iso-8859-1';
-
-    if ($f->param('greek_output_format') and
-        $f->param('greek_output_format') =~ m/UTF-?8|Unicode/i)
-    {
-        $charset = 'UTF-8';
-        #$charset = 'iso-10646-1';
-    }
-    elsif ($f->param('greek_output_format') and
-           $f->param('greek_output_format') =~ m/8859.?7/i)
-    {
-        $charset = 'ISO-8859-7';
-    }
+    # Everything else is obsolete
+    $charset = 'UTF-8';
 
     # Persisting this variable across calls causes problems
     undef @filters;
