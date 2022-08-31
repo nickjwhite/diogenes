@@ -68,11 +68,13 @@ while (<$json_fh>) {
     next if m/\"DT_RowId\":83061\}/; # Bad entry
     warn "BAD: $_" unless $word and $vol_col;
     $word =~ s#</?small>##g;
+    $word =~ s#&[lg]t;##g;
     $word =~ s#^\d\.\s*##g;
     $word =~ s#<x->.*$##g;
     $word =~ s#,.*$##g;
-    $word =~ s#[()?]##g;
+    $word =~ s#[()?.-]##g;
     $word =~ s#\s.*$##g;
+    next unless $word;
     $vol_col =~ m/(.*)\.(\d+)$/;
     my $vol = $1;
     my $col = $2;
