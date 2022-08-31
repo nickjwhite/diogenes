@@ -94,7 +94,6 @@ while (<$json_fh>) {
     }
     else {
         print STDERR "Error processing $word; $vol_col; $vol; $col \n";
-        exit;
     }
 
 }
