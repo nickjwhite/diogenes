@@ -553,14 +553,13 @@ function initializeMenuTemplate () {
                  }},
                 {label: 'Previous Text',
                  accelerator: 'CmdOrCtrl+,',
-                 // Currently broken, but docs indicate this should work
                  click: (menu, win) => {
-                   sendKeybinding(win, 'CmdOrCtrl+,')
+                   win.webContents.executeJavaScript("document.getElementById('browser_back_submit').click()")
                  }},
                 {label: 'Subsequent Text',
                  accelerator: 'CmdOrCtrl+.',
                  click: (menu, win) => {
-                   sendKeybinding(win, 'CmdOrCtrl+.')
+                   win.webContents.executeJavaScript("document.getElementById('browser_forward_submit').click()")
                  }},
                 {label: 'Home Page',
                  accelerator: 'CmdOrCtrl+D',
