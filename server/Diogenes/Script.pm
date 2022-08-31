@@ -151,13 +151,8 @@ my $read_filters = sub {
             warn "Error reading in saved corpora: $@" if $@;
         }
         else {
-            binmode STDERR, ":raw";
-            print STDERR "Reading...\n";
-
-            print STDERR "JSON\n$contents";
             @filters = @{ from_json $contents };
-            print STDERR %{ $filters[0] };
-
+            #print STDERR 'Filter: ', %{ $_ }, "\n" for @filters;
         }
     }
 };
@@ -378,7 +373,6 @@ $output{splash} = sub
     print '<div id="corpora-list2">';
     foreach (@filter_names) {
         print qq{<option value="$_">$_</option>};
-        print STDERR "!$_\n";
     }
     print '</div>';
     print "\n";
@@ -997,7 +991,6 @@ $output{search} = sub
     my %args = $get_args->();
 
     my $q;
-    print STDERR 'type:', $args{type};
     if ($st{type} =~ m/TLG Word List/)
     {
         $q = new Diogenes::Indexed(%args);
@@ -1589,10 +1582,9 @@ my $save_filters = sub {
 
     open(my $filter_fh,'>:raw', $filter_file)
         or die "Can't write to filter file ($filter_file): $!";
-    # binmode $filter_fh, ":raw";
-    print STDERR "Saving...\n";
+    print STDERR "Saving filters ...\n" if $init->{debug};
     print $filter_fh to_json \@filters;
-    print STDERR to_json \@filters;
+    print STDERR to_json \@filters if $init->{debug};
     close $filter_fh or die "Can't close filter file ($filter_file): $!";
 };
 
@@ -1603,13 +1595,14 @@ my $go_splash = sub {
 my $save_filters_and_go = sub {
     $save_filters->();
     %st = ();
-    # Add load filters here
+    $read_filters->();
     $go_splash->();
 };
 
 my $merge_filter = sub {
     my $new = shift;
     my $name = $new->{name};
+    print STDERR "Merging $name\n" if $init->{debug};
     $print_error_page->('You must give your corpus a name!') unless ($name and $name =~ m/\S/);
     unless (defined $new->{authors}) {
         $print_error_page->('Your corpus has no authors in it!')
@@ -1649,12 +1642,9 @@ my $merge_filter = sub {
 $handler{simple_filter} = sub
 {
     if ($st{simple_filter_option} eq 'save_filter') {
-        print STDERR "->@filters[0]->{name}\n" if @filters;
-        print STDERR "** $st{saved_filter_name}\n";
         $merge_filter->({ name => $st{saved_filter_name},
                           authors => $st{author_list},
                           type => $st{database} });
-        print STDERR "^>@filters[0]->{name}\n";
 
         $save_filters_and_go->();
     }
