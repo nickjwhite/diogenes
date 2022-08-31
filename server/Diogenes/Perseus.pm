@@ -610,7 +610,9 @@ my $tll_pdf_link = sub {
     # Remove numeric entities for accents, macrons, etc.
     $word =~ s/&[^;]+;//g;
     $word =~ s/[^A-Za-z]//g;
-    $word =~ tr/vj/ui/;
+    # Bookmarks in the PDFs have consonant u; index.json has v
+    # $word =~ tr/vj/ui/;
+    $word =~ tr/j/i/;
     # print STDERR "TLL lemma: $word\n";
     $tll_parse_setup->();
     $parse_prelims->();
