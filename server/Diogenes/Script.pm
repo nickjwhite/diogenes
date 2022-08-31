@@ -131,6 +131,8 @@ my $get_state = sub
             $st{$r} = [ @tmp ];
         }
     }
+    # Filter names do need to be utf8; see also get_filter
+    utf8::encode($st{saved_filter_name}) if $st{saved_filter_name};
 };
 
 my $read_filters = sub {
@@ -400,6 +402,7 @@ $output{splash} = sub
 my $get_filter = sub
 {
     my $name = shift;
+    # Filter names need to be utf8
     utf8::encode($name);
     for (@filters) {
         return $_ if $_->{name} eq $name;
@@ -1579,6 +1582,11 @@ the selected authors' );
 };
 
 my $save_filters = sub {
+
+    # It's important that we read and write the filter file in raw
+    # mode, as the data are already unflagged utf8; we don't want it
+    # encoded again.
+
     open(my $filter_fh,'>:raw', $filter_file)
         or die "Can't write to filter file ($filter_file): $!";
     # binmode $filter_fh, ":raw";
@@ -1642,7 +1650,6 @@ $handler{simple_filter} = sub
 {
     if ($st{simple_filter_option} eq 'save_filter') {
         print STDERR "->@filters[0]->{name}\n" if @filters;
-        utf8::encode($st{saved_filter_name});
         print STDERR "** $st{saved_filter_name}\n";
         $merge_filter->({ name => $st{saved_filter_name},
                           authors => $st{author_list},
@@ -1976,8 +1983,6 @@ $output{list_filter} = sub
     my $filter = $get_filter->($st{filter_choice});
     my $type = $filter->{type};
     my $name = $filter->{name};
-    # Not sure why this conversion is necessary here and not elsewhere.
-    # utf8::encode($name);
     $st{short_type} = $type;
     $st{type} = $database{$type};
 
