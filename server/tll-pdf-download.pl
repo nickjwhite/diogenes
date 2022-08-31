@@ -245,7 +245,7 @@ sub tll_file_names {
 # New fascicles
 "ThLL%20vol.%209.1.1%20col.%200001%E2%80%930208%20%28n%E2%80%93navalis%29.pdf",
 "ThLL%20vol.%209.1.2%20col.%200209%E2%80%930336%20%28navalis-nebel%29.pdf",
-"039602104[CC%20BY-NC-ND]%7BThLL%20vol.%209.1.3%20col.%200337%E2%80%930516%20(nebel-nemo)%7D.pdf",
+"ThLL%20vol.%209.1.3%20col.%200337%E2%80%930516%20(nebel-nemo)%7D.pdf",
 "ThLL_IX_1__3_UEberhang_nemo_nemus.pdf",
 "ThLL%20vol.%2011.2.1%20col.%200001%E2%80%930144%20%28r-rarus%29.pdf",
 "ThLL%20vol.%2011.2.2%20col.%200145%E2%80%930320%20%28rarus-recido%29.pdf",
