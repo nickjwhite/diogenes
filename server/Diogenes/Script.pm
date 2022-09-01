@@ -81,7 +81,6 @@ my (%handler, %output);
 # careful not to duplicate parameter names from page to page.
 my %st;
 my $previous_page;
-my $current_filter;
 
 my $set_state = sub
 {
@@ -107,7 +106,6 @@ my $get_state = sub
 {
     # Make sure to clear state (esp. in non-forking server)
     %st = ();
-    undef $current_filter;
 
     my @params = $f->param();
     my %real_params;
@@ -131,8 +129,37 @@ my $get_state = sub
             $st{$r} = [ @tmp ];
         }
     }
-    # Filter names do need to be utf8; see also get_filter
+    # These are filter names that have been typed in by the user on
+    # the pages that define filters, as opposed to being selected from
+    # a list.  So they need to be treated differently and have to be
+    # tagged as utf8 in order to save correctly on disk.
+    need to be utf8 for the pages that define the filters.
     utf8::encode($st{saved_filter_name}) if $st{saved_filter_name};
+    utf8::encode($st{duplicate_filter_name}) if $st{duplicate_filter_name};
+};
+
+# We must only read in a custom filter name (utf8) as entered or
+# chosen by the user only once, and not send it back and forth via CGI
+# parameters over multiple page submissions, or else the compounding
+# of encoding/decoding makes the problem intractable.  So we match the
+# name against the names of the items in the array of filters read
+# from disk the first time it is submitted and turn it into a
+# numerical index into that array, which is saved as a separate
+# parameter.
+
+my $match_filter = sub
+{
+    my $name = shift;
+    # Filter names need to be tagged as utf8 to match here
+    print STDERR ">$name<\n";
+    utf8::encode($name);
+    print STDERR ">$name<\n";
+    my $i = 0;
+    for (@filters) {
+        return $i if $_->{name} eq $name;
+        $i++;
+    }
+    return undef;
 };
 
 my $read_filters = sub {
@@ -393,17 +420,6 @@ $output{splash} = sub
     $my_footer->();
 };
 
-my $get_filter = sub
-{
-    my $name = shift;
-    # Filter names need to be utf8
-    utf8::encode($name);
-    for (@filters) {
-        return $_ if $_->{name} eq $name;
-    }
-    return undef;
-};
-
 ### Splash handler
 
 $handler{splash} = sub
@@ -422,9 +438,23 @@ $handler{splash} = sub
     }
     elsif ($corpus)
     {
-        $current_filter = $get_filter->($corpus);
-        $st{short_type} = $current_filter->{type};
-        $st{type} = $corpus;
+        # Convert to numerical form (index into the list of filters),
+        # so that we do not have to worry about encoding/decoding
+        # issues arising from passing utf8 filter names back and forth.
+        my $filter_number = $match_filter->($corpus);
+        if (defined $filter_number) {
+            $st{custom_corpus} = $filter_number;
+            $st{short_type} = $filters[$filter_number]->{type};
+            $st{type} = $corpus;
+            print STDERR "Custom: $st{custom_corpus} $st{short_type} $st{type}\n";
+        }
+        else {
+            print STDERR "Error: Custom corpus filter not found for $corpus!\n";
+            $print_title->('Error');
+            $print_header->();
+            print $f->center($f->p($f->strong('Error.')),
+                             $f->p("Error: Custom corpus filter not found for $corpus!\n"));
+        }
     }
 
     if ((not $st{query}) and $action eq 'search')
@@ -487,8 +517,6 @@ $output{multiple} = sub
     $print_title->('Diogenes Multiple Search Page');
     $print_header->();
     $st{current_page} = 'multiple';
-    # Since this is a multiple-step search, we have to save it.
-    $st{saved_filter} = $st{corpus} if $current_filter;
 
     my $new_pattern = $st{query};
 
@@ -632,6 +660,7 @@ $output{export_xml} = sub {
     $database_error->($q) if not $q->check_db;
 
     my @auths;
+
     if ($st{author} and $st{author} =~ m/\S/) {
         @auths = sort keys %{ $q->match_authtab($st{author}) };
         unless (scalar @auths)
@@ -640,12 +669,14 @@ $output{export_xml} = sub {
             return;
         }
     }
-    elsif ($current_filter) {
-        if (ref $current_filter->{authors} eq 'ARRAY') {
-            @auths = sort @{ $current_filter->{authors} };
+    elsif ($st{custom_corpus}) {
+        my $filter_number = $st{custom_corpus};
+        my $filter = $filters[$filter_number];
+        if (ref $filter->{authors} eq 'ARRAY') {
+            @auths = sort @{ $filter->{authors} };
         }
-        elsif (ref $current_filter->{authors} eq 'HASH') {
-            @auths = sort keys %{ $current_filter->{authors} };
+        elsif (ref $filter->{authors} eq 'HASH') {
+            @auths = sort keys %{ $filter->{authors} };
         }
         else {
             $print_error->("ERROR in filter definition.")
@@ -731,22 +762,25 @@ my $use_and_show_filter = sub
 {
     my $q = shift;
     my $word_list_search = shift;
-    my $filter;
-    $filter = $current_filter ? $current_filter :
-        ($st{saved_filter} ? $get_filter->($st{saved_filter}) : undef);
-    if ($filter)
-    {
-        if ($word_list_search and $filter->{type} ne 'tlg') {
-            $print_error->('You cannot perform a TLG word-index search on a user-defined subcorpus which is not part of the TLG!');
-            $q->barf;
+    my $filter_number = $st{custom_corpus};
+    if (defined $filter_number) { 
+        my $filter = $filters[$filter_number];
+        if ($filter)
+        {
+            if ($word_list_search and $filter->{type} ne 'tlg') {
+                $print_error->('You cannot perform a TLG word-index search on a user-defined subcorpus which is not part of the TLG!');
+                $q->barf;
+            }
+            my $work_nums = $filter->{authors};
+            my @texts = $q->select_authors( -author_nums => $work_nums);
+            
+            print $f->h2('Searching in the following authors/texts:'),
+                $f->ul($f->li(\@texts)),
+                $f->hr;
         }
-        my $work_nums = $filter->{authors};
-        my @texts = $q->select_authors( -author_nums => $work_nums);
-
-        print $f->h2('Searching in the following authors/texts:'),
-        $f->ul($f->li(\@texts)),
-        $f->hr;
-
+    }
+    else {
+        print STDERR "No custom filter defined.\n";
     }
 };
 
@@ -787,8 +821,6 @@ $output{lemma} = sub {
     $print_title->('Diogenes Lemma Search Page');
     $print_header->();
     $st{current_page} = 'lemma';
-    # Since this is a multiple-step search, we have to save it.
-    $st{saved_filter} = $st{corpus} if $current_filter;
     my %args = $get_args->();
     my $q = new Diogenes::Base(%args);
     my ($lang, $inp_enc) = $input_encoding->($st{query});
@@ -923,8 +955,6 @@ $output{indexed_search} = sub
     my @params = $f->param;
 
     $use_and_show_filter->($q, 'true');
-    # Since this is a 2-step search, we have to save it.
-    $st{saved_filter} = $st{corpus} if $current_filter;
 
     my $pattern_list = $st{query_list} ? $st{query_list} : [$st{query}];
     print $f->p('Here are the entries in the TLG word list that match your ',
@@ -974,7 +1004,6 @@ $output{indexed_search} = sub
 
 $handler{word_list} = sub
 {
-    $filter_flag = $st{saved_filter_flag} if $st{saved_filter_flag};
     $output{search}->()
 };
 
@@ -1356,7 +1385,8 @@ $output{filter_splash} = sub
     my @filter_names;
     @filter_names = ($no_filters_msg) unless @filters;
     push @filter_names, $_->{name} for @filters;
-
+    my %labels;
+    $labels{$_} = $filter_names[$_] for (0 .. $#filter_names);
 
     print
         $f->h1("Filters: user-defined subsets of the databases."),
@@ -1375,23 +1405,24 @@ $output{filter_splash} = sub
         print $f->ul($f->li(\@filter_names));
 
         print
-        $f->h2('List or modify an existing filter'),
+            $f->h2('List or modify an existing filter'),
 
-        $f->p( 'Corpus : ',
-               $f->popup_menu( -name => 'filter_choice',
-                               -values => \@filter_names,
-                               $dis)),
-        $f->p(
-            $f->submit (-name=>'list',
-                        -value=>'List contents of subset'),
-            $f->br,
-            $f->submit (-name=>'delete',
-                        -value=>'Delete subset'),
-            $f->br,
-            $f->submit (-name=>'duplicate',
-                        -value=>'Duplicate subset under new name: '),
-            $f->textfield( -name => 'duplicate_name',
-                           -size => 60, -default => '')),
+            $f->p( 'Corpus : ',
+                   $f->popup_menu( -name => 'filter_choice',
+                                   -Values => [0 .. $#filter_names],
+                                   -labels => \%labels,
+                                   $dis)),
+            $f->p(
+                $f->submit (-name=>'delete',
+                            -value=>'Delete entire subset')),
+            $f->p(
+                $f->submit (-name=>'list',
+                            -value=>'List or modify contents of subset')),
+            $f->p(
+                $f->submit (-name=>'duplicate',
+                            -value=>'Duplicate subset under new name: '),
+                $f->textfield( -name => 'duplicate_filter_name',
+                               -size => 60, -default => '')),
 
         $f->p('<strong>N.B.</strong> To delete individual items from a
         corpus, choose "List contents" and you can do that on the next
@@ -1968,7 +1999,8 @@ $handler{tlg_filter_output} = sub
 
 $output{list_filter} = sub
 {
-    my $filter = $get_filter->($st{filter_choice});
+    my $filter_number = $st{filter_choice};
+    my $filter = $filters[$filter_number];
     my $type = $filter->{type};
     my $name = $filter->{name};
     $st{short_type} = $type;
@@ -2005,17 +2037,14 @@ $output{list_filter} = sub
 };
 
 $output{delete_filter} = sub {
-    my $name = $st{filter_choice};
-    my $i = 0;
-    for (@filters) {
-        if ($_->{name} eq $name) {
-            splice @filters, $i, 1;
-            $save_filters_and_go->();
-            return;
-        }
-        $i++;
+    my $filter_number = $st{filter_choice};
+    if (defined $filter_number) {
+        splice @filters, $filter_number, 1;        
+        $save_filters_and_go->();
     }
-    die ("Could not find filter $name to delete it!");
+    else {
+        die ("Could not find filter to delete it!");
+    }
 };
 
 $handler{list_filter} = sub
@@ -2044,10 +2073,9 @@ $deep_copy = sub {
 
 
 $output{duplicate_filter} = sub {
-    return if $get_filter->($st{duplicate_name});
-    my $old_filter = $get_filter->($st{filter_choice});
-    my $new_filter = $deep_copy->($old_filter);
-    $new_filter->{name} = $st{duplicate_name};
+    my $old_filter_number = $st{filter_choice};
+    my $new_filter = $deep_copy->($filters[$old_filter_number]);
+    $new_filter->{name} = $st{duplicate_filter_name};
     push @filters, $new_filter;
     $save_filters_and_go->();
 };
@@ -2055,7 +2083,12 @@ $output{duplicate_filter} = sub {
 
 
 $output{delete_filter_items} = sub {
-    my $filter = $get_filter->($st{filter_choice});
+    my $filter_number = $st{filter_choice};
+    unless (defined $filter_number) {
+        print STDERR "Missing number $st{filter_choice} for deletion";
+        return;
+    }
+    my $filter = $filters[$filter_number];
     my $type = $filter->{type};
     my %args = ( -type => $type );
     my $q = new Diogenes::Search( %args );
