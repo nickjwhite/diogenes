@@ -1361,8 +1361,6 @@ $output{filter_splash} = sub
     print
         $f->h1("Filters: user-defined subsets of the databases."),
 
-        $f->p('<b>NB.</b> Due to a current bug, only use non-accented Latin characters in the names of your sub-corpora'),
-
         $f->p('From this page you can create new corpora or subsets of
         the databases to search within, and you can also view and
         delete existing user-defined corpora.  Note that these
