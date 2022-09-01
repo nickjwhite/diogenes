@@ -152,7 +152,15 @@ sub seek_passage
     my ($block, $old_block);
 
     my $typeauth = $self->{type}.$auth;
-    if ($typeauth =~ m/^(tlg5034|phi1348|phi0588|phi2349|tlg0031|phi0474|phi1002|tlg0096|phi0631|tlg5035)$/)
+
+    # There are very many short texts (esp fragmentary) where using
+    # the ToC causes us to miss the work entirely.  Not sure if this
+    # is a bug in the code below or in the idt files.  But computers
+    # are so fast now, even searching through the entirety of a long
+    # work is fast, so let's try defaulting to switching it off.
+    
+    # if ($typeauth =~ m/^(tlg5034|phi1348|phi0588|phi2349|tlg0031|phi0474|phi1002|tlg0096|phi0631|tlg5035)$/)
+    if ($self->{use_idt_browsing})
     {
         print STDERR "Skipping ToC for this wierd author.\n" if $self->{debug};
     }

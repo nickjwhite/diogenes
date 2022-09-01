@@ -289,8 +289,10 @@ my %defaults = (
     repeat_matches => 0,
 
     # obsolete
-    user => 'default'
-    
+    user => 'default',
+
+    # Use the bug-prone ToC in the idt file (maybe for slow computers)
+    use_idt_browsing => 0,
     );
 
 sub validate
