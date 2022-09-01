@@ -1388,7 +1388,7 @@ $output{filter_splash} = sub
         print $f->ul($f->li(\@filter_names));
 
         print
-            $f->h2('List or modify an existing filter'),
+            $f->h2('List or remove items from an existing filter'),
 
             $f->p( 'Corpus : ',
                    $f->popup_menu( -name => 'filter_choice',
