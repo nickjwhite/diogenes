@@ -152,7 +152,7 @@ sub seek_passage
     my ($block, $old_block);
 
     my $typeauth = $self->{type}.$auth;
-    if ($typeauth =~ m/^(tlg5034|phi1348|phi0588|phi2349|tlg0031|phi0474|phi1002|tlg0096|phi0631)$/)
+    if ($typeauth =~ m/^(tlg5034|phi1348|phi0588|phi2349|tlg0031|phi0474|phi1002|tlg0096|phi0631|tlg5035)$/)
     {
         print STDERR "Skipping ToC for this wierd author.\n" if $self->{debug};
     }
