@@ -133,33 +133,14 @@ my $get_state = sub
     # the pages that define filters, as opposed to being selected from
     # a list.  So they need to be treated differently and have to be
     # tagged as utf8 in order to save correctly on disk.
-    need to be utf8 for the pages that define the filters.
+
+    # This is the only place where (unavoidably) we pass a utf8 custom
+    # filter name as a cgi parameter.  Everywhere else we use a
+    # numerical index from the list of custom filters to avoid
+    # encoding nightmares.
+
     utf8::encode($st{saved_filter_name}) if $st{saved_filter_name};
     utf8::encode($st{duplicate_filter_name}) if $st{duplicate_filter_name};
-};
-
-# We must only read in a custom filter name (utf8) as entered or
-# chosen by the user only once, and not send it back and forth via CGI
-# parameters over multiple page submissions, or else the compounding
-# of encoding/decoding makes the problem intractable.  So we match the
-# name against the names of the items in the array of filters read
-# from disk the first time it is submitted and turn it into a
-# numerical index into that array, which is saved as a separate
-# parameter.
-
-my $match_filter = sub
-{
-    my $name = shift;
-    # Filter names need to be tagged as utf8 to match here
-    print STDERR ">$name<\n";
-    utf8::encode($name);
-    print STDERR ">$name<\n";
-    my $i = 0;
-    for (@filters) {
-        return $i if $_->{name} eq $name;
-        $i++;
-    }
-    return undef;
 };
 
 my $read_filters = sub {
@@ -398,8 +379,10 @@ $output{splash} = sub
     }
     print '</div>';
     print '<div id="corpora-list2">';
+    my $i = 0;
     foreach (@filter_names) {
-        print qq{<option value="$_">$_</option>};
+        print qq{<option value="$i">$_</option>};
+        $i++;
     }
     print '</div>';
     print "\n";
@@ -430,33 +413,33 @@ $handler{splash} = sub
     if ($action eq 'browse') {
         $st{query} = $st{author}
     }
-    if ($corpus and $choices{$corpus})
+    if (defined $corpus and $choices{$corpus})
     {
+        # One of the built-in corpora
         # Convert to abbreviated form
         $st{short_type} = $choices{$corpus};
         $st{type} = $corpus;
     }
-    elsif ($corpus)
+    elsif (defined $corpus and $corpus =~ m/^\d+$/)
     {
-        # Convert to numerical form (index into the list of filters),
-        # so that we do not have to worry about encoding/decoding
-        # issues arising from passing utf8 filter names back and forth.
-        my $filter_number = $match_filter->($corpus);
-        if (defined $filter_number) {
-            $st{custom_corpus} = $filter_number;
-            $st{short_type} = $filters[$filter_number]->{type};
-            $st{type} = $corpus;
-            print STDERR "Custom: $st{custom_corpus} $st{short_type} $st{type}\n";
-        }
-        else {
-            print STDERR "Error: Custom corpus filter not found for $corpus!\n";
-            $print_title->('Error');
-            $print_header->();
-            print $f->center($f->p($f->strong('Error.')),
-                             $f->p("Error: Custom corpus filter not found for $corpus!\n"));
-        }
-    }
+        # Custom corpora are selected by number (an index into the
+        # list of filters), so that we do not have to worry about
+        # encoding/decoding issues arising from passing utf8 filter
+        # names back and forth.
 
+        $st{custom_corpus} = $corpus;
+        $st{short_type} = $filters[$corpus]->{type};
+        $st{type} = $st{short_type};
+#        print STDERR "Custom: $st{custom_corpus} $st{short_type}\n";
+    }
+    elsif (defined $corpus) {
+        print STDERR "Error: $corpus is not built-in and is not a number.\n";
+        $print_title->('Error');
+        $print_header->();
+        print $f->center($f->p($f->strong('Error.')),
+                         $f->p("Error: Custom corpus filter not found for choice $corpus!\n"));
+    }
+ 
     if ((not $st{query}) and $action eq 'search')
     {
         $print_title->('Error');
