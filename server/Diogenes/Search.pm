@@ -5,12 +5,13 @@ use Diogenes::Base qw(%work %author %work_start_block %level_label %context);
 sub do_search 
 {
     my $self = shift;
-    
+    $self->{current_chunk} = 0;
     # Do the search (brute force).
     $self->begin_boilerplate;
-    $self->pgrep;
+    my retval = $self->pgrep;
     $self->print_totals;
     $self->end_boilerplate;
+    return retval;
 }
 
 ###############################################################
@@ -31,6 +32,7 @@ sub pgrep
         $self->barf ("cannot chdir to $self->{cdrom_dir} ($!)");
     print STDERR "\nCurrent dir: ",`pwd`, 
     "Prefix: $self->{file_prefix}\n\n" if $self->{debug};
+    $self->{printed_authors} = [];
     
     unless ($self->{filtered}) 
     {
@@ -101,6 +103,8 @@ sub pgrep
                     $auth_num =~ tr/0-9//cds;
                     $self->parse_idt($auth_num);
                     $self->extract_hits($ARGV);
+                    push @{$self->{printed_authors}}, $auth_num;
+                    return $self->{printed_authors} if $self->{current_chunk} > $self->{chunk_size};
                 }
             }
         } 
@@ -130,16 +134,16 @@ sub pgrep
     # Read in only the desired blocks from files for which only certain works 
     # were requested.
 
-    my ($filename, $offset, $start_block, $end_block);
+    my ($filename, $offset, $start_block, $end_block, $auth_num);
     foreach my $author (@ordered_authors)
     {
         # pad with leading zeroes 
-        $filename = sprintf '%04d', $author;
+        $auth_num = sprintf '%04d', $author;
         
         # parse .idt file
-        my $real_num = $self->parse_idt($filename);
+        my $real_num = $self->parse_idt($auth_num);
         
-        $filename = $self->{file_prefix} . $filename;
+        $filename = $self->{file_prefix} . $auth_num;
                 
         # open the .txt file 
         $filename .= $self->{txt_suffix};
@@ -187,6 +191,9 @@ sub pgrep
                     push @{ $self->{match_start}{$author} }, $-[0];
                 }
                 $self->extract_hits($author);
+                push @{$self->{printed_authors}}, $auth_num;
+                return $self->{printed_authors} if $self->{current_chunk} > $self->{chunk_size};
+
             }
         }
         close INP or $self->barf("Couln't close $filename!");

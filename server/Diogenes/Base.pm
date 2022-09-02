@@ -293,6 +293,9 @@ my %defaults = (
 
     # Use the bug-prone ToC in the idt file (maybe for slow computers)
     use_idt_browsing => 0,
+
+    # After this many characters of search output, stop chunk after current author
+    chunk_size => 10000000,
     );
 
 sub validate
@@ -2089,6 +2092,9 @@ sub parse_bookmark
 sub print_output
 {
     my ($self, $ref) = @_;
+
+    # Running tally of characters of output
+    $self->{current_chunk} += length($$ref);
     
     # Replace runs of non-ascii with newlines and add symbol for the
     # base language of the text at the start of the excerpt and after
