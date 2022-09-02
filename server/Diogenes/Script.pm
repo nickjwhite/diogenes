@@ -762,9 +762,6 @@ my $use_and_show_filter = sub
                 $f->hr;
         }
     }
-    else {
-        print STDERR "No custom filter defined.\n";
-    }
 };
 
 my $input_encoding = sub {
