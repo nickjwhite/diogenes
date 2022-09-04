@@ -53,6 +53,7 @@ sub do_search
     my $self = shift;
     
     $self->{pattern_list} = [];
+    $self->{current_chunk} = 0;
 
     $self->{reject_pattern} = ($self->{input_encoding} eq 'Unicode') ?
         $self->unicode_pattern($self->{reject_pattern}) :
@@ -65,9 +66,10 @@ sub do_search
     $self->make_big_regexp;
     
     $self->begin_boilerplate;
-    $self->do_word_search;
-    $self->print_wlist_report;
+    my $retval = $self->do_word_search;
+    $self->print_wlist_report($retval);
     $self->end_boilerplate;
+    return $retval
 }
 
 ###############################################################################
@@ -807,7 +809,10 @@ sub do_word_search
     my $self = shift;
     my ($author, $word, $work, $word_key, $author_num, $start_block, $end_block);
     my ($filename, $offset, $bare_word);
-    
+    $self->{current_chunk} = 0;
+    print STDERR ">>", $self->{seen_author_list}, "\n";
+    my %already_seen = map { $_ => 1 } @{ $self->{seen_author_list} };
+
     local $/;
     undef $/;
     my $buf;
@@ -830,8 +835,9 @@ sub do_word_search
 
     foreach $author (@ordered_authors)
     {
+        next if $already_seen{$author};
+
         $filename = $self->{file_prefix} . $author;
-        
         # open the .txt file 
         open INP, "$self->{cdrom_dir}$filename$self->{txt_suffix}" 
             or $self->barf("Couln't open $filename$self->{txt_suffix}!");
@@ -951,16 +957,11 @@ sub do_word_search
                       else
                       {
                           warn (
-"\n\n+-----------------------------------------------------------+\n".
         "ERROR: The TLG word list indicates that there ".
         "should be $self->{word_counts}{$author}{$work}{$word_key} instance(s)\n".
         "of the word $word_key for author number $author, work number $work, but \n".
         "Diogenes found " . ( $self->{hits_hash}{$author}{$work}{$word_key} || 0 ) .
-        " of them.\n\n".
-        "Please send a copy of ".
-        "this error message to $Diogenes::Base::my_address.\n".
-        "Diogenes version ($Diogenes::Base::Version).".
-        "\n+-----------------------------------------------------------+\n\n");
+        " of them.\n");
                       }
                   }
                   elsif ($self->{check_word_stats} 
@@ -987,8 +988,11 @@ sub do_word_search
               }
           }
       }
-        close INP or $self->barf("Couln't close $filename!");
-    }       
+      close INP or $self->barf("Couln't close $filename!");
+      push @{$self->{seen_author_list}}, $author;
+      return $self->{seen_author_list} if $self->{current_chunk} > $self->{chunk_size};
+    }
+    return 'done';
 }
 
 
@@ -1031,10 +1035,15 @@ sub print_word_search
 sub print_wlist_report 
 {
     my $self = shift;
-
+    my $message = shift;
     my $output = "\&\nIncidence of all words as reported by word list: ";
-    $output .= $self->{list_total} || 0;
-    $output .= "\nPassages containing those words reported by Diogenes: ";
+    $output .= ($self->{list_total} || 0) . "\n";
+    if ($message eq 'done') {
+        $output .= "Passages containing those words reported by Diogenes: ";
+    }
+    else {
+        $output .= "Cumulative total of passages containing those words found so far: ";
+    }
     $output .= $self->{hits} || 0;
     $output .= "\n\n";
     $output .= "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n" 
