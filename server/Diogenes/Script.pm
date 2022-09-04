@@ -165,6 +165,22 @@ my $read_filters = sub {
     }
 };
 
+my $check_chunking = sub {
+    my $retval = shift;
+    my $q = shift;
+    if ($retval eq 'done') {
+        print $f->center($f->h2('Search finished'));
+        return;
+    }
+
+    # Save the cumulative list of authors printed so far
+    $st{seen_author_list} = $q->{seen_author_list};
+    $st{hits} = $q->{hits};
+
+    print $f->center($f->h2('Page limit reached'),
+                    $f->p($f->submit( -name=>'next_chunk',
+                                    -Value=>'Load next page of search results')));
+};
 
 my $my_footer = sub
 {
@@ -620,7 +636,7 @@ my $get_args = sub
         $args{pattern} = $st{query};
     }
 
-    for my $arg (qw(context min_matches reject_pattern repeat_matches))
+    for my $arg (qw(context min_matches reject_pattern repeat_matches seen_author_list hits))
     {
         $args{$arg} = $st{$arg} if $st{$arg};
     }
@@ -719,7 +735,7 @@ $output{author_search} = sub
     # A quick and dirty author search
     $print_title->('Diogenes Author Search Page');
     $print_header->();
-    $st{current_page} = 'author';
+    $st{current_page} = 'author_search';
 
     my %args = $get_args->();
     $args{type} = $choices{$st{corpus}};
@@ -736,10 +752,17 @@ $output{author_search} = sub
         $f->ul($f->li(\@auths)),
         $f->hr;
 
-    $q->do_search;
+    my $retval = $q->do_search;
+    $check_chunking->($retval, $q);
     $my_footer->();
-
 };
+
+$handler{author_search} = sub
+{
+    # For chunking
+    $output{author_search}->()
+};
+
 
 my $use_and_show_filter = sub
 {
@@ -875,6 +898,7 @@ $handler{inflections} = sub {
     }
     $print_title->('Diogenes Morphological Search');
     $print_header->();
+    $st{current_page} = 'inflections';
     if ($st{short_type} eq "tlg") {
         my %args = $get_args->();
         $args{use_tlgwlinx} = 1;
@@ -903,7 +927,9 @@ $handler{inflections} = sub {
         # "word-set".
         my @word_sets;
         push @word_sets, [$_] for @{ $st{lemma_list} };
-        $q->do_search(@word_sets);
+        my $retval = $q->do_search(@word_sets);
+        $check_chunking->($retval, $q);
+        $my_footer->();
     }
     else {
         # Simple searches
@@ -919,7 +945,9 @@ $handler{inflections} = sub {
         my $q = new Diogenes::Search(%args);
         $database_error->($q) if not $q->check_db;
         $use_and_show_filter->($q);
-        $q->do_search();
+        my $retval = $q->do_search();
+        $check_chunking->($retval, $q);
+        $my_footer->();
     }
 };
 
@@ -1019,11 +1047,13 @@ $output{search} = sub
     {
         my $patterns = $st{query_list} ? $st{query_list} : [$st{query}];
         $q->read_index($_) for @{ $patterns };
-        $q->do_search($st{word_list})
+        my $retval = $q->do_search($st{word_list});
+        $check_chunking->($retval, $q);
     }
     else
     {
-        $q->do_search;
+        my $retval = $q->do_search;
+        $check_chunking->($retval, $q);
     }
     $my_footer->();
 
@@ -1031,7 +1061,8 @@ $output{search} = sub
 
 $handler{doing_search} = sub
 {
-    warn("Unreachable code!");
+    # For chunking
+    $output{search}->()
 };
 
 $output{browser} = sub

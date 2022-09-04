@@ -12,6 +12,7 @@
 * Added support for the more recent TLL fascicles (from vols. 9.1 and 11.2).
 * Native version for Macs with Apple processors.
 * Updated icon for Macs (thanks to Helge Baumann).
+* Splitting of very large search output into pages.
 
 ### Changes implemented earlier but not released
 * TLG search results are now presented in (rough) chronological order

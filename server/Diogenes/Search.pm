@@ -8,10 +8,10 @@ sub do_search
     $self->{current_chunk} = 0;
     # Do the search (brute force).
     $self->begin_boilerplate;
-    my retval = $self->pgrep;
-    $self->print_totals;
+    my $retval = $self->pgrep;
+    $self->print_totals($retval);
     $self->end_boilerplate;
-    return retval;
+    return $retval;
 }
 
 ###############################################################
@@ -32,7 +32,6 @@ sub pgrep
         $self->barf ("cannot chdir to $self->{cdrom_dir} ($!)");
     print STDERR "\nCurrent dir: ",`pwd`, 
     "Prefix: $self->{file_prefix}\n\n" if $self->{debug};
-    $self->{printed_authors} = [];
     
     unless ($self->{filtered}) 
     {
@@ -69,6 +68,7 @@ sub pgrep
     $self->{buf} = \$buf;
     $self->read_blacklist if $self->{blacklist_file};
     $self->read_works_blacklist if $self->{blacklisted_works_file};
+    my %already_seen = map { $_ => 1 } @{ $self->{seen_author_list} };
 
     if (@ARGV)
     {
@@ -76,6 +76,10 @@ sub pgrep
         #print Data::Dumper->Dump(\@ARGV);
         while ($buf = <>) 
         {
+            my $auth_num = $ARGV;
+            $auth_num =~ tr/0-9//cds;
+            next if $already_seen{$auth_num};
+
             # Search for the minimum necessary number of patterns
             for (   my $pass = 0; $pass <= $final_pass; $pass++  )
             {
@@ -99,14 +103,12 @@ sub pgrep
                 }
                 if ($self->{seen}{$ARGV})
                 {
-                    my $auth_num = $ARGV;
-                    $auth_num =~ tr/0-9//cds;
                     $self->parse_idt($auth_num);
                     $self->extract_hits($ARGV);
-                    push @{$self->{printed_authors}}, $auth_num;
-                    return $self->{printed_authors} if $self->{current_chunk} > $self->{chunk_size};
                 }
             }
+            push @{$self->{seen_author_list}}, $auth_num;
+            return $self->{seen_author_list} if $self->{current_chunk} > $self->{chunk_size};
         } 
     }
     
@@ -139,6 +141,7 @@ sub pgrep
     {
         # pad with leading zeroes 
         $auth_num = sprintf '%04d', $author;
+        next if $already_seen{$auth_num};
         
         # parse .idt file
         my $real_num = $self->parse_idt($auth_num);
@@ -191,15 +194,15 @@ sub pgrep
                     push @{ $self->{match_start}{$author} }, $-[0];
                 }
                 $self->extract_hits($author);
-                push @{$self->{printed_authors}}, $auth_num;
-                return $self->{printed_authors} if $self->{current_chunk} > $self->{chunk_size};
 
             }
         }
         close INP or $self->barf("Couln't close $filename!");
+        push @{$self->{seen_authors}}, $auth_num;
+        return $self->{seen_authors} if $self->{current_chunk} > $self->{chunk_size};
     }
     
-    return 1;
+    return 'done';
 }
 
 
@@ -212,9 +215,16 @@ sub pgrep
 sub print_totals 
 {
     my $self = shift;
+    my $message = shift;
+    $chunk_message = '' if $message ne 'done';
     my $out = '';
     $out .= '\nrm{}' if $self->{output_format} eq 'latex';
-    $out .= "\n\&Passages found: " . ($self->{hits} || 0) ."\n";
+    if ($message eq 'done') {
+        $out .= "\n\&Passages found: " . ($self->{hits} || 0) ."\n";
+    }
+    else {
+        $out .= "\n\&Cumulative total of passages found so far: " . ($self->{hits} || 0) ."\n";
+    }
     $out .= '(' . $self->{blacklisted_hits} .
         " passages suppressed from blacklisted works)\n" 
         if $self->{blacklisted_hits};

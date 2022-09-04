@@ -295,7 +295,9 @@ my %defaults = (
     use_idt_browsing => 0,
 
     # After this many characters of search output, stop chunk after current author
-    chunk_size => 10000000,
+    chunk_size => 1000000,
+    seen_author_list => [],
+    hits => 0,
     );
 
 sub validate
@@ -486,6 +488,7 @@ sub new
     
     # Clone values that are references, so we don't clobber what was passed.
     $self->{pattern_list} = [@{$self->{pattern_list}}] if $self->{pattern_list};
+    $self->{seen_author_list} = [@{$self->{seen_author_list}}] if $self->{seen_author_list};
     $self->{overflow}     = {%{$self->{overflow}}}     if $self->{overflow};
 
     $self->{type} = 'tlg' if ref $self eq 'Diogenes_indexed';
