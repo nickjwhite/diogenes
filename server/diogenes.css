@@ -34,7 +34,7 @@ body.waiting, body.waiting *{
          color: grey;
          font: caption;
          -webkit-user-select: none;
-         height: 50px;
+         height: 60px;
          margin-block-start: 0px;
          margin-block-end: 0px;
 }
