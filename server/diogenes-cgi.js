@@ -6,26 +6,24 @@ function stopSpinningCursor() {
     body.classList.remove("waiting");
 }
 
-window.addEventListener('load', function () {
+window.addEventListener("load", function() {
+  stopSpinningCursor();
   addListeners()
-});
+  // If we have jumped to a passage from a lexicon, show that entry again after loading.
+  var dio_form = document.getElementById("form");
+  if (dio_form.JumpFromShowLexicon &&
+      dio_form.JumpFromShowLexicon.value == 'yes') {
+    jumpFrom();
+  }
+  // If we have stored a previous Perseus query, provide facility to show it again.
+  else if (dio_form.JumpFromQuery.value &&
+           dio_form.JumpFromQuery.value != '') {
+    var restore = document.getElementById('header_restore');
+    restore.classList.remove('invisible');
+  }
+})
 
 function addListeners () {
-  window.addEventListener("load", function() {
-    stopSpinningCursor();
-    // If we have jumped to a passage from a lexicon, show that entry again after loading.
-    var dio_form = document.getElementById("form");
-    if (dio_form.JumpFromShowLexicon &&
-        dio_form.JumpFromShowLexicon.value == 'yes') {
-      jumpFrom();
-    }
-    // If we have stored a previous Perseus query, provide facility to show it again.
-    else if (dio_form.JumpFromQuery.value &&
-             dio_form.JumpFromQuery.value != '') {
-      var restore = document.getElementById('header_restore');
-      restore.classList.remove('invisible');
-    }
-  })
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape' || event.keyCode === 27) {
       sidebarDismiss();
