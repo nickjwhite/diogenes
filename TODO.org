@@ -1,6 +1,3 @@
-* Bugs
-** Custom corpus not retained when doing word search.
-
 * For forthcoming version
 ** Try using Winge's version of Morpheus
 ** Test chronological search functionality
@@ -9,6 +6,7 @@ Not just at start of page, as in Accius, Carmina
 
 * For forthcoming release
 ** Add FAQ about re-centering lost window
+** Cut news from landing page of website
 ** Test issue #58 on Windows
 ** Test "New Window (reset position)" menu item on Windows
 Try with a Windows laptop and an external monitor
@@ -20,6 +18,9 @@ Maybe fix Unicode path problem by renaming to TLL01.pdf etc., but continue to pe
 The current code does seem to work when searching texts, and even when jumping to context from search results, but fails when browsing.  The .idt files are opened without a problem in the preliminary stages of browsing, and the seek_passage subroutine works when jumping from a search result, but not when browsing.  Browsing forward after jump to context is also broken.  A strange bug.
 ** Add new download for Mac silicon
 ** Change prebuilt-data repo to use git-lfs (and my ssh key)
+
+* Post release
+** DiogenesWeb Github issues plus email
 
 * Near-term to-do items
 ** Fix short defs by using Helma's data.
@@ -44,3 +45,17 @@ Provide a way to search them by headword
 Write dedicated xml to html-for-epub converter.
 ** Compare output to Hipparchia
 Make sure we export to XML hidden sources for fragments, as in Accius, Carmina
+
+* DiogenesWeb
+** Add search facility
+
+* Diogenes 5
+** Written in Node.js
+** Add additional XML corpora
+Especially for Latin, the PHI texts need to be supplemented with additional works from Perseus and DigiLibLT.  Supporting this would require  rewriting Diogenes so that it operates on the XML versions of the PHI and TLG databases.  But much of the code could be taken from DiogenesWeb, after search has been implemented there.
+** On installation, it would have to convert existing databases.
+Interface would be rewritten from Perl/cgi to html/js.  No need for a server, except for morphological Ajax requests.
+Keep Perl infrastructure for converting XML and Perseus/Logeion server, at least for now. Eventually rewrite the morph server in Node.js.
+
+
+
