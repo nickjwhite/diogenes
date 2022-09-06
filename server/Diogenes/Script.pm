@@ -167,9 +167,20 @@ my $read_filters = sub {
 
 my $check_chunking = sub {
     my $retval = shift;
-    my $q = shift;
     if ($retval eq 'done') {
         print $f->center($f->h2('Search finished'));
+        return;
+    }
+    # In case we have already searched through the last author on the list
+    # NB. This does not yet take unfiltered word-list searches into account.
+    my $q = shift;
+    my @seen = sort @{ $q->{seen_author_list} };
+    my @auths = sort (keys %{ $q->{req_authors} }, keys %{ $q->{req_auth_wk} }, );
+    print STDERR "@seen | @auths\n";
+    if ($q->{filtered} and @auths == @seen and "@auths" eq "@seen") {
+        my $whom = 'all authors';
+        $whom = 'author' if @auths == 1;
+        print $f->center($f->h2("Finished searching $whom"));
         return;
     }
 
