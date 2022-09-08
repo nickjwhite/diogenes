@@ -436,7 +436,7 @@ sub read_tlg_chronology {
                 $self->{tlg_chron_info}{$num} = $date;
             }
             else {
-                print STDERR "Missing TLG file: $filename\n";
+                die "Missing TLG file: $filename\n";
             }
         }
         else {
