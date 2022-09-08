@@ -241,6 +241,10 @@ function splash_setup () {
         '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
         '<p class="info-text">Parse the morphology of an inflected word in Latin or Greek (using Greek letters to enter a Greek word).</p>';
 
+    infoText['headwords'] = '<h2 class="info-h2">Search TLG Lexica Headwords</h2>' +
+        '<p class="info-field">Word:&nbsp;<input type="text" name="query" size="40" id="query_text" class="info-field">&nbsp;<input type="submit" name="go" value="Go" class="info-field"></p>' +
+    '<p class="info-text">Search the headwords (and phrases) of the entries in various ancient Greek lexica from the TLG: Suda, Hesychius, etc.</p>';
+  
     infoText['filters'] = '<h2 class="info-h2">Select subsets of texts</h2>' +
         '<p class="info-text">In order to perform delimited, targeted searches, you can create lists of particular authors and/or texts and save them for later reuse.  These personalized subsets of texts can be created for any database.  Furthermore, the <i>TLG</i> database categorizes texts by genre, date and so on, and these can be used as the basis for user-defined subsets.</p>' +
         '<p align="center"><input class="info-button" type="submit" name="go" value="Create and Manage Subsets"></p>';

@@ -288,7 +288,6 @@ sub make_strict_greek_pattern
     else {
         ($pattern, undef) =
             Diogenes::Indexed::make_tlg_regexp($self, $pat, (not $begin), (not $end));
-        print STDERR "foo";
     }
 
     s/\x073(?!\?)/(?:/g; # turn ( into (?: for speed
@@ -681,7 +680,6 @@ sub extract_hits
         }
         elsif ($context eq 'level') {
             # Do nothing: $start stays the same
-            print STDERR 'FOOBAR';
             $start+=2;
         }
         else

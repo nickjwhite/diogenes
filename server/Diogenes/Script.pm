@@ -176,7 +176,6 @@ my $check_chunking = sub {
     my $q = shift;
     my @seen = sort @{ $q->{seen_author_list} };
     my @auths = sort (keys %{ $q->{req_authors} }, keys %{ $q->{req_auth_wk} }, );
-    print STDERR "@seen | @auths\n";
     if ($q->{filtered} and @auths == @seen and "@auths" eq "@seen") {
         my $whom = 'all authors';
         $whom = 'author' if @auths == 1;
@@ -375,6 +374,7 @@ my $print_navbar = sub {
           <ul id="submenu2">
             <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
             <li><a href="#" onclick="info('parse')" accesskey="i">Inflexion</a></li>
+            <li><a href="#" onclick="info('headwords')" accesskey="i">Headwords</a></li>
           </ul>
         </li>
         <li><a href="#" onclick="info('filters')" onfocus="dropup('submenu1'); dropup('submenu2')" accesskey="f">Filter</a></li>
@@ -2147,22 +2147,20 @@ $output{headwords} = sub {
     $print_title->('Diogenes Headword Search Page');
     $print_header->();
     $st{current_page} = 'author_search';
-
+    $st{type} = 'tlg';
+    $st{short_type} = 'tlg';
     my %args = $get_args->();
-    $args{type} = 'tlg';
     $args{context} = 'level';
-    # $args{input_encoding} = 'raw';
     my $q = new Diogenes::Search(%args);
 
     my $pattern = $q->{pattern_list}->[0];
     # Non-ascii byte at start ensures this is not an internal ref to a headword.
     # Limit match to within <> by excluding those chars from before and after.
-    $pattern = '[\x90-\xff][\[%]?\d?<20[^<>]*?' . $simple . '[^<>]*?>20';
+    $pattern = '[\x90-\xff][\[%]?\d?<20[^<>]*?' . $pattern . '[^<>]*?>20';
     $q->{pattern_list}->[0] = $pattern;
-    print STDERR "Pat: $pattern\n";
     $database_error->($q) if not $q->check_db;
 
-    my @ancient_lexica = qw(9010 4085 4099 4098);
+    my @ancient_lexica = qw(9010 4085 4097 4098 4099 4311 9018 9009 9018 9023);
 
     my @auths = $q->select_authors(author_nums => \@ancient_lexica);
     unless (scalar @auths)
