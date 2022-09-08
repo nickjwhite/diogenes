@@ -606,10 +606,10 @@ sub extract_hits
     
     # Get context regexps for the current language
     my $numeric = $1 if $self->{context} =~ m/(\d+)/;
-    my $context = 
-        $context{$self->{current_lang}}{$self->{context}} 
+    my $context;
+    $context = $context{$self->{current_lang}}{$self->{context}} 
         || $numeric;
-
+    $context = $self->{context} unless $context;
     my $overflow  = $self->{overflow}->{$self->{context}} || $self->{max_context};
 
     # This is used to reject candidates for sentence, etc. ending; matches against: (..X..)
@@ -679,6 +679,11 @@ sub extract_hits
             }
             $start+=2;
         }
+        elsif ($context eq 'level') {
+            # Do nothing: $start stays the same
+            print STDERR 'FOOBAR';
+            $start+=2;
+        }
         else
         {       
             # Find the start of the word pattern -- our pattern might have 
@@ -720,7 +725,15 @@ sub extract_hits
                              (substr ($$buf, $end + 1, 1) eq "\x00"));
             }
             $end-=2;
-        } 
+        }
+        elsif ($context eq 'level') {
+            # Grab to the end of the current section (e.g. lexicon
+            # entry).  Crude solution; we should check the actual
+            # level.  But entries seem not to span 8K blocks.
+            for ($end = $offset; $end < length $$buf; $end++) {
+                last if substr ($$buf, $end, 1) =~ m/[\x90-\xff]/;
+            }
+        }
         else
         {
             # Get a regexp-delimited context

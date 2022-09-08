@@ -513,6 +513,10 @@ $handler{splash} = sub
     {
         $output{export_xml}->();
     }
+    elsif ($action eq 'headwords')
+    {
+        $output{headwords}->();
+    }
     else
     {
         $print_title->('Error');
@@ -2138,6 +2142,44 @@ $output{delete_filter_items} = sub {
 
 };
 
+$output{headwords} = sub {
+
+    $print_title->('Diogenes Headword Search Page');
+    $print_header->();
+    $st{current_page} = 'author_search';
+
+    my %args = $get_args->();
+    $args{type} = 'tlg';
+    $args{context} = 'level';
+    # $args{input_encoding} = 'raw';
+    my $q = new Diogenes::Search(%args);
+
+    my $pattern = $q->{pattern_list}->[0];
+    # Non-ascii byte at start ensures this is not an internal ref to a headword.
+    # Limit match to within <> by excluding those chars from before and after.
+    $pattern = '[\x90-\xff][\[%]?\d?<20[^<>]*?' . $simple . '[^<>]*?>20';
+    $q->{pattern_list}->[0] = $pattern;
+    print STDERR "Pat: $pattern\n";
+    $database_error->($q) if not $q->check_db;
+
+    my @ancient_lexica = qw(9010 4085 4099 4098);
+
+    my @auths = $q->select_authors(author_nums => \@ancient_lexica);
+    unless (scalar @auths)
+    {
+        $print_error->(qq(There were no texts matching the author $st{author_pattern}));
+        return;
+    }
+
+    print $f->h2('Searching headwords only in the following authors'),
+        $f->ul($f->li(\@auths)),
+        $f->hr;
+
+    my $retval = $q->do_search;
+    $check_chunking->($retval, $q);
+    $my_footer->();
+
+};
 
 my $mod_perl_error = sub
 {

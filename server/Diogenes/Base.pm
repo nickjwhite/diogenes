@@ -651,12 +651,12 @@ sub new
     print STDERR "MMI: $self->{min_matches_int}\n" if $self->{debug};
     
     $self->{context} = $1 if 
-        $self->{context} =~ /(sentence|paragraph|clause|phrase|\d+\s*(?:lines)?)/i;
+        $self->{context} =~ /(sentence|paragraph|clause|phrase|level|\d+\s*(?:lines)?)/i;
     $self->{context} = lc $self->{context};
     die "Undefined value for context.\n" unless defined $self->{context};
     die "Illegal value for context: $self->{context}\n" unless 
         $self->{context} =~ 
-        m/^(?:sentence|paragraph|clause|phrase|\d+\s*(?:lines)?)$/;
+        m/^(?:sentence|paragraph|clause|phrase|level|\d+\s*(?:lines)?)$/;
     $self->{numeric_context} = ($self->{context} =~ /\d/) ? 1 : 0;
     print STDERR "Context: $self->{context}\n" if $self->{debug};
     
