@@ -4,15 +4,22 @@
 
 * Browser front-end updated to Electon version 20 (from version 5):
     * This should eliminate spurious anti-virus warnings (for now);
-    * PDFs are now shown in a new Diogenes window rather than in an external browser.
+    * PDFs are now shown in a new Diogenes window rather than in an
+      external browser; likewise for external web links.
 * Tweaks to the user interface:
     * better keyboard navigation;
     * semi-persistent state for the splash screen;
-    * jump to a new passage in the work currently being read.
+    * facility to jump to a new passage in the work currently being read.
 * Added support for the more recent TLL fascicles (from vols. 9.1 and 11.2).
-* Native version for Macs with Apple processors.
+* Native version for Macs with Apple silicon processors.
 * Updated icon for Macs (thanks to Helge Baumann).
 * Splitting of very large search output into pages.
+* Fixed long-standing bug so that now accented and non-Latin
+  characters can be used in the names of in user-defined subsets of
+  texts.
+* Removed problematic code that sometimes interfered with finding
+  citations in very short or fragmentary texts.
+* Facility to search the headwords of ancient lexica (e.g. Suda).
 
 ### Changes implemented earlier but not released
 * TLG search results are now presented in (rough) chronological order
@@ -27,7 +34,6 @@
   output to epub format for e-readers.
 * Fixed display of some LSJ headwords.
 * Fixed picking up GUI config settings when running server from the Linux command-line.
-* Fixed browsing to Val. Max "(ext)" sections and fragments at end of file.
 * Fix to bug that interfered with chronological ordering except on Windows.
 
 ## 4.5

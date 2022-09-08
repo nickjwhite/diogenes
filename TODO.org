@@ -1,5 +1,4 @@
 * For forthcoming version
-** Test chronological search functionality
 ** Try using Winge's version of Morpheus
 ** Print out all(?) hidden source notes in browser
 Not just at start of page, as in Accius, Carmina
