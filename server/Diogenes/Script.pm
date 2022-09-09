@@ -2154,13 +2154,16 @@ $output{headwords} = sub {
     my $q = new Diogenes::Search(%args);
 
     my $pattern = $q->{pattern_list}->[0];
-    # Non-ascii byte at start ensures this is not an internal ref to a headword.
-    # Limit match to within <> by excluding those chars from before and after.
-    $pattern = '[\x90-\xff][\[%]?\d?<20[^<>]*?' . $pattern . '[^<>]*?>20';
+    # Non-ascii byte at start tries to ensure this is not an internal
+    # ref to a headword.  Would be better to use the start of an entry
+    # ([\x90-\xff]), but entries are not marked by level in Photius.
+    # Limit match to within <> by excluding those chars from before
+    # and after.
+    $pattern = '[\x80-\xff][\[%]?\d?<\d?\d?[^<>]*?' . $pattern . '[^<>]*?>\d?\d?';
     $q->{pattern_list}->[0] = $pattern;
     $database_error->($q) if not $q->check_db;
 
-    my @ancient_lexica = qw(9010 4085 4097 4098 4099 4311 9018 9009 9018 9023);
+    my @ancient_lexica = qw(9010 4085 4040 4097 4098 4099 4311 9018 9009 9018 9023);
 
     my @auths = $q->select_authors(author_nums => \@ancient_lexica);
     unless (scalar @auths)
@@ -2169,7 +2172,7 @@ $output{headwords} = sub {
         return;
     }
 
-    print $f->h2('Searching headwords only in the following authors'),
+    print $f->h2('Searching headwords only in the following lexicographers'),
         $f->ul($f->li(\@auths)),
         $f->hr;
 

@@ -726,10 +726,10 @@ sub extract_hits
         }
         elsif ($context eq 'level') {
             # Grab to the end of the current section (e.g. lexicon
-            # entry).  Crude solution; we should check the actual
-            # level.  But entries seem not to span 8K blocks.
+            # entry).  Crude solution, but Photius lex entries are not
+            # separated by level.
             for ($end = $offset; $end < length $$buf; $end++) {
-                last if substr ($$buf, $end, 1) =~ m/[\x90-\xff]/;
+                last if substr ($$buf, $end, 2) =~ m/[\x80-\xff]</;
             }
         }
         else
