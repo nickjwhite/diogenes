@@ -1,5 +1,6 @@
-# This uses and old but known-good version of Morpheus, because the
-# current one is buggy.  It does not compile on OS X.
+# This is an old but known-good version of Morpheus.  It does not
+# compile on OS X.  It also does not compile with recent versions of
+# GCC, but GCC version 6 works on Linux.
 
 include mk.common
 

@@ -159,30 +159,30 @@ for Diogenes.
 1. Morphology
 
     The next step is to generate the morphological data by running
-    Morpheus over the wordlists.  This part of the build may need to
-    run on a Linux machine, as Morpheus has had issues on OS X.  If
-    want to skip this step, you can just download and use the
+    Morpheus over the wordlists.  Diogenes still uses an older,
+    known-good version of Morpheus, which is very old code written in
+    C.  It does not compile on OS X or with recent version of GCC.  It
+    does compile on Linux with GCC version 6; to do so, run this
+    command:
+    
+        make -f mk.morpheus-old
+ 
+    There are newer versions of Morpheus on Github that will compile
+    on OS X, but some of these have a serious bug that causes
+    incorrect output.  This bug has been fixed in the Morpheus
+    repository of [Johan Winge](https://github.com/Alatius/morpheus),
+    who has also improved the marking of vowel lengths.  Judging by
+    the smaller size of the output files, this version may have less
+    coverage, but I have not had time to test it properly.  If you
+    want to try it, run this command:
+    
+        make -f mk.morpheus-alatius
+        
+    If you don't want to compile Morpheus, you can just download and use the
     morphological data from version 3 of Diogenes, which still works
-    fine with version 4.  Run the following command and then go down
-    to Step 3 below:
+    fine with version 4.  Run the following command:
 
         make -f mk.morpheus-v3
-
-    If you prefer to run Morpheus over the wordlists yourself, you
-    have to choose between the old version which works well but only
-    compiles on Linux and the current version, which may be broken but
-    which compiles on Macs.
-
-    To download, compile and run an older but known-good version of
-    Morpheus, run this command on Linux:
-
-        make -f mk.morpheus-old
-
-    The current version of Morpheus in the Perseus github repo has
-    been updated so that it compiles on Macs, but it is buggy and
-    produces incomplete and incorrect output. There are newer forks
-    which may have fixed those issues, but I haven't tested them.  See
-    e.g. [here](https://github.com/Alatius/morpheus).
 
 1. Lexica
 
