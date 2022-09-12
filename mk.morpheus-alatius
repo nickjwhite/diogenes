@@ -1,0 +1,31 @@
+# This uses Johan Winge's fork of Morpheus, which is the most actively
+# maintained version at the moment.
+
+include mk.common
+
+MORPHEUS = $(BUILD)/morpheus
+MORPHEUSREPO = https://github.com/pjheslin/morpheus
+
+all: $(MORPHEUS)/.git/HEAD $(BUILD)/lat.morph $(BUILD)/grc.morph 
+
+$(MORPHEUS)/.git/HEAD:
+	rm -rf $(MORPHEUS)
+	mkdir -p $(BUILD)
+	cd $(BUILD) && git clone $(MORPHEUSREPO)
+	cd $(MORPHEUS) && git checkout $(MORPHEUSCOMMIT)
+# export  CFLAGS="-Wno-error=implicit-function-declaration"
+	cd $(MORPHEUS)/src && make && make install
+# Re-making the Greek stemlib causes cruncher to segfault, so stick with what is distributed.
+	cd $(MORPHEUS)/stemlib/Latin && PATH=$$PATH:../../bin MORPHLIB=.. make
+	cd $(MORPHEUS)/stemlib/Greek && PATH=$$PATH:../../bin MORPHLIB=.. make
+
+$(BUILD)/lat.morph: $(BUILD)/lat.words $(MORPHEUS)/.git/HEAD
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher -L $(BUILD)/lat
+
+$(BUILD)/grc.morph: $(BUILD)/grc.words $(MORPHEUS)/.git/HEAD
+	MORPHLIB=$(MORPHEUS)/stemlib $(MORPHEUS)/bin/cruncher $(BUILD)/grc
+
+clean:
+	rm -rf $(MORPHEUS)
+	rm -f $(BUILD)/lat.morph
+	rm -f $(BUILD)/grc.morph
