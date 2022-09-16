@@ -417,6 +417,9 @@ AUTH: foreach my $auth_num (@all_auths) {
             $chunk .= $line;
             $line = '';
             $query->parse_non_ascii(\$buf, \$i);
+            my $note = $query->{special_note} || '';
+            $note = '<note>' . convert_chunk($note, 'l') . "</note>\n" if $note;
+
             my $new_div = -1;
             if (@relevant_levels and %old_levels) {
             LEVELS: foreach (@relevant_levels) {
@@ -507,6 +510,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                         $body .= qq{<div type="$div_labels{$_}" n="$n">\n};
                     }
                 }
+                $body .= $note;
                 if ($is_verse) {
                     $body .= qq{<l n="$query->{level}{0}">};
                 }
@@ -532,6 +536,7 @@ AUTH: foreach my $auth_num (@all_auths) {
                         $temp .= qq{<div type="$div_labels{$_}" n="$query->{level}{$_}">\n};
                     }
                 }
+                $temp .= $note;
                 if ($is_verse) {
                     $temp .= qq{<l n="$query->{level}{0}">};
                 }

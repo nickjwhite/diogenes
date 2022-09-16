@@ -474,11 +474,6 @@ sub print_location
     $location .="\&\n";
 
     $location .= $self->get_citation('full');
-    if ($self->{special_note}) 
-    {
-        $location .= "\nNB. $self->{special_note}";
-        undef $self->{special_note};
-    }
     
     $location .= "\n\n";
     $self->print_output(\$location);
@@ -659,6 +654,8 @@ my $fill_spaces = 14;
                  before_cit_hit => '<div class="citation" id="hit">',
                  after_cit_hit => '</div>',
                  before_text_hit => '<div class="text-noindent" id="hit">',
+                 before_note => '<div class="special-note">',
+                 after_note => '</div>',
                },
                ascii =>
                { before_cit => '',
@@ -669,6 +666,8 @@ my $fill_spaces = 14;
                  before_cit_hit => '',
                  after_cit_hit => 'FILL',
                  before_text_hit => "",
+                 before_note => ' (',
+                 after_note => ') ',
                } );
 
 sub interleave_citations
@@ -685,8 +684,8 @@ sub interleave_citations
         next unless ($code >> 7); # high bit set
         $self->parse_non_ascii ($buf, \$i);
         my $cit = $self->build_citation;
-#          print STDERR "]]$cit\n";
-#         print STDERR "]]".substr ($$buf, $i, 10)."\n";
+        # print STDERR "]]$cit\n";
+        # print STDERR "]]".substr ($$buf, $i, 10)."\n";
         push @cites, $cit;
     }
     # Just eliminate the last citation, as it tends to cause problems
@@ -701,8 +700,16 @@ sub build_citation
 {
     my $self = shift;
     my $pos = shift || '';
-    my $cit = $self->maybe_use_cit;
     my $format = $self->{output_format};
+    my $cit = $self->maybe_use_cit;
+    my $note = $self->{special_note};
+    if ($note) {
+        $self->format_output(\$note, 'l');
+        $note = $cite_info{$format}{before_note} . $note . $cite_info{$format}{after_note};
+    }
+    else {
+        $note = '';
+    }
     if ($pos eq 'last')
     {
         return $cite_info{$format}{after_text} . $cite_info{$format}{before_text}; 
@@ -713,6 +720,8 @@ sub build_citation
         $output .=
             $cite_info{$format}{after_text} 
     }
+
+    $output .= $note;
     if ($cit and $self->{target_citation} and $cit eq $self->{target_citation})
     {
         if ($cite_info{$format}{after_cit_hit} eq 'FILL') {

@@ -20,6 +20,7 @@
 * Removed problematic code that sometimes interfered with finding
   citations in very short or fragmentary texts.
 * Facility to search the headwords of ancient lexica (e.g. Suda).
+* Better display of editorial notes in PHI texts.
 
 ### Changes implemented earlier but not released
 * TLG search results are now presented in (rough) chronological order

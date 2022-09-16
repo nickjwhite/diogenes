@@ -1,8 +1,3 @@
-* For forthcoming version
-** Try using Winge's version of Morpheus
-** Print out all(?) hidden source notes in browser
-Not just at start of page, as in Accius, Carmina
-
 * For forthcoming release
 ** Add FAQ about re-centering lost window
 ** Cut news from landing page of website
@@ -27,6 +22,7 @@ The current code does seem to work when searching texts, and even when jumping t
 ** Add dark mode option.
 ** Add citation info from authtab.xml to exported XML files.
 ** Import font_fixes from xml-export into desktop display
+** Add simple API to link to external dictionaries (e.g Lectus)
 
 * Long-term to-do items
 ** Fix ordering of lemmatized search output

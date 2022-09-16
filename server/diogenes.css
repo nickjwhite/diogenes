@@ -270,6 +270,13 @@ a.perseus:visited {
   text-align: left;
   vertical-align: bottom;
 }
+.special-note {
+  float: right;
+  /* width: 12em; */
+  text-align: right;
+  vertical-align: bottom;
+}
+
 
 #hit {
   background: #e3e3e3;
