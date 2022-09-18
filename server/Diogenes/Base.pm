@@ -83,38 +83,41 @@ if ($OS eq 'windows') {
 # Because of the pre-Unicode history of Diogenes, most of its data is
 # represented by Perl internally as octets, even when those bytes
 # represent utf8 data.  The prefs file, however, is now written by
-# Node.js as utf8, so it makes sense to read that in as utf8.  The
-# paths work fine on Linux and Mac, but there are issues with Windows.
-# In order to provide a similar level of support for Unicode path
-# names on Windows, we would need to install a binary module that
-# provides access to the Win32 Unicode file API ( such as
-# Win32::LongPath) and change all of the file access functions in
-# Diogenes to be conditional on the OS.
+# Node.js as utf8, so it makes sense to read that in as utf8.  Using
+# these database paths works fine on Linux and Mac and recent versions
+# of Windows, but there are issues with older versions of Windows.
 
-# Here, we convert the utf8 paths from the prefs file to the local
-# Windows 8-bit codepage using Encode.  (If we read in the prefs file
-# as raw bytes, we would have to use Encode::from_to instead.) This
-# will always be imperfect, as it only permits paths that use a very
-# limited set of characters from that local codepage rather than
-# arbitrary Unicode.  But that is all we can do until Perl provides
-# access to the Windows wide character API via the standard functions
-# (e.g. open).  Perhaps if Strawberry Perl starts to include
-# Win32::LongPath vel sim., it would be worth modifying Diogenes to
-# use it.
+# It used to be the case that the only way to use Unicode file paths
+# in a system-independent way on Windows was to use the UTF-16 "W"
+# APIs; but Perl uses the old "A" APIs.  These old APIs depend on the
+# current codepage, which used to be set at OS installation and
+# couldn't be changed.  Since Version 1903 (May 2019) of Windows 10,
+# however, it became possible to change the codepage of an executable
+# to utf-8 via its manifest.  That is what we do now, and it solves
+# the problem for these recent systems.  Older Windows systems will
+# ignore that manifest, however, and will use the 8-bit system
+# codepage.
 
-# FIXME.  Unfortunately, there is a mysterious bug that causes this
-# limited solution to fail.  The codepage path conversion on Windows
-# works fine for basic searching and when using JumpTo to go to a
-# particular passage of a text, but fails when browsing through a
-# text.  The .txt file fails to open when there is non-ascii code in
-# the path in seek_passage and browse_forward.  Even though the
-# authtab file and the corresponding .idt file open fine.  Most
-# perplexing is the fact that JumpTo works fine, as that seems to
-# follow an essentially identical code path.  A mystery.
+# Here, for older systems which ignore the attempt to change the
+# codepage to utf8, we convert the paths from the prefs file to the
+# local Windows 8-bit codepage using Encode.  (If we read in the prefs
+# file as raw bytes, we would have to use Encode::from_to instead.)
+# This is an imperfect solution, as it only permits paths that use a
+# very limited set of characters from that local codepage rather than
+# arbitrary Unicode.
+
+# However, there is a mysterious bug I never tracked down that causes
+# this limited solution to fail.  The codepage path conversion on
+# Windows works fine for basic searching, but fails when browsing
+# through a text.  The .txt file fails to open when there is non-ascii
+# code in the path in seek_passage and browse_forward, even though
+# the authtab file and the corresponding .idt file open fine.  So best
+# to advise users of older Windows systems to use paths to the
+# databases that only contain ascii characters
 
 sub windows_filename {
     my ($filename) = @_;
-    if ($code_page) {
+    if ($code_page and not $code_page =~ m/utf|65001/) {
         # my $ret = Encode::from_to($filename, 'utf8', $codepage);
         # print STDERR "Codepage conversion failed\n" unless defined $ret;
         $filename = Encode::encode($code_page, $filename);
