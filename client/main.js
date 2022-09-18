@@ -6,6 +6,10 @@ const fs = require('fs')
 const console = require('console')
 const fontList = require('./node-font-list/index.js')
 
+// We don't use this and it causes crashes on Windows/Linux machines
+// with glitchy drivers.
+app.disableHardwareAcceleration()
+
 // Keep a global reference of the window objects, to ensure they won't
 // be closed automatically when the JavaScript object is garbage collected.
 let windows = []
