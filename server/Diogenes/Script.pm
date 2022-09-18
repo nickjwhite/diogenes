@@ -1918,7 +1918,8 @@ my $get_args_for_tlg_filter = sub
     {
         next if not defined $st{$_} or $st{$_} eq '--';
         my $ref = ref $st{$_} ? $st{$_} : [ $st{$_} ];
-        $args{$_} = [ grep {$_ ne '--'} @{ $ref } ];
+        my @non_empty = grep {$_ ne '--'} @{ $ref };
+        $args{$_} = \@non_empty if @non_empty;
     }
     for (qw(author_regex criteria))
     {
