@@ -135,6 +135,7 @@ nav ul ul ul {
 .info-field {
     text-align: left;
     font-size: 100%;
+    margin-left: 5px;
 }
 .info-button {
     color: #28709a;
