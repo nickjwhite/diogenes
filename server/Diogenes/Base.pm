@@ -426,6 +426,7 @@ sub read_tlg_chronology {
     my ($vol, $dir, $file) = File::Spec->splitpath(module_path('Diogenes::Base'));
     my $chron_file = File::Spec->catpath( $vol, $dir, 'tlg-chronology.txt');
     open my $chron_fh, "<$chron_file" or die "Could not open $chron_file: $!";
+    local $/ = "\n";
     while (<$chron_fh>) {
         if (m/^(\d\d\d\d)\s+(.*?)$/) {
             my $num = $1;
