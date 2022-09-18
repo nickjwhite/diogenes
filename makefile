@@ -15,7 +15,7 @@ ELECTRONVERSION = 20.0.0
 ENTSUM = 84cb3710463ea1bd80e6db3cf31efcb19345429a3bafbefc9ecff71d0a64c21c
 UNICODEVERSION = 7.0.0
 UNICODESUM = bfa3da58ea982199829e1107ac5a9a544b83100470a2d0cc28fb50ec234cb840
-STRAWBERRYPERLVERSION=5.28.0.1
+STRAWBERRYPERLVERSION=5.32.1.1
 
 all: server/Diogenes/unicode-equivs.pl server/Diogenes/EntityTable.pm server/fonts/GentiumPlus-I.woff server/fonts/GentiumPlus-R.woff client/node-font-list/package.json
 
@@ -88,6 +88,9 @@ build/w32perl:
 	curl -L http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	unzip -d build/w32perl/strawberry build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	rm build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
+# Make Perl use utf-8 codepage; manifest must be in same directory as exe
+	cp dist/perl.exe.manifest build/w32perl/strawberry/perl/bin
+	cd build/w32perl/strawberry/perl/bin && wine dist/mt/mt.exe -manifest perl.exe.manifest -outputresource:perl.exe;#1
 
 build/w64perl:
 	mkdir -p build/w64perl/strawberry
