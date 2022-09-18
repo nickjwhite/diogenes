@@ -46,7 +46,9 @@ Preliminaries
 Creating the Diogenes icon file for Windows requires some utility
 programs that can be installed on OS X (the Homebrew packages
 are`librsvg` and `icoutils`) and on Linux (the Debian packages are
-`librsvg2-bin` and `icoutils`).
+`librsvg2-bin` and `icoutils`).  Integrating the icon with the Windows
+.exe file further requires a Windows utility running under `wine`, as
+does modifying the Windows Perl executable to use utf-8 for I/O.
 
 Creating the Mac icon file needs to be done on OS X and requires
 installing the `png2icns` package for Node.js: install Node via
@@ -82,16 +84,11 @@ instructions)](https://fpm.readthedocs.io/en/latest/installing.html),
 and for the RPM installer you will also need to install `rpm`, which
 is available on Homebrew.
 
-The Windows installer is created with Inno Setup, which is a Windows
-application.  In principle, this can be run via the Wine emulator,
-which requires installing `wine` (64-bit version) and `innoextract`,
-both of which are available on Linux and via Homebrew (`brew cask
-install homebrew/cask/wine-stable`).  But Inno Setup is currently only
-available as a 32-bit app, and OS X will not run these anymore, even
-under emulation; 64-bit wine cannot help in this case.  As a
-workaround, Docker is currently used instead of wine to run Inno
-Setup, which requires installing Docker Desktop (Mac) or Docker CE
-(Linux).
+The Windows installer is created with a Windows application, Inno
+Setup, but it is currently only available as a 32-bit app, and OS X
+will not run these anymore, even under emulation; `wine` cannot
+help in this case.  So the Windows installer must be made on Linux,
+and requires `wine` and `innoextract`.
 
 There is a target in the Makefile to create an OS X pkg, but I don't
 recommend using it: if another version of Diogenes with the same

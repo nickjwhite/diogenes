@@ -83,6 +83,7 @@ electron/electron-v$(ELECTRONVERSION)-win32-x64:
 	unzip -d electron/electron-v$(ELECTRONVERSION)-win32-x64 electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 
+# We use mt.exe to modify the Perl executable.  This runs via wine on Linux.
 build/w32perl:
 	rm -rf build/w32perl/strawberry/*
 	mkdir -p build/w32perl/strawberry
@@ -185,7 +186,7 @@ electron/electron-v$(ELECTRONVERSION)-darwin-arm64:
 	curl -L https://github.com/electron/electron/releases/download/v$(ELECTRONVERSION)/electron-v$(ELECTRONVERSION)-darwin-arm64.zip > electron/electron-v$(ELECTRONVERSION)-darwin-arm64.zip
 	unzip -d electron/electron-v$(ELECTRONVERSION)-darwin-arm64 electron/electron-v$(ELECTRONVERSION)-darwin-arm64.zip
 	rm electron/electron-v$(ELECTRONVERSION)-darwin-arm64.zip
-	# Remove spurious "Electron is damaged" error message
+# Remove spurious "Electron is damaged" error message
 	xattr -cr electron/electron-v$(ELECTRONVERSION)-darwin-arm64/Electron.app
 
 mac-x64: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icns
@@ -206,11 +207,10 @@ mac-x64: all electron/electron-v$(ELECTRONVERSION)-darwin-x64 build/diogenes.icn
 	mv app/mac-x64/Electron.app app/mac-x64/Diogenes.app
 	mv app/mac-x64/Diogenes.app/Contents/MacOS/Electron app/mac-x64/Diogenes.app/Contents/MacOS/Diogenes
 
-	# There are now multiple helper apps, and each has an Info.plist that
-	# may need modifying, so for now we just refrain from renaming it
-
-	# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
-	# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-x64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
+# There are now multiple helper apps, and each has an Info.plist that
+# may need modifying, so for now we just refrain from renaming it
+# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
+# mv "app/mac-x64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-x64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
 	cp COPYING app/mac-x64/about/COPYING.txt
 	cp README.md app/mac-x64/about/README.md
 	mv app/mac-x64/LICENSE app/mac-x64/about/
@@ -234,8 +234,8 @@ mac-arm64: all electron/electron-v$(ELECTRONVERSION)-darwin-arm64 build/diogenes
 	perl -pi -e 's#</dict>#<key>NSHumanReadableCopyright</key>\n<string>Copyright © 2019 Peter Heslin\nDistributed under the GNU GPL version 3</string>\n</dict>#' app/mac-arm64/Electron.app/Contents/Info.plist
 	mv app/mac-arm64/Electron.app app/mac-arm64/Diogenes.app
 	mv app/mac-arm64/Diogenes.app/Contents/MacOS/Electron app/mac-arm64/Diogenes.app/Contents/MacOS/Diogenes
-	# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
-	# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
+# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Electron Helper" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app/Contents/MacOS/Diogenes Helper"
+# mv "app/mac-arm64/Diogenes.app/Contents/Frameworks/Electron Helper.app" "app/mac-arm64/Diogenes.app/Contents/Frameworks/Diogenes Helper.app"
 	cp COPYING app/mac-arm64/about/COPYING.txt
 	cp README.md app/mac-arm64/about/README.md
 	mv app/mac-arm64/LICENSE app/mac-arm64/about/
@@ -279,16 +279,13 @@ build/inno-setup/app/ISCC.exe:
 # OS X after Catalina will not run 32-bit apps, even under emulation.
 # This is not a problem with rcedit, as we can use 64-bit wine to run
 # a 64-bit rcedit.  But there is currently only a 32-bit version of
-# Inno Setup available, so we use Docker (which is slower) instead;
-# this solution is from
-# https://gist.github.com/amake/3e7194e5e61d0e1850bba144797fd797
+# Inno Setup available, so we just make the installer on Linux.  
 installer-w32: install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
 #install/diogenes-setup-win32-$(DIOGENESVERSION).exe: app/w32
 	mkdir -p install
 	rm -f install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
-#	docker run --rm -i -v "$(PWD):/work" amake/innosetup dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
@@ -297,7 +294,6 @@ install/diogenes-setup-win64-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.e
 	mkdir -p install
 	rm -f install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
-#	docker run --rm -i -v "$(PWD):/work" amake/innosetup dist/diogenes-win64.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
