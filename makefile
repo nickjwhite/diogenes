@@ -84,13 +84,14 @@ electron/electron-v$(ELECTRONVERSION)-win32-x64:
 	rm electron/electron-v$(ELECTRONVERSION)-win32-x64.zip
 
 build/w32perl:
+	rm -rf build/w32perl/strawberry/*
 	mkdir -p build/w32perl/strawberry
 	curl -L http://strawberryperl.com/download/$(STRAWBERRYPERLVERSION)/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip > build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	unzip -d build/w32perl/strawberry build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 	rm build/w32perl/strawberry-perl-$(STRAWBERRYPERLVERSION)-32bit-portable.zip
 # Make Perl use utf-8 codepage; manifest must be in same directory as exe
 	cp dist/perl.exe.manifest build/w32perl/strawberry/perl/bin
-	cd build/w32perl/strawberry/perl/bin && wine dist/mt/mt.exe -manifest perl.exe.manifest -outputresource:perl.exe;#1
+	cd build/w32perl/strawberry/perl/bin && wine ../../../../../dist/mt/mt.exe -manifest perl.exe.manifest -outputresource:perl.exe;#1
 
 build/w64perl:
 	mkdir -p build/w64perl/strawberry
