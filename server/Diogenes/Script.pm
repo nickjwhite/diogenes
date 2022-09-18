@@ -158,7 +158,7 @@ my $read_filters = sub {
             eval $contents;
             warn "Error reading in saved corpora: $@" if $@;
         }
-        else {
+        elsif ($contents) {
             @filters = @{ from_json $contents };
             #print STDERR 'Filter: ', %{ $_ }, "\n" for @filters;
         }
