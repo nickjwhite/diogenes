@@ -476,18 +476,18 @@ sub new
 
     %{ $self } = ( %{ $self }, %defaults, $self->read_config_files, %args );
     
-    my @dirs = qw/tlg_dir phi_dir ddp_dir tll_pdf_dir/;
+    my @dirs = qw/tlg_dir phi_dir ddp_dir tll_pdf_dir old_pdf_dir/;
 
     # Make sure all the directories end in a '/' (except for empty
     # values).
     for my $dir (@dirs) 
     {
-        # print STDERR "--$dir: $self->{$dir}\n";
         $self->{$dir} .= '/' unless $self->{$dir} eq '' or
             $self->{$dir} =~ m#[/\\]$#;
         if ($OS eq 'windows') {
             $self->{$dir} = windows_filename($self->{$dir});
         }
+        # print STDERR "--$dir: $self->{$dir}\n";
     }
     
     # Clone values that are references, so we don't clobber what was passed.
