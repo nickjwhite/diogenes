@@ -903,7 +903,7 @@ function tllConfirm () {
   if (!tllPath) {
     dialog.showMessageBoxSync({
       type: 'error',
-      message: 'Error. Location for TLL PDFs has not yet been set.  Specify the location via File -> Database Locations'
+      message: 'Error. Location for TLL PDFs has not yet been set.  Specify the location via File -> Database Locations.'
     })
     return false
   }
@@ -1018,9 +1018,16 @@ function showPDF (pseudoUrl) {
 // If PDF is already open, show existing window
 function showTLL (vol, pseudoUrl) {
 
-  tllDirUntrimmed = getTLLpath()
+  var tllDirUntrimmed = getTLLpath()
+  if (!tllDirUntrimmed) {
+    console.log('Error: tll_pdf_dir not set.')
+    dialog.showMessageBoxSync({
+      type: 'error',
+      message: 'Error. Location for TLL PDFs has not yet been set.  Specify the location via File -> Database Locations.'
+    })
+    return false
+  }
   tllDir = tllDirUntrimmed.replace(/\/$/, '')
-  if (!tllDir) { console.log('Error: tll_pdf_dir not set.') }
   tllFileMapRead()
   var filename = tllFileMap[vol]
   if (!filename) { console.log('Error: filename not found for', vol) }
@@ -1049,8 +1056,15 @@ function showTLL (vol, pseudoUrl) {
 var OLDwindow = null
 function showOLD (pseudoUrl) {
   oldDirUntrimmed = getOLDpath()
+  if (!oldDirUntrimmed) {
+    console.log('Error: old_pdf_dir not set.')
+    dialog.showMessageBoxSync({
+      type: 'error',
+      message: 'Error. Location for OLD PDF has not yet been set.  Specify the location via File -> Database Locations.'
+    })
+    return false
+  }
   oldDir = oldDirUntrimmed.replace(/\/$/, '')
-  if (!oldDir) { console.log('Error: old_pdf_dir not set.') }
   if (m = pseudoUrl.match(/page=(\d+)$/)) {
     var page = m[1]
   } else {
