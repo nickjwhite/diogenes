@@ -279,12 +279,12 @@ build/inno-setup/app/ISCC.exe:
 # this solution is from
 # https://gist.github.com/amake/3e7194e5e61d0e1850bba144797fd797
 installer-w32: install/diogenes-setup-win32-$(DIOGENESVERSION).exe
-#install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
-install/diogenes-setup-win32-$(DIOGENESVERSION).exe: app/w32
+install/diogenes-setup-win32-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w32
+#install/diogenes-setup-win32-$(DIOGENESVERSION).exe: app/w32
 	mkdir -p install
 	rm -f install/diogenes-setup-win32-$(DIOGENESVERSION).exe
-# wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
-	docker run --rm -i -v "$(PWD):/work" amake/innosetup dist/diogenes-win32.iss
+	wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win32.iss
+#	docker run --rm -i -v "$(PWD):/work" amake/innosetup dist/diogenes-win32.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
@@ -292,8 +292,8 @@ installer-w64: install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 install/diogenes-setup-win64-$(DIOGENESVERSION).exe: build/inno-setup/app/ISCC.exe app/w64
 	mkdir -p install
 	rm -f install/diogenes-setup-win64-$(DIOGENESVERSION).exe
-# wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
-	docker run --rm -i -v "$(PWD):/work" amake/innosetup dist/diogenes-win64.iss
+	wine64 build/inno-setup/app/ISCC.exe dist/diogenes-win64.iss
+#	docker run --rm -i -v "$(PWD):/work" amake/innosetup dist/diogenes-win64.iss
 	mv -f dist/Output/mysetup.exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe
 	rmdir dist/Output
 
