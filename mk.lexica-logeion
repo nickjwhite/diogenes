@@ -1,4 +1,4 @@
-# Get LSJ lexicon from Logeion and and L-S from Perseus
+# Get lexica from Logeion
 
 .DEFAULT_GOAL := all
 
@@ -29,4 +29,5 @@ $(DATA)/lat.ls.perseus-eng1.xml: $(LOGEIONLEXICA)/LewisShortLogeion/.git/HEAD
 # Collect entries and remove spurious newlines
 	perl utils/reformat_lewis_logeion.pl  $(LOGEIONLEXICA)/LewisShortLogeion/latindico*.xml > $(DATA)/lat.ls.perseus-eng1.xml
 
-clean: $(PERSEUSLEXICA) $(LOGEIONLEXIA) $(LEXICONFILES)
+clean:
+	rm -f $(LEXICONFILES)
