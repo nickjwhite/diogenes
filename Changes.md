@@ -1,6 +1,6 @@
 # Changes in Version 4 of Diogenes
 
-## 4.6 (forthcoming)
+## 4.6
 
 * Browser front-end updated to Electon version 20 (from version 5):
     * This should eliminate spurious anti-virus warnings (for now);

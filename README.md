@@ -93,7 +93,9 @@ according to the platform you're building for:
     make w32       # for windows build
     make mac-x64   # for mac osx build (Intel)
     make mac-arm64 # for mac osx build (Apple silicon)
- 
+
+Gatekeeper will prevent the unsigned Apple silicon app from running unless you remove its quarantine attribute: `xattr -cr Diogenes.app`.
+
 Building the installers
 -----------------------
 

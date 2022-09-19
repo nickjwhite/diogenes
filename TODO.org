@@ -1,30 +1,13 @@
-* For forthcoming release
-** Add FAQ about re-centering lost window
-** Cut news from landing page of website
-** Test issue #58 on Windows
-** Test "New Window (reset position)" menu item on Windows
-Try with a Windows laptop and an external monitor
-** See if Zoom in/out now works on Linux and Windows
-Also: The shortcuts used to navigate do not work on PC, Windows 10 (version 1909).
-** Further test TLL download under Windows.
-Maybe fix Unicode path problem by renaming to TLL01.pdf etc., but continue to permit old names.
-** Check bug with non-ascii paths to databases on Windows
-The current code does seem to work when searching texts, and even when jumping to context from search results, but fails when browsing.  The .idt files are opened without a problem in the preliminary stages of browsing, and the seek_passage subroutine works when jumping from a search result, but not when browsing.  Browsing forward after jump to context is also broken.  A strange bug.
-** Add new download for Mac silicon
-** Change prebuilt-data repo to use git-lfs (and my ssh key)
-
-* Post release
-** DiogenesWeb Github issues plus email
-
 * Near-term to-do items
-** Fix short defs by using Helma's data.
-** fix spurious parses by integrating Helma's data.
+** Add simple API to link to external dictionaries (e.g Lectus)
+** Change prebuilt-data repo to use git-lfs (and my ssh key)
 ** Add dark mode option.
 ** Add citation info from authtab.xml to exported XML files.
 ** Import font_fixes from xml-export into desktop display
-** Add simple API to link to external dictionaries (e.g Lectus)
 
 * Long-term to-do items
+** Fix short defs by using Helma's data.
+** fix spurious parses by integrating Helma's data.
 ** Fix ordering of lemmatized search output
 At present, we seem to look for each inflected form in each work separately, which means that the order appears random: one form late in the work is output before another form which comes early in the work.
 ** Record criteria for complex filters to permit them to be recreated and modified.
