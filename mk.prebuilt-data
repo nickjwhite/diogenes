@@ -9,7 +9,7 @@ all:
 	tar -xvf prebuilt-data.tar
 	rm prebuilt-data.tar
 
-clean:
+clean-data:
 	rm -f $(DATA)/gcide.txt
 	rm -f $(DATA)/grc.lsj.perseus-eng0.xml
 	rm -f $(DATA)/greek-analyses.txt
