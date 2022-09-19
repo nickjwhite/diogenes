@@ -12,9 +12,6 @@ use Diogenes::Base;
 my $version = $Diogenes::Base::Version;
 use LWP::UserAgent ();
 
-# Subdirectory name to use for downloaded files.
-my $dirname = 'tll-pdfs';
-
 # URLs at bottom of file
 my @urls = tll_urls();
 my %file_names;
@@ -29,10 +26,6 @@ else {
 }
 
 $path =~ s#[\\/]$##;
-
-unless ($path =~ m/$dirname$/) {
-    $path = catdir($path, $dirname);
-}
 
 unless (-e $path and -d $path) {
     mkdir $path or die "Error: Could not create folder $path! $!\n";
