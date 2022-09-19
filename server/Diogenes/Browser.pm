@@ -895,7 +895,7 @@ sub browse_backward
     # find the right length of chunk
   CHUNK:
     for ($line = 0; 
-         ($line <= $self->{browse_lines} + 1) and ($begin > 0) ; 
+         ($line <= $self->{browse_lines}) and ($begin > 0);
          $begin--) 
     {
         next if (ord (substr ($$ref, $begin, 1)) == 0);
