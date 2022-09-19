@@ -8,7 +8,7 @@ Linguae Graecae.
 
 If you just want to install and run the program, go to the Diogenes
 webpage, and download a pre-packaged version for your operating system
-from there:
+(Windows, Mac and many flavours of Linux) from there:
 
 [https://d.iogen.es/d](https://d.iogen.es/d)
 
@@ -40,15 +40,33 @@ pre-computed data from Github:
 If you would prefer to build the morphology data and dictionaries
 yourself, see the instructions below.
 
-Preliminaries
--------------
+Platform-Specific Requirements
+------------------------------
 
-Creating the Diogenes icon file for Windows requires some utility
-programs that can be installed on OS X (the Homebrew packages
-are`librsvg` and `icoutils`) and on Linux (the Debian packages are
-`librsvg2-bin` and `icoutils`).  Integrating the icon with the Windows
-.exe file further requires a Windows utility running under `wine`, as
-does modifying the Windows Perl executable to use utf-8 for I/O.
+For the most part, Diogenes and its installers can be built for all
+platforms on either Linux or Mac, but there are some steps that need
+to be done on a specific OS.  In particular, with respect to Windows:
+
+* The Windows installer is created with a Windows application, Inno
+Setup, which is currently only available as a 32-bit app.  OS X
+will not run these anymore, even under emulation via `wine`.  So the
+Windows installer currently must be made on Linux, and requires `wine`
+and `innoextract`.
+
+* Creating the Diogenes icon file for Windows requires some utility
+  programs that can be installed on Linux (the Debian packages are
+  `librsvg2-bin` and `icoutils`) or OS X (the Homebrew packages
+  are `librsvg` and `icoutils`).
+
+* Integrating the icon with the Windows .exe file requires a Windows
+  utility (rcedit.exe) running under `wine`.
+
+* Modifying the Windows Perl executable to use utf-8 for system calls
+  requires another Windows utility (mt.exe), which also runs under
+  `wine`.
+
+In light of these issues, building the Windows app and installer ought
+currently to be done under Linux.
 
 Creating the Mac icon file needs to be done on OS X and requires
 installing the `png2icns` package for Node.js: install Node via
@@ -56,14 +74,16 @@ Homebrew and then run `npm install png2icns -g`. (There is an entirely
 different png2icns program that also runs on Linux, but it looks
 obsolescent.)
 
-Once you have installed those utility programs, you can run this
-command, which will create the icons and collect a number of other
-required files:
-
-    make
+Regarding the issues with compiling Morpheus on Linux and OS X, see below.
 
 Building the Electron app
 -------------------------
+
+Once you have installed the utility programs for building the icons as
+mentioned above, you can run this command, which will create the icons
+and collect a number of other required files:
+
+    make
 
 To build the standalone Diogenes application which has the server and
 client browser integrated via Electron, use one of these make commands
@@ -77,18 +97,12 @@ according to the platform you're building for:
 Building the installers
 -----------------------
 
-All of the installers can be built on either Linux or OS X.  To create
-the Linux installers you will need to install `fpm`, which is done via
-the Ruby package manager [(see
+Apart from Windows, the other installers can be built on either Linux
+or OS X.  To create the Linux installers you will need to install
+`fpm`, which is done via the Ruby package manager [(see
 instructions)](https://fpm.readthedocs.io/en/latest/installing.html),
-and for the RPM installer you will also need to install `rpm`, which
-is available on Homebrew.
-
-The Windows installer is created with a Windows application, Inno
-Setup, but it is currently only available as a 32-bit app, and OS X
-will not run these anymore, even under emulation; `wine` cannot
-help in this case.  So the Windows installer must be made on Linux,
-and requires `wine` and `innoextract`.
+and for the RPM installer you will also need to install `rpm`, (Linux
+or Homebrew).
 
 There is a target in the Makefile to create an OS X pkg, but I don't
 recommend using it: if another version of Diogenes with the same
@@ -143,86 +157,48 @@ for Diogenes.
 
 1. Wordlists
 
-    The first step is to generate Greek and Latin wordlists, which for
-    Greek are derived from the Perseus corpus and the TLG wordlist;
-    and for Latin from the PHI, Perseus and DigiLibLT corpora.  The
-    DigiLibLT corpus has to be downloaded first by hand after making
-    an account on their website, but the Perseus corpora are
-    downloaded automatically. Run this command, specifying the
-    location of the non-Perseus databases on the command line:
+    The first step is to generate Greek and Latin wordlists, which for Greek are derived from the Perseus corpus and the TLG wordlist; and for Latin from the PHI, Perseus and DigiLibLT corpora.  The DigiLibLT corpus has to be downloaded first by hand after making an account on their website, but the Perseus corpora are downloaded automatically. Run this command, specifying the location of the non-Perseus databases on the command line:
 
         make -f mk.wordlists PHIDIR=/path/to/phi TLGDIR=/path/to/tlg_e DIGILIBDIR=~/path/to/digilib
 
 1. Morphology
 
-    The next step is to generate the morphological data by running
-    Morpheus over the wordlists.  Diogenes still uses an older,
-    known-good version of Morpheus, which is very old code written in
-    C.  It does not compile on OS X or with recent version of GCC.  It
-    does compile on Linux with GCC version 6; to do so, run this
-    command:
+    The next step is to generate the morphological data by running Morpheus over the wordlists.  Diogenes still uses an older, known-good version of Morpheus, which is very old code written in C.  It does not compile on OS X or with recent version of GCC.  It does compile on Linux with GCC version 6; to do so, run this command:
     
         make -f mk.morpheus-old
  
-    There are newer versions of Morpheus on Github that will compile
-    on OS X, but some of these have a serious bug that causes
-    incorrect output.  This bug has been fixed in the Morpheus
-    repository of [Johan Winge](https://github.com/Alatius/morpheus),
-    who has also improved the marking of vowel lengths.  Judging by
-    the smaller size of the output files, this version may have less
-    coverage, but I have not had time to test it properly.  If you
-    want to try it, run this command:
+    There are newer versions of Morpheus on Github that will compile on OS X, but some of these have a serious bug that causes incorrect output.  This bug has been fixed in the Morpheus repository of [Johan Winge](https://github.com/Alatius/morpheus), who has also improved the marking of vowel lengths.  Judging by the smaller size of the output files, this version may have less coverage, but I have not had time to test it properly.  If you want to try it, run this command:
     
         make -f mk.morpheus-alatius
         
-    If you don't want to compile Morpheus, you can just download and use the
-    morphological data from version 3 of Diogenes, which still works
-    fine with version 4.  Run the following command:
+    If you don't want to compile Morpheus, you can just download and use the morphological data from version 3 of Diogenes, which still works fine with version 4.  Run the following command:
 
         make -f mk.morpheus-v3
 
 1. Lexica
 
-    The next step is to download the LSJ Greek lexicon and the L-S
-    Latin lexicon, which were originally digitized by the Perseus
-    project and have subsequently been corrected by the Logeion
-    project.  To get the lexica from Logeion, run:
+    The next step is to download the LSJ Greek lexicon and the L-S Latin lexicon, which were originally digitized by the Perseus project and have subsequently been corrected by the Logeion project.  To get the lexica from Logeion, run:
 
         make -f mk.lexica-logeion
 
-    Alternatively, you can get the Perseus version of the lexica by
-    running:
+    Alternatively, you can get the Perseus version of the lexica by running:
 
         make -f mk.lexica-perseus
 
 1. Integration
 
-    The next step is to integrate the morphological data with the
-    lexica, and package all this in the form that Diogenes requires.
-    To do this, run:
+    The next step is to integrate the morphological data with the lexica, and package all this in the form that Diogenes requires.  To do this, run:
 
         make -f mk.data
 
-    The intermediate files generated in the course of all of the steps
-    above are put the build/ directory, and the final lexical data
-    which is used used by Diogenes at runtime is put in the
-    dependencies/data directory, whence it is read by
-    diogenes-server.pl.
+    The intermediate files generated in the course of all of the steps above are put the build/ directory, and the final lexical data which is used used by Diogenes at runtime is put in the dependencies/data directory, whence it is read by diogenes-server.pl.
 
 1. PDFs of Lexica
 
-    There is one more, optional, step, which is to integrate
-    information on where words can be found in the print versions of
-    the _Thesaurus Linguae Latinae_ and the first edition of the
-    _Oxford Latin Dictionary_.  The PDFs of the _TLL_ can be
-    downloaded from the website of the Bayerische Akademie der
-    Wissenschaften by hand, via a menus item in the Diogenes Electron
-    application, or by running on the command line:
+    There is one more step, which is to integrate information on where words can be found in the print versions of the _Thesaurus Linguae Latinae_ and the first edition of the _Oxford Latin Dictionary_.  The PDFs of the _TLL_ can be downloaded from the website of the Bayerische Akademie der Wissenschaften by hand, via a menu item in the Diogenes Electron application, or by running on the command line:
 
         server/tll-pdf-download.pl path/to/destination/folder
-
-    If you also have a PDF of the first edition of the _OLD_ that has
-    the running heads as bookmarks, you can extract the necessary
-    information from that as well.  To do so, run:
+    
+    If you also have a PDF of the first edition of the _OLD_ that has the running heads as bookmarks, you can extract the necessary information from that as well.  To generate the bookmarks for both the _TLL_ and _OLD_, run:
 
         make -f mk.pdf-data TLLDIR=/path/to/tll/directory OLDFILE=/path/to/old/file

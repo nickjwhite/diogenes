@@ -10,30 +10,33 @@
     * better keyboard navigation;
     * semi-persistent state for the splash screen;
     * facility to jump to a new passage in the work currently being read.
-* Added support for the more recent TLL fascicles (from vols. 9.1 and 11.2).
-* Native version for Macs with Apple silicon processors.
+* Added support for the the more recent TLL fascicles (from vols. 9.1 and 11.2).
+* Native version for recent Macs with Apple silicon processors.
 * Updated icon for Macs (thanks to Helge Baumann).
-* Splitting of very large search output into pages.
-* Fixed long-standing bug so that now accented and non-Latin
-  characters can be used in the names of in user-defined subsets of
+* Very large search output is now split into pages to avoid crashing the browser.
+* Facility to search the headwords of ancient lexica (e.g. the Suda).
+* Better display of editorial notes in PHI texts.
+* Fixed a long-standing bug that prevented accented and non-Latin
+  characters from being used in the names of in user-defined subsets of
   texts.
+* Fixed (for Windows 10 and later) another long-standing Windows bug
+  that caused problems when non-Latin characters were used in the names
+  of the paths to the folder holding the databases.
 * Removed problematic code that sometimes interfered with finding
   citations in very short or fragmentary texts.
-* Facility to search the headwords of ancient lexica (e.g. Suda).
-* Better display of editorial notes in PHI texts.
 
 ### Changes implemented earlier but not released
 * TLG search results are now presented in (rough) chronological order
   (with huge thanks to Jiang Qian for his assistance).
 * Multiple search feature now permits looking for the repetition of
-  a word (with thanks to Michael Putnam for the suggestion).
+  a word (thanks to Michael Putnam for the suggestion).
 * Many errors in Lewis and Short, especially citation references, have
   been fixed by Logeion (thanks to Helma Dik).
 * Diogenes now deals more gracefully with hitting the end of a file
   while browsing.
 * There is a new software package (diogenes-epub) for converting Diogenes XML
   output to epub format for e-readers.
-* Fixed display of some LSJ headwords.
+* Fixed display of some LSJ entries.
 * Fixed picking up GUI config settings when running server from the Linux command-line.
 * Fix to bug that interfered with chronological ordering except on Windows.
 
