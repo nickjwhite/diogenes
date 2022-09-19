@@ -667,6 +667,7 @@ sub extract_hits
         # Get context block
         if ($self->{numeric_context}) 
         {
+            $start++;
             # Get a number of lines of context before the match -- the concept of
             # `line' here is very unsophisticated.
             for ($lines = 0; $lines <= $context and 
