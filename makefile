@@ -65,7 +65,8 @@ linux64: all electron/electron-v$(ELECTRONVERSION)-linux-x64
 	cp -r electron/electron-v$(ELECTRONVERSION)-linux-x64/* app/linux64
 	cp -r server app/linux64
 	cp -r dependencies app/linux64
-	cp -r dist app/linux64
+	mkdir -p app/linux64/dist
+	cp dist/diogenes.desktop dist/icon.svg app/linux64/dist/
 	cp -r client app/linux64/resources/app
 	echo '{ "version": "'$(DIOGENESVERSION)'" } ' > app/linux64/resources/app/version.js
 	mv app/linux64/electron app/linux64/diogenes
