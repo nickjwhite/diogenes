@@ -307,13 +307,13 @@ install/diogenes-mac-x64-$(DIOGENESVERSION).zip: app/mac-x64
 	mkdir -p install
 	rm -f install/diogenes-mac-x64-$(DIOGENESVERSION).zip
 	cd app/mac-x64; zip -r diogenes-mac-x64-$(DIOGENESVERSION).zip Diogenes.app about
-	mv app/mac/diogenes-mac-x64-$(DIOGENESVERSION).zip install/
+	mv app/mac-x64/diogenes-mac-x64-$(DIOGENESVERSION).zip install/
 
 install/diogenes-mac-arm64-$(DIOGENESVERSION).zip: app/mac-arm64
 	mkdir -p install
 	rm -f install/diogenes-mac-arm64-$(DIOGENESVERSION).zip
 	cd app/mac-arm64; zip -r diogenes-mac-arm64-$(DIOGENESVERSION).zip Diogenes.app about
-	mv app/mac/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/
+	mv app/mac-arm64/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/
 
 # NB. Installing this Mac package will report success but silently
 # fail if there exists another copy of Diogenes.app with the same
@@ -384,7 +384,7 @@ install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 # installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
 installer-all: installer-w32 installer-mac installer-deb64 installer-rpm64 installer-arch64
 # installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
-installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/diogenes-mac-x64-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
@@ -403,8 +403,8 @@ clean:
 # make release GITHUBTOKEN=github-access-token
 # release: $(installers)
 release:
-	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
-	git push origin master
+#	git tag -a -m "Diogenes Public Release" $(DIOGENESVERSION)
+#	git push origin master
 	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
 	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
 
