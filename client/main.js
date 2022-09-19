@@ -1031,6 +1031,16 @@ function showTLL (vol, pseudoUrl) {
   tllFileMapRead()
   var filename = tllFileMap[vol]
   if (!filename) { console.log('Error: filename not found for', vol) }
+  var filepath = tllDir + '/' + filename
+  if (!fs.existsSync(filepath)) {
+    console.log('Error: TLL PDF not found.')
+    dialog.showMessageBoxSync({
+      type: 'error',
+      message: 'Error. TLL PDF not found: ' + filepath
+    })
+    return false
+  }
+
   if (m = pseudoUrl.match(/page=(\d+)$/)) {
     var page = m[1]
   } else {
