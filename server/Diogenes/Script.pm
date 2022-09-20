@@ -32,7 +32,7 @@ use Diogenes::Indexed;
 use Diogenes::Browser;
 use Encode;
 use CGI qw(:standard :utf8);
-use JSON;
+use JSON::Tiny qw(from_json to_json);
 use utf8;
 binmode STDERR, ":raw";
 
