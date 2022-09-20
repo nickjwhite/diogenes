@@ -383,9 +383,10 @@ install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 
 # installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
 installer-all: installer-w32 installer-mac installer-deb64 installer-rpm64 installer-arch64
+installer-linux: installer-deb64 installer-rpm64 installer-arch64
 # installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
-installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/diogenes-mac-x64-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
-
+installers =  install/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/diogenes-mac-x64-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
+#install/diogenes-setup-win32-$(DIOGENESVERSION).exe
 clean:
 	rm -f $(DEPDIR)/UnicodeData-$(UNICODEVERSION).txt
 	rm -f server/Diogenes/unicode-equivs.pl
@@ -407,6 +408,9 @@ release:
 #	git push origin master
 	utils/github-create-release.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) prerelease=false
 	for installer in $(installers); do utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=$$installer > /dev/null; done
+# Upload Windows installer separately
+release-windows:
+	utils/upload-github-release-asset.sh github_api_token=$(GITHUBTOKEN) owner=pjheslin repo=diogenes tag=$(DIOGENESVERSION) filename=install/diogenes-setup-win32-$(DIOGENESVERSION).exe > /dev/null
 
 # make update-website CLOUDFRONTID=id
 update-website:
