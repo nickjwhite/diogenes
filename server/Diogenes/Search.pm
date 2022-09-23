@@ -729,8 +729,13 @@ sub extract_hits
             # Grab to the end of the current section (e.g. lexicon
             # entry).  Crude solution, but Photius lex entries are not
             # separated by level.
-            for ($end = $offset; $end < length $$buf; $end++) {
+            for ($end = $offset, $lines = 0; $end < length $$buf; $end++) {
                 last if substr ($$buf, $end, 2) =~ m/[\x80-\xff]</;
+                # Failsafe
+                $lines++ if (((ord (substr ($$buf, $end, 1))) >> 7) and not
+                             (ord (substr ($$buf, $end + 1, 1)) >> 7) and not
+                             (substr ($$buf, $end + 1, 1) eq "\x00"));
+                last if $lines >= 100;
             }
         }
         else

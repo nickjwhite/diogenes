@@ -2160,7 +2160,7 @@ $output{headwords} = sub {
     # ([\x90-\xff]), but entries are not marked by level in Photius.
     # Limit match to within <> by excluding those chars from before
     # and after.
-    $pattern = '[\x80-\xff][\[%]?\d?<\d?\d?[^<>]*?' . $pattern . '[^<>]*?>\d?\d?';
+    $pattern = '[\x80-\xff][\[%]?\d?<\d?\d?[^<>]{0,50}?' . $pattern . '[^<>]{0,50}?>\d?\d?';
     $q->{pattern_list}->[0] = $pattern;
     $database_error->($q) if not $q->check_db;
 
