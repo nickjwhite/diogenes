@@ -250,7 +250,7 @@ zip-linux64: app/linux64
 	cd app;tar c diogenes-linux-$(DIOGENESVERSION) | xz > diogenes-linux-$(DIOGENESVERSION).tar.xz
 	rm -rf app/diogenes-linux-$(DIOGENESVERSION)
 
-apps: mac w32 linux64
+apps: mac-x64 mac-arm64 linux64 #w32
 
 zip-mac: app/mac
 	rm -rf app/diogenes-mac-$(DIOGENESVERSION)
@@ -382,7 +382,7 @@ install/diogenes-$(DIOGENESVERSION).pkg.tar.xz: app/linux64
 # For now, we stick with the 32-bit app for Windows
 
 # installer-all: installer-w32 installer-w64 installer-mac installer-deb64 installer-rpm64 installer-arch64
-installer-all: installer-w32 installer-mac installer-deb64 installer-rpm64 installer-arch64
+installer-all: installer-mac installer-deb64 installer-rpm64 installer-arch64 #installer-w32 
 installer-linux: installer-deb64 installer-rpm64 installer-arch64
 # installers = install/diogenes-setup-win32-$(DIOGENESVERSION).exe install/diogenes-setup-win64-$(DIOGENESVERSION).exe install/diogenes-mac-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz
 installers =  install/diogenes-mac-arm64-$(DIOGENESVERSION).zip install/diogenes-mac-x64-$(DIOGENESVERSION).zip install/diogenes-$(DIOGENESVERSION)_amd64.deb install/diogenes-$(DIOGENESVERSION).x86_64.rpm install/diogenes-$(DIOGENESVERSION).pkg.tar.xz install/diogenes-setup-win32-$(DIOGENESVERSION).exe
