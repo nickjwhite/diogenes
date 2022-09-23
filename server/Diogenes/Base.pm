@@ -482,11 +482,12 @@ sub new
     # values).
     for my $dir (@dirs) 
     {
-        $self->{$dir} .= '/' unless $self->{$dir} eq '' or
-            $self->{$dir} =~ m#[/\\]$#;
         if ($OS eq 'windows') {
             $self->{$dir} = windows_filename($self->{$dir});
         }
+        next if $dir eq 'old_pdf_dir';
+        $self->{$dir} .= '/' unless $self->{$dir} eq '' or
+            $self->{$dir} =~ m#[/\\]$#;
         # print STDERR "--$dir: $self->{$dir}\n";
     }
     
