@@ -1064,6 +1064,7 @@ function showTLL (vol, pseudoUrl) {
 }
 
 var OLDwindow = null
+
 function showOLD (pseudoUrl) {
   oldDirUntrimmed = getOLDpath()
   if (!oldDirUntrimmed) {
@@ -1082,7 +1083,7 @@ function showOLD (pseudoUrl) {
   }
   // We need to use loadURL, not loadFile, for #page= feature
   var oldURL = 'file://' + oldDir + '#page=' + page
-  if (OLDwindow) {
+  if (OLDwindow && !OLDwindow.isDestroyed()) {
     // As above
     OLDwindow.close()
   }
