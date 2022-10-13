@@ -374,7 +374,7 @@ my $print_navbar = sub {
           <ul id="submenu2">
             <li><a href="#" onclick="info('lookup')" accesskey="l">Lexicon</a></li>
             <li><a href="#" onclick="info('parse')" accesskey="i">Inflexion</a></li>
-            <li><a href="#" onclick="info('headwords')" accesskey="i">Headwords</a></li>
+            <li><a href="#" onclick="info('headwords')" accesskey="h">Headwords</a></li>
           </ul>
         </li>
         <li><a href="#" onclick="info('filters')" onfocus="dropup('submenu1'); dropup('submenu2')" accesskey="f">Filter</a></li>
